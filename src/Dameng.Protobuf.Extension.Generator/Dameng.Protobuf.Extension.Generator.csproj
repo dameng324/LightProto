@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+        <AnalyzerLanguage>cs</AnalyzerLanguage>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <IncludeSymbols>false</IncludeSymbols>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <IsRoslynComponent>true</IsRoslynComponent>
+
+        <!-- NuGet Package Metadata -->
+        <PackageId>Dameng.Protobuf.Extension.Generator</PackageId>
+        <Title>Dameng.SepEx Source Generator</Title>
+        <Description>Source generator for Dameng.SepEx that provides compile-time code generation for strongly-typed CSV operations. This is a development dependency that generates type-safe CSV readers and writers.</Description>
+        <PackageTags>csv;tsv;separated-values;source-generator;roslyn;analyzer;codegen</PackageTags>
+        <Authors>dameng324</Authors>
+        <Copyright>Copyright (c) 2025 dameng324</Copyright>
+        <PackageProjectUrl>https://github.com/dameng324/Dameng.SepEx</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dameng324/Dameng.SepEx.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryBranch>main</RepositoryBranch>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Version>1.0.0</Version>
+        <RootNamespace>Dameng.SepEx.Generator</RootNamespace>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="analyzers\dotnet\cs\$(TargetFileName)" />
+        </ItemGroup>
+    </Target>
+</Project>

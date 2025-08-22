@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Dameng.SepEx.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoFixture" Version="4.18.1" />
+        <PackageReference Include="AwesomeAssertions" Version="9.1.0" />
+        <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="CsvHelper" Version="33.1.0" />
+        <PackageReference Include="TUnit" Version="0.24.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Dameng.Protobuf.Extension\Dameng.Protobuf.Extension.csproj" />
+        <ProjectReference Include="..\..\src\Dameng.Protobuf.Extension.Generator\Dameng.Protobuf.Extension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="obj/$(Configuration)/$(TargetFramework)/protobuf/**/*.cs" />
+        <ProtoBuf Include="channel.proto">
+            <GrpcServices>Client</GrpcServices>
+            <Generator>MSBuild:PreCompile</Generator>
+        </ProtoBuf>
+        <PackageReference Include="Grpc.Tools" Version="2.72.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>
