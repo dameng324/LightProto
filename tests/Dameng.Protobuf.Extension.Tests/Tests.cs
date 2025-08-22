@@ -3,7 +3,7 @@ using Dameng.Protobuf.Extension;
 using Google.Protobuf;
 using SGD.EasyTcp.Test;
 
-namespace Dameng.SepEx.Tests;
+namespace Dameng.Protobuf.Extension.Tests;
 
 public class Tests
 {

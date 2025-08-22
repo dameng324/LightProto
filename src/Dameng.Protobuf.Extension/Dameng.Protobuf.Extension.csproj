@@ -7,13 +7,13 @@
         
         <!-- NuGet Package Metadata -->
         <PackageId>Dameng.Protobuf.Extension</PackageId>
-        <Title>Dameng.SepEx - High Performance CSV Source Generator</Title>
-        <Description>A high-performance source generator for working with separated values (CSV/TSV) files in C#. Extends the Sep library with compile-time code generation for strongly-typed CSV operations.</Description>
-        <PackageTags>csv;tsv;separated-values;source-generator;performance;codegen</PackageTags>
+        <Title>Dameng.Protobuf.Extension - Generic Protobuf Deserialization</Title>
+        <Description>A .NET library that enables generic protobuf deserialization by providing an interface and source generator for Google.Protobuf generated classes. Allows writing type-safe generic methods for protobuf message parsing.</Description>
+        <PackageTags>protobuf;google-protobuf;source-generator;generic;deserialization;codegen</PackageTags>
         <Authors>dameng324</Authors>
         <Copyright>Copyright (c) 2025 dameng324</Copyright>
-        <PackageProjectUrl>https://github.com/dameng324/Dameng.SepEx</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/dameng324/Dameng.SepEx.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/dameng324/Dameng.Protobuf.Extension</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dameng324/Dameng.Protobuf.Extension.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <RepositoryBranch>main</RepositoryBranch>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -28,8 +28,7 @@
     </ItemGroup>
 
     <ItemGroup> 
-        <PackageReference Include="Google.Protobuf" Version="3.32.0" /> 
-        <PackageReference Include="Sep" Version="0.11.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.32.0" />
     </ItemGroup>
 
 </Project>
