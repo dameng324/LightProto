@@ -22,4 +22,8 @@ public class Tests
         var parsedJson = JsonFormatter.Default.Format(parsed);
         originalJson.Should().Be(parsedJson);
     }
+    T Deserialize<T>(byte[] bytes) where T : IPbMessageParser<T>, IMessage<T>
+    {
+        return T.Parser.ParseFrom(bytes);
+    }
 }
