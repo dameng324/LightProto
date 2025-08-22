@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Dameng.SepEx.Generator;
+namespace Dameng.Protobuf.Extension.Generator;
 
 [Generator]
 public class PbMessageParserGenerator : ISourceGenerator

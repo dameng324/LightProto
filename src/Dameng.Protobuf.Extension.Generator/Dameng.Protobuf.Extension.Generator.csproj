@@ -28,7 +28,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Version>1.0.0</Version>
-        <RootNamespace>Dameng.SepEx.Generator</RootNamespace>
+        <RootNamespace>Dameng.Protobuf.Extension.Generator</RootNamespace>
     </PropertyGroup>
     
     <ItemGroup>
