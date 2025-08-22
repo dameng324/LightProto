@@ -15,13 +15,13 @@
 
         <!-- NuGet Package Metadata -->
         <PackageId>Dameng.Protobuf.Extension.Generator</PackageId>
-        <Title>Dameng.SepEx Source Generator</Title>
-        <Description>Source generator for Dameng.SepEx that provides compile-time code generation for strongly-typed CSV operations. This is a development dependency that generates type-safe CSV readers and writers.</Description>
-        <PackageTags>csv;tsv;separated-values;source-generator;roslyn;analyzer;codegen</PackageTags>
+        <Title>Dameng.Protobuf.Extension Source Generator</Title>
+        <Description>Source generator for Dameng.Protobuf.Extension that provides compile-time code generation for generic protobuf deserialization. This is a development dependency that automatically implements the IPbMessageParser interface on protobuf generated classes.</Description>
+        <PackageTags>protobuf;google-protobuf;source-generator;roslyn;analyzer;codegen;generic</PackageTags>
         <Authors>dameng324</Authors>
         <Copyright>Copyright (c) 2025 dameng324</Copyright>
-        <PackageProjectUrl>https://github.com/dameng324/Dameng.SepEx</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/dameng324/Dameng.SepEx.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/dameng324/Dameng.Protobuf.Extension</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dameng324/Dameng.Protobuf.Extension.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <RepositoryBranch>main</RepositoryBranch>
         <PackageReadmeFile>README.md</PackageReadmeFile>
