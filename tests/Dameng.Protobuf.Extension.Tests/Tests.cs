@@ -13,7 +13,7 @@ public class Tests
         Run(new SubscribeRequest(){ Parameter = Guid.NewGuid().ToString()});
     }
 
-    void Run<T>(T obj) where T : IPbMessageParser<T>, IMessage<T>
+    void Run<T>(T obj) where T : IPbMessageParser<T>
     {
         var bytes = obj.ToByteArray();
         var parsed = T.Parser.ParseFrom(bytes);
@@ -22,7 +22,7 @@ public class Tests
         var parsedJson = JsonFormatter.Default.Format(parsed);
         originalJson.Should().Be(parsedJson);
     }
-    T Deserialize<T>(byte[] bytes) where T : IPbMessageParser<T>, IMessage<T>
+    T Deserialize<T>(byte[] bytes) where T : IPbMessageParser<T>
     {
         return T.Parser.ParseFrom(bytes);
     }
