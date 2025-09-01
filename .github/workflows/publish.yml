@@ -54,12 +54,6 @@ jobs:
             --output ./packages \
             -p:Version=$VERSION
 
-          dotnet pack src/Dameng.Protobuf.Extension.Generator/Dameng.Protobuf.Extension.Generator.csproj \
-            --configuration Release \
-            --no-build \
-            --output ./packages \
-            -p:Version=$VERSION
-
       - name: Publish to NuGet
         run: |
           dotnet nuget push ./packages/*.nupkg \

@@ -13,6 +13,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dameng.Protobuf.Extension.Tests", "tests\Dameng.Protobuf.Extension.Tests\Dameng.Protobuf.Extension.Tests.csproj", "{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{1FFD603F-59F2-43F3-99B7-B441F835BE39}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+		.github\workflows\publish.yml = .github\workflows\publish.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dameng.Protobuf.Extension.Demo", "tests\Dameng.Protobuf.Extension.Demo\Dameng.Protobuf.Extension.Demo.csproj", "{DC521034-5E5B-40EE-8A25-CC631F85CA81}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +67,18 @@ Global
 		{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410}.Release|x64.Build.0 = Release|Any CPU
 		{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410}.Release|x86.ActiveCfg = Release|Any CPU
 		{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410}.Release|x86.Build.0 = Release|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Debug|x64.Build.0 = Debug|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Release|x64.ActiveCfg = Release|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Release|x64.Build.0 = Release|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,5 +87,6 @@ Global
 		{183C0FB1-21E4-4C46-9807-BC25D565799A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{CEE8ED66-D8F4-445F-82A9-4DAC32327E15} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{DC521034-5E5B-40EE-8A25-CC631F85CA81} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
