@@ -23,12 +23,12 @@ jobs:
         run: dotnet restore
 
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore tests/Dameng.Protobuf.Extension.Tests/
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Extension.Tests/
 
       - name: Test package creation
         run: |
           dotnet pack --configuration Release --no-build \
-            --output ./test-packages
+            --output ./test-packages src/Dameng.Protobuf.Extension/

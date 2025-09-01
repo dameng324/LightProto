@@ -8,17 +8,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Dameng.Protobuf.Extension" Version="999.999.999-localbuild" />
+        <PackageReference Include="Dameng.Protobuf.Extension" Version="999.999.999-localbuild"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Protobuf Include="channel.proto">
-        <GrpcServices>Client</GrpcServices>
-        <Access>Public</Access>
-        <ProtoCompile>True</ProtoCompile>
-        <CompileOutputs>True</CompileOutputs>
-        <Generator>MSBuild:PreCompile</Generator>
-      </Protobuf>
+        <Protobuf Include="channel.proto">
+            <GrpcServices>Client</GrpcServices>
+            <Access>Public</Access>
+            <ProtoCompile>True</ProtoCompile>
+            <CompileOutputs>True</CompileOutputs>
+            <Generator>MSBuild:PreCompile</Generator>
+        </Protobuf>
+        <PackageReference Include="Grpc.Tools" Version="2.72.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>

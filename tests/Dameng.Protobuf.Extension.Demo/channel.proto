@@ -1,5 +1,5 @@
 ﻿syntax = "proto3";
-option csharp_namespace = "SGD.EasyTcp.Test";
+option csharp_namespace = "TestPackage";
 message Request
 {
   string  Message = 1;
