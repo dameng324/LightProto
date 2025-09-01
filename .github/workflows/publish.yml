@@ -27,7 +27,7 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore  tests/Dameng.Protobuf.Extension.Tests/
 
       - name: Build solution
         run: dotnet build --configuration Release --no-restore tests/Dameng.Protobuf.Extension.Tests/
