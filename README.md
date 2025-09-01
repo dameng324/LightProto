@@ -21,11 +21,10 @@ This library is specifically designed for **NativeAOT compatibility**, making it
 
 ## Installation
 
-Install both packages from NuGet:
+Install packages from NuGet:
 
 ```bash
 dotnet add package Dameng.Protobuf.Extension
-dotnet add package Dameng.Protobuf.Extension.Generator
 ```
 
 ## Migration & Usage
@@ -34,9 +33,7 @@ dotnet add package Dameng.Protobuf.Extension.Generator
 
 Add the required packages:
 ```bash
-dotnet add package Google.Protobuf
 dotnet add package Dameng.Protobuf.Extension
-dotnet add package Dameng.Protobuf.Extension.Generator
 ```
 
 Configure your `.csproj` with protobuf files:
