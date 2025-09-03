@@ -21,12 +21,7 @@ namespace Dameng.Protobuf.Extension.Tests
         private static readonly MessageParser<CsTestMessage> _parser = new MessageParser<CsTestMessage>(() => new CsTestMessage());
         public static MessageParser<CsTestMessage> Parser { get { return _parser; } }
         
-        private static MessageDescriptor _descriptor = new MessageDescriptor(
-            "CsTestMessage", 
-            typeof(CsTestMessage),
-            null, null, null, null, null);
-        
-        public static MessageDescriptor Descriptor => _descriptor;
+        public static MessageDescriptor Descriptor => throw new NotImplementedException("Descriptor not yet implemented");
         MessageDescriptor IMessage.Descriptor => Descriptor;
         
         private UnknownFieldSet _unknownFields;
@@ -201,7 +196,7 @@ namespace Dameng.Protobuf.Extension.Tests
         
         public override string ToString()
         {
-            return JsonFormatter.ToDiagnosticString(this);
+            return $"CsTestMessage with {GetType().Name}";
         }
         
         // Basic serialization - for now, delegate to a simple conversion
