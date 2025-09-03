@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 
 [ProtoContract]
-public partial class CsTestMessage
+public class CsTestMessage
 {
     [ProtoMember(1)] public string? StringField { get; set; }
 
@@ -13,10 +13,10 @@ public partial class CsTestMessage
     public int Int32Field { get; set; }
 
     [ProtoMember(3)]
-    public IList<int> Int32ArrayField { get; set; } = new List<int>();
+    public IList<int> Int32ArrayField { get; set; } = new();
 
     [ProtoMember(4)]
-    public IList<string> StringArrayField { get; set; } = new List<string>();
+    public IList<string> StringArrayField { get; set; } = new();
 
     [ProtoMember(5)]
     public byte[]? BytesField { get; set; }
@@ -64,7 +64,7 @@ public partial class CsTestMessage
     public CsTestEnum EnumField { get; set; }
 
     [ProtoMember(20)]
-    public IList<CsTestEnum> EnumArrayField { get; set; } = new List<CsTestEnum>(); 
+    public IList<CsTestEnum> EnumArrayField { get; set; } = new List<CsTestEnum>();
 
     [ProtoMember(21)]
     public CsTestMessage? NestedMessageField { get; set; }
@@ -94,9 +94,9 @@ public partial class CsTestMessage
     [ProtoMember(28)]
     public TimeSpan DurationField { get; set; }
     [ProtoMember(29)]
-    public Dictionary<string, string> MapField2 { get; set; } = new Dictionary<string, string>();
+    public Dictionary<string, string> MapField2 { get; set; } 
     [ProtoMember(30)]
-    public ConcurrentDictionary<string, string> MapField3 { get; set; } = new ConcurrentDictionary<string, string>(); 
+    public ConcurrentDictionary<string, string> MapField3 { get; set; } 
 }
 
 [ProtoContract]
