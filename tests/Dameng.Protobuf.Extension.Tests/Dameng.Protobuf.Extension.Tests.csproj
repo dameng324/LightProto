@@ -4,6 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
+        <LangVersion>preview</LangVersion>
         <TargetFramework>net8.0</TargetFramework>
         <RootNamespace>Dameng.Protobuf.Extension.Tests</RootNamespace>
     </PropertyGroup>
@@ -23,7 +24,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="obj/$(Configuration)/$(TargetFramework)/protobuf/**/*.cs" />
-        <ProtoBuf Include="channel.proto">
+        <ProtoBuf Include="package.proto">
             <GrpcServices>Client</GrpcServices>
             <Generator>MSBuild:PreCompile</Generator>
         </ProtoBuf>

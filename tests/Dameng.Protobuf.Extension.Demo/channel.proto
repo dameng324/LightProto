@@ -4,22 +4,3 @@ message Request
 {
   string  Message = 1;
 }
-message Response
-{
-  string  Message = 1;
-}
-
-
-message SubscribeRequest
-{
-  string Parameter = 1;
-}
-message SubscribeResponse
-{
-  string Body = 1;
-}
-
-message DataNotice
-{
-  string Message = 1;
-}

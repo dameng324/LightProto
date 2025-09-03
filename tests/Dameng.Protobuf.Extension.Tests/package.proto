@@ -1,0 +1,51 @@
+﻿syntax = "proto3";
+option csharp_namespace = "TestPackage";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+enum TestEnum
+{
+  None = 0;
+  OptionA = 1;
+  OptionB = 2;
+}
+
+message TestMessage
+{
+  string StringField = 1;
+  int32 Int32Field= 2;
+  repeated int32 Int32ArrayField = 3;
+  repeated string StringArrayField = 4;
+  bytes BytesField = 5;
+  bool BoolField = 6;
+  double DoubleField = 7;
+  float FloatField = 8;
+  int64 Int64Field = 9;
+  uint32 UInt32Field = 10;
+  uint64 UInt64Field = 11;
+  sint32 SInt32Field = 12;
+  sint64 SInt64Field = 13;
+  fixed32 Fixed32Field = 14;
+  fixed64 Fixed64Field = 15;
+  sfixed32 SFixed32Field = 16;
+  sfixed64 SFixed64Field = 17;  
+  map<string, string> MapField = 18;
+  TestEnum EnumField = 19;
+  repeated TestEnum EnumArrayField = 20;
+  TestMessage NestedMessageField = 21;
+  repeated TestMessage NestedMessageArrayField = 22;
+  oneof OneofField
+  {
+    string OneofStringField = 23;
+    int32 OneofInt32Field = 24;
+  }
+  oneof OneofNestedMessageField
+  {
+    TestMessage OneofNestedMessage1 = 25;
+    TestMessage OneofNestedMessage2 = 26;
+  }
+  google.protobuf.Timestamp TimestampField = 27;
+  google.protobuf.Duration DurationField = 28;
+  map<string, string> MapField2 = 29;
+  map<string, string> MapField3 = 30;
+}

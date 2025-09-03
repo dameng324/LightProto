@@ -20,3 +20,5 @@ byte[] Serialize<T>(T t) where T : IPbMessageParser<T>
 {
     return t.ToByteArray();
 }
+
+
