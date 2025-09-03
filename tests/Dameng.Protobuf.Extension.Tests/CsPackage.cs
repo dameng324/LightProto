@@ -7,96 +7,96 @@ using System.Collections.Generic;
 [ProtoContract]
 public partial class CsTestMessage
 {
-    [ProtoMember(1)] public partial string? StringField { get; set; }
+    [ProtoMember(1)] public string? StringField { get; set; }
 
     [ProtoMember(2)]
-    public partial int Int32Field { get; set; }
+    public int Int32Field { get; set; }
 
     [ProtoMember(3)]
-    public partial IList<int> Int32ArrayField { get; set; } = new();
+    public IList<int> Int32ArrayField { get; set; } = new List<int>();
 
     [ProtoMember(4)]
-    public partial IList<string> StringArrayField { get; set; } = new();
+    public IList<string> StringArrayField { get; set; } = new List<string>();
 
     [ProtoMember(5)]
-    public partial byte[]? BytesField { get; set; }
+    public byte[]? BytesField { get; set; }
 
     [ProtoMember(6)]
-    public partial bool BoolField { get; set; }
+    public bool BoolField { get; set; }
 
     [ProtoMember(7)]
-    public partial double DoubleField { get; set; }
+    public double DoubleField { get; set; }
 
     [ProtoMember(8)]
-    public partial float FloatField { get; set; }
+    public float FloatField { get; set; }
 
     [ProtoMember(9)]
-    public partial long Int64Field { get; set; }
+    public long Int64Field { get; set; }
 
     [ProtoMember(10)]
-    public partial uint UInt32Field { get; set; }
+    public uint UInt32Field { get; set; }
 
     [ProtoMember(11)]
-    public partial ulong UInt64Field { get; set; }
+    public ulong UInt64Field { get; set; }
 
     [ProtoMember(12)]
-    public partial int SInt32Field { get; set; }
+    public int SInt32Field { get; set; }
 
     [ProtoMember(13)]
-    public partial long SInt64Field { get; set; }
+    public long SInt64Field { get; set; }
 
     [ProtoMember(14)]
-    public partial uint Fixed32Field { get; set; }
+    public uint Fixed32Field { get; set; }
 
     [ProtoMember(15)]
-    public partial ulong Fixed64Field { get; set; }
+    public ulong Fixed64Field { get; set; }
 
     [ProtoMember(16)]
-    public partial int SFixed32Field { get; set; }
+    public int SFixed32Field { get; set; }
 
     [ProtoMember(17)]
-    public partial long SFixed64Field { get; set; }
+    public long SFixed64Field { get; set; }
 
     [ProtoMember(18)]
-    public partial IDictionary<string, string> MapField { get; set; } 
+    public IDictionary<string, string> MapField { get; set; } = new Dictionary<string, string>();
 
     [ProtoMember(19)]
-    public partial CsTestEnum EnumField { get; set; }
+    public CsTestEnum EnumField { get; set; }
 
     [ProtoMember(20)]
-    public partial IList<CsTestEnum> EnumArrayField { get; set; } 
+    public IList<CsTestEnum> EnumArrayField { get; set; } = new List<CsTestEnum>(); 
 
     [ProtoMember(21)]
-    public partial CsTestMessage? NestedMessageField { get; set; }
+    public CsTestMessage? NestedMessageField { get; set; }
 
     [ProtoMember(22)]
-    public partial IList<CsTestMessage>? NestedMessageArrayField { get; set; } 
+    public IList<CsTestMessage>? NestedMessageArrayField { get; set; } = new List<CsTestMessage>(); 
 
     // oneof OneofField
     [ProtoMember(23)]
-    public partial string? OneofStringField { get; set; }
+    public string? OneofStringField { get; set; }
 
     [ProtoMember(24)]
-    public partial int? OneofInt32Field { get; set; }
+    public int? OneofInt32Field { get; set; }
 
     // oneof OneofNestedMessageField
     [ProtoMember(25)]
-    public partial CsTestMessage? OneofNestedMessage1 { get; set; }
+    public CsTestMessage? OneofNestedMessage1 { get; set; }
 
     [ProtoMember(26)]
-    public partial CsTestMessage? OneofNestedMessage2 { get; set; }
+    public CsTestMessage? OneofNestedMessage2 { get; set; }
 
     // google.protobuf.Timestamp
     [ProtoMember(27)]
-    public partial DateTime TimestampField { get; set; }
+    public DateTime TimestampField { get; set; }
 
     // google.protobuf.Duration
     [ProtoMember(28)]
-    public partial TimeSpan DurationField { get; set; }
+    public TimeSpan DurationField { get; set; }
     [ProtoMember(29)]
-    public partial Dictionary<string, string> MapField2 { get; set; } 
+    public Dictionary<string, string> MapField2 { get; set; } = new Dictionary<string, string>();
     [ProtoMember(30)]
-    public partial ConcurrentDictionary<string, string> MapField3 { get; set; } 
+    public ConcurrentDictionary<string, string> MapField3 { get; set; } = new ConcurrentDictionary<string, string>(); 
 }
 
 [ProtoContract]
