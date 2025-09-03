@@ -13,10 +13,10 @@ public class CsTestMessage
     public int Int32Field { get; set; }
 
     [ProtoMember(3)]
-    public IList<int> Int32ArrayField { get; set; } = new();
+    public IList<int> Int32ArrayField { get; set; } = new List<int>();
 
     [ProtoMember(4)]
-    public IList<string> StringArrayField { get; set; } = new();
+    public IList<string> StringArrayField { get; set; } = new List<string>();
 
     [ProtoMember(5)]
     public byte[]? BytesField { get; set; }
@@ -94,9 +94,9 @@ public class CsTestMessage
     [ProtoMember(28)]
     public TimeSpan DurationField { get; set; }
     [ProtoMember(29)]
-    public Dictionary<string, string> MapField2 { get; set; } 
+    public Dictionary<string, string> MapField2 { get; set; } = new Dictionary<string, string>();
     [ProtoMember(30)]
-    public ConcurrentDictionary<string, string> MapField3 { get; set; } 
+    public ConcurrentDictionary<string, string> MapField3 { get; set; } = new ConcurrentDictionary<string, string>(); 
 }
 
 [ProtoContract]
