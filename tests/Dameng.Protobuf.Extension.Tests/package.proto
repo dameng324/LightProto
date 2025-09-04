@@ -38,4 +38,23 @@ message TestMessage
   google.protobuf.Duration DurationField = 28;
   map<string, string> MapField2 = 29;
   map<string, string> MapField3 = 30;
+  bool BoolField31 = 31;
+  bool BoolField32 = 32;
+  bool BoolField33 = 33;
+  bool BoolField34 = 34;
+  bool BoolField35 = 35;
+  bool BoolField36 = 36;
+  bool BoolField37 = 37;
+  bool BoolField38 = 38;
+  bool BoolField39 = 39;
+  bool BoolField41 = 41;
+  bool BoolField42 = 42;
+  bool BoolField43 = 43;
+  bool BoolField44 = 44;
+  bool BoolField45 = 45;
+  bool BoolField46 = 46;
+  bool BoolField47 = 47;
+  bool BoolField48 = 48;
+  bool BoolField49 = 49;
+  map<sfixed32, sint64> MapField4 = 50;
 }

@@ -44,22 +44,22 @@ public partial class CsTestMessage
     [ProtoMember(11)]
     public ulong UInt64Field { get; set; }
 
-    [ProtoMember(12)]
+    [ProtoMember(12,DataFormat = DataFormat.ZigZag)]
     public int SInt32Field { get; set; }
 
-    [ProtoMember(13)]
+    [ProtoMember(13,DataFormat = DataFormat.ZigZag)]
     public long SInt64Field { get; set; }
 
-    [ProtoMember(14)]
+    [ProtoMember(14,DataFormat = DataFormat.FixedSize)]
     public uint Fixed32Field { get; set; }
 
-    [ProtoMember(15)]
+    [ProtoMember(15,DataFormat = DataFormat.FixedSize)]
     public ulong Fixed64Field { get; set; }
 
-    [ProtoMember(16)]
+    [ProtoMember(16,DataFormat = DataFormat.FixedSize)]
     public int SFixed32Field { get; set; }
 
-    [ProtoMember(17)]
+    [ProtoMember(17,DataFormat = DataFormat.FixedSize)]
     public long SFixed64Field { get; set; }
 
     [ProtoMember(18)]
@@ -90,6 +90,26 @@ public partial class CsTestMessage
 
     [ProtoMember(30)]
     public MapField<string, string> MapField3 { get; set; }
+    
+    [ProtoMember(31)] public bool BoolField31 { get; set; }
+    [ProtoMember(32)] public bool BoolField32 { get; set; }
+    [ProtoMember(33)] public bool BoolField33 { get; set; }
+    [ProtoMember(34)] public bool BoolField34 { get; set; }
+    [ProtoMember(35)] public bool BoolField35 { get; set; }
+    [ProtoMember(36)] public bool BoolField36 { get; set; }
+    [ProtoMember(37)] public bool BoolField37 { get; set; }
+    [ProtoMember(38)] public bool BoolField38 { get; set; }
+    [ProtoMember(39)] public bool BoolField39 { get; set; }
+    [ProtoMember(41)] public bool BoolField41 { get; set; }
+    [ProtoMember(42)] public bool BoolField42 { get; set; }
+    [ProtoMember(43)] public bool BoolField43 { get; set; }
+    [ProtoMember(44)] public bool BoolField44 { get; set; }
+    [ProtoMember(45)] public bool BoolField45 { get; set; }
+    [ProtoMember(46)] public bool BoolField46 { get; set; }
+    [ProtoMember(47)] public bool BoolField47 { get; set; }
+    [ProtoMember(48)] public bool BoolField48 { get; set; }
+    [ProtoMember(49)] public bool BoolField49 { get; set; }
+    [ProtoMember(50)][ProtoMap(KeyFormat = DataFormat.FixedSize,ValueFormat = DataFormat.ZigZag)] public MapField<int,long> MapField4 { get; set; } 
 }
 
 [ProtoContract]

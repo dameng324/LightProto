@@ -68,6 +68,10 @@ public class Tests
                     ["key1"] = "value1",
                     ["key2"] = "value2",
                 },
+                MapField4 = new MapField<int, long>()
+                {
+                    [1111] = 2222,
+                }
             }
         );
     }
@@ -118,6 +122,7 @@ public class Tests
         testMessage.MapField2["key2"] = "value2";
         testMessage.MapField3["key1"] = "value1";
         testMessage.MapField3["key2"] = "value2";
+        testMessage.MapField4[1111] = 2222;
 
         Run<TestMessage, CsTestMessage>(testMessage);
     }
