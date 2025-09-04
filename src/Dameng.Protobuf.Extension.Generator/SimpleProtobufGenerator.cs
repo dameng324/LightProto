@@ -84,26 +84,20 @@ public class SimpleProtobufGenerator : ISourceGenerator
         var protoMembers = GetProtoMembers(targetType);
         var hasRequiredMembers = protoMembers.Any(m => m.IsRequired);
 
-        var requiredPropertyInitializers = protoMembers
-            .Where(m => m.IsRequired)
-            .Select(member => {
-                if (member.Type.SpecialType == SpecialType.System_String)
-                    return $"{member.Name} = string.Empty";
-                if (member.Type.IsValueType)
-                    return $"{member.Name} = default({member.Type.ToDisplayString()})";
-                return $"{member.Name} = null";
-            })
-            .ToList();
-
-        var parserInitializer = requiredPropertyInitializers.Count > 0 
-            ? $"new {{className}}() {{ {string.Join(", ", requiredPropertyInitializers)} }}"
-            : $"new {{className}}()";
+        // Force object initializer for testing - timestamp: 11:45
+        var parserInitializer = $"new {className}() {{ {string.Join(", ", protoMembers.Take(2).Select(member => {
+            if (member.Type.SpecialType == SpecialType.System_String)
+                return $"{member.Name} = string.Empty";
+            if (member.Type.IsValueType)
+                return $"{member.Name} = default({member.Type.ToDisplayString()})";
+            return $"{member.Name} = null";
+        }))} }}";
 
         sourceBuilder.AppendLine(
             $$"""
               {
                   private pb::UnknownFieldSet _unknownFields;
-                  public static pb::MessageParser<{{className}}> Parser { get ; }=new pb::MessageParser<{{className}}>(() => {{parserInitializer}});
+                  public static pb::MessageParser<{{className}}> Parser { get ; }=new pb::MessageParser<{{className}}>(() => {{{parserInitializer}}});
                   pbr::MessageDescriptor pb::IMessage.Descriptor => null;
 
                   public {{className}}() 
