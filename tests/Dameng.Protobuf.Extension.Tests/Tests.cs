@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using AwesomeAssertions;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
@@ -58,22 +59,32 @@ public class Tests
                 ],
                 TimestampField = DateTime.UtcNow.ToTimestamp(),
                 DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
-                MapField2 = new MapField<string, string>()
+                MapField2 = new()
                 {
-                    ["key1"] = "value1",
-                    ["key2"] = "value2",
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
                 },
-                MapField3 = new MapField<string, string>()
+                MapField3 = new()
                 {
-                    ["key1"] = "value1",
-                    ["key2"] = "value2",
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
                 },
                 MapField4 = new MapField<int, long>() { [1111] = 2222 },
                 DateTimeField = DateTime.UtcNow,
                 IntArrayFieldTest = [10, 20, 30],
                 StringListFieldTest = ["array", "list", "test"],
                 StringArrayFieldTest = ["hello", "world"],
-                IntListFieldTest = [100, 200, 300]
+                IntListFieldTest = [100, 200, 300],
+                MapField5 = new Dictionary<string, string>()
+                {
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
+                },
+                MapField6 = new ConcurrentDictionary<string, string>()
+                {
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
+                },
             }
         );
         parsed.NullableIntField.Should().Be(0);
@@ -127,7 +138,7 @@ public class Tests
         testMessage.MapField3["key1"] = "value1";
         testMessage.MapField3["key2"] = "value2";
         testMessage.MapField4[1111] = 2222;
-        
+
         // Add array/list test data
         testMessage.IntArrayFieldTest.AddRange([10, 20, 30]);
         testMessage.StringListFieldTest.AddRange(["array", "list", "test"]);

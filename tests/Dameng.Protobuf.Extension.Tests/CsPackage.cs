@@ -84,10 +84,10 @@ public partial class CsTestMessage
     public Duration DurationField { get; set; }
 
     [ProtoMember(29)]
-    public MapField<string, string> MapField2 { get; set; }
+    public Dictionary<string, string> MapField2 { get; set; }
 
     [ProtoMember(30)]
-    public MapField<string, string> MapField3 { get; set; }
+    public ConcurrentDictionary<string, string> MapField3 { get; set; }
     
     [ProtoMember(31)] public bool BoolField31 { get; set; }
     [ProtoMember(32)] public bool BoolField32 { get; set; }
@@ -115,6 +115,11 @@ public partial class CsTestMessage
     [ProtoMember(54)] public List<string> StringListFieldTest { get; set; }
     [ProtoMember(55)] public string[] StringArrayFieldTest { get; set; }
     [ProtoMember(56)] public List<int> IntListFieldTest { get; set; }
+
+    [ProtoMember(57)]
+    public IDictionary<string, string> MapField5 { get; set; }
+    [ProtoMember(58)]
+    public IReadOnlyDictionary<string, string> MapField6 { get; set; }
 }
 
 [ProtoContract]
