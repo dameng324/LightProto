@@ -16,6 +16,7 @@ public class Tests
         var parsed = Run<CsTestMessage, TestMessage>(
             new CsTestMessage
             {
+                RequiredIntField = RandomInt(),
                 StringField = RandomString(),
                 Int32Field = RandomInt(),
                 Int32ArrayField = Enumerable
@@ -51,11 +52,11 @@ public class Tests
                 },
                 EnumField = CsTestEnum.None,
                 EnumArrayField = [CsTestEnum.None, CsTestEnum.OptionA],
-                NestedMessageField = new CsTestMessage() { StringField = RandomString() },
+                NestedMessageField = new CsTestMessage() {RequiredIntField = RandomInt(),StringField = RandomString() },
                 NestedMessageArrayField =
                 [
-                    new CsTestMessage() { StringField = RandomString() },
-                    new CsTestMessage() { StringField = RandomString() },
+                    new CsTestMessage() {RequiredIntField = RandomInt(), StringField = RandomString() },
+                    new CsTestMessage() { RequiredIntField = RandomInt(),StringField = RandomString() },
                 ],
                 TimestampField = DateTime.UtcNow.ToTimestamp(),
                 DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),

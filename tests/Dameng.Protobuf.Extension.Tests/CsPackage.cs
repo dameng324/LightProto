@@ -120,6 +120,8 @@ public partial class CsTestMessage
     public IDictionary<string, string> MapField5 { get; set; }
     [ProtoMember(58)]
     public IReadOnlyDictionary<string, string> MapField6 { get; set; }
+    [ProtoMember(59)]
+    public required int RequiredIntField { get; set; }
 }
 
 [ProtoContract]
