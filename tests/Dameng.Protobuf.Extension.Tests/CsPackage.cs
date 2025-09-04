@@ -108,6 +108,11 @@ public partial class CsTestMessage
     [ProtoMember(50)][ProtoMap(KeyFormat = DataFormat.FixedSize,ValueFormat = DataFormat.ZigZag)] public MapField<int,long> MapField4 { get; set; }
     [ProtoMember(51)] public DateTime DateTimeField { get; set; }
     [ProtoMember(52)] public int? NullableIntField { get; set; }
+    
+    [ProtoMember(53)] public int[] IntArrayFieldTest { get; set; }
+    [ProtoMember(54)] public List<string> StringListFieldTest { get; set; }
+    [ProtoMember(55)] public string[] StringArrayFieldTest { get; set; }
+    [ProtoMember(56)] public List<int> IntListFieldTest { get; set; }
 }
 
 [ProtoContract]
