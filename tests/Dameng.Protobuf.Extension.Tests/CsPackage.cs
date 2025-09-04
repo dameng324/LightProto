@@ -123,6 +123,19 @@ public partial class CsTestMessage
 }
 
 [ProtoContract]
+public partial class CsTestMessageWithRequired
+{
+    [ProtoMember(1)]
+    public required int RequiredIntField { get; set; }
+    
+    [ProtoMember(2)]
+    public required string RequiredStringField { get; set; }
+    
+    [ProtoMember(3)]
+    public int OptionalIntField { get; set; }
+}
+
+[ProtoContract]
 public enum CsTestEnum
 {
     None = 0,
