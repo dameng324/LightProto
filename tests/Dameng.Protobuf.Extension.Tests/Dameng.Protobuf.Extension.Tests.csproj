@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
         <LangVersion>preview</LangVersion>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RootNamespace>Dameng.Protobuf.Extension.Tests</RootNamespace>
     </PropertyGroup>
 
@@ -32,5 +32,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <Compile Remove="CsTestMessage.Manual.cs" />
     </ItemGroup>
 </Project>

@@ -1,25 +1,30 @@
 ﻿using System.Collections.Concurrent;
+using Google.Protobuf;
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Dameng.Protobuf.Extension.Tests;
+
 using System;
 using System.Collections.Generic;
 
 [ProtoContract]
 public partial class CsTestMessage
 {
-    [ProtoMember(1)] public string? StringField { get; set; }
+    [ProtoMember(1)]
+    public string StringField { get; set; }
 
     [ProtoMember(2)]
     public int Int32Field { get; set; }
 
     [ProtoMember(3)]
-    public IList<int> Int32ArrayField { get; set; } = new List<int>();
+    public RepeatedField<int> Int32ArrayField { get; set; }
 
     [ProtoMember(4)]
-    public IList<string> StringArrayField { get; set; } = new List<string>();
+    public RepeatedField<string> StringArrayField { get; set; }
 
     [ProtoMember(5)]
-    public byte[]? BytesField { get; set; }
+    public ByteString BytesField { get; set; }
 
     [ProtoMember(6)]
     public bool BoolField { get; set; }
@@ -58,45 +63,33 @@ public partial class CsTestMessage
     public long SFixed64Field { get; set; }
 
     [ProtoMember(18)]
-    public IDictionary<string, string> MapField { get; set; } = new Dictionary<string, string>();
+    public MapField<string, string> MapField { get; set; }
 
     [ProtoMember(19)]
     public CsTestEnum EnumField { get; set; }
 
     [ProtoMember(20)]
-    public IList<CsTestEnum> EnumArrayField { get; set; } = new List<CsTestEnum>(); 
+    public RepeatedField<CsTestEnum> EnumArrayField { get; set; }
 
     [ProtoMember(21)]
-    public CsTestMessage? NestedMessageField { get; set; }
+    public CsTestMessage NestedMessageField { get; set; }
 
     [ProtoMember(22)]
-    public IList<CsTestMessage>? NestedMessageArrayField { get; set; } = new List<CsTestMessage>(); 
-
-    // oneof OneofField
-    [ProtoMember(23)]
-    public string? OneofStringField { get; set; }
-
-    [ProtoMember(24)]
-    public int? OneofInt32Field { get; set; }
-
-    // oneof OneofNestedMessageField
-    [ProtoMember(25)]
-    public CsTestMessage? OneofNestedMessage1 { get; set; }
-
-    [ProtoMember(26)]
-    public CsTestMessage? OneofNestedMessage2 { get; set; }
+    public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }
 
     // google.protobuf.Timestamp
     [ProtoMember(27)]
-    public DateTime TimestampField { get; set; }
+    public Timestamp TimestampField { get; set; }
 
     // google.protobuf.Duration
     [ProtoMember(28)]
-    public TimeSpan DurationField { get; set; }
+    public Duration DurationField { get; set; }
+
     [ProtoMember(29)]
-    public Dictionary<string, string> MapField2 { get; set; } = new Dictionary<string, string>();
+    public MapField<string, string> MapField2 { get; set; }
+
     [ProtoMember(30)]
-    public ConcurrentDictionary<string, string> MapField3 { get; set; } = new ConcurrentDictionary<string, string>(); 
+    public MapField<string, string> MapField3 { get; set; }
 }
 
 [ProtoContract]
@@ -104,5 +97,5 @@ public enum CsTestEnum
 {
     None = 0,
     OptionA = 1,
-    OptionB = 2
+    OptionB = 2,
 }

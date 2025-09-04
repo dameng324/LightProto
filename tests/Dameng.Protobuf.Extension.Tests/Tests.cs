@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using AwesomeAssertions;
 using Dameng.Protobuf.Extension;
 using Google.Protobuf;
@@ -11,25 +12,25 @@ namespace Dameng.Protobuf.Extension.Tests;
 public class Tests
 {
     [Test]
-    public void Test()
+    public void LocalToGoogle()
     {
-        Run<CsTestMessage,TestMessage>(
+        Run<CsTestMessage, TestMessage>(
             new CsTestMessage
             {
                 StringField = RandomString(),
                 Int32Field = RandomInt(),
                 Int32ArrayField = Enumerable
                     .Range(0, Random.Shared.Next(10))
-                    .Select(_ => RandomInt())
-                    .ToArray(),
+                    .Select(_ => RandomInt()).ToRepeatedField(),
                 StringArrayField = Enumerable
                     .Range(0, Random.Shared.Next(10))
                     .Select(_ => RandomString()!)
-                    .ToArray(),
+                    .ToRepeatedField(),
                 BytesField = Enumerable
                     .Range(0, Random.Shared.Next(10))
                     .Select(_ => (byte)RandomInt())
-                    .ToArray(),
+                    .ToArray()
+                    .ToByteString(),
                 BoolField = Random.Shared.Next() % 2 == 0,
                 DoubleField = Random.Shared.NextDouble(),
                 FloatField = (float)Random.Shared.NextDouble(),
@@ -42,7 +43,7 @@ public class Tests
                 Fixed64Field = (ulong)Random.Shared.Next(),
                 SFixed32Field = Random.Shared.Next(),
                 SFixed64Field = Random.Shared.Next(),
-                MapField = new Dictionary<string, string>()
+                MapField = new MapField<string, string>()
                 {
                     ["key1"] = "value1",
                     ["key2"] = "value2",
@@ -55,24 +56,25 @@ public class Tests
                     new CsTestMessage() { StringField = RandomString() },
                     new CsTestMessage() { StringField = RandomString() },
                 ],
-                OneofStringField = "1111",
-                OneofInt32Field = null,
-                OneofNestedMessage1 = new CsTestMessage() { StringField = RandomString() },
-                OneofNestedMessage2 = null,
-                TimestampField = DateTime.Now,
-                DurationField = DateTime.Now.TimeOfDay,
-                MapField2 = new Dictionary<string, string>()
+                TimestampField = DateTime.UtcNow.ToTimestamp(),
+                DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
+                MapField2 = new MapField<string, string>()
                 {
                     ["key1"] = "value1",
                     ["key2"] = "value2",
                 },
-                MapField3 = new ConcurrentDictionary<string, string>()
+                MapField3 = new MapField<string, string>()
                 {
                     ["key1"] = "value1",
                     ["key2"] = "value2",
                 },
             }
         );
+    }
+
+    [Test]
+    public void GoogleToLocal()
+    {
         var testMessage = new TestMessage
         {
             StringField = RandomString(),
@@ -95,11 +97,10 @@ public class Tests
             SFixed64Field = Random.Shared.Next(),
             EnumField = (TestPackage.TestEnum)CsTestEnum.None,
             NestedMessageField = new TestPackage.TestMessage() { StringField = RandomString() },
-            OneofStringField = "1111",
             TimestampField = Timestamp.FromDateTime(DateTime.UtcNow),
             DurationField = Duration.FromTimeSpan(DateTime.Now.TimeOfDay)
         };
-        
+
         // Initialize collections after construction
         testMessage.Int32ArrayField.AddRange(Enumerable
             .Range(0, Random.Shared.Next(10))
@@ -109,16 +110,16 @@ public class Tests
             .Select(_ => RandomString()!));
         testMessage.MapField["key1"] = "value1";
         testMessage.MapField["key2"] = "value2";
-        testMessage.EnumArrayField.AddRange(new[] { (TestPackage.TestEnum)CsTestEnum.None, (TestPackage.TestEnum)CsTestEnum.OptionA });
+        testMessage.EnumArrayField.AddRange(new[]
+            { (TestPackage.TestEnum)CsTestEnum.None, (TestPackage.TestEnum)CsTestEnum.OptionA });
         testMessage.NestedMessageArrayField.Add(new TestPackage.TestMessage() { StringField = RandomString() });
         testMessage.NestedMessageArrayField.Add(new TestPackage.TestMessage() { StringField = RandomString() });
         testMessage.MapField2["key1"] = "value1";
         testMessage.MapField2["key2"] = "value2";
         testMessage.MapField3["key1"] = "value1";
         testMessage.MapField3["key2"] = "value2";
-        
-        Run<TestMessage,CsTestMessage>(testMessage);
-        
+
+        Run<TestMessage, CsTestMessage>(testMessage);
     }
 
     string RandomString()
@@ -147,16 +148,23 @@ public class Tests
     {
         var bytes = obj.ToByteArray();
         var parsed = T2.Parser.ParseFrom(bytes);
+        {
+            var json = JsonSerializer.Serialize(obj);
+            var json2 = JsonSerializer.Serialize(parsed);
+            json.Should().Be(json2);
+        }
+        // {
+        //     var json = JsonFormatter.Default.Format(obj);
+        //     var json2 = JsonFormatter.Default.Format(parsed);
+        //     json.Should().Be(json2);
+        // }
 
         // Compare the binary serialization instead of JSON for now
-        var originalBytes = obj.ToByteArray();
-        var parsedBytes = parsed.ToByteArray();
-        
+        var originalBytes = Convert.ToBase64String(obj.ToByteArray());
+        var parsedBytes = Convert.ToBase64String(parsed.ToByteArray());
+
         // For now, just check that parsing doesn't throw and produces a result
-        parsed.Should().NotBeNull();
-        
-        // TODO: Implement proper binary comparison once serialization is working
-        // originalBytes.Should().Be(parsedBytes);
+        originalBytes.Should().Be(parsedBytes);
     }
 
     T Deserialize<T>(byte[] bytes)

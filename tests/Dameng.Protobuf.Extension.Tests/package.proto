@@ -34,16 +34,6 @@ message TestMessage
   repeated TestEnum EnumArrayField = 20;
   TestMessage NestedMessageField = 21;
   repeated TestMessage NestedMessageArrayField = 22;
-  oneof OneofField
-  {
-    string OneofStringField = 23;
-    int32 OneofInt32Field = 24;
-  }
-  oneof OneofNestedMessageField
-  {
-    TestMessage OneofNestedMessage1 = 25;
-    TestMessage OneofNestedMessage2 = 26;
-  }
   google.protobuf.Timestamp TimestampField = 27;
   google.protobuf.Duration DurationField = 28;
   map<string, string> MapField2 = 29;

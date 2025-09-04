@@ -43,6 +43,12 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Include="..\Dameng.Protobuf.Extension\DataFormat.cs">
+        <Link>DataFormat.cs</Link>
+      </Compile>
+    </ItemGroup>
 
     <Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup">
         <ItemGroup>
