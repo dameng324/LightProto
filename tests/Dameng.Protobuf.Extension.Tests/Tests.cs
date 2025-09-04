@@ -191,12 +191,17 @@ public class Tests
     [Test]
     public void TestStruct()
     {
-        var struct1 = new TestStruct { Name = "Test", Value = 42 };
-        
-        var bytes = struct1.ToByteArray();
-        var parsed = TestStruct.Parser.ParseFrom(bytes);
-        parsed.Name.Should().Be("Test");
-        parsed.Value.Should().Be(42);
+        Run<TestStruct, TestType>(new TestStruct { Name = RandomString(), Value = RandomInt() });
+    }
+    [Test]
+    public void TestRecord()
+    {
+        Run<TestRecord, TestType>(new TestRecord { Name = RandomString(), Value = RandomInt() });
+    }
+    [Test]
+    public void TestRecordStruct()
+    {
+        Run<TestRecordStruct, TestType>(new TestRecordStruct { Name = RandomString(), Value = RandomInt() });
     }
 }
 

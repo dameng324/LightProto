@@ -67,3 +67,9 @@ message TestMessage
   map<string, string> MapField6 = 58;
   int32 RequiredIntField=59;
 }
+
+message TestType
+{
+  string Name = 1;
+  int32 Value = 2;
+}
