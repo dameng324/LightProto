@@ -188,10 +188,20 @@ public class Tests
         return parsed;
     }
 
-    T Deserialize<T>(byte[] bytes)
-        where T : IPbMessageParser<T>
+    [Test]
+    public void TestStruct()
     {
-        return T.Parser.ParseFrom(bytes);
+        Run<TestStruct, TestType>(new TestStruct { Name = RandomString(), Value = RandomInt() });
+    }
+    [Test]
+    public void TestRecord()
+    {
+        Run<TestRecord, TestType>(new TestRecord { Name = RandomString(), Value = RandomInt() });
+    }
+    [Test]
+    public void TestRecordStruct()
+    {
+        Run<TestRecordStruct, TestType>(new TestRecordStruct { Name = RandomString(), Value = RandomInt() });
     }
 }
 
