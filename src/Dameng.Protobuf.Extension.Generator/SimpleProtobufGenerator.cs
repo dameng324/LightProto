@@ -103,26 +103,26 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   [global::System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute]
                   public {{className}}() 
                   {
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           if (member.Type.SpecialType == SpecialType.System_String)
-                              return $"            {member.Name} = string.Empty;";
+                              return $"{member.Name} = string.Empty;";
                           if (IsNullableValueType(member.Type))
-                              return $"            {member.Name} = null;";
+                              return $"{member.Name} = null;";
                           if (IsArrayType(member.Type))
-                              return $"            {member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
+                              return $"{member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
                           if (IsListType(member.Type))
-                              return $"            {member.Name} = new {member.Type.ToDisplayString()}();";
+                              return $"{member.Name} = new {member.Type.ToDisplayString()}();";
                           if (IsDictionaryType(member.Type))
-                              return $"            {member.Name} = new {GetConcreteTypeName(member.Type)}();";
+                              return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
                           if (member.Type.IsValueType)
-                              return $"            {member.Name} = default({member.Type.ToDisplayString()});";
+                              return $"{member.Name} = default({member.Type.ToDisplayString()});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                              return $"            {member.Name} = new {member.Type.ToDisplayString()}();";
+                              return $"{member.Name} = new {member.Type.ToDisplayString()}();";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            {member.Name} = pb.ByteString.Empty;";
+                              return $"{member.Name} = pb.ByteString.Empty;";
 
-                          return $"           {member.Name} = null;";
+                          return $"{member.Name} = null;";
                       }))
                   }}
                       _unknownFields = null;
@@ -133,31 +133,31 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   [global::System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute]
                   public {{className}}({{className}} other)
                   {
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           if (member.Type.SpecialType == SpecialType.System_String)
-                              return $"            {member.Name} = other.{member.Name};";
+                              return $"{member.Name} = other.{member.Name};";
                           // FORCE SIMPLE ASSIGNMENT FOR ALL VALUE TYPES INCLUDING NULLABLE
                           if (member.Type.IsValueType) // This should include Nullable<T>
-                              return $"            {member.Name} = other.{member.Name};";
+                              return $"{member.Name} = other.{member.Name};";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            {member.Name} = other.{member.Name};";
+                              return $"{member.Name} = other.{member.Name};";
                           if (IsArrayType(member.Type))
                           {
                               var elementType = GetElementType(member.Type).ToDisplayString();
-                              return $"            {member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
+                              return $"{member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
                           }
                           if (IsListType(member.Type))
-                              return $"            {member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
+                              return $"{member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
                           if (IsDictionaryType(member.Type))
-                              return $"            {member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
+                              return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                              return $"            {member.Name} = other.{member.Name}.Clone();";
+                              return $"{member.Name} = other.{member.Name}.Clone();";
 
-                          return $"           {member.Name} = other.{member.Name}?.Clone();";
+                          return $"{member.Name} = other.{member.Name}?.Clone();";
                       }))
                   }}
-                        _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+                      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
                   }
                   
                   
@@ -168,28 +168,28 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   {
                       if (ReferenceEquals(other, null)) return false;
                       if (ReferenceEquals(other, this)) return true;
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           if (IsNullableValueType(member.Type))
                           {
                               var underlyingType = GetUnderlyingType(member.Type);
                               if (underlyingType.SpecialType == SpecialType.System_Double)
-                                  return $"            if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
+                                  return $"if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
                               if (underlyingType.SpecialType == SpecialType.System_Single)
-                                  return $"            if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
-                              return $"            if (!{member.Name}.Equals(other.{member.Name})) return false;";
+                                  return $"if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
+                              return $"if (!{member.Name}.Equals(other.{member.Name})) return false;";
                           }
                           if (IsArrayType(member.Type))
-                              return $"            if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
+                              return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
                           if (IsListType(member.Type))
-                              return $"            if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
+                              return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
                           if (IsDictionaryType(member.Type))
-                              return $"            if ({member.Name} == null && other.{member.Name} == null) {{ }} else if ({member.Name} == null || other.{member.Name} == null) return false; else if ({member.Name}.Count != other.{member.Name}.Count) return false; else if (!{member.Name}.All(kvp => other.{member.Name}.ContainsKey(kvp.Key) && EqualityComparer<object>.Default.Equals(kvp.Value, other.{member.Name}[kvp.Key]))) return false;";
+                              return $"if ({member.Name} == null && other.{member.Name} == null) {{ }} else if ({member.Name} == null || other.{member.Name} == null) return false; else if ({member.Name}.Count != other.{member.Name}.Count) return false; else if (!{member.Name}.All(kvp => other.{member.Name}.ContainsKey(kvp.Key) && EqualityComparer<object>.Default.Equals(kvp.Value, other.{member.Name}[kvp.Key]))) return false;";
                           if (member.Type.SpecialType == SpecialType.System_Double)
-                              return $"            if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
+                              return $"if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
                           if (member.Type.SpecialType == SpecialType.System_Single)
-                              return $"            if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
-                          return $"            if({member.Name}.Equals(other.{member.Name})==false) return false;";
+                              return $"if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
+                          return $"if ({member.Name}.Equals(other.{member.Name})==false) return false;";
                       }))
                   }}
                       return Equals(_unknownFields, other._unknownFields);
@@ -197,53 +197,53 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   public override int GetHashCode()
                   {
                       int hash = 1;
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           if (IsNullableValueType(member.Type))
                           {
                               var underlyingType = GetUnderlyingType(member.Type);
                               if (underlyingType.SpecialType == SpecialType.System_String)
-                                  return $"            if ({member.Name}.HasValue && {member.Name}.Value.Length != 0) hash ^= {member.Name}.Value.GetHashCode();";
+                                  return $"if ({member.Name}.HasValue && {member.Name}.Value.Length != 0) hash ^= {member.Name}.Value.GetHashCode();";
                               if (underlyingType.SpecialType == SpecialType.System_Double)
-                                  return $"            if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode({member.Name}.Value);";
+                                  return $"if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode({member.Name}.Value);";
                               if (underlyingType.SpecialType == SpecialType.System_Single)
-                                  return $"            if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}.Value);";
-                              return $"            if ({member.Name}.HasValue) hash ^= {member.Name}.Value.GetHashCode();";
+                                  return $"if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}.Value);";
+                              return $"if ({member.Name}.HasValue) hash ^= {member.Name}.Value.GetHashCode();";
                           }
                           if (IsArrayType(member.Type))
                           {
                               var elementType = GetElementType(member.Type);
                               if (elementType.IsValueType)
-                                  return $"            if({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
+                                  return $"if ({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
                               else
-                                  return $"            if({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
+                                  return $"if ({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
                           }
                           if (IsListType(member.Type))
                           {
                               var elementType = GetElementType(member.Type);
                               if (elementType.IsValueType)
-                                  return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
+                                  return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
                               else
-                                  return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
+                                  return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
                           }
                           if (IsDictionaryType(member.Type))
                           {
-                              return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var kvp in {member.Name}) hash ^= kvp.Key?.GetHashCode() ?? 0 ^ kvp.Value?.GetHashCode() ?? 0; }}";
+                              return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var kvp in {member.Name}) hash ^= kvp.Key?.GetHashCode() ?? 0 ^ kvp.Value?.GetHashCode() ?? 0; }}";
                           }
                           if (member.Type.SpecialType == SpecialType.System_String)
-                              return $"            if({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
+                              return $"if ({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
                           if (member.Type.SpecialType == SpecialType.System_Double)
-                              return $"            if({member.Name} != default)  hash ^=(pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode({member.Name}));";
+                              return $"if ({member.Name} != default)  hash ^=(pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode({member.Name}));";
                           if (member.Type.SpecialType == SpecialType.System_Single)
-                              return $"            if({member.Name} != default)  hash ^=(pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}));";
+                              return $"if ({member.Name} != default)  hash ^=(pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}));";
                           if (member.Type.IsValueType)
-                              return $"            if({member.Name} != default) hash ^= {member.Name}.GetHashCode();";
+                              return $"if ({member.Name} != default) hash ^= {member.Name}.GetHashCode();";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            if({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
+                              return $"if ({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                              return $"            hash ^= {member.Name}.GetHashCode();";
+                              return $"hash ^= {member.Name}.GetHashCode();";
 
-                          return $"            if ({member.Name} != null) hash ^= {member.Name}.GetHashCode();";
+                          return $"if ({member.Name} != null) hash ^= {member.Name}.GetHashCode();";
                       }))
                   }}
                       if (_unknownFields != null) hash ^= _unknownFields.GetHashCode();
@@ -251,20 +251,20 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   }
                   public override string ToString() => pb::JsonFormatter.ToDiagnosticString(this);
                   
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                  {{string.Join(Environment.NewLine+GetIntendedSpace(1),
+                      GetProtoMembers(targetType).Select(member => {
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                           {
                               //get generic parameter type
                               var genericType = (member.Type as INamedTypeSymbol)?.TypeArguments.FirstOrDefault()!;
-                              return $"    private static readonly pb::FieldCodec<{genericType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(genericType, member.DataFormat, member.RawTag)};";
+                              return $"private static readonly pb::FieldCodec<{genericType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(genericType, member.DataFormat, member.RawTag)};";
                           }
 
                           if (IsArrayOrListType(member.Type))
                           {
                               //get element type
                               var elementType = GetElementType(member.Type);
-                              return $"    private static readonly pb::FieldCodec<{elementType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(elementType, member.DataFormat, member.RawTag)};";
+                              return $"private static readonly pb::FieldCodec<{elementType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(elementType, member.DataFormat, member.RawTag)};";
                           }
 
                           if (IsDictionaryType(member.Type))
@@ -290,7 +290,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var valueRawTag = ProtoMember.GetRawTag(2, ProtoMember.GetPbWireType(valueType, valueDataFormat));
                               var valueFieldCodec = GetFieldCodec(valueType, valueDataFormat, valueRawTag);
 
-                              return $"    private static readonly pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec _{member.Name}_codec = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
+                              return $"private static readonly pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec _{member.Name}_codec = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
                           }
 
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
@@ -319,7 +319,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var valueRawTag = ProtoMember.GetRawTag(2, ProtoMember.GetPbWireType(valueType, valueDataFormat));
                               var valueFieldCodec = GetFieldCodec(valueType, valueDataFormat, valueRawTag);
 
-                              return $"    private static readonly pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec _{member.Name}_codec = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
+                              return $"private static readonly pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec _{member.Name}_codec = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
                           }
                           return string.Empty;
                       }).Where(s=>!string.IsNullOrWhiteSpace(s)))}}
@@ -330,8 +330,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   
                   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) 
                   {
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
 
                           var rawTagBytes = member.RawTagBytes;
@@ -343,38 +343,38 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var underlyingType = GetUnderlyingType(member.Type);
                               var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
                               if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                  return $"            if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));}}";
+                                  return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));}}";
                               if (underlyingType.TypeKind == TypeKind.Enum)
-                                  return $"            if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
-                              return $"            if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
+                                  return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
+                              return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
                           }
                           // Handle arrays and lists by converting to RepeatedField
                           if (IsArrayOrListType(member.Type))
                           {
                               var elementType = GetElementType(member.Type).ToDisplayString();
-                              return $"            if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
+                              return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
                           }
                           // Handle dictionaries by converting to MapField
                           if (IsDictionaryType(member.Type))
                           {
                               var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                              return $"            if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; tempMap.WriteTo(ref output, _{member.Name}_codec); }}";
+                              return $"if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; tempMap.WriteTo(ref output, _{member.Name}_codec); }}";
                           }
                           // Handle special cases first
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
-                              return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
+                              return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                              return $"            {member.Name}.WriteTo(ref output,_{member.Name}_codec);";
+                              return $"{member.Name}.WriteTo(ref output,_{member.Name}_codec);";
                           if (member.Type.SpecialType == SpecialType.System_String)
-                              return $"            if({member.Name}.Length !=0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                              return $"if ({member.Name}.Length !=0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                           if (member.Type.TypeKind == TypeKind.Enum)
-                              return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}((int){member.Name});}}";
+                              return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}((int){member.Name});}}";
                           if (member.Type.IsValueType)
-                              return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                              return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            if({member.Name}.Length !=0) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                              return $"if ({member.Name}.Length !=0) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
 
-                          return $"            if ({member.Name} != null) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                          return $"if ({member.Name} != null) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                       }))
                   }}
                       if (_unknownFields != null)
@@ -384,10 +384,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   }
                   
                   public int CalculateSize() {
-                  int size=0;
+                      int size=0;
                   
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
                           var lengthSize = member.RawTagBytes.Length;
                           // Handle nullable value types first
@@ -396,38 +396,38 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var underlyingType = GetUnderlyingType(member.Type);
                               var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
                               if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                  return $"            if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));";
+                                  return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));";
                               if (underlyingType.TypeKind == TypeKind.Enum)
-                                  return $"            if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
-                              return $"            if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
+                                  return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
+                              return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
                           }
                           // Handle arrays and lists
                           if (IsArrayOrListType(member.Type))
                           {
                               var elementType = GetElementType(member.Type).ToDisplayString();
-                              return $"            if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
+                              return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
                           }
                           // Handle dictionaries
                           if (IsDictionaryType(member.Type))
                           {
                               var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                              return $"            if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; size += tempMap.CalculateSize(_{member.Name}_codec); }}";
+                              return $"if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; size += tempMap.CalculateSize(_{member.Name}_codec); }}";
                           }
                           // Handle special cases first
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
-                              return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
+                              return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
                           if (member.Type.SpecialType == SpecialType.System_String)
-                              return $"            if({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
+                              return $"if ({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                           if (member.Type.TypeKind == TypeKind.Enum )
-                              return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size((int) {member.Name});";
+                              return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size((int) {member.Name});";
                           if (member.Type.IsValueType)
-                              return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
+                              return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            if({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
+                              return $"if ({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                              return $"            size += {member.Name}.CalculateSize(_{member.Name}_codec);";
+                              return $"size += {member.Name}.CalculateSize(_{member.Name}_codec);";
 
-                          return $"            if ({member.Name} != null) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
+                          return $"if ({member.Name} != null) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                       }))
                   }}
                       if (_unknownFields != null) {
@@ -438,56 +438,56 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   
                   public void MergeFrom({{className}} other)
                   {
-                    if (other == null) return;
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+                      if (other == null) return;
+                      {{string.Join(Environment.NewLine+GetIntendedSpace(2),
+                      GetProtoMembers(targetType).Select(member => {
                           if (IsNullableValueType(member.Type))
-                              return $"            if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
+                              return $"if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
                           if (IsArrayType(member.Type))
                           {
                               var elementType = GetElementType(member.Type).ToDisplayString();
-                              return $"            if (other.{member.Name} != null && other.{member.Name}.Length > 0) {{ var temp = new List<{elementType}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
+                              return $"if (other.{member.Name} != null && other.{member.Name}.Length > 0) {{ var temp = new List<{elementType}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
                           }
                           if (IsListType(member.Type))
-                              return $"            if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {member.Type.ToDisplayString()}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
+                              return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {member.Type.ToDisplayString()}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
                           if (IsDictionaryType(member.Type))
-                              return $"            if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
+                              return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
-                              return $"            {member.Name}.Add(other.{member.Name});";
+                              return $"{member.Name}.Add(other.{member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
-                              return $"            {member.Name}.MergeFrom(other.{member.Name});";
+                              return $"{member.Name}.MergeFrom(other.{member.Name});";
                           if ( member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            if(other.{member.Name}.Length != 0) {member.Name} = other.{member.Name};";
+                              return $"if (other.{member.Name}.Length != 0) {member.Name} = other.{member.Name};";
                           if (member.Type.IsValueType)
-                              return $"            if(other.{member.Name} != default) {member.Name} = other.{member.Name};";
+                              return $"if (other.{member.Name} != default) {member.Name} = other.{member.Name};";
                           // Fallback for non-dictionary reference types
                           if (!IsDictionaryType(member.Type))
-                              return $"            if (other.{member.Name} != null) {{ if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); {member.Name}.MergeFrom(other.{member.Name});}}";
+                              return $"if (other.{member.Name} != null) {{ if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); {member.Name}.MergeFrom(other.{member.Name});}}";
                           return string.Empty; // This should never be reached for dictionaries
                       }))
                   }}
                       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
                   }
                   public void MergeFrom(pb::CodedInputStream input) {
-                    input.ReadRawMessage(this);
+                      input.ReadRawMessage(this);
                   }
                   
                   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-                    uint tag;
-                    while ((tag = input.ReadTag()) != 0) 
-                    {
-                        if ((tag & 7) == 4) {
-                          // Abort on any end group tag.
-                          return;
-                        }
-                        switch(tag) 
-                        {
-                          default:
-                            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-                            break;
-                          
-                  {{string.Join(Environment.NewLine,
-                      protoMembers.Select(member => {
+
+                      uint tag;
+                      while ((tag = input.ReadTag()) != 0) 
+                      {
+                          if ((tag & 7) == 4) {
+                            // Abort on any end group tag.
+                            return;
+                          }
+                          switch(tag) 
+                          {
+                              default:
+                                  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                              break;
+                              {{string.Join(Environment.NewLine+GetIntendedSpace(4),
+                      GetProtoMembers(targetType).Select(member => {
                           var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
                           // Handle nullable value types first
                           if (IsNullableValueType(member.Type))
@@ -495,10 +495,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var underlyingType = GetUnderlyingType(member.Type);
                               var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
                               if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                  return $"            case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
+                                  return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
                               if (underlyingType.TypeKind == TypeKind.Enum)
-                                  return $"            case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
-                              return $"            case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
+                                  return $"case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
+                              return $"case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
                           }
                           if (IsArrayOrListType(member.Type))
                           {
@@ -508,8 +508,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var memberTypeName = member.Type.ToDisplayString();
                               
                               var caseStatement = member.RawTag == tag2 
-                                  ? $"            case {member.RawTag}:" 
-                                  : $"            case {member.RawTag}: case {tag2}:";
+                                  ? $"case {member.RawTag}:" 
+                                  : $"case {member.RawTag}: case {tag2}:";
                                   
                               if (IsArrayType(member.Type))
                               {
@@ -523,32 +523,32 @@ public class SimpleProtobufGenerator : ISourceGenerator
                           if (IsDictionaryType(member.Type))
                           {
                               var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                              return $"            case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
+                              return $"case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
                           }
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                           {
                               var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType((member.Type as INamedTypeSymbol)!.TypeArguments.First(), member.DataFormat));
                               if (member.RawTag == tag2)
                               {
-                                  return $"            case {member.RawTag}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                                  return $"case {member.RawTag}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
                               }
                               else 
                               {
-                                  return $"            case {member.RawTag}: case {tag2}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                                  return $"case {member.RawTag}: case {tag2}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
                               }
                           }
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
-                              return $"            case {member.RawTag}:{{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                              return $"case {member.RawTag}:{{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
                           // Handle special cases first  
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
-                              return $"            case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
+                              return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
                           if (member.Type.TypeKind == TypeKind.Enum)
-                              return $"            case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
+                              return $"case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
                           if (member.Type.IsValueType|| member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                              return $"            case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
+                              return $"case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
                           // Fallback for non-dictionary message types
                           if (!IsDictionaryType(member.Type))
-                              return $"            case {member.RawTag}:{{if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
+                              return $"case {member.RawTag}:{{if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
                           return string.Empty; // This should never be reached for dictionaries
                       }))
                   }}
@@ -696,6 +696,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
             _ when genericType.TypeKind == TypeKind.Enum => "Enum",
             _ => "Message",
         };
+    }
+    string GetIntendedSpace(int i)
+    {
+        return new string(' ', i * 4);
     }
 
     private List<ProtoMember> GetProtoMembers(INamedTypeSymbol targetType)
