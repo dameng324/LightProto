@@ -26,21 +26,34 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 INamedTypeSymbol? targetType = null;
                 
                 // Support class, record, record struct, and struct declarations
-                // Use more generic approach that works across all declaration types
-                if (node is BaseTypeDeclarationSyntax typeDeclaration)
+                if (node is ClassDeclarationSyntax classDeclaration)
                 {
-                    targetType = semanticModel.GetDeclaredSymbol(typeDeclaration) as INamedTypeSymbol;
+                    targetType = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+                }
+                else if (node is StructDeclarationSyntax structDeclaration)
+                {
+                    targetType = semanticModel.GetDeclaredSymbol(structDeclaration) as INamedTypeSymbol;
                 }
                 else
                 {
-                    continue;
+                    // Handle records using reflection for compatibility
+                    var nodeTypeName = node.GetType().Name;
+                    if (nodeTypeName.Contains("RecordDeclaration"))
+                    {
+                        var symbolInfo = semanticModel.GetDeclaredSymbol(node);
+                        targetType = symbolInfo as INamedTypeSymbol;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
                 
                 if (targetType is null)
                     continue;
 
                 // Prevent duplicate processing
-                var typeKey = targetType.ToDisplayString();
+                var typeKey = $"{targetType.ToDisplayString()}@{targetType.Locations.FirstOrDefault()?.SourceTree?.FilePath}";
                 if (processedTypes.Contains(typeKey))
                     continue;
                 processedTypes.Add(typeKey);

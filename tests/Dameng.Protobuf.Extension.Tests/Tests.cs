@@ -188,10 +188,15 @@ public class Tests
         return parsed;
     }
 
-    T Deserialize<T>(byte[] bytes)
-        where T : IPbMessageParser<T>
+    [Test]
+    public void TestStruct()
     {
-        return T.Parser.ParseFrom(bytes);
+        var struct1 = new TestStruct { Name = "Test", Value = 42 };
+        
+        var bytes = struct1.ToByteArray();
+        var parsed = TestStruct.Parser.ParseFrom(bytes);
+        parsed.Name.Should().Be("Test");
+        parsed.Value.Should().Be(42);
     }
 }
 
