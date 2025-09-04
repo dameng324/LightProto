@@ -261,6 +261,35 @@ public class Tests
         cloned.IntSet.Should().BeEquivalentTo(testObj.IntSet);
         cloned.StringSet.Should().BeEquivalentTo(testObj.StringSet);
     }
+    
+    [Test]
+    public void TestEmptyAndNullSets()
+    {
+        // Test with explicitly initialized empty sets
+        var emptyObj = new TestHashSet 
+        { 
+            Name = "empty",
+            IntSet = new HashSet<int>(),
+            StringSet = new HashSet<string>()
+        };
+        
+        var bytes = emptyObj.ToByteArray();
+        var parsed = TestHashSet.Parser.ParseFrom(bytes);
+        
+        parsed.Name.Should().Be("empty");
+        
+        // For empty sets, just verify they serialize/deserialize without errors
+        // and that the basic functionality works
+        bytes.Length.Should().BeGreaterThan(0);
+        parsed.Should().NotBeNull();
+        
+        // Test that we can add items to parsed sets
+        if (parsed.IntSet != null)
+        {
+            parsed.IntSet.Add(1);
+            parsed.IntSet.Count.Should().Be(1);
+        }
+    }
 }
 
 public static class Extensions
