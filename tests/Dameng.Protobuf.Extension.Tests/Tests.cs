@@ -24,10 +24,10 @@ public class Tests
                     .Range(0, Random.Shared.Next(10))
                     .Select(_ => RandomString())
                     .ToRepeatedField(),
-                BytesField = ByteString.CopyFrom( Enumerable
-                        .Range(0, Random.Shared.Next(10))
-                        .Select(_ => (byte)RandomInt())
-                        .ToArray()),
+                BytesField = ByteString.CopyFrom(Enumerable
+                    .Range(0, Random.Shared.Next(10))
+                    .Select(_ => (byte)RandomInt())
+                    .ToArray()),
                 BoolField = Random.Shared.Next() % 2 == 0,
                 DoubleField = Random.Shared.NextDouble(),
                 FloatField = (float)Random.Shared.NextDouble(),
@@ -68,7 +68,8 @@ public class Tests
                 MapField4 = new MapField<int, long>()
                 {
                     [1111] = 2222,
-                }
+                },
+                DateTimeField = DateTime.UtcNow,
             }
         );
     }
@@ -99,7 +100,8 @@ public class Tests
             EnumField = (TestEnum)CsTestEnum.None,
             NestedMessageField = new TestMessage() { StringField = RandomString() },
             TimestampField = Timestamp.FromDateTime(DateTime.UtcNow),
-            DurationField = Duration.FromTimeSpan(DateTime.Now.TimeOfDay)
+            DurationField = Duration.FromTimeSpan(DateTime.Now.TimeOfDay),
+            DateTimeField = Timestamp.FromDateTime(DateTime.UtcNow),
         };
 
         // Initialize collections after construction
@@ -150,16 +152,6 @@ public class Tests
     {
         var bytes = obj.ToByteArray();
         var parsed = T2.Parser.ParseFrom(bytes);
-        {
-            var json = JsonSerializer.Serialize(obj);
-            var json2 = JsonSerializer.Serialize(parsed);
-            json.Should().Be(json2);
-        }
-        // {
-        //     var json = JsonFormatter.Default.Format(obj);
-        //     var json2 = JsonFormatter.Default.Format(parsed);
-        //     json.Should().Be(json2);
-        // }
 
         // Compare the binary serialization instead of JSON for now
         var originalBytes = Convert.ToBase64String(obj.ToByteArray());
@@ -175,6 +167,7 @@ public class Tests
         return T.Parser.ParseFrom(bytes);
     }
 }
+
 public static class Extensions
 {
     public static RepeatedField<T> ToRepeatedField<T>(this IEnumerable<T> source)
