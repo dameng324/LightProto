@@ -70,6 +70,10 @@ public class Tests
                 },
                 MapField4 = new MapField<int, long>() { [1111] = 2222 },
                 DateTimeField = DateTime.UtcNow,
+                IntArrayFieldTest = [10, 20, 30],
+                StringListFieldTest = ["array", "list", "test"],
+                StringArrayFieldTest = ["hello", "world"],
+                IntListFieldTest = [100, 200, 300]
             }
         );
         parsed.NullableIntField.Should().Be(0);
@@ -123,6 +127,12 @@ public class Tests
         testMessage.MapField3["key1"] = "value1";
         testMessage.MapField3["key2"] = "value2";
         testMessage.MapField4[1111] = 2222;
+        
+        // Add array/list test data
+        testMessage.IntArrayFieldTest.AddRange([10, 20, 30]);
+        testMessage.StringListFieldTest.AddRange(["array", "list", "test"]);
+        testMessage.StringArrayFieldTest.AddRange(["hello", "world"]);
+        testMessage.IntListFieldTest.AddRange([100, 200, 300]);
 
         var parsed = Run<TestMessage, CsTestMessage>(testMessage);
         parsed.NullableIntField.Should().BeNull();

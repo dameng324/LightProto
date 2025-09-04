@@ -68,6 +68,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
             #pragma warning disable 1591, 0612, 3021, 8981
             using System;
+            using System.Linq;
             using Dameng.Protobuf.Extension;
             using Google.Protobuf.WellKnownTypes;
             using pb = global::Google.Protobuf;
@@ -95,6 +96,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               return $"            {member.Name} = string.Empty;";
                           if (IsNullableValueType(member.Type))
                               return $"            {member.Name} = null;";
+                          if (IsArrayType(member.Type))
+                              return $"            {member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
+                          if (IsListType(member.Type))
+                              return $"            {member.Name} = new {member.Type.ToDisplayString()}();";
                           if (member.Type.IsValueType)
                               return $"            {member.Name} = default({member.Type.ToDisplayString()});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
@@ -121,6 +126,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               return $"            {member.Name} = other.{member.Name};";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
                               return $"            {member.Name} = other.{member.Name};";
+                          if (IsArrayType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type).ToDisplayString();
+                              return $"            {member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
+                          }
+                          if (IsListType(member.Type))
+                              return $"            {member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
                               return $"            {member.Name} = other.{member.Name}.Clone();";
 
@@ -149,6 +161,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                   return $"            if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
                               return $"            if (!{member.Name}.Equals(other.{member.Name})) return false;";
                           }
+                          if (IsArrayType(member.Type))
+                              return $"            if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
+                          if (IsListType(member.Type))
+                              return $"            if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
                           if (member.Type.SpecialType == SpecialType.System_Double)
                               return $"            if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
                           if (member.Type.SpecialType == SpecialType.System_Single)
@@ -173,6 +189,22 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               if (underlyingType.SpecialType == SpecialType.System_Single)
                                   return $"            if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}.Value);";
                               return $"            if ({member.Name}.HasValue) hash ^= {member.Name}.Value.GetHashCode();";
+                          }
+                          if (IsArrayType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type);
+                              if (elementType.IsValueType)
+                                  return $"            if({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
+                              else
+                                  return $"            if({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
+                          }
+                          if (IsListType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type);
+                              if (elementType.IsValueType)
+                                  return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
+                              else
+                                  return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
                           }
                           if (member.Type.SpecialType == SpecialType.System_String)
                               return $"            if({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
@@ -202,6 +234,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               //get generic parameter type
                               var genericType = (member.Type as INamedTypeSymbol)?.TypeArguments.FirstOrDefault()!;
                               return $"    private static readonly pb::FieldCodec<{genericType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(genericType, member.DataFormat, member.RawTag)};";
+                          }
+
+                          if (IsArrayOrListType(member.Type))
+                          {
+                              //get element type
+                              var elementType = GetElementType(member.Type);
+                              return $"    private static readonly pb::FieldCodec<{elementType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(elementType, member.DataFormat, member.RawTag)};";
                           }
 
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
@@ -259,6 +298,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                   return $"            if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
                               return $"            if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
                           }
+                          // Handle arrays and lists by converting to RepeatedField
+                          if (IsArrayOrListType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type).ToDisplayString();
+                              return $"            if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
+                          }
                           // Handle special cases first
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
                               return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
@@ -300,6 +345,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                   return $"            if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
                               return $"            if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
                           }
+                          // Handle arrays and lists
+                          if (IsArrayOrListType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type).ToDisplayString();
+                              return $"            if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
+                          }
                           // Handle special cases first
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
                               return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
@@ -330,6 +381,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       GetProtoMembers(targetType).Select(member => {
                           if (IsNullableValueType(member.Type))
                               return $"            if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
+                          if (IsArrayType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type).ToDisplayString();
+                              return $"            if (other.{member.Name} != null && other.{member.Name}.Length > 0) {{ var temp = new List<{elementType}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
+                          }
+                          if (IsListType(member.Type))
+                              return $"            if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {member.Type.ToDisplayString()}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                               return $"            {member.Name}.Add(other.{member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
@@ -374,6 +432,26 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               if (underlyingType.TypeKind == TypeKind.Enum)
                                   return $"            case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
                               return $"            case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
+                          }
+                          if (IsArrayOrListType(member.Type))
+                          {
+                              var elementType = GetElementType(member.Type);
+                              var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
+                              var elementTypeName = elementType.ToDisplayString();
+                              var memberTypeName = member.Type.ToDisplayString();
+                              
+                              var caseStatement = member.RawTag == tag2 
+                                  ? $"            case {member.RawTag}:" 
+                                  : $"            case {member.RawTag}: case {tag2}:";
+                                  
+                              if (IsArrayType(member.Type))
+                              {
+                                  return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
+                              }
+                              else
+                              {
+                                  return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {memberTypeName}(); {member.Name}.Clear(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
+                              }
                           }
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                           {
@@ -422,6 +500,41 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return ((INamedTypeSymbol)type).TypeArguments[0];
         }
         return type;
+    }
+
+    static bool IsArrayType(ITypeSymbol type)
+    {
+        return type.TypeKind == TypeKind.Array;
+    }
+
+    static bool IsListType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+            
+        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        return typeName == "System.Collections.Generic.List<T>" || 
+               typeName == "System.Collections.Generic.IList<T>" ||
+               typeName == "System.Collections.Generic.ICollection<T>" ||
+               typeName == "System.Collections.Generic.IEnumerable<T>";
+    }
+
+    static bool IsArrayOrListType(ITypeSymbol type)
+    {
+        return IsArrayType(type) || IsListType(type);
+    }
+
+    static ITypeSymbol GetElementType(ITypeSymbol collectionType)
+    {
+        if (IsArrayType(collectionType))
+        {
+            return ((IArrayTypeSymbol)collectionType).ElementType;
+        }
+        if (IsListType(collectionType) && collectionType is INamedTypeSymbol namedType)
+        {
+            return namedType.TypeArguments[0];
+        }
+        throw new ArgumentException("Type is not an array or list type", nameof(collectionType));
     }
 
     static string GetFieldCodec(ITypeSymbol Type, DataFormat dataFormat, uint rawTag)
@@ -543,6 +656,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 namedType.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T)
             {
                 return GetPbWireType(namedType.TypeArguments[0], DataFormat);
+            }
+            
+            // Handle arrays and lists
+            if (IsArrayOrListType(Type))
+            {
+                return PbWireType.LengthDelimited;
             }
             
             if (Type.TypeKind == TypeKind.Enum)
