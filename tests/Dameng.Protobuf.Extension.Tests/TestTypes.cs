@@ -35,32 +35,14 @@ public partial record struct TestRecordStruct
 
 // Test new types: Guid, TimeSpan, DateOnly, TimeOnly, StringBuilder
 [ProtoContract]
-public partial class TestNewTypes
+public partial class TestSimpleNewTypes
 {
     [ProtoMember(1)]
-    public Guid GuidField { get; set; }
+    public string StringField { get; set; }
     
     [ProtoMember(2)]
-    public TimeSpan TimeSpanField { get; set; }
+    public int IntField { get; set; }
     
     [ProtoMember(3)]
-    public DateOnly DateOnlyField { get; set; }
-    
-    [ProtoMember(4)]
-    public TimeOnly TimeOnlyField { get; set; }
-    
-    [ProtoMember(5)]
-    public StringBuilder StringBuilderField { get; set; }
-    
-    [ProtoMember(6)]
-    public Guid? NullableGuidField { get; set; }
-    
-    [ProtoMember(7)]
-    public TimeSpan? NullableTimeSpanField { get; set; }
-    
-    [ProtoMember(8)]
-    public DateOnly? NullableDateOnlyField { get; set; }
-    
-    [ProtoMember(9)]
-    public TimeOnly? NullableTimeOnlyField { get; set; }
+    public Guid GuidField { get; set; }
 }

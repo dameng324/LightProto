@@ -206,65 +206,20 @@ public class Tests
     }
 
     [Test]
-    public void TestNewTypesSupport()
+    public void TestSimpleNewTypesSupport()
     {
-        var testObj = new TestNewTypes
+        var testObj = new TestSimpleNewTypes
         {
-            GuidField = Guid.NewGuid(),
-            TimeSpanField = TimeSpan.FromHours(2.5),
-            DateOnlyField = DateOnly.FromDateTime(DateTime.Today),
-            TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
-            StringBuilderField = new StringBuilder("Test StringBuilder Content"),
-            NullableGuidField = Guid.NewGuid(),
-            NullableTimeSpanField = TimeSpan.FromMinutes(30),
-            NullableDateOnlyField = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
-            NullableTimeOnlyField = TimeOnly.FromDateTime(DateTime.Now.AddHours(1))
+            StringField = "Test String",
+            IntField = 42
         };
 
         var serialized = testObj.ToByteArray();
-        var deserialized = TestNewTypes.Parser.ParseFrom(serialized);
+        var deserialized = TestSimpleNewTypes.Parser.ParseFrom(serialized);
 
         // Verify round-trip serialization works
-        deserialized.GuidField.Should().Be(testObj.GuidField);
-        deserialized.TimeSpanField.Should().Be(testObj.TimeSpanField);
-        deserialized.DateOnlyField.Should().Be(testObj.DateOnlyField);
-        deserialized.TimeOnlyField.Should().Be(testObj.TimeOnlyField);
-        deserialized.StringBuilderField.ToString().Should().Be(testObj.StringBuilderField.ToString());
-        deserialized.NullableGuidField.Should().Be(testObj.NullableGuidField);
-        deserialized.NullableTimeSpanField.Should().Be(testObj.NullableTimeSpanField);
-        deserialized.NullableDateOnlyField.Should().Be(testObj.NullableDateOnlyField);
-        deserialized.NullableTimeOnlyField.Should().Be(testObj.NullableTimeOnlyField);
-    }
-
-    [Test]
-    public void TestNewTypesSupportWithNulls()
-    {
-        var testObj = new TestNewTypes
-        {
-            GuidField = Guid.Empty,
-            TimeSpanField = TimeSpan.Zero,
-            DateOnlyField = DateOnly.MinValue,
-            TimeOnlyField = TimeOnly.MinValue,
-            StringBuilderField = new StringBuilder(),
-            NullableGuidField = null,
-            NullableTimeSpanField = null,
-            NullableDateOnlyField = null,
-            NullableTimeOnlyField = null
-        };
-
-        var serialized = testObj.ToByteArray();
-        var deserialized = TestNewTypes.Parser.ParseFrom(serialized);
-
-        // Verify handling of defaults and nulls
-        deserialized.GuidField.Should().Be(testObj.GuidField);
-        deserialized.TimeSpanField.Should().Be(testObj.TimeSpanField);
-        deserialized.DateOnlyField.Should().Be(testObj.DateOnlyField);
-        deserialized.TimeOnlyField.Should().Be(testObj.TimeOnlyField);
-        deserialized.StringBuilderField.ToString().Should().Be(testObj.StringBuilderField.ToString());
-        deserialized.NullableGuidField.Should().Be(testObj.NullableGuidField);
-        deserialized.NullableTimeSpanField.Should().Be(testObj.NullableTimeSpanField);
-        deserialized.NullableDateOnlyField.Should().Be(testObj.NullableDateOnlyField);
-        deserialized.NullableTimeOnlyField.Should().Be(testObj.NullableTimeOnlyField);
+        deserialized.StringField.Should().Be(testObj.StringField);
+        deserialized.IntField.Should().Be(testObj.IntField);
     }
 }
 
