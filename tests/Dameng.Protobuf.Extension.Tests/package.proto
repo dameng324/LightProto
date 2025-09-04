@@ -65,4 +65,5 @@ message TestMessage
   repeated int32 IntListFieldTest = 56;
   map<string, string> MapField5 = 57;
   map<string, string> MapField6 = 58;
+  int32 RequiredIntField=59;
 }

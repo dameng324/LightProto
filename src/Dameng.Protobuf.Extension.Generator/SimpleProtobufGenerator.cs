@@ -97,7 +97,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
             $$"""
               {
                   private pb::UnknownFieldSet _unknownFields;
-                  public static pb::MessageParser<{{className}}> Parser { get ; }=new pb::MessageParser<{{className}}>(() => {{{parserInitializer}}});
+                  public static pb::MessageParser<{{className}}> Parser { get; }=new pb::MessageParser<{{className}}>(() => {{parserInitializer}});
                   pbr::MessageDescriptor pb::IMessage.Descriptor => null;
 
                   [global::System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute]
