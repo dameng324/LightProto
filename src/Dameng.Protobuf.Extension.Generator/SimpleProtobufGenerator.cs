@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -14,19 +15,35 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
+        var processedTypes = new HashSet<string>();
+        
         foreach (var syntaxTree in context.Compilation.SyntaxTrees)
         {
             var semanticModel = context.Compilation.GetSemanticModel(syntaxTree);
 
             foreach (var node in syntaxTree.GetRoot().DescendantNodesAndSelf())
             {
-                if (node is not ClassDeclarationSyntax classDeclaration)
+                INamedTypeSymbol? targetType = null;
+                
+                // Support class, record, record struct, and struct declarations
+                // Use more generic approach that works across all declaration types
+                if (node is BaseTypeDeclarationSyntax typeDeclaration)
+                {
+                    targetType = semanticModel.GetDeclaredSymbol(typeDeclaration) as INamedTypeSymbol;
+                }
+                else
+                {
                     continue;
-
-                var targetType =
-                    semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+                }
+                
                 if (targetType is null)
                     continue;
+
+                // Prevent duplicate processing
+                var typeKey = targetType.ToDisplayString();
+                if (processedTypes.Contains(typeKey))
+                    continue;
+                processedTypes.Add(typeKey);
 
                 // Look for ProtoContract attribute
                 var hasProtoContract = false;
