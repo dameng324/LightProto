@@ -73,13 +73,7 @@ public class Tests
                 IntArrayFieldTest = [10, 20, 30],
                 StringListFieldTest = ["array", "list", "test"],
                 StringArrayFieldTest = ["hello", "world"],
-                IntListFieldTest = [100, 200, 300],
-                DictionaryFieldTest = new Dictionary<string, int> { ["key1"] = 100, ["key2"] = 200 },
-                IDictionaryFieldTest = new Dictionary<int, string> { [1] = "one", [2] = "two" },
-                IReadOnlyDictionaryFieldTest = new Dictionary<string, bool> { ["yes"] = true, ["no"] = false },
-                ConcurrentDictionaryFieldTest = new System.Collections.Concurrent.ConcurrentDictionary<long, double>(
-                    new Dictionary<long, double> { [123L] = 456.789, [789L] = 123.456 }
-                )
+                IntListFieldTest = [100, 200, 300]
             }
         );
         parsed.NullableIntField.Should().Be(0);

@@ -591,6 +591,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return false;
             
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        // Dictionary uses different template parameter names based on actual Roslyn behavior
         return typeName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
                typeName == "System.Collections.Generic.IDictionary<TKey, TValue>" ||
                typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" ||
