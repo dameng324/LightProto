@@ -100,6 +100,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               return $"            {member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
                           if (IsListType(member.Type))
                               return $"            {member.Name} = new {member.Type.ToDisplayString()}();";
+                          if (IsDictionaryType(member.Type))
+                              return $"            {member.Name} = new {GetConcreteTypeName(member.Type)}();";
                           if (member.Type.IsValueType)
                               return $"            {member.Name} = default({member.Type.ToDisplayString()});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
@@ -133,6 +135,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                           }
                           if (IsListType(member.Type))
                               return $"            {member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
+                          if (IsDictionaryType(member.Type))
+                              return $"            {member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
                               return $"            {member.Name} = other.{member.Name}.Clone();";
 
@@ -165,6 +169,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               return $"            if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
                           if (IsListType(member.Type))
                               return $"            if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
+                          if (IsDictionaryType(member.Type))
+                              return $"            if ({member.Name} == null && other.{member.Name} == null) {{ }} else if ({member.Name} == null || other.{member.Name} == null) return false; else if ({member.Name}.Count != other.{member.Name}.Count) return false; else if (!{member.Name}.All(kvp => other.{member.Name}.ContainsKey(kvp.Key) && EqualityComparer<object>.Default.Equals(kvp.Value, other.{member.Name}[kvp.Key]))) return false;";
                           if (member.Type.SpecialType == SpecialType.System_Double)
                               return $"            if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
                           if (member.Type.SpecialType == SpecialType.System_Single)
@@ -206,6 +212,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               else
                                   return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
                           }
+                          if (IsDictionaryType(member.Type))
+                          {
+                              return $"            if({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var kvp in {member.Name}) hash ^= kvp.Key?.GetHashCode() ?? 0 ^ kvp.Value?.GetHashCode() ?? 0; }}";
+                          }
                           if (member.Type.SpecialType == SpecialType.System_String)
                               return $"            if({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
                           if (member.Type.SpecialType == SpecialType.System_Double)
@@ -241,6 +251,32 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               //get element type
                               var elementType = GetElementType(member.Type);
                               return $"    private static readonly pb::FieldCodec<{elementType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(elementType, member.DataFormat, member.RawTag)};";
+                          }
+
+                          if (IsDictionaryType(member.Type))
+                          {
+                              //get key-value types
+                              var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
+
+                              var keyDataFormatString = member.AttributeData
+                                  .FirstOrDefault(o => o.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.Extension.ProtoMapAttribute")
+                                  ?.NamedArguments
+                                  .FirstOrDefault(pair => pair.Key == "KeyFormat")
+                                  .Value.Value?.ToString();
+                              var keyDataFormat = Enum.TryParse<DataFormat>(keyDataFormatString, out var kdf) ? kdf : DataFormat.Default;
+                              var keyRawTag = ProtoMember.GetRawTag(1, ProtoMember.GetPbWireType(keyType, keyDataFormat));
+                              var keyFieldCodec = GetFieldCodec(keyType, keyDataFormat, keyRawTag);
+
+                              var valueDataFormatString = member.AttributeData
+                                  .FirstOrDefault(o => o.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.Extension.ProtoMapAttribute")
+                                  ?.NamedArguments
+                                  .FirstOrDefault(pair => pair.Key == "ValueFormat")
+                                  .Value.Value?.ToString();
+                              var valueDataFormat = Enum.TryParse<DataFormat>(valueDataFormatString, out var vdf) ? vdf : DataFormat.Default;
+                              var valueRawTag = ProtoMember.GetRawTag(2, ProtoMember.GetPbWireType(valueType, valueDataFormat));
+                              var valueFieldCodec = GetFieldCodec(valueType, valueDataFormat, valueRawTag);
+
+                              return $"    private static readonly pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec _{member.Name}_codec = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
                           }
 
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
@@ -304,6 +340,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var elementType = GetElementType(member.Type).ToDisplayString();
                               return $"            if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
                           }
+                          // Handle dictionaries by converting to MapField
+                          if (IsDictionaryType(member.Type))
+                          {
+                              var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
+                              return $"            if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; tempMap.WriteTo(ref output, _{member.Name}_codec); }}";
+                          }
                           // Handle special cases first
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
                               return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
@@ -351,6 +393,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               var elementType = GetElementType(member.Type).ToDisplayString();
                               return $"            if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
                           }
+                          // Handle dictionaries
+                          if (IsDictionaryType(member.Type))
+                          {
+                              var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
+                              return $"            if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; size += tempMap.CalculateSize(_{member.Name}_codec); }}";
+                          }
                           // Handle special cases first
                           if (member.Type.SpecialType == SpecialType.System_DateTime)
                               return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
@@ -388,6 +436,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                           }
                           if (IsListType(member.Type))
                               return $"            if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {member.Type.ToDisplayString()}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
+                          if (IsDictionaryType(member.Type))
+                              return $"            if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var kvp in other.{member.Name}) {member.Name}[kvp.Key] = kvp.Value; }}";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                               return $"            {member.Name}.Add(other.{member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
@@ -396,7 +446,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               return $"            if(other.{member.Name}.Length != 0) {member.Name} = other.{member.Name};";
                           if (member.Type.IsValueType)
                               return $"            if(other.{member.Name} != default) {member.Name} = other.{member.Name};";
-                          return $"            if (other.{member.Name} != null) {{ if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); {member.Name}.MergeFrom(other.{member.Name});}}";
+                          // Fallback for non-dictionary reference types
+                          if (!IsDictionaryType(member.Type))
+                              return $"            if (other.{member.Name} != null) {{ if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); {member.Name}.MergeFrom(other.{member.Name});}}";
+                          return string.Empty; // This should never be reached for dictionaries
                       }))
                   }}
                       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -453,6 +506,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                   return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {memberTypeName}(); {member.Name}.Clear(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
                               }
                           }
+                          if (IsDictionaryType(member.Type))
+                          {
+                              var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
+                              return $"            case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var kvp in tempMap) {member.Name}[kvp.Key] = kvp.Value; break;}}";
+                          }
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                           {
                               var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType((member.Type as INamedTypeSymbol)!.TypeArguments.First(), member.DataFormat));
@@ -474,7 +532,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               return $"            case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
                           if (member.Type.IsValueType|| member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
                               return $"            case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
-                          return $"            case {member.RawTag}:{{if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
+                          // Fallback for non-dictionary message types
+                          if (!IsDictionaryType(member.Type))
+                              return $"            case {member.RawTag}:{{if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
+                          return string.Empty; // This should never be reached for dictionaries
                       }))
                   }}
                         }
@@ -522,6 +583,45 @@ public class SimpleProtobufGenerator : ISourceGenerator
     static bool IsArrayOrListType(ITypeSymbol type)
     {
         return IsArrayType(type) || IsListType(type);
+    }
+
+    static bool IsDictionaryType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+            
+        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        return typeName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
+               typeName == "System.Collections.Generic.IDictionary<TKey, TValue>" ||
+               typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" ||
+               typeName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
+    }
+
+    static string GetConcreteTypeName(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return type.ToDisplayString();
+            
+        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        return typeName switch
+        {
+            "System.Collections.Generic.IDictionary<TKey, TValue>" => $"System.Collections.Generic.Dictionary<{namedType.TypeArguments[0].ToDisplayString()}, {namedType.TypeArguments[1].ToDisplayString()}>",
+            "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" => $"System.Collections.Generic.Dictionary<{namedType.TypeArguments[0].ToDisplayString()}, {namedType.TypeArguments[1].ToDisplayString()}>",
+            _ => type.ToDisplayString()
+        };
+    }
+
+    static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetDictionaryKeyValueTypes(ITypeSymbol dictionaryType)
+    {
+        if (IsDictionaryType(dictionaryType) && dictionaryType is INamedTypeSymbol namedType)
+        {
+            var typeArguments = namedType.TypeArguments;
+            if (typeArguments.Length == 2)
+            {
+                return (typeArguments[0], typeArguments[1]);
+            }
+        }
+        throw new ArgumentException("Type is not a dictionary type", nameof(dictionaryType));
     }
 
     static ITypeSymbol GetElementType(ITypeSymbol collectionType)
@@ -660,6 +760,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
             
             // Handle arrays and lists
             if (IsArrayOrListType(Type))
+            {
+                return PbWireType.LengthDelimited;
+            }
+
+            // Handle dictionaries
+            if (IsDictionaryType(Type))
             {
                 return PbWireType.LengthDelimited;
             }

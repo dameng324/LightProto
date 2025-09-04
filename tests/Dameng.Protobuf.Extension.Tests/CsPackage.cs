@@ -1,6 +1,8 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Dameng.Protobuf.Extension.Tests;
 
@@ -113,6 +115,12 @@ public partial class CsTestMessage
     [ProtoMember(54)] public List<string> StringListFieldTest { get; set; }
     [ProtoMember(55)] public string[] StringArrayFieldTest { get; set; }
     [ProtoMember(56)] public List<int> IntListFieldTest { get; set; }
+    
+    // Dictionary type tests
+    [ProtoMember(57)] public Dictionary<string, int> DictionaryFieldTest { get; set; }
+    [ProtoMember(58)] public IDictionary<int, string> IDictionaryFieldTest { get; set; }
+    [ProtoMember(59)] public IReadOnlyDictionary<string, bool> IReadOnlyDictionaryFieldTest { get; set; }
+    [ProtoMember(60)] public System.Collections.Concurrent.ConcurrentDictionary<long, double> ConcurrentDictionaryFieldTest { get; set; }
 }
 
 [ProtoContract]
