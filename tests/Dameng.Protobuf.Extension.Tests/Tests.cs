@@ -203,6 +203,64 @@ public class Tests
     {
         Run<TestRecordStruct, TestType>(new TestRecordStruct { Name = RandomString(), Value = RandomInt() });
     }
+    
+    [Test]
+    public void TestHashSetSupport()
+    {
+        var testObj = new TestHashSet 
+        { 
+            Name = RandomString(),
+            IntSet = new HashSet<int> { 1, 2, 3, RandomInt() },
+            StringSet = new HashSet<string> { "hello", "world", RandomString() }
+        };
+        
+        // Test serialization/deserialization through protobuf
+        var bytes = testObj.ToByteArray();
+        var parsed = TestHashSet.Parser.ParseFrom(bytes);
+        
+        // Verify the sets are equal
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntSet.Should().BeEquivalentTo(testObj.IntSet);
+        parsed.StringSet.Should().BeEquivalentTo(testObj.StringSet);
+        
+        // Test equality
+        parsed.Should().Be(testObj);
+        
+        // Test cloning
+        var cloned = testObj.Clone();
+        cloned.Should().Be(testObj);
+        cloned.IntSet.Should().BeEquivalentTo(testObj.IntSet);
+        cloned.StringSet.Should().BeEquivalentTo(testObj.StringSet);
+    }
+    
+    [Test]
+    public void TestISetSupport()
+    {
+        var testObj = new TestISet 
+        { 
+            Name = RandomString(),
+            IntSet = new HashSet<int> { 4, 5, 6, RandomInt() },
+            StringSet = new HashSet<string> { "foo", "bar", RandomString() }
+        };
+        
+        // Test serialization/deserialization through protobuf
+        var bytes = testObj.ToByteArray();
+        var parsed = TestISet.Parser.ParseFrom(bytes);
+        
+        // Verify the sets are equal
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntSet.Should().BeEquivalentTo(testObj.IntSet);
+        parsed.StringSet.Should().BeEquivalentTo(testObj.StringSet);
+        
+        // Test equality
+        parsed.Should().Be(testObj);
+        
+        // Test cloning
+        var cloned = testObj.Clone();
+        cloned.Should().Be(testObj);
+        cloned.IntSet.Should().BeEquivalentTo(testObj.IntSet);
+        cloned.StringSet.Should().BeEquivalentTo(testObj.StringSet);
+    }
 }
 
 public static class Extensions
