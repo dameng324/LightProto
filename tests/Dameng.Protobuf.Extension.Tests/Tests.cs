@@ -182,6 +182,8 @@ public class Tests
 
         // For now, just check that parsing doesn't throw and produces a result
         originalBytes.Should().Be(parsedBytes);
+
+        parsed.CalculateSize().Should().Be(obj.CalculateSize());
         return parsed;
     }
 
