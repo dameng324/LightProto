@@ -81,13 +81,13 @@ public partial class CsTestMessage
     [ProtoMember(28)]
     public Duration DurationField { get; set; }
 
-    [ProtoMember(29)]
+    [ProtoMember(30)]
     public MapField<string, string> MapField2 { get; set; }
 
-    [ProtoMember(30)]
+    [ProtoMember(31)]
     public MapField<string, string> MapField3 { get; set; }
     
-    [ProtoMember(31)] public bool BoolField31 { get; set; }
+    
     [ProtoMember(32)] public bool BoolField32 { get; set; }
     [ProtoMember(33)] public bool BoolField33 { get; set; }
     [ProtoMember(34)] public bool BoolField34 { get; set; }
@@ -105,7 +105,7 @@ public partial class CsTestMessage
     [ProtoMember(47)] public bool BoolField47 { get; set; }
     [ProtoMember(48)] public bool BoolField48 { get; set; }
     [ProtoMember(49)] public bool BoolField49 { get; set; }
-    [ProtoMember(50)][ProtoMap(KeyFormat = DataFormat.FixedSize,ValueFormat = DataFormat.ZigZag)] public MapField<int,long> MapField4 { get; set; } 
+    [ProtoMember(51)][ProtoMap(KeyFormat = DataFormat.FixedSize,ValueFormat = DataFormat.ZigZag)] public MapField<int,long> MapField4 { get; set; } 
 }
 
 [ProtoContract]

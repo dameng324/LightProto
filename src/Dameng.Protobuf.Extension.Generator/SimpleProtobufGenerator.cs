@@ -227,15 +227,19 @@ public class SimpleProtobufGenerator : ISourceGenerator
                           
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
                               return $"            {member.Name}.WriteTo(ref output,_{member.Name}_codec);";
+                          if (member.Type.SpecialType == SpecialType.System_DateTime)
+                              return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
                           if (member.Type.SpecialType == SpecialType.System_String)
                               return $"            if({member.Name}.Length !=0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                           if (member.Type.TypeKind == TypeKind.Enum)
                               return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}((int){member.Name});}}";
-                          if (member.Type.IsValueType)
+                          if (member.Type.IsValueType && member.Type.SpecialType != SpecialType.System_DateTime)
                               return $"            if({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
                               return $"            if({member.Name}.Length !=0) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
 
+                          if (member.Type.SpecialType == SpecialType.System_DateTime)
+                              return ""; // DateTime is already handled above
                           return $"            if ({member.Name} != null) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                       }))
                   }}
@@ -252,17 +256,21 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       GetProtoMembers(targetType).Select(member => {
                           var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
                           var lengthSize = member.RawTagBytes.Length;
+                          if (member.Type.SpecialType == SpecialType.System_DateTime)
+                              return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
                           if (member.Type.SpecialType == SpecialType.System_String)
                               return $"            if({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                           if (member.Type.TypeKind == TypeKind.Enum )
                               return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size((int) {member.Name});";
-                          if (member.Type.IsValueType)
+                          if (member.Type.IsValueType && member.Type.SpecialType != SpecialType.System_DateTime)
                               return $"            if({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                           if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
                               return $"            if({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
                               return $"            size += {member.Name}.CalculateSize(_{member.Name}_codec);";
-
+                          
+                          if (member.Type.SpecialType == SpecialType.System_DateTime)
+                              return ""; // DateTime is already handled above
                           return $"            if ({member.Name} != null) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
                       }))
                   }}
@@ -325,10 +333,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                           }
                           if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
                               return $"            case {member.RawTag}:{{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                          if (member.Type.SpecialType == SpecialType.System_DateTime)
+                              return $"            case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
                           if (member.Type.TypeKind == TypeKind.Enum)
                               return $"            case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
-                          if (member.Type.IsValueType|| member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
+                          if ((member.Type.IsValueType && member.Type.SpecialType != SpecialType.System_DateTime) || member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
                               return $"            case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
+                          if (member.Type.SpecialType == SpecialType.System_DateTime)
+                              return ""; // DateTime is already handled above
                           return $"            case {member.RawTag}:{{if({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
                       }))
                   }}
@@ -345,6 +357,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
     static string GetFieldCodec(ITypeSymbol Type, DataFormat dataFormat, uint rawTag)
     {
         var PbTypeString = GetPbTypeString(Type, dataFormat);
+        if (Type.SpecialType == SpecialType.System_DateTime)
+        {
+            return $"pb::FieldCodec.ForMessage({rawTag}, Google.Protobuf.WellKnownTypes.Timestamp.Parser)";
+        }
         if (PbTypeString == "Message")
         {
             return $"pb::FieldCodec.For{PbTypeString}({rawTag},{Type.ToDisplayString()}.Parser)";
@@ -376,6 +392,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
             SpecialType.System_Single => "Float",
             SpecialType.System_Double => "Double",
             SpecialType.System_String => "String",
+            SpecialType.System_DateTime => "Message",
             _ when genericType.ToDisplayString() == "Google.Protobuf.ByteString" => "Bytes",
             _ when genericType.TypeKind == TypeKind.Enum => "Enum",
             _ => "Message",
@@ -490,6 +507,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 case SpecialType.System_Double:
                     return PbWireType.Fixed64;
                 case SpecialType.System_String:
+                case SpecialType.System_DateTime:
                 case SpecialType.None when Type.ToDisplayString() == "Google.Protobuf.ByteString":
                 case SpecialType.None
                     when Type.TypeKind == TypeKind.Class
