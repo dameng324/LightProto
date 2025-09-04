@@ -1,7 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Text.Json;
+﻿using System.Text.Json;
 using AwesomeAssertions;
-using Dameng.Protobuf.Extension;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
@@ -24,13 +22,12 @@ public class Tests
                     .Select(_ => RandomInt()).ToRepeatedField(),
                 StringArrayField = Enumerable
                     .Range(0, Random.Shared.Next(10))
-                    .Select(_ => RandomString()!)
+                    .Select(_ => RandomString())
                     .ToRepeatedField(),
-                BytesField = Enumerable
-                    .Range(0, Random.Shared.Next(10))
-                    .Select(_ => (byte)RandomInt())
-                    .ToArray()
-                    .ToByteString(),
+                BytesField = ByteString.CopyFrom( Enumerable
+                        .Range(0, Random.Shared.Next(10))
+                        .Select(_ => (byte)RandomInt())
+                        .ToArray()),
                 BoolField = Random.Shared.Next() % 2 == 0,
                 DoubleField = Random.Shared.NextDouble(),
                 FloatField = (float)Random.Shared.NextDouble(),
@@ -99,8 +96,8 @@ public class Tests
             Fixed64Field = (ulong)Random.Shared.Next(),
             SFixed32Field = Random.Shared.Next(),
             SFixed64Field = Random.Shared.Next(),
-            EnumField = (TestPackage.TestEnum)CsTestEnum.None,
-            NestedMessageField = new TestPackage.TestMessage() { StringField = RandomString() },
+            EnumField = (TestEnum)CsTestEnum.None,
+            NestedMessageField = new TestMessage() { StringField = RandomString() },
             TimestampField = Timestamp.FromDateTime(DateTime.UtcNow),
             DurationField = Duration.FromTimeSpan(DateTime.Now.TimeOfDay)
         };
@@ -115,9 +112,9 @@ public class Tests
         testMessage.MapField["key1"] = "value1";
         testMessage.MapField["key2"] = "value2";
         testMessage.EnumArrayField.AddRange(new[]
-            { (TestPackage.TestEnum)CsTestEnum.None, (TestPackage.TestEnum)CsTestEnum.OptionA });
-        testMessage.NestedMessageArrayField.Add(new TestPackage.TestMessage() { StringField = RandomString() });
-        testMessage.NestedMessageArrayField.Add(new TestPackage.TestMessage() { StringField = RandomString() });
+            { (TestEnum)CsTestEnum.None, (TestEnum)CsTestEnum.OptionA });
+        testMessage.NestedMessageArrayField.Add(new TestMessage() { StringField = RandomString() });
+        testMessage.NestedMessageArrayField.Add(new TestMessage() { StringField = RandomString() });
         testMessage.MapField2["key1"] = "value1";
         testMessage.MapField2["key2"] = "value2";
         testMessage.MapField3["key1"] = "value1";
@@ -176,5 +173,12 @@ public class Tests
         where T : IPbMessageParser<T>
     {
         return T.Parser.ParseFrom(bytes);
+    }
+}
+public static class Extensions
+{
+    public static RepeatedField<T> ToRepeatedField<T>(this IEnumerable<T> source)
+    {
+        return new RepeatedField<T> { source };
     }
 }

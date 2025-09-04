@@ -1,12 +1,8 @@
-﻿using System.Collections.Concurrent;
-using Google.Protobuf;
+﻿using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Dameng.Protobuf.Extension.Tests;
-
-using System;
-using System.Collections.Generic;
 
 [ProtoContract]
 public partial class CsTestMessage
