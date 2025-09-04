@@ -12,22 +12,25 @@ public class Tests
     [Test]
     public void LocalToGoogle()
     {
-        Run<CsTestMessage, TestMessage>(
+        var parsed = Run<CsTestMessage, TestMessage>(
             new CsTestMessage
             {
                 StringField = RandomString(),
                 Int32Field = RandomInt(),
                 Int32ArrayField = Enumerable
                     .Range(0, Random.Shared.Next(10))
-                    .Select(_ => RandomInt()).ToRepeatedField(),
+                    .Select(_ => RandomInt())
+                    .ToRepeatedField(),
                 StringArrayField = Enumerable
                     .Range(0, Random.Shared.Next(10))
                     .Select(_ => RandomString())
                     .ToRepeatedField(),
-                BytesField = ByteString.CopyFrom(Enumerable
-                    .Range(0, Random.Shared.Next(10))
-                    .Select(_ => (byte)RandomInt())
-                    .ToArray()),
+                BytesField = ByteString.CopyFrom(
+                    Enumerable
+                        .Range(0, Random.Shared.Next(10))
+                        .Select(_ => (byte)RandomInt())
+                        .ToArray()
+                ),
                 BoolField = Random.Shared.Next() % 2 == 0,
                 DoubleField = Random.Shared.NextDouble(),
                 FloatField = (float)Random.Shared.NextDouble(),
@@ -65,13 +68,11 @@ public class Tests
                     ["key1"] = "value1",
                     ["key2"] = "value2",
                 },
-                MapField4 = new MapField<int, long>()
-                {
-                    [1111] = 2222,
-                },
+                MapField4 = new MapField<int, long>() { [1111] = 2222 },
                 DateTimeField = DateTime.UtcNow,
             }
         );
+        parsed.NullableIntField.Should().Be(0);
     }
 
     [Test]
@@ -81,10 +82,9 @@ public class Tests
         {
             StringField = RandomString(),
             Int32Field = RandomInt(),
-            BytesField = ByteString.CopyFrom(Enumerable
-                .Range(0, Random.Shared.Next(10))
-                .Select(_ => (byte)RandomInt())
-                .ToArray()),
+            BytesField = ByteString.CopyFrom(
+                Enumerable.Range(0, Random.Shared.Next(10)).Select(_ => (byte)RandomInt()).ToArray()
+            ),
             BoolField = Random.Shared.Next() % 2 == 0,
             DoubleField = Random.Shared.NextDouble(),
             FloatField = (float)Random.Shared.NextDouble(),
@@ -105,16 +105,17 @@ public class Tests
         };
 
         // Initialize collections after construction
-        testMessage.Int32ArrayField.AddRange(Enumerable
-            .Range(0, Random.Shared.Next(10))
-            .Select(_ => RandomInt()));
-        testMessage.StringArrayField.AddRange(Enumerable
-            .Range(0, Random.Shared.Next(10))
-            .Select(_ => RandomString()!));
+        testMessage.Int32ArrayField.AddRange(
+            Enumerable.Range(0, Random.Shared.Next(10)).Select(_ => RandomInt())
+        );
+        testMessage.StringArrayField.AddRange(
+            Enumerable.Range(0, Random.Shared.Next(10)).Select(_ => RandomString()!)
+        );
         testMessage.MapField["key1"] = "value1";
         testMessage.MapField["key2"] = "value2";
-        testMessage.EnumArrayField.AddRange(new[]
-            { (TestEnum)CsTestEnum.None, (TestEnum)CsTestEnum.OptionA });
+        testMessage.EnumArrayField.AddRange(
+            new[] { (TestEnum)CsTestEnum.None, (TestEnum)CsTestEnum.OptionA }
+        );
         testMessage.NestedMessageArrayField.Add(new TestMessage() { StringField = RandomString() });
         testMessage.NestedMessageArrayField.Add(new TestMessage() { StringField = RandomString() });
         testMessage.MapField2["key1"] = "value1";
@@ -123,7 +124,8 @@ public class Tests
         testMessage.MapField3["key2"] = "value2";
         testMessage.MapField4[1111] = 2222;
 
-        Run<TestMessage, CsTestMessage>(testMessage);
+        var parsed = Run<TestMessage, CsTestMessage>(testMessage);
+        parsed.NullableIntField.Should().BeNull();
     }
 
     string RandomString()
@@ -146,7 +148,7 @@ public class Tests
 
     int RandomInt() => Random.Shared.Next(2);
 
-    void Run<T1, T2>(T1 obj)
+    T2 Run<T1, T2>(T1 obj)
         where T1 : IPbMessageParser<T1>
         where T2 : IPbMessageParser<T2>
     {
@@ -159,6 +161,7 @@ public class Tests
 
         // For now, just check that parsing doesn't throw and produces a result
         originalBytes.Should().Be(parsedBytes);
+        return parsed;
     }
 
     T Deserialize<T>(byte[] bytes)

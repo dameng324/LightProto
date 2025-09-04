@@ -107,6 +107,7 @@ public partial class CsTestMessage
     [ProtoMember(49)] public bool BoolField49 { get; set; }
     [ProtoMember(50)][ProtoMap(KeyFormat = DataFormat.FixedSize,ValueFormat = DataFormat.ZigZag)] public MapField<int,long> MapField4 { get; set; }
     [ProtoMember(51)] public DateTime DateTimeField { get; set; }
+    [ProtoMember(52)] public int? NullableIntField { get; set; }
 }
 
 [ProtoContract]

@@ -58,4 +58,5 @@ message TestMessage
   bool BoolField49 = 49;
   map<sfixed32, sint64> MapField4 = 50;
   google.protobuf.Timestamp DateTimeField = 51;
+  int32 NullableIntField =52;
 }
