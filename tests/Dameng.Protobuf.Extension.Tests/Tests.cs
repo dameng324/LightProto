@@ -371,6 +371,8 @@ public class Tests
         parsed.ConcurrentStack.Should().BeEquivalentTo(testObj.ConcurrentStack);
         parsed.IntList.Should().BeEquivalentTo(testObj.IntList);
         parsed.IntIList.Should().BeEquivalentTo(testObj.IntIList);
+        
+        parsed.GetHashCode().Should().Be(testObj.GetHashCode());
     }
 }
 
