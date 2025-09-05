@@ -93,8 +93,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 ? "partial record struct"
                 : "partial struct"
             : targetType.IsRecord
-                ? "sealed partial record"
-                : "sealed partial class";
+                ? "partial record"
+                : "partial class";
 
         var sourceBuilder = new StringBuilder();
 
