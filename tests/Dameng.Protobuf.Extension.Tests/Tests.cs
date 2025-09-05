@@ -53,11 +53,23 @@ public class Tests
                 },
                 EnumField = CsTestEnum.None,
                 EnumArrayField = [CsTestEnum.None, CsTestEnum.OptionA],
-                NestedMessageField = new CsTestMessage() {RequiredIntField = RandomInt(),StringField = RandomString() },
+                NestedMessageField = new CsTestMessage()
+                {
+                    RequiredIntField = RandomInt(),
+                    StringField = RandomString(),
+                },
                 NestedMessageArrayField =
                 [
-                    new CsTestMessage() {RequiredIntField = RandomInt(), StringField = RandomString() },
-                    new CsTestMessage() { RequiredIntField = RandomInt(),StringField = RandomString() },
+                    new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
+                    },
+                    new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
+                    },
                 ],
                 TimestampField = DateTime.UtcNow.ToTimestamp(),
                 DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
@@ -194,15 +206,19 @@ public class Tests
     {
         Run<TestStruct, TestType>(new TestStruct { Name = RandomString(), Value = RandomInt() });
     }
+
     [Test]
     public void TestRecord()
     {
         Run<TestRecord, TestType>(new TestRecord { Name = RandomString(), Value = RandomInt() });
     }
+
     [Test]
     public void TestRecordStruct()
     {
-        Run<TestRecordStruct, TestType>(new TestRecordStruct { Name = RandomString(), Value = RandomInt() });
+        Run<TestRecordStruct, TestType>(
+            new TestRecordStruct { Name = RandomString(), Value = RandomInt() }
+        );
     }
 
     [Test]
@@ -225,88 +241,91 @@ public class Tests
         deserialized.DateOnlyField.Should().Be(testObj.DateOnlyField);
         deserialized.GuidField.Should().Be(testObj.GuidField);
         deserialized.TimeOnlyField.Ticks.Should().Be(testObj.TimeOnlyField.Ticks);
-        deserialized.StringBuilderField.ToString().Should().Be(testObj.StringBuilderField.ToString());
+        deserialized
+            .StringBuilderField.ToString()
+            .Should()
+            .Be(testObj.StringBuilderField.ToString());
     }
-    
+
     [Test]
     public void TestHashSetSupport()
     {
-        var testObj = new TestHashSet 
-        { 
+        var testObj = new TestHashSet
+        {
             Name = RandomString(),
             IntSet = new HashSet<int> { 1, 2, 3, RandomInt() },
-            StringSet = new HashSet<string> { "hello", "world", RandomString() }
+            StringSet = new HashSet<string> { "hello", "world", RandomString() },
         };
-        
+
         // Test serialization/deserialization through protobuf
         var bytes = testObj.ToByteArray();
         var parsed = TestHashSet.Parser.ParseFrom(bytes);
-        
+
         // Verify the sets are equal
         parsed.Name.Should().Be(testObj.Name);
         parsed.IntSet.Should().BeEquivalentTo(testObj.IntSet);
         parsed.StringSet.Should().BeEquivalentTo(testObj.StringSet);
-        
+
         // Test equality
         parsed.Should().Be(testObj);
-        
+
         // Test cloning
         var cloned = testObj.Clone();
         cloned.Should().Be(testObj);
         cloned.IntSet.Should().BeEquivalentTo(testObj.IntSet);
         cloned.StringSet.Should().BeEquivalentTo(testObj.StringSet);
     }
-    
+
     [Test]
     public void TestISetSupport()
     {
-        var testObj = new TestISet 
-        { 
+        var testObj = new TestISet
+        {
             Name = RandomString(),
             IntSet = new HashSet<int> { 4, 5, 6, RandomInt() },
-            StringSet = new HashSet<string> { "foo", "bar", RandomString() }
+            StringSet = new HashSet<string> { "foo", "bar", RandomString() },
         };
-        
+
         // Test serialization/deserialization through protobuf
         var bytes = testObj.ToByteArray();
         var parsed = TestISet.Parser.ParseFrom(bytes);
-        
+
         // Verify the sets are equal
         parsed.Name.Should().Be(testObj.Name);
         parsed.IntSet.Should().BeEquivalentTo(testObj.IntSet);
         parsed.StringSet.Should().BeEquivalentTo(testObj.StringSet);
-        
+
         // Test equality
         parsed.Should().Be(testObj);
-        
+
         // Test cloning
         var cloned = testObj.Clone();
         cloned.Should().Be(testObj);
         cloned.IntSet.Should().BeEquivalentTo(testObj.IntSet);
         cloned.StringSet.Should().BeEquivalentTo(testObj.StringSet);
     }
-    
+
     [Test]
     public void TestEmptyAndNullSets()
     {
         // Test with explicitly initialized empty sets
-        var emptyObj = new TestHashSet 
-        { 
+        var emptyObj = new TestHashSet
+        {
             Name = "empty",
             IntSet = new HashSet<int>(),
-            StringSet = new HashSet<string>()
+            StringSet = new HashSet<string>(),
         };
-        
+
         var bytes = emptyObj.ToByteArray();
         var parsed = TestHashSet.Parser.ParseFrom(bytes);
-        
+
         parsed.Name.Should().Be("empty");
-        
+
         // For empty sets, just verify they serialize/deserialize without errors
         // and that the basic functionality works
         bytes.Length.Should().BeGreaterThan(0);
         parsed.Should().NotBeNull();
-        
+
         // Test that we can add items to parsed sets
         if (parsed.IntSet != null)
         {
@@ -318,19 +337,13 @@ public class Tests
     [Test]
     public void MergeFromTest()
     {
-        TestHashSet set1 = new TestHashSet()
-        {
-            IntSet = [1, 2, 3]
-        };
-        TestHashSet set2 = new TestHashSet()
-        {
-            IntSet = [3, 4, 5]
-        };
+        TestHashSet set1 = new TestHashSet() { IntSet = [1, 2, 3] };
+        TestHashSet set2 = new TestHashSet() { IntSet = [3, 4, 5] };
 
         var bytes = set2.ToByteArray();
-        
+
         set1.MergeFrom(bytes);
-        
+
         set1.IntSet.Count.Should().Be(5);
     }
 
@@ -340,31 +353,14 @@ public class Tests
         TestConcurrentCollection testObj = new TestConcurrentCollection
         {
             Name = RandomString(),
-            IntBag =
-            [
-                RandomInt(),
-                RandomInt()
-            ],
-            ConcurrentQueue = new ConcurrentQueue<string>([
-                RandomString(),
-                RandomString()
-            ]),
-            ConcurrentStack = new ConcurrentStack<string>([
-                RandomString(),
-                RandomString()
-            ]),
-            IntList =  [
-                RandomInt(),
-                RandomInt()
-            ],
-            IntIList =  [
-                RandomInt(),
-                RandomInt()
-            ],IntImmutableArray=[
-                RandomInt(),
-                RandomInt()]
+            IntBag = [RandomInt(), RandomInt()],
+            ConcurrentQueue = new ConcurrentQueue<string>([RandomString(), RandomString()]),
+            ConcurrentStack = new ConcurrentStack<string>([RandomString(), RandomString()]),
+            IntList = [RandomInt(), RandomInt()],
+            IntIList = [RandomInt(), RandomInt()],
+            IntImmutableArray = [RandomInt(), RandomInt()],
         };
-        
+
         var bytes = testObj.ToByteArray();
         var parsed = TestConcurrentCollection.Parser.ParseFrom(bytes);
         parsed.Name.Should().Be(testObj.Name);
@@ -374,7 +370,23 @@ public class Tests
         parsed.IntList.Should().BeEquivalentTo(testObj.IntList);
         parsed.IntIList.Should().BeEquivalentTo(testObj.IntIList);
         parsed.IntImmutableArray.Should().BeEquivalentTo(testObj.IntImmutableArray);
-        
+
+        parsed.GetHashCode().Should().Be(testObj.GetHashCode());
+    }
+
+    [Test]
+    public void ProxyTest()
+    {
+        TestOrder testObj = new()
+        {
+            Instrument = Instrument.FromNameValue(RandomString(), RandomInt()),
+        };
+
+        var bytes = testObj.ToByteArray();
+        var parsed = TestOrder.Parser.ParseFrom(bytes);
+        parsed.Instrument.Name.Should().Be(testObj.Instrument.Name);
+        parsed.Instrument.Value.Should().Be(testObj.Instrument.Value);
+
         parsed.GetHashCode().Should().Be(testObj.GetHashCode());
     }
 }

@@ -192,6 +192,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 {
                     {{string.Join(Environment.NewLine+GetIntendedSpace(2),
                     GetProtoMembers(targetType).Select(member => {
+                        if (member.ProxyType is not null)
+                            return $"{member.Name} = ({member.ProxyType.ToDisplayString()})other.{member.Name};";
                         if (member.Type.SpecialType == SpecialType.System_String)
                             return $"{member.Name} = other.{member.Name};";
                         // FORCE SIMPLE ASSIGNMENT FOR ALL VALUE TYPES INCLUDING NULLABLE
@@ -241,6 +243,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     if (ReferenceEquals(other, this)) return true;
                     {{string.Join(Environment.NewLine+GetIntendedSpace(2),
                     GetProtoMembers(targetType).Select(member => {
+                        if (member.ProxyType is not null)
+                        {
+                            return $"if (!(({member.ProxyType.ToDisplayString()}){member.Name}).Equals(({member.ProxyType.ToDisplayString()})other.{member.Name})) return false;";
+                        }
+                        
                         if (IsNullableValueType(member.Type))
                         {
                             var underlyingType = GetUnderlyingType(member.Type);
@@ -274,6 +281,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     int hash = 1;
                     {{string.Join(Environment.NewLine+GetIntendedSpace(2),
                     GetProtoMembers(targetType).Select(member => {
+                        
+                        if (member.ProxyType is not null)
+                            return $"if ({member.Name} != null) hash ^= (({member.ProxyType.ToDisplayString()}){member.Name}).GetHashCode();";
+                        
                         if (IsNullableValueType(member.Type))
                         {
                             var underlyingType = GetUnderlyingType(member.Type);
@@ -409,67 +420,76 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 {
                     {{string.Join(Environment.NewLine+GetIntendedSpace(2),
                     GetProtoMembers(targetType).Select(member => {
-                        var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
   
                         var rawTagBytes = member.RawTagBytes;
                         var rawTagByteString = string.Join(", ", rawTagBytes.Select(b => b.ToString()));
+                        var hasValueCheck =IsNullableValueType(member.Type)
+                            ? $"{member.Name}.HasValue"
+                            : member.Type.IsValueType 
+                                ? $"{member.Name} != default" 
+                                : $"{member.Name} != null";
+                        if (member.ProxyType is not null)
+                        {
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(({member.ProxyType.ToDisplayString()}){member.Name});}}";
+                        }
                         
+                        var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
                         // Handle nullable value types first
                         if (IsNullableValueType(member.Type))
                         {
                             var underlyingType = GetUnderlyingType(member.Type);
                             var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
                             if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));}}";
+                                return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));}}";
                             if (IsGuidType(underlyingType))
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.ToString());}}";
+                                return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.ToString());}}";
                             if (IsTimeSpanType(underlyingType))
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));}}";
+                                return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));}}";
                             if (IsDateOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.DayNumber);}}";
+                                return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.DayNumber);}}";
                             if (IsTimeOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.Ticks);}}";
+                                return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.Ticks);}}";
                             if (underlyingType.TypeKind == TypeKind.Enum)
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
-                            return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
+                                return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
                         }
                         // Handle arrays and lists by converting to RepeatedField
                         if (IsCollectionType(member.Type))
                         {
                             var elementType = GetElementType(member.Type).ToDisplayString();
-                            return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
+                            return $"if ({hasValueCheck}) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
                         }
                         // Handle dictionaries by converting to MapField
                         if (IsDictionaryType(member.Type))
                         {
                             var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                            return $"if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; tempMap.WriteTo(ref output, _{member.Name}_codec); }}";
+                            return $"if ({hasValueCheck}) {{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; tempMap.WriteTo(ref output, _{member.Name}_codec); }}";
                         }
                         // Handle special cases first
                         if (member.Type.SpecialType == SpecialType.System_DateTime)
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
                         if (IsGuidType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}(pb::ByteString.CopyFrom({member.Name}.ToByteArray()));}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}(pb::ByteString.CopyFrom({member.Name}.ToByteArray()));}}";
                         if (IsTimeSpanType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}));}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}));}}";
                         if (IsDateOnlyType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.DayNumber);}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.DayNumber);}}";
                         if (IsTimeOnlyType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.Ticks);}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.Ticks);}}";
                         if (IsStringBuilderType(member.Type))
-                            return $"if ({member.Name} != null && {member.Name}.Length > 0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString());}}";
+                            return $"if ({hasValueCheck} && {member.Name}.Length > 0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString());}}";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
                             return $"{member.Name}.WriteTo(ref output,_{member.Name}_codec);";
                         if (member.Type.SpecialType == SpecialType.System_String)
                             return $"if ({member.Name}.Length !=0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                         if (member.Type.TypeKind == TypeKind.Enum)
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}((int){member.Name});}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}((int){member.Name});}}";
                         if (member.Type.IsValueType)
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                            return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                         if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
                             return $"if ({member.Name}.Length !=0) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
   
-                        return $"if ({member.Name} != null) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                        return $"if ({hasValueCheck}) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
                     }))
                 }}
                     if (_unknownFields != null)
@@ -483,26 +503,37 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 
                     {{string.Join(Environment.NewLine+GetIntendedSpace(2),
                     GetProtoMembers(targetType).Select(member => {
-                        var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
+
+                        var hasValueCheck =IsNullableValueType(member.Type)
+                            ? $"{member.Name}.HasValue"
+                            : member.Type.IsValueType 
+                                ? $"{member.Name} != default" 
+                                : $"{member.Name} != null";
                         var lengthSize = member.RawTagBytes.Length;
+                        if (member.ProxyType is not null)
+                        {
+                            return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(({member.ProxyType.ToDisplayString()}){member.Name});";
+                        }
+                        
+                        var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
                         // Handle nullable value types first
                         if (IsNullableValueType(member.Type))
                         {
                             var underlyingType = GetUnderlyingType(member.Type);
                             var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
                             if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));";
+                                return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));";
                             if (IsGuidType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size(pb::ByteString.CopyFrom({member.Name}.Value.ToByteArray()));";
+                                return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size(pb::ByteString.CopyFrom({member.Name}.Value.ToByteArray()));";
                             if (IsTimeSpanType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));";
+                                return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));";
                             if (IsDateOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.DayNumber);";
+                                return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.DayNumber);";
                             if (IsTimeOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.Ticks);";
+                                return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.Ticks);";
                             if (underlyingType.TypeKind == TypeKind.Enum)
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
-                            return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
+                                return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
+                            return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
                         }
                         // Handle arrays and lists
                         if (IsCollectionType(member.Type))
@@ -554,6 +585,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     if ({{(targetType.IsValueType?"other.Equals(default)":"other == null")}}) return;
                     {{string.Join(Environment.NewLine+GetIntendedSpace(2),
                     GetProtoMembers(targetType).Select(member => {
+                        if (member.ProxyType is not null)
+                        {
+                            return $"if (other.{member.Name} != null) {{ var proxy =new {member.ProxyType.ToDisplayString()}(); proxy.MergeFrom(other.{member.Name}); {member.Name}=proxy;}}";
+                        }
+                        
                         if (IsNullableValueType(member.Type))
                             return $"if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
                         if (IsCollectionType(member.Type))
@@ -564,7 +600,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ var temp = new List<{elementType.ToDisplayString()}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
                             }
-var isImmutable = IsImmutableCollectionType(member.Type);
+                            var isImmutable = IsImmutableCollectionType(member.Type);
                             
                             var immutableAssign = isImmutable ? $"{member.Name} = " : "";
                             
@@ -624,113 +660,118 @@ var isImmutable = IsImmutableCollectionType(member.Type);
                             default:
                                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                             break;
-                            {{string.Join(Environment.NewLine+GetIntendedSpace(4),
-                    GetProtoMembers(targetType).Select(member => {
-                        var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
-                        // Handle nullable value types first
-                        if (IsNullableValueType(member.Type))
-                        {
-                            var underlyingType = GetUnderlyingType(member.Type);
-                            var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
-                            if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
-                            if (IsGuidType(underlyingType))
-                                return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{underlyingPbTypeString}().Span);break;}}";
-                            if (IsTimeSpanType(underlyingType))
-                                return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
-                            if (IsDateOnlyType(underlyingType))
-                                return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{underlyingPbTypeString}());break;}}";
-                            if (IsTimeOnlyType(underlyingType))
-                                return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{underlyingPbTypeString}());break;}}";
-                            if (underlyingType.TypeKind == TypeKind.Enum)
-                                return $"case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
-                            return $"case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
-                        }
-                        if (IsCollectionType(member.Type))
-                        {
-                            var elementType = GetElementType(member.Type);
-                            var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
-                            var elementTypeName = elementType.ToDisplayString();
-                            
-                            var caseStatement = member.RawTag == tag2 
-                                ? $"case {member.RawTag}:" 
-                                : $"case {member.RawTag}: case {tag2}:";
-                                
-                            if (IsArrayType(member.Type))
-                            {
-                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
-                            }
-                            bool isImmutable = IsImmutableCollectionType(member.Type);
-                            
-                            var immutableAssign =isImmutable ? $"{member.Name} = " : "";
-                            
-                            if (HasAddRangeMethod(member.Type, elementType))
-                            {
-                                if (isImmutable)
+                            {{string.Join(Environment.NewLine+GetIntendedSpace(4), GetProtoMembers(targetType).Select(member => 
                                 {
-                                    return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
-                                }
-                                else
-                                {
-                                    return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
-                                }
-                            }
+                                    if (member.ProxyType is not null)
+                                    {
+                                        return $"case {member.RawTag}:{{var proxy =new {member.ProxyType.ToDisplayString()}(); input.ReadMessage(proxy); {member.Name}=proxy;break;}}";
+                                    }
+                                    
+                                    var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
+                                    // Handle nullable value types first
+                                    if (IsNullableValueType(member.Type))
+                                    {
+                                        var underlyingType = GetUnderlyingType(member.Type);
+                                        var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
+                                        if (underlyingType.SpecialType == SpecialType.System_DateTime)
+                                            return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
+                                        if (IsGuidType(underlyingType))
+                                            return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{underlyingPbTypeString}().Span);break;}}";
+                                        if (IsTimeSpanType(underlyingType))
+                                            return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
+                                        if (IsDateOnlyType(underlyingType))
+                                            return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{underlyingPbTypeString}());break;}}";
+                                        if (IsTimeOnlyType(underlyingType))
+                                            return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{underlyingPbTypeString}());break;}}";
+                                        if (underlyingType.TypeKind == TypeKind.Enum)
+                                            return $"case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
+                                        return $"case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
+                                    }
+                                    if (IsCollectionType(member.Type))
+                                    {
+                                        var elementType = GetElementType(member.Type);
+                                        var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
+                                        var elementTypeName = elementType.ToDisplayString();
+                                        
+                                        var caseStatement = member.RawTag == tag2 
+                                            ? $"case {member.RawTag}:" 
+                                            : $"case {member.RawTag}: case {tag2}:";
+                                            
+                                        if (IsArrayType(member.Type))
+                                        {
+                                            return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
+                                        }
+                                        bool isImmutable = IsImmutableCollectionType(member.Type);
+                                        
+                                        var immutableAssign =isImmutable ? $"{member.Name} = " : "";
+                                        
+                                        if (HasAddRangeMethod(member.Type, elementType))
+                                        {
+                                            if (isImmutable)
+                                            {
+                                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
+                                            }
+                                            else
+                                            {
+                                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
+                                            }
+                                        }
 
-                            var addMethod = "Add";
-                            if (IsStackType(member.Type))
-                                addMethod = "Push";
-                            if (IsQueueType(member.Type))
-                                addMethod = "Enqueue";
-                            
-                            return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; foreach(var item in tempRepeated) {immutableAssign}{member.Name}.{addMethod}(item); break;}}";
-                        }
-                        if (IsDictionaryType(member.Type))
-                        {
-                            var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                            return $"case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
-                        }
-                        if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
-                        {
-                            var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType((member.Type as INamedTypeSymbol)!.TypeArguments.First(), member.DataFormat));
-                            if (member.RawTag == tag2)
-                            {
-                                return $"case {member.RawTag}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
-                            }
-                            else 
-                            {
-                                return $"case {member.RawTag}: case {tag2}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
-                            }
-                        }
-                        if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
-                            return $"case {member.RawTag}:{{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
-                        // Handle special cases first  
-                        if (member.Type.SpecialType == SpecialType.System_DateTime)
-                            return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
-                        if (IsGuidType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{pbTypeString}().Span);break;}}";
-                        if (IsTimeSpanType(member.Type))
-                            return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
-                        if (IsDateOnlyType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{pbTypeString}());break;}}";
-                        if (IsTimeOnlyType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{pbTypeString}());break;}}";
-                        if (IsStringBuilderType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = new System.Text.StringBuilder(input.Read{pbTypeString}());break;}}";
-                        if (member.Type.TypeKind == TypeKind.Enum)
-                            return $"case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
-                        if (member.Type.IsValueType|| member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                            return $"case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
-                        // Fallback for non-dictionary message types (but not for the new simple types)
-                        if (!IsDictionaryType(member.Type) && 
-                            !IsGuidType(member.Type) &&
-                            !IsTimeSpanType(member.Type) &&
-                            !IsDateOnlyType(member.Type) &&
-                            !IsTimeOnlyType(member.Type) &&
-                            !IsStringBuilderType(member.Type))
-                            return $"case {member.RawTag}:{{if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
-                        return string.Empty; // This should never be reached for dictionaries
-                    }))
-                }}
+                                        var addMethod = "Add";
+                                        if (IsStackType(member.Type))
+                                            addMethod = "Push";
+                                        if (IsQueueType(member.Type))
+                                            addMethod = "Enqueue";
+                                        
+                                        return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; foreach(var item in tempRepeated) {immutableAssign}{member.Name}.{addMethod}(item); break;}}";
+                                    }
+                                    if (IsDictionaryType(member.Type))
+                                    {
+                                        var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
+                                        return $"case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
+                                    }
+                                    if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
+                                    {
+                                        var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType((member.Type as INamedTypeSymbol)!.TypeArguments.First(), member.DataFormat));
+                                        if (member.RawTag == tag2)
+                                        {
+                                            return $"case {member.RawTag}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                                        }
+                                        else 
+                                        {
+                                            return $"case {member.RawTag}: case {tag2}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                                        }
+                                    }
+                                    if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
+                                        return $"case {member.RawTag}:{{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
+                                    // Handle special cases first  
+                                    if (member.Type.SpecialType == SpecialType.System_DateTime)
+                                        return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
+                                    if (IsGuidType(member.Type))
+                                        return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{pbTypeString}().Span);break;}}";
+                                    if (IsTimeSpanType(member.Type))
+                                        return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
+                                    if (IsDateOnlyType(member.Type))
+                                        return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{pbTypeString}());break;}}";
+                                    if (IsTimeOnlyType(member.Type))
+                                        return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{pbTypeString}());break;}}";
+                                    if (IsStringBuilderType(member.Type))
+                                        return $"case {member.RawTag}:{{{member.Name} = new System.Text.StringBuilder(input.Read{pbTypeString}());break;}}";
+                                    if (member.Type.TypeKind == TypeKind.Enum)
+                                        return $"case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
+                                    if (member.Type.IsValueType|| member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
+                                        return $"case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
+                                    // Fallback for non-dictionary message types (but not for the new simple types)
+                                    if (!IsDictionaryType(member.Type) && 
+                                        !IsGuidType(member.Type) &&
+                                        !IsTimeSpanType(member.Type) &&
+                                        !IsDateOnlyType(member.Type) &&
+                                        !IsTimeOnlyType(member.Type) &&
+                                        !IsStringBuilderType(member.Type))
+                                        return $"case {member.RawTag}:{{if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
+                                    return string.Empty; // This should never be reached for dictionaries
+                                }))
+                            }}
                         }
                     }
                 }
@@ -1075,7 +1116,20 @@ var isImmutable = IsImmutableCollectionType(member.Type);
 
             if (protoMemberAttr == null)
                 continue;
-
+            ITypeSymbol? proxyType = null;
+            if (property.GetAttributes().FirstOrDefault(o =>
+                    o.AttributeClass?.ToDisplayString().StartsWith("Dameng.Protobuf.Extension.ProtoProxyAttribute<")==true) is
+                { } proxyAttr)
+            {
+                proxyType = proxyAttr.AttributeClass!.TypeArguments[0];
+            }
+            else if(property.Type.GetAttributes().FirstOrDefault(o =>
+                        o.AttributeClass?.ToDisplayString().StartsWith("Dameng.Protobuf.Extension.ProtoProxyAttribute<")==true) is
+                    { } proxyAttr2)
+            {
+                proxyType = proxyAttr2.AttributeClass!.TypeArguments[0];
+            }
+            
             var tag = (uint)protoMemberAttr.ConstructorArguments[0].Value!;
             members.Add(
                 new ProtoMember
@@ -1094,6 +1148,7 @@ var isImmutable = IsImmutableCollectionType(member.Type);
                     )
                         ? value
                         : DataFormat.Default,
+                    ProxyType = proxyType,
                 }
             );
         }
@@ -1110,7 +1165,7 @@ var isImmutable = IsImmutableCollectionType(member.Type);
             LengthDelimited = 2, // string, bytes, message, repeated packed
             Fixed32 = 5, // float, fixed32, sfixed32
         }
-
+        public ITypeSymbol? ProxyType { get; set; } 
         public string Name { get; set; } = "";
         public ITypeSymbol Type { get; set; } = null!;
         public DataFormat DataFormat { get; set; }
