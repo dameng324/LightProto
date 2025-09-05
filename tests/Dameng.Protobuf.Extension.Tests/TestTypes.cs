@@ -88,11 +88,19 @@ public partial class TestISet
 
 // Temporary test for ConcurrentBag using the same pattern as HashSet
 [ProtoContract]
-public partial class TestConcurrentBagAsSet
+public partial class TestConcurrentCollection
 {
     [ProtoMember(1)]
     public string Name { get; set; }
     
     [ProtoMember(2)]
     public ConcurrentBag<int> IntBag { get; set; }
+    [ProtoMember(3)]
+    public ConcurrentQueue<string> ConcurrentQueue { get; set; }
+    [ProtoMember(4)]
+    public ConcurrentStack<string> ConcurrentStack { get; set; }
+    [ProtoMember(6)]
+    public List<int> IntList { get; set; }
+    [ProtoMember(7)]
+    public IList<int> IntIList { get; set; }
 }

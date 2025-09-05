@@ -162,14 +162,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"{member.Name} = string.Empty;";
                         if (IsNullableValueType(member.Type))
                             return $"{member.Name} = null;";
-                        if (IsArrayType(member.Type))
-                            return $"{member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
-                        if (IsListType(member.Type))
-                            return $"{member.Name} = new {member.Type.ToDisplayString()}();";
-                        if (IsSetType(member.Type))
+                        if (IsCollectionType(member.Type))
+                        {
+                            if (IsArrayType(member.Type))
+                                return $"{member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
+                            
                             return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
-                        if (IsConcurrentCollectionType(member.Type))
-                            return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
+                        }
                         if (IsDictionaryType(member.Type))
                             return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
                         if (member.Type.IsValueType)
@@ -208,17 +207,15 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         // DEBUG: Temporary direct ConcurrentBag handling
                         if (member.Type.ToDisplayString().Contains("ConcurrentBag"))
                             return $"{member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
-                        if (IsArrayType(member.Type))
+                        if (IsCollectionType(member.Type))
                         {
-                            var elementType = GetElementType(member.Type).ToDisplayString();
-                            return $"{member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
+                            if (IsArrayType(member.Type))
+                            {
+                                var elementType = GetElementType(member.Type).ToDisplayString();
+                                return $"{member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
+                            }
+                            return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         }
-                        if (IsListType(member.Type))
-                            return $"{member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
-                        if (IsSetType(member.Type))
-                            return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
-                        if (IsConcurrentCollectionType(member.Type))
-                            return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         if (IsDictionaryType(member.Type))
                             return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
@@ -250,14 +247,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                 return $"if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
                             return $"if (!{member.Name}.Equals(other.{member.Name})) return false;";
                         }
-                        if (IsArrayType(member.Type))
+
+                        if (IsCollectionType(member.Type))
+                        {
+                            if (IsSetType(member.Type))
+                                return $"if (!{member.Name}.SetEquals(other.{member.Name})) return false;";
                             return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
-                        if (IsListType(member.Type))
-                            return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
-                        if (IsSetType(member.Type))
-                            return $"if (!{member.Name}.SetEquals(other.{member.Name})) return false;";
-                        if (IsConcurrentCollectionType(member.Type))
-                            return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}.OrderBy(x => x), other.{member.Name}.OrderBy(x => x))) return false;";
+                            
+                        }
                         if (IsDictionaryType(member.Type))
                             return $"if ({member.Name} == null && other.{member.Name} == null) {{ }} else if ({member.Name} == null || other.{member.Name} == null) return false; else if ({member.Name}.Count != other.{member.Name}.Count) return false; else if (!{member.Name}.All(kvp => other.{member.Name}.ContainsKey(kvp.Key) && EqualityComparer<object>.Default.Equals(kvp.Value, other.{member.Name}[kvp.Key]))) return false;";
                         if (member.Type.SpecialType == SpecialType.System_Double)
@@ -285,37 +282,18 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                 return $"if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}.Value);";
                             return $"if ({member.Name}.HasValue) hash ^= {member.Name}.Value.GetHashCode();";
                         }
-                        if (IsArrayType(member.Type))
+
+                        if (IsCollectionType(member.Type))
                         {
+                            var CountPropertyString = "Count";
+                            if (IsArrayType(member.Type))
+                            {
+                                CountPropertyString = "Length";
+                            }
                             var elementType = GetElementType(member.Type);
-                            if (elementType.IsValueType)
-                                return $"if ({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
-                            else
-                                return $"if ({member.Name} != null && {member.Name}.Length > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
-                        }
-                        if (IsListType(member.Type))
-                        {
-                            var elementType = GetElementType(member.Type);
-                            if (elementType.IsValueType)
-                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
-                            else
-                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
-                        }
-                        if (IsSetType(member.Type))
-                        {
-                            var elementType = GetElementType(member.Type);
-                            if (elementType.IsValueType)
-                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
-                            else
-                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
-                        }
-                        if (IsConcurrentCollectionType(member.Type))
-                        {
-                            var elementType = GetElementType(member.Type);
-                            if (elementType.IsValueType)
-                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
-                            else
-                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
+
+                            var ifNotNullCheck = elementType.IsValueType ? "" : "if (item is not null)";
+                            return $"if ({member.Name} != null && {member.Name}.{CountPropertyString} > 0) {{ foreach(var item in {member.Name}) {ifNotNullCheck} hash ^= item.GetHashCode(); }}";
                         }
                         if (IsDictionaryType(member.Type))
                         {
@@ -570,17 +548,22 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     GetProtoMembers(targetType).Select(member => {
                         if (IsNullableValueType(member.Type))
                             return $"if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
-                        if (IsArrayType(member.Type))
+                        if (IsCollectionType(member.Type))
                         {
-                            var elementType = GetElementType(member.Type).ToDisplayString();
-                            return $"if (other.{member.Name} != null && other.{member.Name}.Length > 0) {{ var temp = new List<{elementType}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
+                            if (IsArrayType(member.Type))
+                            {
+                                var elementType = GetElementType(member.Type).ToDisplayString();
+                                return $"if (other.{member.Name} != null && other.{member.Name}.Length > 0) {{ var temp = new List<{elementType}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
+                            }
+
+                            var addMethod = "Add";
+                            if (IsStackType(member.Type))
+                                addMethod="Push";
+                            if (IsQueueType(member.Type))
+                                addMethod="Enqueue";
+                            
+                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in other.{member.Name}) {member.Name}.{addMethod}(item); }}";
                         }
-                        if (IsListType(member.Type))
-                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {member.Type.ToDisplayString()}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
-                        if (IsSetType(member.Type))
-                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
-                        if (IsConcurrentCollectionType(member.Type))
-                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in other.{member.Name}) {member.Name}.TryAdd(item); }}";
                         if (IsDictionaryType(member.Type))
                             return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
@@ -656,18 +639,15 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
                             }
-                            else if (IsSetType(member.Type))
-                            {
-                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
-                            }
-                            else if (IsConcurrentCollectionType(member.Type))
-                            {
-                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.TryAdd(item); break;}}";
-                            }
-                            else
-                            {
-                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {memberTypeName}(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
-                            }
+                            
+                            
+
+                            var addMethod = "Add";
+                            if (IsStackType(member.Type))
+                                addMethod="Push";
+                            if (IsQueueType(member.Type))
+                                addMethod="Enqueue";
+                            return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.{addMethod}(item); break;}}";
                         }
                         if (IsDictionaryType(member.Type))
                         {
@@ -761,6 +741,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
         return typeName == "System.Collections.Generic.List<T>"
+            || typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
             || typeName == "System.Collections.Generic.IList<T>"
             || typeName == "System.Collections.Generic.ICollection<T>"
             || typeName == "System.Collections.Generic.IEnumerable<T>";
@@ -773,39 +754,34 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
         return typeName == "System.Collections.Generic.HashSet<T>"
-            || typeName == "System.Collections.Generic.ISet<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentBag<T>";  // Temporary test
+            || typeName == "System.Collections.Generic.ISet<T>"; 
     }
 
-    static bool IsConcurrentCollectionType(ITypeSymbol type)
+    static bool IsQueueType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
-
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
-        var isMatch = typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentStack<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>"
-            || typeName == "System.Collections.Concurrent.IProducerConsumerCollection<T>";
-            
-        // Also check by name in case the OriginalDefinition approach doesn't work
-        var displayString = type.ToDisplayString();
-        var isConcurrentByName = displayString.StartsWith("System.Collections.Concurrent.ConcurrentBag<")
-            || displayString.StartsWith("System.Collections.Concurrent.ConcurrentStack<")
-            || displayString.StartsWith("System.Collections.Concurrent.ConcurrentQueue<")
-            || displayString.StartsWith("System.Collections.Concurrent.IProducerConsumerCollection<");
-            
-        return isMatch || isConcurrentByName;
+        return typeName == "System.Collections.Generic.Queue<T>"
+            || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>";
     }
 
-    static bool IsArrayOrListType(ITypeSymbol type)
+    static bool IsStackType(ITypeSymbol type)
     {
-        return IsArrayType(type) || IsListType(type);
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        return typeName == "System.Collections.Generic.Stack<T>"
+            || typeName == "System.Collections.Concurrent.ConcurrentStack<T>";
     }
 
     static bool IsCollectionType(ITypeSymbol type)
     {
-        return IsArrayType(type) || IsListType(type) || IsSetType(type) || IsConcurrentCollectionType(type);
+        return IsArrayType(type)
+            || IsListType(type)
+            || IsSetType(type)
+            || IsQueueType(type)
+            || IsStackType(type);
     }
 
     static bool IsDictionaryType(ITypeSymbol type)
@@ -834,8 +810,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 $"System.Collections.Generic.Dictionary<{namedType.TypeArguments[0].ToDisplayString()}, {namedType.TypeArguments[1].ToDisplayString()}>",
             "System.Collections.Generic.ISet<T>" =>
                 $"System.Collections.Generic.HashSet<{namedType.TypeArguments[0].ToDisplayString()}>",
-            "System.Collections.Concurrent.IProducerConsumerCollection<T>" =>
-                $"System.Collections.Concurrent.ConcurrentBag<{namedType.TypeArguments[0].ToDisplayString()}>",
+            "System.Collections.Generic.IList<T>"
+            or "System.Collections.Generic.IEnumerable<T>"
+            or "System.Collections.Generic.ICollection<T>"
+            or "System.Collections.Generic.IReadOnlyCollection<T>" =>
+                $"System.Collections.Generic.List<{namedType.TypeArguments[0].ToDisplayString()}>",
             _ => type.ToDisplayString(),
         };
     }
@@ -861,11 +840,21 @@ public class SimpleProtobufGenerator : ISourceGenerator
         {
             return ((IArrayTypeSymbol)collectionType).ElementType;
         }
-        if ((IsListType(collectionType) || IsSetType(collectionType) || IsConcurrentCollectionType(collectionType)) && collectionType is INamedTypeSymbol namedType)
+        if (
+            (
+                IsListType(collectionType)
+                || IsSetType(collectionType)
+                || IsStackType(collectionType)
+                || IsQueueType(collectionType)
+            ) && collectionType is INamedTypeSymbol namedType
+        )
         {
             return namedType.TypeArguments[0];
         }
-        throw new ArgumentException("Type is not an array, list, set, or concurrent collection type", nameof(collectionType));
+        throw new ArgumentException(
+            "Type is not an array, list, set, or concurrent collection type",
+            nameof(collectionType)
+        );
     }
 
     static string GetFieldCodec(ITypeSymbol Type, DataFormat dataFormat, uint rawTag)
