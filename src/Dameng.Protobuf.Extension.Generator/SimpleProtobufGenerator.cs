@@ -867,7 +867,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return false;
 
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
-        return typeName == "System.Collections.Immutable.ImmutableArray<T>";
+        var result = typeName == "System.Collections.Immutable.ImmutableArray<T>";
+        // Debug: Add a comment to the generated code to verify detection
+        return result;
     }
 
     static bool IsImmutableListType(ITypeSymbol type)

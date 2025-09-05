@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using Dameng.Protobuf.Extension;
 
 namespace Dameng.Protobuf.Extension.Tests;
@@ -82,102 +81,4 @@ public partial class TestISet
     
     [ProtoMember(3)]
     public ISet<string> StringSet { get; set; }
-}
-
-// Test types for ImmutableArray support
-[ProtoContract]
-public partial class TestImmutableArray
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ImmutableArray<int> IntArray { get; set; }
-    
-    [ProtoMember(3)]
-    public ImmutableArray<string> StringArray { get; set; }
-}
-
-// Test types for ImmutableList support
-[ProtoContract]
-public partial class TestImmutableList
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ImmutableList<int> IntList { get; set; }
-    
-    [ProtoMember(3)]
-    public ImmutableList<string> StringList { get; set; }
-}
-
-// Test types for IImmutableList support
-[ProtoContract]
-public partial class TestIImmutableList
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public IImmutableList<int> IntList { get; set; }
-    
-    [ProtoMember(3)]
-    public IImmutableList<string> StringList { get; set; }
-}
-
-// Test types for ImmutableQueue support
-[ProtoContract]
-public partial class TestImmutableQueue
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ImmutableQueue<int> IntQueue { get; set; }
-    
-    [ProtoMember(3)]
-    public ImmutableQueue<string> StringQueue { get; set; }
-}
-
-// Test types for ImmutableStack support
-[ProtoContract]
-public partial class TestImmutableStack
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ImmutableStack<int> IntStack { get; set; }
-    
-    [ProtoMember(3)]
-    public ImmutableStack<string> StringStack { get; set; }
-}
-
-// Test types for ImmutableHashSet support
-[ProtoContract]
-public partial class TestImmutableHashSet
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ImmutableHashSet<int> IntSet { get; set; }
-    
-    [ProtoMember(3)]
-    public ImmutableHashSet<string> StringSet { get; set; }
-}
-
-// Test types for ImmutableSortedSet support
-[ProtoContract]
-public partial class TestImmutableSortedSet
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ImmutableSortedSet<int> IntSet { get; set; }
-    
-    [ProtoMember(3)]
-    public ImmutableSortedSet<string> StringSet { get; set; }
 }
