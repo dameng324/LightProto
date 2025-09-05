@@ -94,6 +94,8 @@ public partial class TestOrder
 {
     [ProtoMember(1)]
     public Instrument Instrument { get; set; }
+
+    public override string ToString() => string.Empty;
 }
 
 [ProtoProxy<InstrumentProxy>()]

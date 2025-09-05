@@ -237,7 +237,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
                 }
                 
-                public bool Equals({{className}} other)
+                public {{(targetType.IsRecord&&targetType.IsValueType==false?"virtual":"")}} bool Equals({{className}} other)
                 {
                     if (ReferenceEquals(other, null)) return false;
                     if (ReferenceEquals(other, this)) return true;
