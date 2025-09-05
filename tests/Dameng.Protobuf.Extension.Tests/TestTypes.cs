@@ -102,7 +102,12 @@ public partial class TestOrder
 {
     [ProtoMember(1)]
     public Instrument Instrument { get; set; }
-
+    [ProtoMember(2)]
+    public Dictionary<Instrument,Instrument> InstrumentMap { get; set; }
+    [ProtoMember(3)]
+    public List<Instrument> Instruments { get; set; }
+    [ProtoMember(4)]
+    public Instrument[] InstrumentArray { get; set; }
     public override string ToString() => string.Empty;
 }
 

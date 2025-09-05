@@ -1,6 +1,0 @@
-﻿syntax = "proto3";
-option csharp_namespace = "TestPackage";
-message Request
-{
-  string  Message = 1;
-}
