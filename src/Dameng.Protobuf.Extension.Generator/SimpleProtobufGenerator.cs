@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -129,7 +127,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
         );
 
         var protoMembers = GetProtoMembers(targetType);
-        var hasRequiredMembers = protoMembers.Any(m => m.IsRequired);
 
         // Force object initializer for testing - timestamp: 11:45
         var parserInitializer =
@@ -167,10 +164,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             if (IsArrayType(member.Type))
                                 return $"{member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
                             
-                            return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
+                            return $"{member.Name} = {NewConcreteTypeCollection(member.Type)};";
                         }
                         if (IsDictionaryType(member.Type))
-                            return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
+                            return $"{member.Name} = {NewConcreteTypeCollection(member.Type)};";
                         if (member.Type.IsValueType)
                             return $"{member.Name} = default({member.Type.ToDisplayString()});";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
@@ -214,10 +211,16 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                 var elementType = GetElementType(member.Type).ToDisplayString();
                                 return $"{member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
                             }
-                            return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
+
+                            if (IsImmutableCollectionType(member.Type))
+                            {
+                                return $"{member.Name} = other.{member.Name};";
+                            }
+                            
+                            return $"{member.Name} = other.{member.Name} == null ? {NewConcreteTypeCollection(member.Type)} : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         }
                         if (IsDictionaryType(member.Type))
-                            return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
+                            return $"{member.Name} = other.{member.Name} == null ? {NewConcreteTypeCollection(member.Type)} : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
                             return $"{member.Name} = other.{member.Name}.Clone();";
                         // Handle new types that shouldn't use Clone
@@ -285,15 +288,20 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
                         if (IsCollectionType(member.Type))
                         {
-                            var CountPropertyString = "Count";
-                            if (IsArrayType(member.Type))
-                            {
-                                CountPropertyString = "Length";
-                            }
+                            var count = GetCollectionCountPropertyName(member.Type);
                             var elementType = GetElementType(member.Type);
-
                             var ifNotNullCheck = elementType.IsValueType ? "" : "if (item is not null)";
-                            return $"if ({member.Name} != null && {member.Name}.{CountPropertyString} > 0) {{ foreach(var item in {member.Name}) {ifNotNullCheck} hash ^= item.GetHashCode(); }}";
+
+                            List<string> collectionCheck = new();
+                            if (member.Type.IsValueType == false) {
+                                collectionCheck.Add($"{member.Name} != null");
+                            }
+                            if (HasCountProperty(member.Type, count))
+                            {
+                                collectionCheck.Add( $"{member.Name}.{count} > 0");
+                            }
+                            var collectionCheckCode =collectionCheck.Count > 0?string.Join(" && ",collectionCheck) : "true";
+                            return $"if ({collectionCheckCode}) {{ foreach(var item in {member.Name}) {ifNotNullCheck} hash ^= item.GetHashCode(); }}";
                         }
                         if (IsDictionaryType(member.Type))
                         {
@@ -550,10 +558,19 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
                         if (IsCollectionType(member.Type))
                         {
+                            var count = GetCollectionCountPropertyName(member.Type);
+                            var elementType = GetElementType(member.Type);
                             if (IsArrayType(member.Type))
                             {
-                                var elementType = GetElementType(member.Type).ToDisplayString();
-                                return $"if (other.{member.Name} != null && other.{member.Name}.Length > 0) {{ var temp = new List<{elementType}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
+                                return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ var temp = new List<{elementType.ToDisplayString()}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
+                            }
+var isImmutable = IsImmutableCollectionType(member.Type);
+                            
+                            var immutableAssign = isImmutable ? $"{member.Name} = " : "";
+                            
+                            if (HasAddRangeMethod(member.Type, elementType))
+                            {
+                                return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)};{immutableAssign}{member.Name}.AddRange(other.{member.Name}); }}";
                             }
 
                             var addMethod = "Add";
@@ -561,11 +578,16 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                 addMethod = "Push";
                             if (IsQueueType(member.Type))
                                 addMethod = "Enqueue";
+
+                            if (isImmutable)
+                            {
+                                return $"if (other.{member.Name} != null) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; foreach(var item in other.{member.Name}) {immutableAssign}{member.Name}.{addMethod}(item); }}";
+                            }
                             
-                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in other.{member.Name}) {member.Name}.{addMethod}(item); }}";
+                            return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; foreach(var item in other.{member.Name}) {immutableAssign}{member.Name}.{addMethod}(item); }}";
                         }
                         if (IsDictionaryType(member.Type))
-                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
+                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                             return $"{member.Name}.Add(other.{member.Name});";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
@@ -629,7 +651,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             var elementType = GetElementType(member.Type);
                             var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
                             var elementTypeName = elementType.ToDisplayString();
-                            var memberTypeName = member.Type.ToDisplayString();
                             
                             var caseStatement = member.RawTag == tag2 
                                 ? $"case {member.RawTag}:" 
@@ -639,20 +660,34 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
                             }
+                            bool isImmutable = IsImmutableCollectionType(member.Type);
                             
+                            var immutableAssign =isImmutable ? $"{member.Name} = " : "";
                             
+                            if (HasAddRangeMethod(member.Type, elementType))
+                            {
+                                if (isImmutable)
+                                {
+                                    return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
+                                }
+                                else
+                                {
+                                    return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
+                                }
+                            }
 
                             var addMethod = "Add";
                             if (IsStackType(member.Type))
                                 addMethod = "Push";
                             if (IsQueueType(member.Type))
                                 addMethod = "Enqueue";
-                            return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.{addMethod}(item); break;}}";
+                            
+                            return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; foreach(var item in tempRepeated) {immutableAssign}{member.Name}.{addMethod}(item); break;}}";
                         }
                         if (IsDictionaryType(member.Type))
                         {
                             var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                            return $"case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
+                            return $"case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(member.Type)}; if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
                         }
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
                         {
@@ -714,10 +749,26 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return sourceBuilder.ToString();
     }
 
+    private bool HasCountProperty(ITypeSymbol memberType, string count)
+    {
+        if (memberType is not INamedTypeSymbol namedType)
+            return false;
+
+        var property = namedType.GetMembers(count).OfType<IPropertySymbol>().FirstOrDefault();
+        if (property != null && property.GetMethod != null)
+            return true;
+        
+        return namedType.AllInterfaces.Any(o=>
+        {
+            property = o.GetMembers(count).OfType<IPropertySymbol>().FirstOrDefault();
+            return property != null && property.GetMethod != null;
+        });
+    }
+
     static bool IsNullableValueType(ITypeSymbol type)
     {
-        return type is INamedTypeSymbol namedType
-            && namedType.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T;
+        return type
+            is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
     }
 
     static ITypeSymbol GetUnderlyingType(ITypeSymbol type)
@@ -734,14 +785,41 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return type.TypeKind == TypeKind.Array;
     }
 
+    static bool IsImmutableCollectionType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
+        return typeName.StartsWith("System.Collections.Immutable.Immutable");
+    }
+
+    static bool IsImmutableArrayType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
+        return typeName == "System.Collections.Immutable.ImmutableArray<T>";
+    }
+
+    static string GetCollectionCountPropertyName(ITypeSymbol type)
+    {
+        if (IsArrayType(type) || IsImmutableArrayType(type))
+            return "Length";
+        return "Count";
+    }
+
     static bool IsListType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
 
-        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.List<T>"
             || typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
+            || typeName == "System.Collections.Immutable.ImmutableArray<T>"
+            || typeName == "System.Collections.Immutable.ImmutableList<T>"
             || typeName == "System.Collections.Generic.IList<T>"
             || typeName == "System.Collections.Generic.ICollection<T>"
             || typeName == "System.Collections.Generic.IEnumerable<T>";
@@ -752,17 +830,19 @@ public class SimpleProtobufGenerator : ISourceGenerator
         if (type is not INamedTypeSymbol namedType)
             return false;
 
-        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.HashSet<T>"
-            || typeName == "System.Collections.Generic.ISet<T>"; 
+            || typeName == "System.Collections.Immutable.ImmutableHashSet<T>"
+            || typeName == "System.Collections.Generic.ISet<T>";
     }
 
     static bool IsQueueType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
-        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.Queue<T>"
+            || typeName == "System.Collections.Immutable.ImmutableQueue<T>"
             || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>";
     }
 
@@ -770,8 +850,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
-        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.Stack<T>"
+            || typeName == "System.Collections.Immutable.ImmutableStack<T>"
             || typeName == "System.Collections.Concurrent.ConcurrentStack<T>";
     }
 
@@ -784,17 +865,41 @@ public class SimpleProtobufGenerator : ISourceGenerator
             || IsStackType(type);
     }
 
+    static bool HasAddRangeMethod(ITypeSymbol collectionType, ITypeSymbol elementType)
+    {
+        var addRangeMethod = collectionType
+            .GetMembers("AddRange")
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(m =>
+                m.Parameters.Length == 1
+                && SymbolEqualityComparer.Default.Equals(
+                    (m.Parameters[0].Type as INamedTypeSymbol)?.TypeArguments[0],
+                    elementType
+                )
+            );
+        return addRangeMethod != null;
+    }
+
     static bool IsDictionaryType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
 
-        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
         // Dictionary uses different template parameter names based on actual Roslyn behavior
         return typeName == "System.Collections.Generic.Dictionary<TKey, TValue>"
             || typeName == "System.Collections.Generic.IDictionary<TKey, TValue>"
             || typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>"
+            || typeName == "System.Collections.Immutable.ImmutableDictionary<TKey, TValue>"
             || typeName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
+    }
+
+    static string NewConcreteTypeCollection(ITypeSymbol type)
+    {
+        if (IsImmutableCollectionType(type))
+            return $"{GetConcreteTypeName(type)}.Empty";
+
+        return $"new {GetConcreteTypeName(type)}()";
     }
 
     static string GetConcreteTypeName(ITypeSymbol type)
@@ -802,7 +907,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
         if (type is not INamedTypeSymbol namedType)
             return type.ToDisplayString();
 
-        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName switch
         {
             "System.Collections.Generic.IDictionary<TKey, TValue>"

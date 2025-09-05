@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using Dameng.Protobuf.Extension;
 
 namespace Dameng.Protobuf.Extension.Tests;
@@ -103,4 +104,16 @@ public partial class TestConcurrentCollection
     public List<int> IntList { get; set; }
     [ProtoMember(7)]
     public IList<int> IntIList { get; set; }
+
+    [ProtoMember(8)]
+    public ImmutableArray<int> IntImmutableArray { get; set; }
+    [ProtoMember(9)]
+    public ImmutableHashSet<int> ImmutableHashSet { get; set; }
+    [ProtoMember(10)]
+    public ImmutableList<int> ImmutableList { get; set; }
+    [ProtoMember(11)]
+    public ImmutableQueue<int> ImmutableQueue { get; set; }
+    [ProtoMember(12)]
+    public ImmutableStack<int> ImmutableStack { get; set; }
+
 }
