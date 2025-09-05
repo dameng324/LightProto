@@ -84,7 +84,7 @@ public partial class TestISet
     public ISet<string> StringSet { get; set; }
 }
 
-// Test types for Concurrent Collections
+// Test types for Concurrent Collections  
 [ProtoContract]
 public partial class TestConcurrentBag
 {
@@ -93,46 +93,4 @@ public partial class TestConcurrentBag
     
     [ProtoMember(2)]
     public ConcurrentBag<int> IntBag { get; set; }
-    
-    [ProtoMember(3)]
-    public ConcurrentBag<string> StringBag { get; set; }
-}
-
-[ProtoContract]
-public partial class TestConcurrentStack
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ConcurrentStack<int> IntStack { get; set; }
-    
-    [ProtoMember(3)]
-    public ConcurrentStack<string> StringStack { get; set; }
-}
-
-[ProtoContract]
-public partial class TestConcurrentQueue
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public ConcurrentQueue<int> IntQueue { get; set; }
-    
-    [ProtoMember(3)]
-    public ConcurrentQueue<string> StringQueue { get; set; }
-}
-
-[ProtoContract]
-public partial class TestIProducerConsumerCollection
-{
-    [ProtoMember(1)]
-    public string Name { get; set; }
-    
-    [ProtoMember(2)]
-    public IProducerConsumerCollection<int> IntCollection { get; set; }
-    
-    [ProtoMember(3)]
-    public IProducerConsumerCollection<string> StringCollection { get; set; }
 }

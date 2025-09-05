@@ -225,9 +225,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"{member.Name} = other.{member.Name};";
                         if (IsTimeSpanType(member.Type))
                             return $"{member.Name} = other.{member.Name};";
-                        // Don't try to clone concurrent collections or other collection types
-                        if (IsCollectionType(member.Type) || IsDictionaryType(member.Type))
-                            return $"{member.Name} = other.{member.Name};";
   
                         return $"{member.Name} = other.{member.Name}?.Clone();";
                     }))
@@ -782,10 +779,19 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return false;
 
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
-        return typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
+        var isMatch = typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
             || typeName == "System.Collections.Concurrent.ConcurrentStack<T>"
             || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>"
             || typeName == "System.Collections.Concurrent.IProducerConsumerCollection<T>";
+            
+        // Also check by name in case the OriginalDefinition approach doesn't work
+        var displayString = type.ToDisplayString();
+        var isConcurrentByName = displayString.StartsWith("System.Collections.Concurrent.ConcurrentBag<")
+            || displayString.StartsWith("System.Collections.Concurrent.ConcurrentStack<")
+            || displayString.StartsWith("System.Collections.Concurrent.ConcurrentQueue<")
+            || displayString.StartsWith("System.Collections.Concurrent.IProducerConsumerCollection<");
+            
+        return isMatch || isConcurrentByName;
     }
 
     static bool IsArrayOrListType(ITypeSymbol type)
