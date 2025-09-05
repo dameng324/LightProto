@@ -84,9 +84,11 @@ public partial class TestISet
     public ISet<string> StringSet { get; set; }
 }
 
-// Test types for Concurrent Collections  
+// Test types for Concurrent Collections will be added once the generator logic is working
+
+// Temporary test for ConcurrentBag using the same pattern as HashSet
 [ProtoContract]
-public partial class TestConcurrentBag
+public partial class TestConcurrentBagAsSet
 {
     [ProtoMember(1)]
     public string Name { get; set; }

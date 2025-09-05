@@ -205,6 +205,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"{member.Name} = other.{member.Name};";
                         if (IsStringBuilderType(member.Type))
                             return $"{member.Name} = other.{member.Name} == null ? new System.Text.StringBuilder() : new System.Text.StringBuilder(other.{member.Name}.ToString());";
+                        // DEBUG: Temporary direct ConcurrentBag handling
+                        if (member.Type.ToDisplayString().Contains("ConcurrentBag"))
+                            return $"{member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
                         if (IsArrayType(member.Type))
                         {
                             var elementType = GetElementType(member.Type).ToDisplayString();
@@ -770,7 +773,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         var typeName = namedType.OriginalDefinition?.ToDisplayString();
         return typeName == "System.Collections.Generic.HashSet<T>"
-            || typeName == "System.Collections.Generic.ISet<T>";
+            || typeName == "System.Collections.Generic.ISet<T>"
+            || typeName == "System.Collections.Concurrent.ConcurrentBag<T>";  // Temporary test
     }
 
     static bool IsConcurrentCollectionType(ITypeSymbol type)
