@@ -27,7 +27,6 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <Version>999.999.999-localbuild</Version>
         <RootNamespace>Dameng.Protobuf.Extension.Generator</RootNamespace>
     </PropertyGroup>
     
