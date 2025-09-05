@@ -290,6 +290,25 @@ public class Tests
             parsed.IntSet.Count.Should().Be(1);
         }
     }
+
+    [Test]
+    public void MergeFromTest()
+    {
+        TestHashSet set1 = new TestHashSet()
+        {
+            IntSet = [1, 2, 3]
+        };
+        TestHashSet set2 = new TestHashSet()
+        {
+            IntSet = [3, 4, 5]
+        };
+
+        var bytes = set2.ToByteArray();
+        
+        set1.MergeFrom(bytes);
+        
+        set1.IntSet.Count.Should().Be(5);
+    }
 }
 
 public static class Extensions
