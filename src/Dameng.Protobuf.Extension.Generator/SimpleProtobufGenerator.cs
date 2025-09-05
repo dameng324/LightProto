@@ -230,7 +230,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"{member.Name} = other.{member.Name};";
                         if (IsTimeSpanType(member.Type))
                             return $"{member.Name} = other.{member.Name};";
-  
+
+                        if (member.Type.IsRecord)
+                        {
+                            return $"{member.Name} = other.{member.Name} with {{}};";
+                        }
                         return $"{member.Name} = other.{member.Name}?.Clone();";
                     }))
                 }}

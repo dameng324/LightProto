@@ -88,6 +88,14 @@ public partial class TestConcurrentCollection
     [ProtoMember(11)] public ImmutableQueue<int> ImmutableQueue { get; set; }
     [ProtoMember(12)] public ImmutableStack<int> ImmutableStack { get; set; }
 }
+[ProtoContract]
+public partial class TestRecordRecord
+{
+    [ProtoMember(1)]
+    public TestRecord Record { get; set; }
+
+    public override string ToString() => string.Empty;
+}
 
 [ProtoContract]
 public partial class TestOrder
