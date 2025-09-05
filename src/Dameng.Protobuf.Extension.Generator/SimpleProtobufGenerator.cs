@@ -582,9 +582,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
                             }
-                            else if (IsSetType(member.Type))
-                            {
-                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); {member.Name}.Clear(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
+                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
                             }
                             else
                             {
