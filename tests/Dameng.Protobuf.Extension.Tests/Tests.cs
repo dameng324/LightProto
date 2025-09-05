@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 using AwesomeAssertions;
 using Google.Protobuf;
@@ -202,6 +203,29 @@ public class Tests
     public void TestRecordStruct()
     {
         Run<TestRecordStruct, TestType>(new TestRecordStruct { Name = RandomString(), Value = RandomInt() });
+    }
+
+    [Test]
+    public void TestSimpleNewTypesSupport()
+    {
+        var testObj = new TestSimpleNewTypes
+        {
+            TimeSpanField = DateTime.Now.TimeOfDay,
+            DateOnlyField = DateOnly.FromDateTime(DateTime.Today),
+            GuidField = Guid.NewGuid(),
+            TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
+            StringBuilderField = new StringBuilder(RandomString()),
+        };
+
+        var serialized = testObj.ToByteArray();
+        var deserialized = TestSimpleNewTypes.Parser.ParseFrom(serialized);
+
+        // Verify round-trip serialization works
+        deserialized.TimeSpanField.Should().Be(testObj.TimeSpanField);
+        deserialized.DateOnlyField.Should().Be(testObj.DateOnlyField);
+        deserialized.GuidField.Should().Be(testObj.GuidField);
+        deserialized.TimeOnlyField.Ticks.Should().Be(testObj.TimeOnlyField.Ticks);
+        deserialized.StringBuilderField.ToString().Should().Be(testObj.StringBuilderField.ToString());
     }
     
     [Test]
