@@ -166,6 +166,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"{member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
                         if (IsListType(member.Type))
                             return $"{member.Name} = new {member.Type.ToDisplayString()}();";
+                        if (IsSetType(member.Type))
+                            return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
                         if (IsDictionaryType(member.Type))
                             return $"{member.Name} = new {GetConcreteTypeName(member.Type)}();";
                         if (member.Type.IsValueType)
@@ -208,6 +210,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         }
                         if (IsListType(member.Type))
                             return $"{member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
+                        if (IsSetType(member.Type))
+                            return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         if (IsDictionaryType(member.Type))
                             return $"{member.Name} = other.{member.Name} == null ? new {GetConcreteTypeName(member.Type)}() : new {GetConcreteTypeName(member.Type)}(other.{member.Name});";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
@@ -243,6 +247,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
                         if (IsListType(member.Type))
                             return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
+                        if (IsSetType(member.Type))
+                            return $"if (!{member.Name}.SetEquals(other.{member.Name})) return false;";
                         if (IsDictionaryType(member.Type))
                             return $"if ({member.Name} == null && other.{member.Name} == null) {{ }} else if ({member.Name} == null || other.{member.Name} == null) return false; else if ({member.Name}.Count != other.{member.Name}.Count) return false; else if (!{member.Name}.All(kvp => other.{member.Name}.ContainsKey(kvp.Key) && EqualityComparer<object>.Default.Equals(kvp.Value, other.{member.Name}[kvp.Key]))) return false;";
                         if (member.Type.SpecialType == SpecialType.System_Double)
@@ -286,6 +292,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             else
                                 return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
                         }
+                        if (IsSetType(member.Type))
+                        {
+                            var elementType = GetElementType(member.Type);
+                            if (elementType.IsValueType)
+                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item.GetHashCode(); }}";
+                            else
+                                return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var item in {member.Name}) hash ^= item?.GetHashCode() ?? 0; }}";
+                        }
                         if (IsDictionaryType(member.Type))
                         {
                             return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var kvp in {member.Name}) hash ^= kvp.Key?.GetHashCode() ?? 0 ^ kvp.Value?.GetHashCode() ?? 0; }}";
@@ -320,7 +334,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"private static readonly pb::FieldCodec<{genericType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(genericType, member.DataFormat, member.RawTag)};";
                         }
   
-                        if (IsArrayOrListType(member.Type))
+                        if (IsCollectionType(member.Type))
                         {
                             //get element type
                             var elementType = GetElementType(member.Type);
@@ -417,7 +431,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
                         }
                         // Handle arrays and lists by converting to RepeatedField
-                        if (IsArrayOrListType(member.Type))
+                        if (IsCollectionType(member.Type))
                         {
                             var elementType = GetElementType(member.Type).ToDisplayString();
                             return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
@@ -488,7 +502,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
                         }
                         // Handle arrays and lists
-                        if (IsArrayOrListType(member.Type))
+                        if (IsCollectionType(member.Type))
                         {
                             var elementType = GetElementType(member.Type).ToDisplayString();
                             return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
@@ -546,6 +560,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         }
                         if (IsListType(member.Type))
                             return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {member.Type.ToDisplayString()}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
+                        if (IsSetType(member.Type))
+                            return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in other.{member.Name}) {member.Name}.Add(item); }}";
                         if (IsDictionaryType(member.Type))
                             return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
@@ -604,7 +620,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                 return $"case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
                             return $"case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
                         }
-                        if (IsArrayOrListType(member.Type))
+                        if (IsCollectionType(member.Type))
                         {
                             var elementType = GetElementType(member.Type);
                             var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
@@ -619,9 +635,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
                             }
+                            else if (IsSetType(member.Type))
+                            {
+                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
+                            }
                             else
                             {
-                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {memberTypeName}(); {member.Name}.Clear(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
+                                return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {memberTypeName}(); foreach(var item in tempRepeated) {member.Name}.Add(item); break;}}";
                             }
                         }
                         if (IsDictionaryType(member.Type))
@@ -721,9 +741,24 @@ public class SimpleProtobufGenerator : ISourceGenerator
             || typeName == "System.Collections.Generic.IEnumerable<T>";
     }
 
+    static bool IsSetType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var typeName = namedType.OriginalDefinition?.ToDisplayString();
+        return typeName == "System.Collections.Generic.HashSet<T>"
+            || typeName == "System.Collections.Generic.ISet<T>";
+    }
+
     static bool IsArrayOrListType(ITypeSymbol type)
     {
         return IsArrayType(type) || IsListType(type);
+    }
+
+    static bool IsCollectionType(ITypeSymbol type)
+    {
+        return IsArrayType(type) || IsListType(type) || IsSetType(type);
     }
 
     static bool IsDictionaryType(ITypeSymbol type)
@@ -750,6 +785,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
             "System.Collections.Generic.IDictionary<TKey, TValue>"
             or "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" =>
                 $"System.Collections.Generic.Dictionary<{namedType.TypeArguments[0].ToDisplayString()}, {namedType.TypeArguments[1].ToDisplayString()}>",
+            "System.Collections.Generic.ISet<T>" =>
+                $"System.Collections.Generic.HashSet<{namedType.TypeArguments[0].ToDisplayString()}>",
             _ => type.ToDisplayString(),
         };
     }
@@ -775,11 +812,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
         {
             return ((IArrayTypeSymbol)collectionType).ElementType;
         }
-        if (IsListType(collectionType) && collectionType is INamedTypeSymbol namedType)
+        if ((IsListType(collectionType) || IsSetType(collectionType)) && collectionType is INamedTypeSymbol namedType)
         {
             return namedType.TypeArguments[0];
         }
-        throw new ArgumentException("Type is not an array or list type", nameof(collectionType));
+        throw new ArgumentException("Type is not an array, list, or set type", nameof(collectionType));
     }
 
     static string GetFieldCodec(ITypeSymbol Type, DataFormat dataFormat, uint rawTag)
@@ -953,8 +990,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 return GetPbWireType(namedType.TypeArguments[0], DataFormat);
             }
 
-            // Handle arrays and lists
-            if (IsArrayOrListType(Type))
+            // Handle arrays, lists and sets
+            if (IsCollectionType(Type))
             {
                 return PbWireType.LengthDelimited;
             }
