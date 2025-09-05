@@ -611,7 +611,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             if (underlyingType.SpecialType == SpecialType.System_DateTime)
                                 return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
                             if (IsGuidType(underlyingType))
-                                return $"case {member.RawTag}:{{{member.Name} = System.Guid.Parse(input.Read{underlyingPbTypeString}());break;}}";
+                                return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{underlyingPbTypeString}().Span);break;}}";
                             if (IsTimeSpanType(underlyingType))
                                 return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
                             if (IsDateOnlyType(underlyingType))
@@ -669,7 +669,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         if (member.Type.SpecialType == SpecialType.System_DateTime)
                             return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
                         if (IsGuidType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = System.Guid.Parse(input.Read{pbTypeString}().Span);break;}}";
+                            return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{pbTypeString}().Span);break;}}";
                         if (IsTimeSpanType(member.Type))
                             return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
                         if (IsDateOnlyType(member.Type))
