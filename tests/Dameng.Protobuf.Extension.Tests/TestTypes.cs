@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Dameng.Protobuf.Extension;
 
 namespace Dameng.Protobuf.Extension.Tests;
@@ -81,4 +82,15 @@ public partial class TestISet
     
     [ProtoMember(3)]
     public ISet<string> StringSet { get; set; }
+}
+
+// Test types for ImmutableArray support
+[ProtoContract]
+public partial class TestImmutableArray
+{
+    [ProtoMember(1)]
+    public string Name { get; set; }
+    
+    [ProtoMember(2)]
+    public ImmutableArray<int> IntArray { get; set; }
 }
