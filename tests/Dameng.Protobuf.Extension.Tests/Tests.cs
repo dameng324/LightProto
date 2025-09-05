@@ -333,6 +333,122 @@ public class Tests
         
         set1.IntSet.Count.Should().Be(5);
     }
+
+    [Test]
+    public void TestConcurrentBagSupport()
+    {
+        var testObj = new TestConcurrentBag 
+        { 
+            Name = RandomString(),
+            IntBag = new ConcurrentBag<int> { 1, 2, 3, RandomInt() },
+            StringBag = new ConcurrentBag<string> { "hello", "world", RandomString() }
+        };
+        
+        // Test serialization/deserialization through protobuf
+        var bytes = testObj.ToByteArray();
+        var parsed = TestConcurrentBag.Parser.ParseFrom(bytes);
+        
+        // Verify the bags contain the same elements (order may differ)
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntBag.Should().BeEquivalentTo(testObj.IntBag);
+        parsed.StringBag.Should().BeEquivalentTo(testObj.StringBag);
+        
+        // Test equality
+        parsed.Should().Be(testObj);
+        
+        // Test cloning
+        var cloned = testObj.Clone();
+        cloned.Should().Be(testObj);
+        cloned.IntBag.Should().BeEquivalentTo(testObj.IntBag);
+        cloned.StringBag.Should().BeEquivalentTo(testObj.StringBag);
+    }
+
+    [Test]
+    public void TestConcurrentStackSupport()
+    {
+        var testObj = new TestConcurrentStack 
+        { 
+            Name = RandomString(),
+            IntStack = new ConcurrentStack<int>(new[] { 1, 2, 3, RandomInt() }),
+            StringStack = new ConcurrentStack<string>(new[] { "hello", "world", RandomString() })
+        };
+        
+        // Test serialization/deserialization through protobuf
+        var bytes = testObj.ToByteArray();
+        var parsed = TestConcurrentStack.Parser.ParseFrom(bytes);
+        
+        // Verify the stacks contain the same elements (order may differ)
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntStack.Should().BeEquivalentTo(testObj.IntStack);
+        parsed.StringStack.Should().BeEquivalentTo(testObj.StringStack);
+        
+        // Test equality
+        parsed.Should().Be(testObj);
+        
+        // Test cloning
+        var cloned = testObj.Clone();
+        cloned.Should().Be(testObj);
+        cloned.IntStack.Should().BeEquivalentTo(testObj.IntStack);
+        cloned.StringStack.Should().BeEquivalentTo(testObj.StringStack);
+    }
+
+    [Test]
+    public void TestConcurrentQueueSupport()
+    {
+        var testObj = new TestConcurrentQueue 
+        { 
+            Name = RandomString(),
+            IntQueue = new ConcurrentQueue<int>(new[] { 1, 2, 3, RandomInt() }),
+            StringQueue = new ConcurrentQueue<string>(new[] { "hello", "world", RandomString() })
+        };
+        
+        // Test serialization/deserialization through protobuf
+        var bytes = testObj.ToByteArray();
+        var parsed = TestConcurrentQueue.Parser.ParseFrom(bytes);
+        
+        // Verify the queues contain the same elements (order may differ for serialization)
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntQueue.Should().BeEquivalentTo(testObj.IntQueue);
+        parsed.StringQueue.Should().BeEquivalentTo(testObj.StringQueue);
+        
+        // Test equality
+        parsed.Should().Be(testObj);
+        
+        // Test cloning
+        var cloned = testObj.Clone();
+        cloned.Should().Be(testObj);
+        cloned.IntQueue.Should().BeEquivalentTo(testObj.IntQueue);
+        cloned.StringQueue.Should().BeEquivalentTo(testObj.StringQueue);
+    }
+
+    [Test]
+    public void TestIProducerConsumerCollectionSupport()
+    {
+        var testObj = new TestIProducerConsumerCollection 
+        { 
+            Name = RandomString(),
+            IntCollection = new ConcurrentBag<int> { 1, 2, 3, RandomInt() },
+            StringCollection = new ConcurrentBag<string> { "hello", "world", RandomString() }
+        };
+        
+        // Test serialization/deserialization through protobuf
+        var bytes = testObj.ToByteArray();
+        var parsed = TestIProducerConsumerCollection.Parser.ParseFrom(bytes);
+        
+        // Verify the collections contain the same elements
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntCollection.Should().BeEquivalentTo(testObj.IntCollection);
+        parsed.StringCollection.Should().BeEquivalentTo(testObj.StringCollection);
+        
+        // Test equality
+        parsed.Should().Be(testObj);
+        
+        // Test cloning
+        var cloned = testObj.Clone();
+        cloned.Should().Be(testObj);
+        cloned.IntCollection.Should().BeEquivalentTo(testObj.IntCollection);
+        cloned.StringCollection.Should().BeEquivalentTo(testObj.StringCollection);
+    }
 }
 
 public static class Extensions
