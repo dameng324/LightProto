@@ -644,9 +644,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
                             var addMethod = "Add";
                             if (IsStackType(member.Type))
-                                addMethod="Push";
+                                addMethod = "Push";
                             if (IsQueueType(member.Type))
-                                addMethod="Enqueue";
+                                addMethod = "Enqueue";
                             return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in tempRepeated) {member.Name}.{addMethod}(item); break;}}";
                         }
                         if (IsDictionaryType(member.Type))
