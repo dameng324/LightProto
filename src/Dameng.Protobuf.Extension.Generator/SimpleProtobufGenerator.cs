@@ -337,7 +337,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     if (_unknownFields != null) hash ^= _unknownFields.GetHashCode();
                     return hash;
                 }
-                public override string ToString() => pb::JsonFormatter.ToDiagnosticString(this);
+                {{
+                    (targetType.GetMembers("ToString").OfType<IMethodSymbol>().Any(o=>o.Parameters.Length==0)?"":"public override string ToString() => pb::JsonFormatter.ToDiagnosticString(this);")
+                }}
                 
                 {{string.Join(Environment.NewLine+GetIntendedSpace(1),
                     GetProtoMembers(targetType).Select(member => {
