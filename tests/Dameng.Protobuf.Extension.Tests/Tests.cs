@@ -169,7 +169,7 @@ public class Tests
         };
     }
 
-    int RandomInt() => Random.Shared.Next(2);
+    int RandomInt() => Random.Shared.Next(10);
 
     T2 Run<T1, T2>(T1 obj)
         where T1 : IPbMessageParser<T1>
@@ -332,6 +332,47 @@ public class Tests
         set1.MergeFrom(bytes);
         
         set1.IntSet.Count.Should().Be(5);
+    }
+
+    [Test]
+    public void ConcurrentCollectionTest()
+    {
+        TestConcurrentCollection testObj = new TestConcurrentCollection
+        {
+            Name = RandomString(),
+            IntBag =
+            [
+                RandomInt(),
+                RandomInt()
+            ],
+            ConcurrentQueue = new ConcurrentQueue<string>([
+                RandomString(),
+                RandomString()
+            ]),
+            ConcurrentStack = new ConcurrentStack<string>([
+                RandomString(),
+                RandomString()
+            ]),
+            IntList =  [
+                RandomInt(),
+                RandomInt()
+            ],
+            IntIList =  [
+                RandomInt(),
+                RandomInt()
+            ],
+        };
+        
+        var bytes = testObj.ToByteArray();
+        var parsed = TestConcurrentCollection.Parser.ParseFrom(bytes);
+        parsed.Name.Should().Be(testObj.Name);
+        parsed.IntBag.Should().BeEquivalentTo(testObj.IntBag);
+        parsed.ConcurrentQueue.Should().BeEquivalentTo(testObj.ConcurrentQueue);
+        parsed.ConcurrentStack.Should().BeEquivalentTo(testObj.ConcurrentStack);
+        parsed.IntList.Should().BeEquivalentTo(testObj.IntList);
+        parsed.IntIList.Should().BeEquivalentTo(testObj.IntIList);
+        
+        parsed.GetHashCode().Should().Be(testObj.GetHashCode());
     }
 }
 
