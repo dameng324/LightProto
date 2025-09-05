@@ -558,9 +558,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
                             var addMethod = "Add";
                             if (IsStackType(member.Type))
-                                addMethod="Push";
+                                addMethod = "Push";
                             if (IsQueueType(member.Type))
-                                addMethod="Enqueue";
+                                addMethod = "Enqueue";
                             
                             return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = new {GetConcreteTypeName(member.Type)}(); foreach(var item in other.{member.Name}) {member.Name}.{addMethod}(item); }}";
                         }
