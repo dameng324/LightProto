@@ -409,9 +409,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             if (IsTimeSpanType(underlyingType))
                                 return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));}}";
                             if (IsDateOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.ToString(\"yyyy-MM-dd\"));}}";
+                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.DayNumber);}}";
                             if (IsTimeOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.ToString(\"HH:mm:ss.fff\"));}}";
+                                return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.Ticks);}}";
                             if (underlyingType.TypeKind == TypeKind.Enum)
                                 return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
                             return $"if ({member.Name}.HasValue) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
@@ -432,13 +432,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         if (member.Type.SpecialType == SpecialType.System_DateTime)
                             return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
                         if (IsGuidType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString());}}";
+                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}(pb::ByteString.CopyFrom({member.Name}.ToByteArray()));}}";
                         if (IsTimeSpanType(member.Type))
                             return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}));}}";
                         if (IsDateOnlyType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString(\"yyyy-MM-dd\"));}}";
+                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.DayNumber);}}";
                         if (IsTimeOnlyType(member.Type))
-                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString(\"HH:mm:ss.fff\"));}}";
+                            return $"if ({member.Name} != default) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.Ticks);}}";
                         if (IsStringBuilderType(member.Type))
                             return $"if ({member.Name} != null && {member.Name}.Length > 0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString());}}";
                         if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
@@ -476,13 +476,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             if (underlyingType.SpecialType == SpecialType.System_DateTime)
                                 return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));";
                             if (IsGuidType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.ToString());";
+                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size(pb::ByteString.CopyFrom({member.Name}.Value.ToByteArray()));";
                             if (IsTimeSpanType(underlyingType))
                                 return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));";
                             if (IsDateOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.ToString(\"yyyy-MM-dd\"));";
+                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.DayNumber);";
                             if (IsTimeOnlyType(underlyingType))
-                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.ToString(\"HH:mm:ss.fff\"));";
+                                return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.Ticks);";
                             if (underlyingType.TypeKind == TypeKind.Enum)
                                 return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
                             return $"if ({member.Name}.HasValue) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
@@ -503,13 +503,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         if (member.Type.SpecialType == SpecialType.System_DateTime)
                             return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
                         if (IsGuidType(member.Type))
-                            return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.ToString());";
+                            return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size(pb::ByteString.CopyFrom({member.Name}.ToByteArray()));";
                         if (IsTimeSpanType(member.Type))
                             return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}));";
                         if (IsDateOnlyType(member.Type))
-                            return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.ToString(\"yyyy-MM-dd\"));";
+                            return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.DayNumber);";
                         if (IsTimeOnlyType(member.Type))
-                            return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.ToString(\"HH:mm:ss.fff\"));";
+                            return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.Ticks);";
                         if (IsStringBuilderType(member.Type))
                             return $"if ({member.Name} != null && {member.Name}.Length > 0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.ToString());";
                         if (member.Type.SpecialType == SpecialType.System_String)
@@ -556,6 +556,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             return $"if (other.{member.Name}.Length != 0) {member.Name} = other.{member.Name};";
                         if (member.Type.IsValueType)
                             return $"if (other.{member.Name} != default) {member.Name} = other.{member.Name};";
+                        if (IsStringBuilderType(member.Type))
+                            return $"if (other.{member.Name} != null)  {member.Name}= new {member.Type.ToDisplayString()}(other.{member.Name}.ToString());";
                         // Fallback for non-dictionary reference types
                         if (!IsDictionaryType(member.Type))
                             return $"if (other.{member.Name} != null) {{ if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); {member.Name}.MergeFrom(other.{member.Name});}}";
@@ -597,9 +599,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             if (IsTimeSpanType(underlyingType))
                                 return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
                             if (IsDateOnlyType(underlyingType))
-                                return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.Parse(input.Read{underlyingPbTypeString}());break;}}";
+                                return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{underlyingPbTypeString}());break;}}";
                             if (IsTimeOnlyType(underlyingType))
-                                return $"case {member.RawTag}:{{{member.Name} = System.TimeOnly.Parse(input.Read{underlyingPbTypeString}());break;}}";
+                                return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{underlyingPbTypeString}());break;}}";
                             if (underlyingType.TypeKind == TypeKind.Enum)
                                 return $"case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
                             return $"case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
@@ -647,13 +649,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         if (member.Type.SpecialType == SpecialType.System_DateTime)
                             return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
                         if (IsGuidType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = System.Guid.Parse(input.Read{pbTypeString}());break;}}";
+                            return $"case {member.RawTag}:{{{member.Name} = System.Guid.Parse(input.Read{pbTypeString}().Span);break;}}";
                         if (IsTimeSpanType(member.Type))
                             return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
                         if (IsDateOnlyType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.Parse(input.Read{pbTypeString}());break;}}";
+                            return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{pbTypeString}());break;}}";
                         if (IsTimeOnlyType(member.Type))
-                            return $"case {member.RawTag}:{{{member.Name} = System.TimeOnly.Parse(input.Read{pbTypeString}());break;}}";
+                            return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{pbTypeString}());break;}}";
                         if (IsStringBuilderType(member.Type))
                             return $"case {member.RawTag}:{{{member.Name} = new System.Text.StringBuilder(input.Read{pbTypeString}());break;}}";
                         if (member.Type.TypeKind == TypeKind.Enum)
@@ -826,10 +828,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
             SpecialType.System_String => "String",
             SpecialType.System_DateTime => "Message",
             _ when genericType.ToDisplayString() == "Google.Protobuf.ByteString" => "Bytes",
-            _ when IsGuidType(genericType) => "String",
+            _ when IsGuidType(genericType) => "Bytes",
             _ when IsTimeSpanType(genericType) => "Message",
-            _ when IsDateOnlyType(genericType) => "String",
-            _ when IsTimeOnlyType(genericType) => "String",
+            _ when IsDateOnlyType(genericType) => "Int32",
+            _ when IsTimeOnlyType(genericType) => "Int64",
             _ when IsStringBuilderType(genericType) => "String",
             _ when genericType.TypeKind == TypeKind.Enum => "Enum",
             _ => "Message",

@@ -210,16 +210,22 @@ public class Tests
     {
         var testObj = new TestSimpleNewTypes
         {
-            StringField = "Test String",
-            IntField = 42
+            TimeSpanField = DateTime.Now.TimeOfDay,
+            DateOnlyField = DateOnly.FromDateTime(DateTime.Today),
+            GuidField = Guid.NewGuid(),
+            TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
+            StringBuilderField = new StringBuilder(RandomString()),
         };
 
         var serialized = testObj.ToByteArray();
         var deserialized = TestSimpleNewTypes.Parser.ParseFrom(serialized);
 
         // Verify round-trip serialization works
-        deserialized.StringField.Should().Be(testObj.StringField);
-        deserialized.IntField.Should().Be(testObj.IntField);
+        deserialized.TimeSpanField.Should().Be(testObj.TimeSpanField);
+        deserialized.DateOnlyField.Should().Be(testObj.DateOnlyField);
+        deserialized.GuidField.Should().Be(testObj.GuidField);
+        deserialized.TimeOnlyField.Ticks.Should().Be(testObj.TimeOnlyField.Ticks);
+        deserialized.StringBuilderField.ToString().Should().Be(testObj.StringBuilderField.ToString());
     }
 }
 

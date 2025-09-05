@@ -38,11 +38,19 @@ public partial record struct TestRecordStruct
 public partial class TestSimpleNewTypes
 {
     [ProtoMember(1)]
-    public string StringField { get; set; }
+    public TimeSpan TimeSpanField { get; set; }
     
     [ProtoMember(2)]
-    public int IntField { get; set; }
+    public DateOnly DateOnlyField { get; set; }
     
     [ProtoMember(3)]
     public Guid GuidField { get; set; }
+    
+    [ProtoMember(4)]
+    public TimeOnly TimeOnlyField { get; set; }
+    
+    [ProtoMember(5)]
+    public StringBuilder StringBuilderField { get; set; }
+    [ProtoMember(6)]
+    public DateTime DateTimeField { get; set; }
 }
