@@ -63,21 +63,21 @@ public class Tests
                     RequiredIntField = RandomInt(random),
                     StringField = RandomString(random)
                 },
-                // NestedMessageArrayField =
-                // [
-                //     new CsTestMessage()
-                //     {
-                //         RequiredIntField = RandomInt(random),
-                //         StringField = RandomString(random)
-                //     },
-                //     new CsTestMessage()
-                //     {
-                //         RequiredIntField = RandomInt(random),
-                //         StringField = RandomString(random)
-                //     },
-                // ],
-                // TimestampField = DateTime.UtcNow.ToTimestamp(),
-                // DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
+                NestedMessageArrayField =
+                [
+                    new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(random),
+                        StringField = RandomString(random)
+                    },
+                    new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(random),
+                        StringField = RandomString(random)
+                    },
+                ],
+                TimestampField = DateTime.UtcNow.ToTimestamp(),
+                DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
                 // MapField2 = new()
                 // {
                 //     [RandomString()] = RandomString(random)

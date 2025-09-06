@@ -9,7 +9,9 @@ namespace Dameng.Protobuf.Extension.Generator;
 [Generator]
 public class SimpleProtobufGenerator : ISourceGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
+    public void Initialize(GeneratorInitializationContext context)
+    {
+    }
 
     public void Execute(GeneratorExecutionContext context)
     {
@@ -138,19 +140,21 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               string proxyType = "";
                               if (member.ProxyType is not null)
                               {
-                                  proxyType =$"({member.ProxyType})";
+                                  proxyType = $"({member.ProxyType})";
                               }
+
                               if (IsCollectionType(member.Type))
                               {
                                   var elementType = GetElementType(member.Type);
-                                  var count= GetCollectionCountPropertyName(member.Type);
+                                  var count = GetCollectionCountPropertyName(member.Type);
                                   return $"if({member.Name}?.{count}>0) WriteContextInternal.WriteRepeated<{member.Type},{elementType}>(ref output, {proxyType}({member.Name}),DataFormat.{member.DataFormat}, {member.RawTag},static c=>c.{count},static c=>c.GetEnumerator());";
                               }
-                              if(IsProtoBufMessage(member.Type))
+
+                              if (IsProtoBufMessage(member.Type))
                               {
-                                  return $"if({member.Name}!=null){{ output.WriteTag({member.RawTag}); {member.Name}.WriteTo(ref output) }}";
+                                  return $"if({member.Name}!=null){{ output.WriteTag({member.RawTag}); output.WriteLength({member.Name}.CalculateSize()); {member.Name}.WriteTo(ref output); }}";
                               }
-                              
+
                               return $"if(Check.IsEmpty({member.Name})==false) WriteContextInternal.Write(ref output, {proxyType}({member.Name}),DataFormat.{member.DataFormat}, {member.RawTag});";
                           }))
                       }}
@@ -164,20 +168,21 @@ public class SimpleProtobufGenerator : ISourceGenerator
                               string proxyType = "";
                               if (member.ProxyType is not null)
                               {
-                                  proxyType =$"({member.ProxyType})";
+                                  proxyType = $"({member.ProxyType})";
                               }
 
                               if (IsCollectionType(member.Type))
                               {
-                                  var elementType = GetElementType(member.Type); 
-                                  var count= GetCollectionCountPropertyName(member.Type);
+                                  var elementType = GetElementType(member.Type);
+                                  var count = GetCollectionCountPropertyName(member.Type);
                                   return $"if({member.Name}?.{count}>0) size+=SizeCalculator.CalculateRepeated<{member.Type},{elementType}>({proxyType}({member.Name}),DataFormat.{member.DataFormat},{member.RawTag},static c=>c.{count},static c=>c.GetEnumerator());";
                               }
-                              if(IsProtoBufMessage(member.Type))
+
+                              if (IsProtoBufMessage(member.Type))
                               {
-                                  return $"if({member.Name}!=null) size += {tagSize}+ {member.Name}.CalculateSize(); }}";
+                                  return $"if({member.Name}!=null){{ var messageSize ={member.Name}.CalculateSize(); size+={tagSize}+messageSize+ pb::CodedOutputStream.ComputeLengthSize(messageSize); }} ";
                               }
-                              
+
                               return $"if(Check.IsEmpty({member.Name})==false) size+=SizeCalculator.Calculate({proxyType}({member.Name}),DataFormat.{member.DataFormat},{tagSize});";
                           }))
                       }}
@@ -208,25 +213,25 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                       {
                                           var elementType = GetElementType(member.Type);
                                           var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
-                                          if(tag2!=member.RawTag)
+                                          if (tag2 != member.RawTag)
                                           {
                                               caseStatement += $" case {tag2}:";
                                           }
+
                                           var addMethod = "Add";
                                           if (IsStackType(member.Type))
                                               addMethod = "Push";
                                           if (IsQueueType(member.Type))
                                               addMethod = "Enqueue";
-                                          return $"{caseStatement} {{_{member.Name} = ParseContextInternal.ReadRepeated<{(member.ProxyType??member.Type).ToDisplayString()},{elementType.ToDisplayString()}>(ref input,DataFormat.{member.DataFormat},static capacity=>{NewConcreteTypeCollectionWithCapacity(compilation, member.Type,"capacity")},static (c,i)=>c.{addMethod}(i)); break;}}";
+                                          return $"{caseStatement} {{_{member.Name} = ParseContextInternal.ReadRepeated<{(member.ProxyType ?? member.Type).ToDisplayString()},{elementType.ToDisplayString()}>(ref input,DataFormat.{member.DataFormat},static capacity=>{NewConcreteTypeCollectionWithCapacity(compilation, member.Type, "capacity")},static (c,i)=>c.{addMethod}(i)); break;}}";
                                       }
 
                                       var memberType = member.ProxyType ?? member.Type;
-                                      if(IsProtoBufMessage(memberType))
+                                      if (IsProtoBufMessage(memberType))
                                       {
                                           return $"{caseStatement} {{_{member.Name} = {(memberType).ToDisplayString()}.ParseFrom(ref input); break;}}";
                                       }
                                       return $"{caseStatement} {{_{member.Name} = ParseContextInternal.Read<{memberType.ToDisplayString()}>(ref input,DataFormat.{member.DataFormat}); break;}}";
-
                                   }))
                               }}
                           }
@@ -247,20 +252,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
     private bool IsProtoBufMessage(ITypeSymbol memberType)
     {
-        if (memberType is INamedTypeSymbol namedType)
-        {
-            foreach (var iface in namedType.AllInterfaces)
-            {
-                if (
-                    iface.ToDisplayString()
-                    == "Dameng.Protobuf.Extension.IProtoBufMessage<T>"
-                )
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return memberType.TypeKind!= TypeKind.Enum && memberType.GetAttributes().Any(o=>o.AttributeClass?.ToDisplayString()=="Dameng.Protobuf.Extension.ProtoContractAttribute")
+               || (memberType is INamedTypeSymbol namedType
+                   && namedType.AllInterfaces.Any(i => i.ToDisplayString().StartsWith("Dameng.Protobuf.Extension.IProtoBufMessage<")));
     }
 
     static string NewConcreteTypeCollectionWithCapacity(
@@ -289,18 +283,21 @@ public class SimpleProtobufGenerator : ISourceGenerator
         {
             return false;
         }
+
         return typeSymbol.Constructors.Any(c =>
             !c.IsStatic
             && c.Parameters.Length == 1
             && c.Parameters[0].Type.SpecialType == SpecialType.System_Int32
         );
     }
+
     static string GetCollectionCountPropertyName(ITypeSymbol type)
     {
         if (IsArrayType(type))
             return "Length";
         return "Count";
     }
+
     static string GetConcreteTypeName(Compilation compilation, ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
@@ -321,13 +318,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.List<T>"
-            || typeName == "Google.Protobuf.Collections.RepeatedField<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
-            || typeName == "System.Collections.Immutable.ImmutableArray<T>"
-            || typeName == "System.Collections.Immutable.ImmutableList<T>"
-            || typeName == "System.Collections.Generic.IList<T>"
-            || typeName == "System.Collections.Generic.ICollection<T>"
-            || typeName == "System.Collections.Generic.IEnumerable<T>";
+               || typeName == "Google.Protobuf.Collections.RepeatedField<T>"
+               || typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
+               || typeName == "System.Collections.Immutable.ImmutableArray<T>"
+               || typeName == "System.Collections.Immutable.ImmutableList<T>"
+               || typeName == "System.Collections.Generic.IList<T>"
+               || typeName == "System.Collections.Generic.ICollection<T>"
+               || typeName == "System.Collections.Generic.IEnumerable<T>";
     }
 
     static bool IsSetType(ITypeSymbol type)
@@ -337,8 +334,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.HashSet<T>"
-            || typeName == "System.Collections.Immutable.ImmutableHashSet<T>"
-            || typeName == "System.Collections.Generic.ISet<T>";
+               || typeName == "System.Collections.Immutable.ImmutableHashSet<T>"
+               || typeName == "System.Collections.Generic.ISet<T>";
     }
 
     static bool IsQueueType(ITypeSymbol type)
@@ -347,8 +344,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return false;
         var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.Queue<T>"
-            || typeName == "System.Collections.Immutable.ImmutableQueue<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>";
+               || typeName == "System.Collections.Immutable.ImmutableQueue<T>"
+               || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>";
     }
 
     static ITypeSymbol GetElementType(ITypeSymbol collectionType)
@@ -382,17 +379,17 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return false;
         var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.Stack<T>"
-            || typeName == "System.Collections.Immutable.ImmutableStack<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentStack<T>";
+               || typeName == "System.Collections.Immutable.ImmutableStack<T>"
+               || typeName == "System.Collections.Concurrent.ConcurrentStack<T>";
     }
 
     static bool IsCollectionType(ITypeSymbol type)
     {
         return IsArrayType(type)
-            || IsListType(type)
-            || IsSetType(type)
-            || IsQueueType(type)
-            || IsStackType(type);
+               || IsListType(type)
+               || IsSetType(type)
+               || IsQueueType(type)
+               || IsStackType(type);
     }
 
     static bool IsDictionaryType(ITypeSymbol type)
@@ -403,10 +400,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
         var typeName = namedType.OriginalDefinition.ToDisplayString();
         // Dictionary uses different template parameter names based on actual Roslyn behavior
         return typeName == "System.Collections.Generic.Dictionary<TKey, TValue>"
-            || typeName == "System.Collections.Generic.IDictionary<TKey, TValue>"
-            || typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>"
-            || typeName == "System.Collections.Immutable.ImmutableDictionary<TKey, TValue>"
-            || typeName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
+               || typeName == "System.Collections.Generic.IDictionary<TKey, TValue>"
+               || typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>"
+               || typeName == "System.Collections.Immutable.ImmutableDictionary<TKey, TValue>"
+               || typeName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
     }
 
     static INamedTypeSymbol ResolveConcreteTypeSymbol(
@@ -420,16 +417,16 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return constructedFrom switch
         {
             "System.Collections.Generic.IList<T>"
-            or "System.Collections.Generic.IEnumerable<T>"
-            or "System.Collections.Generic.ICollection<T>"
-            or "System.Collections.Generic.IReadOnlyCollection<T>" => compilation
-                .GetTypeByMetadataName("System.Collections.Generic.List`1")
-                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+                or "System.Collections.Generic.IEnumerable<T>"
+                or "System.Collections.Generic.ICollection<T>"
+                or "System.Collections.Generic.IReadOnlyCollection<T>" => compilation
+                    .GetTypeByMetadataName("System.Collections.Generic.List`1")
+                    ?.Construct(type.TypeArguments.ToArray()) ?? type,
 
             "System.Collections.Generic.IDictionary<TKey, TValue>"
-            or "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" => compilation
-                .GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
-                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+                or "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" => compilation
+                    .GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
+                    ?.Construct(type.TypeArguments.ToArray()) ?? type,
 
             "System.Collections.Generic.ISet<T>" => compilation
                 .GetTypeByMetadataName("System.Collections.Generic.HashSet`1")
@@ -645,13 +642,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 case SpecialType.None when IsStringBuilderType(Type):
                 case SpecialType.None
                     when Type.TypeKind == TypeKind.Class
-                        || Type.TypeKind == TypeKind.Interface
-                        || Type.TypeKind == TypeKind.Array:
+                         || Type.TypeKind == TypeKind.Interface
+                         || Type.TypeKind == TypeKind.Array:
                     return PbWireType.LengthDelimited;
                 default:
                     if (
                         Type.ToDisplayString()
-                            .StartsWith("Google.Protobuf.Collections.RepeatedField")
+                        .StartsWith("Google.Protobuf.Collections.RepeatedField")
                     )
                     {
                         // For simplicity, assume packed repeated fields use LengthDelimited

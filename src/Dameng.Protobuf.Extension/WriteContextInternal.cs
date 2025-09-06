@@ -1,8 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Transactions;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Dameng.Protobuf.Extension;
 
@@ -195,12 +197,33 @@ public static class WriteContextInternal
             output.WriteEnum(value);
             return;
         }
-        // if (typeof(T).IsAssignableTo(typeof(IProtoBufMessage)))
-        // {
-        //     var value = Unsafe.As<T, IProtoBufMessage>(ref t);
-        //     value.WriteTo(ref output);
-        //     return;
-        // }
+
+        if (typeof(T) == typeof(Timestamp))
+        {
+            var value = Unsafe.As<T, Timestamp>(ref t);
+            output.WriteMessage(value);
+            return;
+        }
+        if (typeof(T) == typeof(Duration))
+        {
+            var value = Unsafe.As<T, Duration>(ref t);
+            output.WriteMessage(value);
+            return;
+        }
+        if (typeof(T).IsAssignableTo(typeof(IProtoBufMessage)))
+        {
+            var value = Unsafe.As<T, IProtoBufMessage>(ref t);
+            output.WriteLength(value.CalculateSize());
+            value.WriteTo(ref output);
+            return;
+        }
+
+        if (typeof(T).IsAssignableTo(typeof(IMessage)))
+        {
+            var value = Unsafe.As<T, IMessage>(ref t);
+            output.WriteMessage(value);
+            return;
+        }
 
         throw new NotSupportedException($"Type {typeof(T)} is not supported");
     }

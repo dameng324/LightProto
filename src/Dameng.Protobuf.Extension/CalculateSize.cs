@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Runtime.CompilerServices;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Dameng.Protobuf.Extension;
 
@@ -208,13 +209,23 @@ public static class SizeCalculator
             return CodedOutputStream.ComputeInt32Size(value);
         }
 
-        // if (typeof(T).IsAssignableTo(typeof(IProtoBufMessage)))
-        // {
-        //     var value = Unsafe.As<T, IProtoBufMessage>(ref t);
-        //     var size = value.CalculateSize();
-        //     return CodedOutputStream.ComputeLengthSize(size) + size;
-        // }
-        
+        if (typeof(T) == typeof(Timestamp))
+        {
+            var value = Unsafe.As<T, Timestamp>(ref t);
+            return CodedOutputStream.ComputeMessageSize(value);
+        }
+        if (typeof(T) == typeof(Duration))
+        {
+            var value = Unsafe.As<T, Duration>(ref t);
+            return CodedOutputStream.ComputeMessageSize(value);
+        }
+
+        if (typeof(T).IsAssignableTo(typeof(IProtoBufMessage)))
+        {
+            var value = Unsafe.As<T, IProtoBufMessage>(ref t);
+            var size = value.CalculateSize();
+            return CodedOutputStream.ComputeLengthSize(size) + size;
+        }
 
         throw new NotSupportedException($"Type {typeof(T)} is not supported");
     }

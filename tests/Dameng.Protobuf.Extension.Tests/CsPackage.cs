@@ -71,17 +71,17 @@ public partial class CsTestMessage
     
     [ProtoMember(21)]
     public CsTestMessage NestedMessageField { get; set; }
-    //
-    // [ProtoMember(22)]
-    // public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }
-    //
-    // // google.protobuf.Timestamp
-    // [ProtoMember(27)]
-    // public Timestamp TimestampField { get; set; }
-    //
-    // // google.protobuf.Duration
-    // [ProtoMember(28)]
-    // public Duration DurationField { get; set; }
+    
+    [ProtoMember(22)]
+    public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }
+    
+    // google.protobuf.Timestamp
+    [ProtoMember(27)]
+    public Timestamp TimestampField { get; set; }
+    
+    // google.protobuf.Duration
+    [ProtoMember(28)]
+    public Duration DurationField { get; set; }
     
     // [ProtoMember(29)]
     // public Dictionary<string, string> MapField2 { get; set; }
@@ -90,7 +90,7 @@ public partial class CsTestMessage
     // [ProtoMember(51)] public DateTime DateTimeField { get; set; }
     // [ProtoMember(52)] public int? NullableIntField { get; set; }
     //
-    // [ProtoMember(53)] public int[] IntArrayFieldTest { get; set; }
+    [ProtoMember(53)] public int[] IntArrayFieldTest { get; set; }
     // [ProtoMember(54)] public List<string> StringListFieldTest { get; set; }
     // [ProtoMember(55)] public string[] StringArrayFieldTest { get; set; }
     // [ProtoMember(56)] public List<int> IntListFieldTest { get; set; }
