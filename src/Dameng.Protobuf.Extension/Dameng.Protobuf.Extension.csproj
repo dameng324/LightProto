@@ -3,7 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>        
+        <Nullable>disable</Nullable>        
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         
         <!-- NuGet Package Metadata -->
         <PackageId>Dameng.Protobuf.Extension</PackageId>
@@ -24,12 +25,16 @@
 
     <ItemGroup>
         <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="../Dameng.Protobuf.Extension.Generator/bin/$(Configuration)/netstandard2.0/Dameng.Protobuf.Extension.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
-    <ItemGroup> 
-        <PackageReference Include="Google.Protobuf" Version="3.32.0" />
+    <ItemGroup>
+      <Compile Include="..\..\Google.Protobuf\csharp\src\Google.Protobuf\**\*.cs" Link="Google.Protobuf\%(RecursiveDir)%(FileName).%(Extension)"/>     
+
     </ItemGroup>
+
+<!--    <ItemGroup> -->
+<!--        <PackageReference Include="Google.Protobuf" Version="3.32.0" />-->
+<!--    </ItemGroup>-->
 
 </Project>
