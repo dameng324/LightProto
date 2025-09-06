@@ -1,0 +1,3 @@
+[submodule "Google.Protobuf"]
+	path = Google.Protobuf
+	url = https://github.com/protocolbuffers/protobuf.git

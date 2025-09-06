@@ -83,7 +83,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
         }
     }
 
-    private string GenerateBasicProtobufMessage(Compilation compilation, INamedTypeSymbol targetType)
+    private string GenerateBasicProtobufMessage(
+        Compilation compilation,
+        INamedTypeSymbol targetType
+    )
     {
         var namespaceName = targetType.ContainingNamespace.ToDisplayString();
         var className = targetType.Name;
@@ -112,9 +115,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
               using Dameng.Protobuf.Extension;
               using Google.Protobuf.WellKnownTypes;
               using pb = global::Google.Protobuf;
-              using pbc = global::Google.Protobuf.Collections;
-              using pbr = global::Google.Protobuf.Reflection;
-              using scg = global::System.Collections.Generic;
               namespace {{namespaceName}};
               [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
               {{(
@@ -122,816 +122,196 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       ? "[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Auto)]"
                       : ""
               )}}
-              {{typeDeclarationString}} {{className}} : pb::IMessage<{{className}}>,IPbMessageParser<{{className}}>, pb::IBufferMessage
+              {{typeDeclarationString}} {{className}} : IProtoBufMessage<{{className}}>
               """
         );
 
         var protoMembers = GetProtoMembers(targetType);
 
-        // Force object initializer for testing - timestamp: 11:45
-        var parserInitializer =
-            $"new {className}() {{ {string.Join(", ", protoMembers.Take(2).Select(member => {
-                if (member.Type.SpecialType == SpecialType.System_String)
-                    return $"{member.Name} = string.Empty";
-                if (member.Type.IsValueType)
-                    return $"{member.Name} = default({member.Type.ToDisplayString()})";
-                return $"{member.Name} = null";
-            }))} }}";
-
-        var cloneMethod =
-            targetType.IsRecord || targetType.IsValueType
-                ? $"{className} pb::IDeepCloneable<{className}>.Clone() => new {className}(this);"
-                : $"public {className} Clone() => new {className}(this);";
-
         sourceBuilder.AppendLine(
             $$"""
               {
-                  private pb::UnknownFieldSet _unknownFields;
-                  public static pb::MessageParser<{{className}}> Parser { get; }=new pb::MessageParser<{{className}}>(() => {{parserInitializer}});
-                  pbr::MessageDescriptor pb::IMessage.Descriptor => null;
-
-                  [global::System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute]
-                  public {{className}}() 
+                  public void WriteTo(ref pb::WriteContext output)
                   {
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           GetProtoMembers(targetType).Select(member => {
-                              if (member.Type.SpecialType == SpecialType.System_String)
-                                  return $"{member.Name} = string.Empty;";
-                              if (IsNullableValueType(member.Type))
-                                  return $"{member.Name} = null;";
-                              if (IsCollectionType(member.Type))
-                              {
-                                  if (IsArrayType(member.Type))
-                                      return $"{member.Name} = System.Array.Empty<{GetElementType(member.Type).ToDisplayString()}>();";
-
-                                  return $"{member.Name} = {NewConcreteTypeCollection(compilation, member.Type)};";
-                              }
-
-                              if (IsDictionaryType(member.Type))
-                                  return $"{member.Name} = {NewConcreteTypeCollection(compilation, member.Type)};";
-                              if (member.Type.IsValueType)
-                                  return $"{member.Name} = default({member.Type.ToDisplayString()});";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                                  return $"{member.Name} = new {member.Type.ToDisplayString()}();";
-                              if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                  return $"{member.Name} = pb.ByteString.Empty;";
-                              if (IsStringBuilderType(member.Type))
-                                  return $"{member.Name} = new System.Text.StringBuilder();";
-
-                              return $"{member.Name} = null;";
-                          }))
-                      }}
-                      _unknownFields = null;
-                      OnConstruction();
-                  }
-                  partial void OnConstruction();
-                  {{cloneMethod}}
-                  {{(targetType.IsRecord ? "" : $"public override bool Equals(object other)=> other is {className} value && Equals(value);")}}
-                  
-                  [global::System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute]
-                  public {{className}}({{className}} other)
-                  {
-                      {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                          GetProtoMembers(targetType).Select(member => {
-                              if (member.ProxyType is not null)
-                                  return $"{member.Name} = ({member.ProxyType.ToDisplayString()})other.{member.Name};";
-                              if (member.Type.SpecialType == SpecialType.System_String)
-                                  return $"{member.Name} = other.{member.Name};";
-                              // FORCE SIMPLE ASSIGNMENT FOR ALL VALUE TYPES INCLUDING NULLABLE
-                              if (member.Type.IsValueType) // This should include Nullable<T>
-                                  return $"{member.Name} = other.{member.Name};";
-                              if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                  return $"{member.Name} = other.{member.Name};";
-                              if (IsStringBuilderType(member.Type))
-                                  return $"{member.Name} = other.{member.Name} == null ? new System.Text.StringBuilder() : new System.Text.StringBuilder(other.{member.Name}.ToString());";
-                              // DEBUG: Temporary direct ConcurrentBag handling
-                              if (member.Type.ToDisplayString().Contains("ConcurrentBag"))
-                                  return $"{member.Name} = other.{member.Name} == null ? new {member.Type.ToDisplayString()}() : new {member.Type.ToDisplayString()}(other.{member.Name});";
-                              if (IsCollectionType(member.Type))
-                              {
-                                  if (IsArrayType(member.Type))
-                                  {
-                                      var elementType = GetElementType(member.Type).ToDisplayString();
-                                      return $"{member.Name} = other.{member.Name} == null ? System.Array.Empty<{elementType}>() : (({elementType}[])other.{member.Name}.Clone());";
-                                  }
-
-                                  if (IsImmutableCollectionType(member.Type))
-                                  {
-                                      return $"{member.Name} = other.{member.Name};";
-                                  }
-
-                                  return $"{member.Name} = other.{member.Name} == null ? {NewConcreteTypeCollection(compilation, member.Type)} : new {GetConcreteTypeName(compilation,member.Type)}(other.{member.Name});";
-                              }
-
-                              if (IsDictionaryType(member.Type))
-                                  return $"{member.Name} = other.{member.Name} == null ? {NewConcreteTypeCollection(compilation, member.Type)} : new {GetConcreteTypeName(compilation,member.Type)}(other.{member.Name});";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                                  return $"{member.Name} = other.{member.Name}.Clone();";
-                              // Handle new types that shouldn't use Clone
-                              if (IsGuidType(member.Type) || IsDateOnlyType(member.Type) || IsTimeOnlyType(member.Type))
-                                  return $"{member.Name} = other.{member.Name};";
-                              if (IsTimeSpanType(member.Type))
-                                  return $"{member.Name} = other.{member.Name};";
-
-                              if (member.Type.IsRecord)
-                              {
-                                  return $"{member.Name} = other.{member.Name} with {{}};";
-                              }
-
-                              return $"{member.Name} = other.{member.Name}?.Clone();";
-                          }))
-                      }}
-                      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-                  }
-                  
-                  public {{(targetType.IsRecord && targetType.IsValueType == false ? "virtual" : "")}} bool Equals({{className}} other)
-                  {
-                      if (ReferenceEquals(other, null)) return false;
-                      if (ReferenceEquals(other, this)) return true;
-                      {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                          GetProtoMembers(targetType).Select(member => {
+                              string proxyType = "";
                               if (member.ProxyType is not null)
                               {
-                                  return $"if (!(({member.ProxyType.ToDisplayString()}){member.Name}).Equals(({member.ProxyType.ToDisplayString()})other.{member.Name})) return false;";
+                                  proxyType =$"({member.ProxyType})";
                               }
-
-                              if (IsNullableValueType(member.Type))
-                              {
-                                  var underlyingType = GetUnderlyingType(member.Type);
-                                  if (underlyingType.SpecialType == SpecialType.System_Double)
-                                      return $"if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
-                                  if (underlyingType.SpecialType == SpecialType.System_Single)
-                                      return $"if (!{member.Name}.HasValue && !other.{member.Name}.HasValue) {{ }} else if ({member.Name}.HasValue && other.{member.Name}.HasValue && !pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}.Value, other.{member.Name}.Value)) return false; else if ({member.Name}.HasValue != other.{member.Name}.HasValue) return false;";
-                                  return $"if (!{member.Name}.Equals(other.{member.Name})) return false;";
-                              }
-
-                              if (IsCollectionType(member.Type))
-                              {
-                                  if (IsSetType(member.Type))
-                                      return $"if (!{member.Name}.SetEquals(other.{member.Name})) return false;";
-                                  return $"if (!System.Linq.Enumerable.SequenceEqual({member.Name}, other.{member.Name})) return false;";
-                              }
-
-                              if (IsDictionaryType(member.Type))
-                                  return $"if ({member.Name} == null && other.{member.Name} == null) {{ }} else if ({member.Name} == null || other.{member.Name} == null) return false; else if ({member.Name}.Count != other.{member.Name}.Count) return false; else if (!{member.Name}.All(kvp => other.{member.Name}.ContainsKey(kvp.Key) && EqualityComparer<object>.Default.Equals(kvp.Value, other.{member.Name}[kvp.Key]))) return false;";
-                              if (member.Type.SpecialType == SpecialType.System_Double)
-                                  return $"if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
-                              if (member.Type.SpecialType == SpecialType.System_Single)
-                                  return $"if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals({member.Name}, other.{member.Name})) return false;";
-                              return $"if ({member.Name}.Equals(other.{member.Name})==false) return false;";
-                          }))
-                      }}
-                      return Equals(_unknownFields, other._unknownFields);
-                  }
-                  public override int GetHashCode()
-                  {
-                      int hash = 1;
-                      {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                          GetProtoMembers(targetType).Select(member => {
-                              if (member.ProxyType is not null)
-                                  return $"if ({member.Name} != null) hash ^= (({member.ProxyType.ToDisplayString()}){member.Name}).GetHashCode();";
-
-                              if (IsNullableValueType(member.Type))
-                              {
-                                  var underlyingType = GetUnderlyingType(member.Type);
-                                  if (underlyingType.SpecialType == SpecialType.System_String)
-                                      return $"if ({member.Name}.HasValue && {member.Name}.Value.Length != 0) hash ^= {member.Name}.Value.GetHashCode();";
-                                  if (underlyingType.SpecialType == SpecialType.System_Double)
-                                      return $"if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode({member.Name}.Value);";
-                                  if (underlyingType.SpecialType == SpecialType.System_Single)
-                                      return $"if ({member.Name}.HasValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}.Value);";
-                                  return $"if ({member.Name}.HasValue) hash ^= {member.Name}.Value.GetHashCode();";
-                              }
-
-                              if (IsCollectionType(member.Type))
-                              {
-                                  var count = GetCollectionCountPropertyName(member.Type);
-                                  var elementType = GetElementType(member.Type);
-                                  var ifNotNullCheck = elementType.IsValueType ? "" : "if (item is not null)";
-
-                                  List<string> collectionCheck = new();
-                                  if (member.Type.IsValueType == false) {
-                                      collectionCheck.Add($"{member.Name} != null");
-                                  }
-
-                                  if (HasCountProperty(member.Type, count))
-                                  {
-                                      collectionCheck.Add($"{member.Name}.{count} > 0");
-                                  }
-
-                                  var collectionCheckCode = collectionCheck.Count > 0 ? string.Join(" && ", collectionCheck) : "true";
-                                  return $"if ({collectionCheckCode}) {{ foreach(var item in {member.Name}) {ifNotNullCheck} hash ^= item.GetHashCode(); }}";
-                              }
-
-                              if (IsDictionaryType(member.Type))
-                              {
-                                  return $"if ({member.Name} != null && {member.Name}.Count > 0) {{ foreach(var kvp in {member.Name}) hash ^= kvp.Key?.GetHashCode() ?? 0 ^ kvp.Value?.GetHashCode() ?? 0; }}";
-                              }
-
-                              if (member.Type.SpecialType == SpecialType.System_String)
-                                  return $"if ({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
-                              if (member.Type.SpecialType == SpecialType.System_Double)
-                                  return $"if ({member.Name} != default)  hash ^=(pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode({member.Name}));";
-                              if (member.Type.SpecialType == SpecialType.System_Single)
-                                  return $"if ({member.Name} != default)  hash ^=(pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode({member.Name}));";
-                              if (member.Type.IsValueType)
-                                  return $"if ({member.Name} != default) hash ^= {member.Name}.GetHashCode();";
-                              if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                  return $"if ({member.Name}.Length !=0) hash ^= {member.Name}.GetHashCode();";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                                  return $"hash ^= {member.Name}.GetHashCode();";
-
-                              return $"if ({member.Name} != null) hash ^= {member.Name}.GetHashCode();";
-                          }))
-                      }}
-                      if (_unknownFields != null) hash ^= _unknownFields.GetHashCode();
-                      return hash;
-                  }
-                  {{
-                      (targetType.GetMembers("ToString").OfType<IMethodSymbol>().Any(o => o.Parameters.Length == 0) ? "" : "public override string ToString() => pb::JsonFormatter.ToDiagnosticString(this);")
-                  }}
-                  
-                  {{string.Join(Environment.NewLine + GetIntendedSpace(1),
-                      GetProtoMembers(targetType).Select(member => {
-                          if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
-                          {
-                              //get generic parameter type
-                              var genericType = (member.Type as INamedTypeSymbol)?.TypeArguments.FirstOrDefault()!;
-                              var proxyType = GetProxyType(genericType);
-                              if (proxyType is not null)
-                                  return $"private static readonly pb::FieldCodec<{proxyType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(proxyType, member.DataFormat, member.RawTag)};";
-                              else
-                                  return $"private static readonly pb::FieldCodec<{genericType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(genericType, member.DataFormat, member.RawTag)};";
-                          }
-
-                          if (IsCollectionType(member.Type))
-                          {
-                              //get element type
-                              var elementType = GetElementType(member.Type);
-                              var proxyType = GetProxyType(elementType);
-                              if (proxyType is not null)
-                                  return $"private static readonly pb::FieldCodec<{proxyType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(proxyType, member.DataFormat, member.RawTag)};";
-                              else
-                                  return $"private static readonly pb::FieldCodec<{elementType.ToDisplayString()}> _{member.Name}_codec = {GetFieldCodec(elementType, member.DataFormat, member.RawTag)};";
-                          }
-
-                          if (IsDictionaryType(member.Type))
-                          {
-                              //get key-value types
-                              var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-
-                              var keyDataFormatString = member.AttributeData
-                                  .FirstOrDefault(o => o.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.Extension.ProtoMapAttribute")
-                                  ?.NamedArguments
-                                  .FirstOrDefault(pair => pair.Key == "KeyFormat")
-                                  .Value.Value?.ToString();
-                              var keyDataFormat = Enum.TryParse<DataFormat>(keyDataFormatString, out var kdf) ? kdf : DataFormat.Default;
-                              var keyRawTag = ProtoMember.GetRawTag(1, ProtoMember.GetPbWireType(keyType, keyDataFormat));
-
-                              var valueDataFormatString = member.AttributeData
-                                  .FirstOrDefault(o => o.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.Extension.ProtoMapAttribute")
-                                  ?.NamedArguments
-                                  .FirstOrDefault(pair => pair.Key == "ValueFormat")
-                                  .Value.Value?.ToString();
-                              var valueDataFormat = Enum.TryParse<DataFormat>(valueDataFormatString, out var vdf) ? vdf : DataFormat.Default;
-                              var valueRawTag = ProtoMember.GetRawTag(2, ProtoMember.GetPbWireType(valueType, valueDataFormat));
-                              
-                              var valueProxyType = GetProxyType(valueType);
-                              var keyProxyType = GetProxyType(keyType);
-                              
-                              var keyFieldCodec = GetFieldCodec(keyProxyType??keyType, keyDataFormat, keyRawTag);
-                              var valueFieldCodec = GetFieldCodec(valueProxyType??valueType, valueDataFormat, valueRawTag);
-
-                              var keyTypeCode = keyProxyType is null ? keyType.ToDisplayString():keyProxyType.ToDisplayString();
-                              var valueTypeCode = valueProxyType is null ? valueType.ToDisplayString():valueProxyType.ToDisplayString();
-                              
-
-                              return $"private static readonly pbc::MapField<{keyTypeCode}, {valueTypeCode}>.Codec _{member.Name}_codec =" +
-                                     $" new pbc::MapField<{keyTypeCode}, {valueTypeCode}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
-                          }
-
-                          if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
-                          {
-                              //get generic parameter type
-                              var TypeArguments = (member.Type as INamedTypeSymbol)!.TypeArguments;
-                              var keyType = TypeArguments[0];
-                              var valueType = TypeArguments[1];
-
-
-                              var keyDataFormatString = member.AttributeData
-                                  .FirstOrDefault(o => o.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.Extension.ProtoMapAttribute")
-                                  ?.NamedArguments
-                                  .FirstOrDefault(pair => pair.Key == "KeyFormat")
-                                  .Value.Value?.ToString();
-                              var keyDataFormat = Enum.TryParse<DataFormat>(keyDataFormatString, out var kdf) ? kdf : DataFormat.Default;
-                              var keyRawTag = ProtoMember.GetRawTag(1, ProtoMember.GetPbWireType(keyType, keyDataFormat));
-                              var keyFieldCodec = GetFieldCodec(keyType, keyDataFormat, keyRawTag);
-
-                              var valueDataFormatString = member.AttributeData
-                                  .FirstOrDefault(o => o.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.Extension.ProtoMapAttribute")
-                                  ?.NamedArguments
-                                  .FirstOrDefault(pair => pair.Key == "ValueFormat")
-                                  .Value.Value?.ToString();
-                              var valueDataFormat = Enum.TryParse<DataFormat>(valueDataFormatString, out var vdf) ? vdf : DataFormat.Default;
-                              var valueRawTag = ProtoMember.GetRawTag(2, ProtoMember.GetPbWireType(valueType, valueDataFormat));
-                              var valueFieldCodec = GetFieldCodec(valueType, valueDataFormat, valueRawTag);
-
-                              var valueProxyType = GetProxyType(valueType);
-                              var keyProxyType = GetProxyType(keyType);
-
-                              var keyTypeCode = keyProxyType is null ? keyType.ToDisplayString():keyProxyType.ToDisplayString();
-                              var valueTypeCode = valueProxyType is null ? valueType.ToDisplayString():valueProxyType.ToDisplayString();
-
-                              return $"private static readonly pbc::MapField<{keyTypeCode}, {valueTypeCode}>.Codec _{member.Name}_codec =" +
-                                     $" new pbc::MapField<{keyTypeCode}, {valueTypeCode}>.Codec({keyFieldCodec}, {valueFieldCodec}, {member.RawTag});";
-                          }
-
-                          return string.Empty;
-                      }).Where(s => !string.IsNullOrWhiteSpace(s)))}}
-                      
-                  public void WriteTo(pb::CodedOutputStream output) {
-                      output.WriteRawMessage(this);
-                  }
-                  
-                  void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) 
-                  {
-                      {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                          GetProtoMembers(targetType).Select(member => {
-                              var rawTagBytes = member.RawTagBytes;
-                              var rawTagByteString = string.Join(", ", rawTagBytes.Select(b => b.ToString()));
-                              var hasValueCheck = IsNullableValueType(member.Type)
-                                  ? $"{member.Name}.HasValue"
-                                  : member.Type.IsValueType
-                                      ? $"{member.Name} != default"
-                                      : $"{member.Name} != null";
-                              if (member.ProxyType is not null)
-                              {
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(({member.ProxyType.ToDisplayString()}){member.Name});}}";
-                              }
-
-                              var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
-                              // Handle nullable value types first
-                              if (IsNullableValueType(member.Type))
-                              {
-                                  var underlyingType = GetUnderlyingType(member.Type);
-                                  var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
-                                  if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                      return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));}}";
-                                  if (IsGuidType(underlyingType))
-                                      return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.ToString());}}";
-                                  if (IsTimeSpanType(underlyingType))
-                                      return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));}}";
-                                  if (IsDateOnlyType(underlyingType))
-                                      return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.DayNumber);}}";
-                                  if (IsTimeOnlyType(underlyingType))
-                                      return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value.Ticks);}}";
-                                  if (underlyingType.TypeKind == TypeKind.Enum)
-                                      return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}((int){member.Name}.Value);}}";
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{underlyingPbTypeString}({member.Name}.Value);}}";
-                              }
-
-                              // Handle arrays and lists by converting to RepeatedField
                               if (IsCollectionType(member.Type))
                               {
                                   var elementType = GetElementType(member.Type);
-                                  var proxyType = GetProxyType(elementType);
-                                  if (proxyType is not null)
-                                      return $"if ({hasValueCheck}) {{ var tempRepeated = new pbc::RepeatedField<{proxyType}>(); foreach(var item in {member.Name}) tempRepeated.Add(item); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
-                                  else
-                                      return $"if ({hasValueCheck}) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); tempRepeated.WriteTo(ref output, _{member.Name}_codec); }}";
+                                  var count= GetCollectionCountPropertyName(member.Type);
+                                  return $"if({member.Name}?.{count}>0) WriteContextInternal.WriteRepeated<{member.Type},{elementType}>(ref output, {proxyType}({member.Name}),DataFormat.{member.DataFormat}, {member.RawTag},static c=>c.{count},static c=>c.GetEnumerator());";
                               }
-
-                              // Handle dictionaries by converting to MapField
-                              if (IsDictionaryType(member.Type))
+                              if(IsProtoBufMessage(member.Type))
                               {
-                                  var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                                  
-                                  var keyProxyType = GetProxyType(keyType);
-                                  var valueProxyType = GetProxyType(valueType);
-                                  
-                                  var keyTypeCode = (keyProxyType??keyType).ToDisplayString();
-                                  var valueTypeCode = (valueProxyType??valueType).ToDisplayString();
-                                  
-                                  return $"if ({hasValueCheck}) {{ var tempMap = new pbc::MapField<{keyTypeCode}, {valueTypeCode}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; tempMap.WriteTo(ref output, _{member.Name}_codec); }}";
+                                  return $"if({member.Name}!=null){{ output.WriteTag({member.RawTag}); {member.Name}.WriteTo(ref output) }}";
                               }
-
-                              // Handle special cases first
-                              if (member.Type.SpecialType == SpecialType.System_DateTime)
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));}}";
-                              if (IsGuidType(member.Type))
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}(pb::ByteString.CopyFrom({member.Name}.ToByteArray()));}}";
-                              if (IsTimeSpanType(member.Type))
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.WriteMessage(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}));}}";
-                              if (IsDateOnlyType(member.Type))
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.DayNumber);}}";
-                              if (IsTimeOnlyType(member.Type))
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.Ticks);}}";
-                              if (IsStringBuilderType(member.Type))
-                                  return $"if ({hasValueCheck} && {member.Name}.Length > 0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name}.ToString());}}";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                                  return $"{member.Name}.WriteTo(ref output,_{member.Name}_codec);";
-                              if (member.Type.SpecialType == SpecialType.System_String)
-                                  return $"if ({member.Name}.Length !=0) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
-                              if (member.Type.TypeKind == TypeKind.Enum)
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}((int){member.Name});}}";
-                              if (member.Type.IsValueType)
-                                  return $"if ({hasValueCheck}) {{ output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
-                              if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                  return $"if ({member.Name}.Length !=0) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
-
-                              return $"if ({hasValueCheck}) {{  output.WriteRawTag({rawTagByteString}); output.Write{pbTypeString}({member.Name});}}";
+                              
+                              return $"if(Check.IsEmpty({member.Name})==false) WriteContextInternal.Write(ref output, {proxyType}({member.Name}),DataFormat.{member.DataFormat}, {member.RawTag});";
                           }))
                       }}
-                      if (_unknownFields != null)
-                      {
-                          _unknownFields.WriteTo(ref output);
-                      }
                   }
                   
                   public int CalculateSize() {
                       int size=0;
-                  
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           GetProtoMembers(targetType).Select(member => {
-                              var hasValueCheck = IsNullableValueType(member.Type)
-                                  ? $"{member.Name}.HasValue"
-                                  : member.Type.IsValueType
-                                      ? $"{member.Name} != default"
-                                      : $"{member.Name} != null";
-                              var lengthSize = member.RawTagBytes.Length;
+                              var tagSize = member.RawTagBytes.Length;
+                              string proxyType = "";
                               if (member.ProxyType is not null)
                               {
-                                  return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(({member.ProxyType.ToDisplayString()}){member.Name});";
+                                  proxyType =$"({member.ProxyType})";
                               }
 
-                              var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
-                              // Handle nullable value types first
-                              if (IsNullableValueType(member.Type))
-                              {
-                                  var underlyingType = GetUnderlyingType(member.Type);
-                                  var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
-                                  if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                      return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}.Value));";
-                                  if (IsGuidType(underlyingType))
-                                      return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size(pb::ByteString.CopyFrom({member.Name}.Value.ToByteArray()));";
-                                  if (IsTimeSpanType(underlyingType))
-                                      return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}.Value));";
-                                  if (IsDateOnlyType(underlyingType))
-                                      return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.DayNumber);";
-                                  if (IsTimeOnlyType(underlyingType))
-                                      return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value.Ticks);";
-                                  if (underlyingType.TypeKind == TypeKind.Enum)
-                                      return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size((int){member.Name}.Value);";
-                                  return $"if ({hasValueCheck}) size += {lengthSize} + pb::CodedOutputStream.Compute{underlyingPbTypeString}Size({member.Name}.Value);";
-                              }
-
-                              // Handle arrays and lists
                               if (IsCollectionType(member.Type))
                               {
-                                  var elementType = GetElementType(member.Type);
-                                  var proxyType = GetProxyType(elementType);
-                                  if (proxyType is not null)
-                                      return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{proxyType}>();foreach(var item in {member.Name}) tempRepeated.Add(item); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
-                                  else
-                                      return $"if ({member.Name} != null) {{ var tempRepeated = new pbc::RepeatedField<{elementType}>(); tempRepeated.AddRange({member.Name}); size += tempRepeated.CalculateSize(_{member.Name}_codec); }}";
+                                  var elementType = GetElementType(member.Type); 
+                                  var count= GetCollectionCountPropertyName(member.Type);
+                                  return $"if({member.Name}?.{count}>0) size+=SizeCalculator.CalculateRepeated<{member.Type},{elementType}>({proxyType}({member.Name}),DataFormat.{member.DataFormat},{member.RawTag},static c=>c.{count},static c=>c.GetEnumerator());";
                               }
-
-                              // Handle dictionaries
-                              if (IsDictionaryType(member.Type))
+                              if(IsProtoBufMessage(member.Type))
                               {
-                                  var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                                  var keyProxyType = GetProxyType(keyType);
-                                  var valueProxyType = GetProxyType(valueType);
-                                  
-                                  var keyTypeCode = (keyProxyType??keyType).ToDisplayString();
-                                  var valueTypeCode = (valueProxyType??valueType).ToDisplayString();
-
-                                  return $"if ({member.Name} != null) {{ var tempMap = new pbc::MapField<{keyTypeCode}, {valueTypeCode}>(); foreach(var kvp in {member.Name}) tempMap[kvp.Key] = kvp.Value; size += tempMap.CalculateSize(_{member.Name}_codec); }}";
+                                  return $"if({member.Name}!=null) size += {tagSize}+ {member.Name}.CalculateSize(); }}";
                               }
-
-                              // Handle special cases first
-                              if (member.Type.SpecialType == SpecialType.System_DateTime)
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime({member.Name}));";
-                              if (IsGuidType(member.Type))
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size(pb::ByteString.CopyFrom({member.Name}.ToByteArray()));";
-                              if (IsTimeSpanType(member.Type))
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.ComputeMessageSize(Google.Protobuf.WellKnownTypes.Duration.FromTimeSpan({member.Name}));";
-                              if (IsDateOnlyType(member.Type))
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.DayNumber);";
-                              if (IsTimeOnlyType(member.Type))
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.Ticks);";
-                              if (IsStringBuilderType(member.Type))
-                                  return $"if ({member.Name} != null && {member.Name}.Length > 0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name}.ToString());";
-                              if (member.Type.SpecialType == SpecialType.System_String)
-                                  return $"if ({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
-                              if (member.Type.TypeKind == TypeKind.Enum)
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size((int) {member.Name});";
-                              if (member.Type.IsValueType)
-                                  return $"if ({member.Name} != default) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
-                              if (member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                  return $"if ({member.Name}.Length !=0) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections."))
-                                  return $"size += {member.Name}.CalculateSize(_{member.Name}_codec);";
-
-                              return $"if ({member.Name} != null) size += {lengthSize} + pb::CodedOutputStream.Compute{pbTypeString}Size({member.Name});";
+                              
+                              return $"if(Check.IsEmpty({member.Name})==false) size+=SizeCalculator.Calculate({proxyType}({member.Name}),DataFormat.{member.DataFormat},{tagSize});";
                           }))
                       }}
-                      if (_unknownFields != null) {
-                        size += _unknownFields.CalculateSize();
-                      }
                       return size;
                   }
                   
-                  public void MergeFrom({{className}} other)
+                  public static {{className}} ParseFrom(ref pb::ParseContext input)
                   {
-                      if ({{(targetType.IsValueType ? "other.Equals(default)" : "other == null")}}) return;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           GetProtoMembers(targetType).Select(member => {
-                              if (member.ProxyType is not null)
-                              {
-                                  return $"if (other.{member.Name} != null) {{ var proxy =new {member.ProxyType.ToDisplayString()}(); proxy.MergeFrom(other.{member.Name}); {member.Name}=proxy;}}";
-                              }
-
-                              if (IsNullableValueType(member.Type))
-                                  return $"if (other.{member.Name}.HasValue) {member.Name} = other.{member.Name};";
-                              if (IsCollectionType(member.Type))
-                              {
-                                  var count = GetCollectionCountPropertyName(member.Type);
-                                  var elementType = GetElementType(member.Type);
-                                  if (IsArrayType(member.Type))
-                                  {
-                                      return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ var temp = new List<{elementType.ToDisplayString()}>(); if ({member.Name} != null) temp.AddRange({member.Name}); temp.AddRange(other.{member.Name}); {member.Name} = temp.ToArray(); }}";
-                                  }
-
-                                  var isImmutable = IsImmutableCollectionType(member.Type);
-
-                                  var immutableAssign = isImmutable ? $"{member.Name} = " : "";
-
-                                  if (HasAddRangeMethod(member.Type, elementType))
-                                  {
-                                      return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(compilation, member.Type)};{immutableAssign}{member.Name}.AddRange(other.{member.Name}); }}";
-                                  }
-
-                                  var addMethod = "Add";
-                                  if (IsStackType(member.Type))
-                                      addMethod = "Push";
-                                  if (IsQueueType(member.Type))
-                                      addMethod = "Enqueue";
-
-                                  if (isImmutable)
-                                  {
-                                      return $"if (other.{member.Name} != null) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(compilation, member.Type)}; foreach(var item in other.{member.Name}) {immutableAssign}{member.Name}.{addMethod}(item); }}";
-                                  }
-
-                                  return $"if (other.{member.Name} != null && other.{member.Name}.{count} > 0) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollectionWithCapacity(compilation,member.Type,$"other.{member.Name}.{count}")}; foreach(var item in other.{member.Name}) {immutableAssign}{member.Name}.{addMethod}(item); }}";
-                              }
-
-                              if (IsDictionaryType(member.Type))
-                                  return $"if (other.{member.Name} != null && other.{member.Name}.Count > 0) {{ if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollectionWithCapacity(compilation, member.Type,$"other.{member.Name}.Count")}; if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in other.{member.Name}) map[kvp.Key] = kvp.Value; }}";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
-                                  return $"{member.Name}.Add(other.{member.Name});";
-                              if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
-                                  return $"{member.Name}.MergeFrom(other.{member.Name});";
-                              if (member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                  return $"if (other.{member.Name}.Length != 0) {member.Name} = other.{member.Name};";
-                              if (member.Type.IsValueType)
-                                  return $"if (other.{member.Name} != default) {member.Name} = other.{member.Name};";
-                              if (IsStringBuilderType(member.Type))
-                                  return $"if (other.{member.Name} != null)  {member.Name}= new {member.Type.ToDisplayString()}(other.{member.Name}.ToString());";
-                              // Fallback for non-dictionary and non-collection reference types
-                              if (!IsDictionaryType(member.Type) && !IsCollectionType(member.Type))
-                                  return $"if (other.{member.Name} != null) {{ if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); {member.Name}.MergeFrom(other.{member.Name});}}";
-                              return string.Empty; // This should never be reached for dictionaries and collections
+                              return $"{(member.ProxyType ?? member.Type).ToDisplayString()} _{member.Name} = default;";
                           }))
                       }}
-                      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-                  }
-                  public void MergeFrom(pb::CodedInputStream input) {
-                      input.ReadRawMessage(this);
-                  }
-                  
-                  void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-
                       uint tag;
                       while ((tag = input.ReadTag()) != 0) 
                       {
                           if ((tag & 7) == 4) {
-                            // Abort on any end group tag.
-                            return;
+                            break;
                           }
                           switch(tag) 
                           {
                               default:
-                                  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                               break;
                               {{string.Join(Environment.NewLine + GetIntendedSpace(4), GetProtoMembers(targetType).Select(member =>
                                   {
-                                      if (member.ProxyType is not null)
-                                      {
-                                          return $"case {member.RawTag}:{{var proxy =new {member.ProxyType.ToDisplayString()}(); input.ReadMessage(proxy); {member.Name}=proxy;break;}}";
-                                      }
-
-                                      var pbTypeString = GetPbTypeString(member.Type, member.DataFormat);
-                                      // Handle nullable value types first
-                                      if (IsNullableValueType(member.Type))
-                                      {
-                                          var underlyingType = GetUnderlyingType(member.Type);
-                                          var underlyingPbTypeString = GetPbTypeString(underlyingType, member.DataFormat);
-                                          if (underlyingType.SpecialType == SpecialType.System_DateTime)
-                                              return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
-                                          if (IsGuidType(underlyingType))
-                                              return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{underlyingPbTypeString}().Span);break;}}";
-                                          if (IsTimeSpanType(underlyingType))
-                                              return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
-                                          if (IsDateOnlyType(underlyingType))
-                                              return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{underlyingPbTypeString}());break;}}";
-                                          if (IsTimeOnlyType(underlyingType))
-                                              return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{underlyingPbTypeString}());break;}}";
-                                          if (underlyingType.TypeKind == TypeKind.Enum)
-                                              return $"case {member.RawTag}:{{{member.Name} = ({underlyingType.ToDisplayString()})input.Read{underlyingPbTypeString}();break;}}";
-                                          return $"case {member.RawTag}:{{{member.Name} = input.Read{underlyingPbTypeString}();break;}}";
-                                      }
-
+                                      var caseStatement = $"case {member.RawTag}:";
                                       if (IsCollectionType(member.Type))
                                       {
                                           var elementType = GetElementType(member.Type);
                                           var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(elementType, member.DataFormat));
-                                          var elementTypeName = elementType.ToDisplayString();
-
-                                          var caseStatement = member.RawTag == tag2
-                                              ? $"case {member.RawTag}:"
-                                              : $"case {member.RawTag}: case {tag2}:";
-
-                                          var proxyType = GetProxyType(elementType);
-
-                                          if (IsArrayType(member.Type))
+                                          if(tag2!=member.RawTag)
                                           {
-                                              if(proxyType is not null)
-                                                  return $"{caseStatement}{{var tempRepeated = new pbc::RepeatedField<{proxyType}>(); if ({member.Name} != null) foreach(var item in {member.Name}) tempRepeated.Add(item); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.Select(o=>({elementType})o).ToArray(); break;}}";
-                                              else
-                                                  return $"{caseStatement}{{var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); if ({member.Name} != null) tempRepeated.AddRange({member.Name}); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {member.Name} = tempRepeated.ToArray(); break;}}";
+                                              caseStatement += $" case {tag2}:";
                                           }
-
-                                          bool isImmutable = IsImmutableCollectionType(member.Type);
-
-                                          var immutableAssign = isImmutable ? $"{member.Name} = " : "";
-
-                                          if (HasAddRangeMethod(member.Type, elementType) && proxyType is null)
-                                          {
-                                              if (isImmutable)
-                                              {
-                                                  return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
-                                              }
-                                              else
-                                              {
-                                                  return $"{caseStatement}{{ var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollection(compilation, member.Type)}; {immutableAssign}{member.Name}.AddRange(tempRepeated); break;}}";
-                                              }
-                                          }
-
                                           var addMethod = "Add";
                                           if (IsStackType(member.Type))
                                               addMethod = "Push";
                                           if (IsQueueType(member.Type))
                                               addMethod = "Enqueue";
-                                          if(proxyType is not null)
-                                              return $"{caseStatement}{{var tempRepeated = new pbc::RepeatedField<{proxyType}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollectionWithCapacity(compilation, member.Type,"tempRepeated.Count")}; foreach(var item in tempRepeated) {immutableAssign}{member.Name}.{addMethod}(item); break;}}";
-                                          else
-                                              return $"{caseStatement}{{var tempRepeated = new pbc::RepeatedField<{elementTypeName}>(); tempRepeated.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollectionWithCapacity(compilation, member.Type,"tempRepeated.Count")}; foreach(var item in tempRepeated) {immutableAssign}{member.Name}.{addMethod}(item); break;}}";
+                                          return $"{caseStatement} {{_{member.Name} = ParseContextInternal.ReadRepeated<{(member.ProxyType??member.Type).ToDisplayString()},{elementType.ToDisplayString()}>(ref input,DataFormat.{member.DataFormat},static capacity=>{NewConcreteTypeCollectionWithCapacity(compilation, member.Type,"capacity")},static (c,i)=>c.{addMethod}(i)); break;}}";
                                       }
 
-                                      if (IsDictionaryType(member.Type))
+                                      var memberType = member.ProxyType ?? member.Type;
+                                      if(IsProtoBufMessage(memberType))
                                       {
-                                          var (keyType, valueType) = GetDictionaryKeyValueTypes(member.Type);
-                                          var keyProxyType = GetProxyType(keyType);
-                                          var valueProxyType = GetProxyType(valueType);
-                                  
-                                          var keyTypeCode = (keyProxyType??keyType).ToDisplayString();
-                                          var valueTypeCode = (valueProxyType??valueType).ToDisplayString();
-
-                                          return $"case {member.RawTag}:{{ var tempMap = new pbc::MapField<{keyTypeCode}, {valueTypeCode}>(); tempMap.AddEntriesFrom(ref input, _{member.Name}_codec); if ({member.Name} == null) {member.Name} = {NewConcreteTypeCollectionWithCapacity(compilation, member.Type,"tempMap.Count")}; if ({member.Name} is IDictionary<{(member.Type as INamedTypeSymbol)!.TypeArguments[0].ToDisplayString()}, {(member.Type as INamedTypeSymbol)!.TypeArguments[1].ToDisplayString()}> map) foreach(var kvp in tempMap) map[kvp.Key] = kvp.Value; break;}}";
+                                          return $"{caseStatement} {{_{member.Name} = {(memberType).ToDisplayString()}.ParseFrom(ref input); break;}}";
                                       }
+                                      return $"{caseStatement} {{_{member.Name} = ParseContextInternal.Read<{memberType.ToDisplayString()}>(ref input,DataFormat.{member.DataFormat}); break;}}";
 
-                                      if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.RepeatedField"))
-                                      {
-                                          var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType((member.Type as INamedTypeSymbol)!.TypeArguments.First(), member.DataFormat));
-                                          if (member.RawTag == tag2)
-                                          {
-                                              return $"case {member.RawTag}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
-                                          }
-                                          else
-                                          {
-                                              return $"case {member.RawTag}: case {tag2}: {{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
-                                          }
-                                      }
-
-                                      if (member.Type.ToDisplayString().StartsWith("Google.Protobuf.Collections.MapField"))
-                                          return $"case {member.RawTag}:{{{member.Name}.AddEntriesFrom(ref input,_{member.Name}_codec);break;}}";
-                                      // Handle special cases first  
-                                      if (member.Type.SpecialType == SpecialType.System_DateTime)
-                                          return $"case {member.RawTag}:{{var timestamp = new Google.Protobuf.WellKnownTypes.Timestamp(); input.ReadMessage(timestamp); {member.Name} = timestamp.ToDateTime();break;}}";
-                                      if (IsGuidType(member.Type))
-                                          return $"case {member.RawTag}:{{{member.Name} = new System.Guid(input.Read{pbTypeString}().Span);break;}}";
-                                      if (IsTimeSpanType(member.Type))
-                                          return $"case {member.RawTag}:{{var duration = new Google.Protobuf.WellKnownTypes.Duration(); input.ReadMessage(duration); {member.Name} = duration.ToTimeSpan();break;}}";
-                                      if (IsDateOnlyType(member.Type))
-                                          return $"case {member.RawTag}:{{{member.Name} = System.DateOnly.FromDayNumber(input.Read{pbTypeString}());break;}}";
-                                      if (IsTimeOnlyType(member.Type))
-                                          return $"case {member.RawTag}:{{{member.Name} = new System.TimeOnly(input.Read{pbTypeString}());break;}}";
-                                      if (IsStringBuilderType(member.Type))
-                                          return $"case {member.RawTag}:{{{member.Name} = new System.Text.StringBuilder(input.Read{pbTypeString}());break;}}";
-                                      if (member.Type.TypeKind == TypeKind.Enum)
-                                          return $"case {member.RawTag}:{{{member.Name} = ({member.Type.ToDisplayString()})input.Read{pbTypeString}();break;}}";
-                                      if (member.Type.IsValueType || member.Type.SpecialType == SpecialType.System_String || member.Type.ToDisplayString() == "Google.Protobuf.ByteString")
-                                          return $"case {member.RawTag}:{{{member.Name} = input.Read{pbTypeString}();break;}}";
-                                      // Fallback for non-dictionary message types (but not for the new simple types)
-                                      if (!IsDictionaryType(member.Type) &&
-                                          !IsGuidType(member.Type) &&
-                                          !IsTimeSpanType(member.Type) &&
-                                          !IsDateOnlyType(member.Type) &&
-                                          !IsTimeOnlyType(member.Type) &&
-                                          !IsStringBuilderType(member.Type))
-                                          return $"case {member.RawTag}:{{if ({member.Name}==null) {member.Name}=new {member.Type.ToDisplayString()}(); input.ReadMessage({member.Name});break;}}";
-                                      return string.Empty; // This should never be reached for dictionaries
                                   }))
                               }}
                           }
                       }
+                      
+                      return new {{className}}()
+                      {
+                          {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              GetProtoMembers(targetType).Select(member => $"{member.Name} = _{member.Name},"))
+                          }}
+                      };
                   }
               }
               """
         );
-        //if (targetType.IsRecord == false)
-        {
-            sourceBuilder.AppendLine(
-                $"""
-                    
-                """
-            );
-        }
-
         return sourceBuilder.ToString();
     }
 
-    private bool HasCountProperty(ITypeSymbol memberType, string count)
+    private bool IsProtoBufMessage(ITypeSymbol memberType)
     {
-        if (memberType is not INamedTypeSymbol namedType)
-            return false;
-
-        var property = namedType.GetMembers(count).OfType<IPropertySymbol>().FirstOrDefault();
-        if (property != null && property.GetMethod != null)
-            return true;
-
-        return namedType.AllInterfaces.Any(o =>
+        if (memberType is INamedTypeSymbol namedType)
         {
-            property = o.GetMembers(count).OfType<IPropertySymbol>().FirstOrDefault();
-            return property != null && property.GetMethod != null;
-        });
-    }
-
-    static bool IsNullableValueType(ITypeSymbol type)
-    {
-        return type
-            is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
-    }
-
-    static ITypeSymbol GetUnderlyingType(ITypeSymbol type)
-    {
-        if (IsNullableValueType(type))
-        {
-            return ((INamedTypeSymbol)type).TypeArguments[0];
+            foreach (var iface in namedType.AllInterfaces)
+            {
+                if (
+                    iface.ToDisplayString()
+                    == "Dameng.Protobuf.Extension.IProtoBufMessage<T>"
+                )
+                {
+                    return true;
+                }
+            }
         }
+        return false;
+    }
 
-        return type;
+    static string NewConcreteTypeCollectionWithCapacity(
+        Compilation compilation,
+        ITypeSymbol type,
+        string capacity
+    )
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return $"new {GetConcreteTypeName(compilation, type)}()";
+
+        var concreteType = ResolveConcreteTypeSymbol(compilation, namedType);
+        if (SupportsCapacityConstructor(concreteType))
+        {
+            return $"new {concreteType}({capacity})";
+        }
+        else
+        {
+            return $"new {concreteType}()";
+        }
+    }
+
+    static bool SupportsCapacityConstructor(INamedTypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+        {
+            return false;
+        }
+        return typeSymbol.Constructors.Any(c =>
+            !c.IsStatic
+            && c.Parameters.Length == 1
+            && c.Parameters[0].Type.SpecialType == SpecialType.System_Int32
+        );
+    }
+    static string GetCollectionCountPropertyName(ITypeSymbol type)
+    {
+        if (IsArrayType(type))
+            return "Length";
+        return "Count";
+    }
+    static string GetConcreteTypeName(Compilation compilation, ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return type.ToDisplayString();
+
+        return ResolveConcreteTypeSymbol(compilation, namedType).ToDisplayString();
     }
 
     static bool IsArrayType(ITypeSymbol type)
     {
         return type.TypeKind == TypeKind.Array;
-    }
-
-    static bool IsImmutableCollectionType(ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return false;
-
-        var typeName = namedType.OriginalDefinition.ToDisplayString();
-        return typeName.StartsWith("System.Collections.Immutable.Immutable");
-    }
-
-    static bool IsImmutableArrayType(ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return false;
-
-        var typeName = namedType.OriginalDefinition.ToDisplayString();
-        return typeName == "System.Collections.Immutable.ImmutableArray<T>";
-    }
-
-    static string GetCollectionCountPropertyName(ITypeSymbol type)
-    {
-        if (IsArrayType(type) || IsImmutableArrayType(type))
-            return "Length";
-        return "Count";
     }
 
     static bool IsListType(ITypeSymbol type)
@@ -941,6 +321,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         var typeName = namedType.OriginalDefinition.ToDisplayString();
         return typeName == "System.Collections.Generic.List<T>"
+            || typeName == "Google.Protobuf.Collections.RepeatedField<T>"
             || typeName == "System.Collections.Concurrent.ConcurrentBag<T>"
             || typeName == "System.Collections.Immutable.ImmutableArray<T>"
             || typeName == "System.Collections.Immutable.ImmutableList<T>"
@@ -970,142 +351,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
             || typeName == "System.Collections.Concurrent.ConcurrentQueue<T>";
     }
 
-    static bool IsStackType(ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return false;
-        var typeName = namedType.OriginalDefinition.ToDisplayString();
-        return typeName == "System.Collections.Generic.Stack<T>"
-            || typeName == "System.Collections.Immutable.ImmutableStack<T>"
-            || typeName == "System.Collections.Concurrent.ConcurrentStack<T>";
-    }
-
-    static bool IsCollectionType(ITypeSymbol type)
-    {
-        return IsArrayType(type)
-            || IsListType(type)
-            || IsSetType(type)
-            || IsQueueType(type)
-            || IsStackType(type);
-    }
-
-    static bool HasAddRangeMethod(ITypeSymbol collectionType, ITypeSymbol elementType)
-    {
-        var addRangeMethod = collectionType
-            .GetMembers("AddRange")
-            .OfType<IMethodSymbol>()
-            .FirstOrDefault(m =>
-                m.Parameters.Length == 1
-                && SymbolEqualityComparer.Default.Equals(
-                    (m.Parameters[0].Type as INamedTypeSymbol)?.TypeArguments[0],
-                    elementType
-                )
-            );
-        return addRangeMethod != null;
-    }
-
-    static bool IsDictionaryType(ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return false;
-
-        var typeName = namedType.OriginalDefinition.ToDisplayString();
-        // Dictionary uses different template parameter names based on actual Roslyn behavior
-        return typeName == "System.Collections.Generic.Dictionary<TKey, TValue>"
-            || typeName == "System.Collections.Generic.IDictionary<TKey, TValue>"
-            || typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>"
-            || typeName == "System.Collections.Immutable.ImmutableDictionary<TKey, TValue>"
-            || typeName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
-    }
-
-    static string NewConcreteTypeCollection(Compilation compilation,ITypeSymbol type)
-    {
-        if (IsImmutableCollectionType(type))
-            return $"{GetConcreteTypeName(compilation,type)}.Empty";
-
-        return $"new {GetConcreteTypeName(compilation,type)}()";
-    }
-    static string NewConcreteTypeCollectionWithCapacity(Compilation compilation, ITypeSymbol type,string capacity)
-    {
-        if(type is not INamedTypeSymbol namedType)
-            return $"new {GetConcreteTypeName(compilation,type)}()";
-        
-        if (IsImmutableCollectionType(type))
-            return $"{type}.Empty";
-
-        var concreteType = ResolveConcreteTypeSymbol(compilation,namedType);
-        if (SupportsCapacityConstructor(concreteType))
-        {
-            return $"new {concreteType}({capacity})";
-        }
-        else
-        {
-            return $"new {concreteType}()";
-        }
-        
-    }
-    static bool SupportsCapacityConstructor(INamedTypeSymbol? typeSymbol)
-    {
-        if (typeSymbol is null)
-        {
-            return false;
-        }
-        return typeSymbol.Constructors.Any(c =>
-            !c.IsStatic &&c.Parameters.Length==1&&
-            c.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
-    }
-    static INamedTypeSymbol ResolveConcreteTypeSymbol(Compilation compilation, INamedTypeSymbol type)
-    {
-        // 如果是接口，就手动映射到具体类型
-        var constructedFrom = type.OriginalDefinition.ToDisplayString();
-
-        return constructedFrom switch
-        {
-            "System.Collections.Generic.IList<T>"
-                or "System.Collections.Generic.IEnumerable<T>"
-                or "System.Collections.Generic.ICollection<T>"
-                or "System.Collections.Generic.IReadOnlyCollection<T>"
-                => compilation
-                    .GetTypeByMetadataName("System.Collections.Generic.List`1")
-                    ?.Construct(type.TypeArguments.ToArray())??type,
-
-            "System.Collections.Generic.IDictionary<TKey, TValue>"
-                or "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>"
-                => compilation
-                    .GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
-                    ?.Construct(type.TypeArguments.ToArray())??type,
-
-            "System.Collections.Generic.ISet<T>"
-                => compilation
-                    .GetTypeByMetadataName("System.Collections.Generic.HashSet`1")
-                    ?.Construct(type.TypeArguments.ToArray())??type,
-
-            _ => type, // 如果本身就是具体类，就直接返回
-        };
-    }
-    static string GetConcreteTypeName(Compilation compilation, ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return type.ToDisplayString();
-
-        return ResolveConcreteTypeSymbol(compilation, namedType).ToDisplayString();
-    }
-    static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetDictionaryKeyValueTypes(
-        ITypeSymbol dictionaryType
-    )
-    {
-        if (IsDictionaryType(dictionaryType) && dictionaryType is INamedTypeSymbol namedType)
-        {
-            var typeArguments = namedType.TypeArguments;
-            if (typeArguments.Length == 2)
-            {
-                return (typeArguments[0], typeArguments[1]);
-            }
-        }
-
-        throw new ArgumentException("Type is not a dictionary type", nameof(dictionaryType));
-    }
-
     static ITypeSymbol GetElementType(ITypeSymbol collectionType)
     {
         if (IsArrayType(collectionType))
@@ -1131,61 +376,66 @@ public class SimpleProtobufGenerator : ISourceGenerator
         );
     }
 
-    static string GetFieldCodec(ITypeSymbol Type, DataFormat dataFormat, uint rawTag)
+    static bool IsStackType(ITypeSymbol type)
     {
-        var PbTypeString = GetPbTypeString(Type, dataFormat);
-        if (Type.SpecialType == SpecialType.System_DateTime)
-        {
-            return $"pb::FieldCodec.ForMessage({rawTag}, Google.Protobuf.WellKnownTypes.Timestamp.Parser)";
-        }
-
-        if (IsTimeSpanType(Type))
-        {
-            return $"pb::FieldCodec.ForMessage({rawTag}, Google.Protobuf.WellKnownTypes.Duration.Parser)";
-        }
-
-        if (PbTypeString == "Message")
-        {
-            return $"pb::FieldCodec.For{PbTypeString}({rawTag},{Type.ToDisplayString()}.Parser)";
-        }
-
-        if (PbTypeString == "Enum")
-        {
-            return $"pb::FieldCodec.For{PbTypeString}({rawTag},x => (int) x, x => ({Type.ToDisplayString()}) x)";
-        }
-
-        return $"pb::FieldCodec.For{PbTypeString}({rawTag})";
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
+        return typeName == "System.Collections.Generic.Stack<T>"
+            || typeName == "System.Collections.Immutable.ImmutableStack<T>"
+            || typeName == "System.Collections.Concurrent.ConcurrentStack<T>";
     }
 
-    static string GetPbTypeString(ITypeSymbol genericType, DataFormat memberDataFormat)
+    static bool IsCollectionType(ITypeSymbol type)
     {
-        return genericType.SpecialType switch
+        return IsArrayType(type)
+            || IsListType(type)
+            || IsSetType(type)
+            || IsQueueType(type)
+            || IsStackType(type);
+    }
+
+    static bool IsDictionaryType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var typeName = namedType.OriginalDefinition.ToDisplayString();
+        // Dictionary uses different template parameter names based on actual Roslyn behavior
+        return typeName == "System.Collections.Generic.Dictionary<TKey, TValue>"
+            || typeName == "System.Collections.Generic.IDictionary<TKey, TValue>"
+            || typeName == "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>"
+            || typeName == "System.Collections.Immutable.ImmutableDictionary<TKey, TValue>"
+            || typeName == "System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>";
+    }
+
+    static INamedTypeSymbol ResolveConcreteTypeSymbol(
+        Compilation compilation,
+        INamedTypeSymbol type
+    )
+    {
+        // 如果是接口，就手动映射到具体类型
+        var constructedFrom = type.OriginalDefinition.ToDisplayString();
+
+        return constructedFrom switch
         {
-            SpecialType.System_Boolean => "Bool",
-            SpecialType.System_Int32 => memberDataFormat == DataFormat.FixedSize ? "SFixed32"
-            : memberDataFormat == DataFormat.ZigZag ? "SInt32"
-            : "Int32",
-            SpecialType.System_UInt32 => memberDataFormat == DataFormat.FixedSize
-                ? "Fixed32"
-                : "UInt32",
-            SpecialType.System_Int64 => memberDataFormat == DataFormat.FixedSize ? "SFixed64"
-            : memberDataFormat == DataFormat.ZigZag ? "SInt64"
-            : "Int64",
-            SpecialType.System_UInt64 => memberDataFormat == DataFormat.FixedSize
-                ? "Fixed64"
-                : "UInt64",
-            SpecialType.System_Single => "Float",
-            SpecialType.System_Double => "Double",
-            SpecialType.System_String => "String",
-            SpecialType.System_DateTime => "Message",
-            _ when genericType.ToDisplayString() == "Google.Protobuf.ByteString" => "Bytes",
-            _ when IsGuidType(genericType) => "Bytes",
-            _ when IsTimeSpanType(genericType) => "Message",
-            _ when IsDateOnlyType(genericType) => "Int32",
-            _ when IsTimeOnlyType(genericType) => "Int64",
-            _ when IsStringBuilderType(genericType) => "String",
-            _ when genericType.TypeKind == TypeKind.Enum => "Enum",
-            _ => "Message",
+            "System.Collections.Generic.IList<T>"
+            or "System.Collections.Generic.IEnumerable<T>"
+            or "System.Collections.Generic.ICollection<T>"
+            or "System.Collections.Generic.IReadOnlyCollection<T>" => compilation
+                .GetTypeByMetadataName("System.Collections.Generic.List`1")
+                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+
+            "System.Collections.Generic.IDictionary<TKey, TValue>"
+            or "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" => compilation
+                .GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
+                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+
+            "System.Collections.Generic.ISet<T>" => compilation
+                .GetTypeByMetadataName("System.Collections.Generic.HashSet`1")
+                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+
+            _ => type, // 如果本身就是具体类，就直接返回
         };
     }
 

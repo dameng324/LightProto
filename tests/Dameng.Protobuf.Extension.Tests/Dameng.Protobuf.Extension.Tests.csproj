@@ -14,7 +14,8 @@
         <PackageReference Include="AwesomeAssertions" Version="9.1.0" />
         <PackageReference Include="Bogus" Version="35.6.3" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
-        <PackageReference Include="TUnit" Version="0.24.0"/>
+        <PackageReference Include="ObjectDumper.NET" Version="4.3.2" />
+        <PackageReference Include="TUnit" Version="0.24.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,7 +24,6 @@
         
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="obj/$(Configuration)/$(TargetFramework)/protobuf/**/*.cs" />
         <ProtoBuf Include="package.proto">
             <GrpcServices>Client</GrpcServices>
             <Generator>MSBuild:PreCompile</Generator>
