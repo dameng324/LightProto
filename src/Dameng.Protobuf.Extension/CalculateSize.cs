@@ -42,7 +42,6 @@ public static class SizeCalculator
             if (typeof(T) == typeof(long) || typeof(T) == typeof(ulong))
             {
                 fixedSize = 8;
-
                 return true;
             }
 
@@ -219,14 +218,6 @@ public static class SizeCalculator
             var value = Unsafe.As<T, Duration>(ref t);
             return CodedOutputStream.ComputeMessageSize(value);
         }
-
-        if (typeof(T).IsAssignableTo(typeof(IProtoBufMessage)))
-        {
-            var value = Unsafe.As<T, IProtoBufMessage>(ref t);
-            var size = value.CalculateSize();
-            return CodedOutputStream.ComputeLengthSize(size) + size;
-        }
-
         throw new NotSupportedException($"Type {typeof(T)} is not supported");
     }
 }

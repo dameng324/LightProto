@@ -24,4 +24,4 @@ public class ProtoMapAttribute : Attribute
 
 public class ProtoIgnoreAttribute : Attribute;
 
-public class ProtoProxyAttribute<T>() : Attribute;
+public class ProtoParserAttribute<T> : Attribute;

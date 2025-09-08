@@ -70,7 +70,7 @@ public partial class CsTestMessage
     public RepeatedField<CsTestEnum> EnumArrayField { get; set; }
     
     [ProtoMember(21)]
-    public CsTestMessage NestedMessageField { get; set; }
+    public CsTestMessage NestedField { get; set; }
     
     [ProtoMember(22)]
     public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }

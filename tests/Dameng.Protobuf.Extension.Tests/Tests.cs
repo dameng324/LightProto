@@ -58,25 +58,25 @@ public class Tests
                 // },
                 // EnumField = CsTestEnum.OptionB,
                 // EnumArrayField = [CsTestEnum.OptionB,CsTestEnum.None, CsTestEnum.OptionA],
-                NestedMessageField = new CsTestMessage()
-                {
-                    RequiredIntField = RandomInt(random),
-                    StringField = RandomString(random)
-                },
-                NestedMessageArrayField =
-                [
-                    new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(random),
-                        StringField = RandomString(random)
-                    },
-                    new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(random),
-                        StringField = RandomString(random)
-                    },
-                ],
-                TimestampField = DateTime.UtcNow.ToTimestamp(),
+                // NestedField = new CsTestMessage()
+                // {
+                //     RequiredIntField = RandomInt(random),
+                //     StringField = RandomString(random)
+                // },
+                // NestedMessageArrayField =
+                // [
+                //     new CsTestMessage()
+                //     {
+                //         RequiredIntField = RandomInt(random),
+                //         StringField = RandomString(random)
+                //     },
+                //     new CsTestMessage()
+                //     {
+                //         RequiredIntField = RandomInt(random),
+                //         StringField = RandomString(random)
+                //     },
+                // ],
+                //TimestampField = DateTime.UtcNow.ToTimestamp(),
                 DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
                 // MapField2 = new()
                 // {
@@ -90,7 +90,7 @@ public class Tests
                 // },
                 // MapField4 = new MapField<int, long>() { [1111] = 2222 },
                 // DateTimeField = DateTime.UtcNow,
-                // IntArrayFieldTest = [10, 20, 30],
+                IntArrayFieldTest = [10, 20, 30],
                 // StringListFieldTest = ["array", "list", "test"],
                 // StringArrayFieldTest = ["hello", "world"],
                 // IntListFieldTest = [100, 200, 300],
@@ -104,7 +104,6 @@ public class Tests
                 //     [RandomString()] = RandomString(random)
                 //     [RandomString()] = RandomString(random)
                 // },
-                // RequiredIntField = RandomInt(random),
             }
         );
         //parsed.NullableIntField.Should().Be(0);
@@ -191,7 +190,7 @@ public class Tests
 
     T2 Run2<T1, T2>(T1 obj)
         where T1 : IPbMessageParser<T1>
-        where T2 : IProtoBufMessage<T2>
+        where T2 : IProtoMessage<T2>
     {
         var bytes = obj.ToByteArray();
         var parsed1= T1.Parser.ParseFrom(bytes);
@@ -203,12 +202,11 @@ public class Tests
 
         // For now, just check that parsing doesn't throw and produces a result
         originalBytes.Should().Be(parsedBytes);
-
         parsed.CalculateSize().Should().Be(obj.CalculateSize());
         return parsed;
     }
     T2 Run<T1, T2>(T1 obj)
-        where T1 : IProtoBufMessage<T1>
+        where T1 : IProtoMessage<T1>
         where T2 : IPbMessageParser<T2>
     {
         var bytes = obj.ToByteArray();

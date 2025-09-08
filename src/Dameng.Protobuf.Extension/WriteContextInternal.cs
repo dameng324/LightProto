@@ -210,14 +210,6 @@ public static class WriteContextInternal
             output.WriteMessage(value);
             return;
         }
-        if (typeof(T).IsAssignableTo(typeof(IProtoBufMessage)))
-        {
-            var value = Unsafe.As<T, IProtoBufMessage>(ref t);
-            output.WriteLength(value.CalculateSize());
-            value.WriteTo(ref output);
-            return;
-        }
-
         if (typeof(T).IsAssignableTo(typeof(IMessage)))
         {
             var value = Unsafe.As<T, IMessage>(ref t);
