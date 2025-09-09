@@ -25,6 +25,7 @@
 
     <ItemGroup>
         <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="../Dameng.Protobuf.Extension.Generator/bin/$(Configuration)/netstandard2.0/Dameng.Protobuf.Extension.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
