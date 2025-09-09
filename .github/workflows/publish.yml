@@ -20,11 +20,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          global-json-file: global.json
 
       - name: Restore dependencies
         run: dotnet restore  tests/Dameng.Protobuf.Extension.Tests/
