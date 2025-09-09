@@ -12,161 +12,111 @@ namespace Dameng.Protobuf.Extension.Tests;
 public class Tests
 {
     [Test]
+    [MatrixDataSource]
     public void LocalToGoogle()
     {
-        var random=Random.Shared; // new Random(31);
+        var random = Random.Shared; // new Random(31);
         var parsed = Run<CsTestMessage, TestMessage>(
             new CsTestMessage
             {
-                // RequiredIntField = RandomInt(random),
-                // StringField = RandomString(random),
-                // Int32Field = RandomInt(random),
-                // Int32ArrayField = 
-                //     new RepeatedField<int>()
-                //     {
-                //         0,
-                //         13123,
-                //     },
-                // StringArrayField = 
-                //     new RepeatedField<string>()
-                //         {
-                //             string.Empty,
-                //             Guid.NewGuid().ToString(),
-                //         },
-                // BytesField = ByteString.CopyFrom(
-                //     Enumerable
-                //         .Range(0, random.Next(100))
-                //         .Select(_ => (byte)RandomInt(random))
-                //         .ToArray()
-                // ),
-                // BoolField = random.Next() % 2 == 0,
-                // DoubleField = random.NextDouble(),
-                // FloatField = (float)random.NextDouble(),
-                // Int64Field = random.Next(),
-                // UInt32Field = (uint)random.Next(),
-                // UInt64Field = (ulong)random.Next(),
-                // SInt32Field = random.Next(),
-                // SInt64Field = random.Next(),
-                // Fixed32Field = (uint)random.Next(),
-                // Fixed64Field = (ulong)random.Next(),
-                // SFixed32Field = random.Next(),
-                // SFixed64Field = random.Next(),
-                // MapField = new MapField<string, string>()
-                // {
-                //     ["key1"] = "value1",
-                //     ["key2"] = "value2",
-                // },
-                // EnumField = CsTestEnum.OptionB,
-                // EnumArrayField = [CsTestEnum.OptionB,CsTestEnum.None, CsTestEnum.OptionA],
-                // NestedField = new CsTestMessage()
-                // {
-                //     RequiredIntField = RandomInt(random),
-                //     StringField = RandomString(random)
-                // },
-                // NestedMessageArrayField =
-                // [
-                //     new CsTestMessage()
-                //     {
-                //         RequiredIntField = RandomInt(random),
-                //         StringField = RandomString(random)
-                //     },
-                //     new CsTestMessage()
-                //     {
-                //         RequiredIntField = RandomInt(random),
-                //         StringField = RandomString(random)
-                //     },
-                // ],
-                //TimestampField = DateTime.UtcNow.ToTimestamp(),
+                RequiredIntField = RandomInt(random),
+                StringField = RandomString(random),
+                Int32Field = RandomInt(random),
+                Int32ArrayField = new RepeatedField<int>() { 0, 13123 },
+                StringArrayField = new RepeatedField<string>()
+                {
+                    string.Empty,
+                    Guid.NewGuid().ToString(),
+                },
+                BytesField = ByteString.CopyFrom(
+                    Enumerable
+                        .Range(0, random.Next(100))
+                        .Select(_ => (byte)RandomInt(random))
+                        .ToArray()
+                ),
+                BoolField = random.Next() % 2 == 0,
+                DoubleField = random.NextDouble(),
+                FloatField = (float)random.NextDouble(),
+                Int64Field = random.Next(),
+                UInt32Field = (uint)random.Next(),
+                UInt64Field = (ulong)random.Next(),
+                SInt32Field = random.Next(),
+                SInt64Field = random.Next(),
+                Fixed32Field = (uint)random.Next(),
+                Fixed64Field = (ulong)random.Next(),
+                SFixed32Field = random.Next(),
+                SFixed64Field = random.Next(),
+                MapField = new MapField<string, string>()
+                {
+                    ["key1"] = "value1",
+                    ["key2"] = "value2",
+                },
+                EnumField = CsTestEnum.OptionB,
+                EnumArrayField = [CsTestEnum.OptionB, CsTestEnum.None, CsTestEnum.OptionA],
+                NestedField = new CsTestMessage()
+                {
+                    RequiredIntField = RandomInt(random),
+                    StringField = RandomString(random),
+                },
+                NestedMessageArrayField =
+                [
+                    new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(random),
+                        StringField = RandomString(random),
+                    },
+                    new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(random),
+                        StringField = RandomString(random),
+                    },
+                ],
+                TimestampField = DateTime.UtcNow.ToTimestamp(),
                 DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
-                // MapField2 = new()
-                // {
-                //     [RandomString()] = RandomString(random)
-                //     [RandomString()] = RandomString(random)
-                // },
-                // MapField3 = new()
-                // {
-                //     [RandomString()] = RandomString(random)
-                //     [RandomString()] = RandomString(random)
-                // },
-                // MapField4 = new MapField<int, long>() { [1111] = 2222 },
-                // DateTimeField = DateTime.UtcNow,
+                MapField2 = new()
+                {
+                    [RandomString(random)] = RandomString(random),
+                    [RandomString(random)] = RandomString(random),
+                },
+                MapField4 = new MapField<int, long>() { [1111] = 2222 },
+                DateTimeField = DateTime.UtcNow,
                 IntArrayFieldTest = [10, 20, 30],
-                // StringListFieldTest = ["array", "list", "test"],
-                // StringArrayFieldTest = ["hello", "world"],
-                // IntListFieldTest = [100, 200, 300],
-                // MapField5 = new Dictionary<string, string>()
-                // {
-                //     [RandomString()] = RandomString(random)
-                //     [RandomString()] = RandomString(random)
-                // },
-                // MapField6 = new ConcurrentDictionary<string, string>()
-                // {
-                //     [RandomString()] = RandomString(random)
-                //     [RandomString()] = RandomString(random)
-                // },
+                StringListFieldTest = ["array", "list", "test"],
+                StringArrayFieldTest = ["hello", "world"],
+                IntListFieldTest = [100, 200, 300],
+                NullableIntField = 10,
+                MapField5 = new Dictionary<string, string>()
+                {
+                    [RandomString(random)] = RandomString(random),
+                    [RandomString(random)] = RandomString(random),
+                },
+                MapField6 = new ConcurrentDictionary<string, string>()
+                {
+                    [RandomString(random)] = RandomString(random),
+                    [RandomString(random)] = RandomString(random),
+                },
+                MapField7 = new ConcurrentDictionary<string, CsTestMessage>()
+                {
+                    [RandomString(random)] = new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(random),
+                        StringField = RandomString(random),
+                    },
+                    [RandomString(random)] = new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(random),
+                        StringField = RandomString(random),
+                    },
+                },
+                StringSetFieldTest = [RandomString(random), RandomString(random)],
+                StringQueueFieldTest = new([RandomString(random), RandomString(random)]),
+                StringStackFieldTest = new([RandomString(random), RandomString(random)]),
+                ConcurrentStringQueueFieldTest = new([RandomString(random), RandomString(random)]),
+                ConcurrentStringStackFieldTest = new([RandomString(random), RandomString(random)]),
             }
         );
         //parsed.NullableIntField.Should().Be(0);
     }
-    //
-    // [Test]
-    // public void GoogleToLocal()
-    // {
-    //     var testMessage = new TestMessage
-    //     {
-    //         StringField = RandomString(random)
-    //         Int32Field = RandomInt(random),
-    //         BytesField = ByteString.CopyFrom(
-    //             Enumerable.Range(0, random.Next(10)).Select(_ => (byte)RandomInt(random)).ToArray()
-    //         ),
-    //         BoolField = random.Next() % 2 == 0,
-    //         DoubleField = random.NextDouble(),
-    //         FloatField = (float)random.NextDouble(),
-    //         Int64Field = random.Next(),
-    //         UInt32Field = (uint)random.Next(),
-    //         UInt64Field = (ulong)random.Next(),
-    //         SInt32Field = random.Next(),
-    //         SInt64Field = random.Next(),
-    //         Fixed32Field = (uint)random.Next(),
-    //         Fixed64Field = (ulong)random.Next(),
-    //         SFixed32Field = random.Next(),
-    //         SFixed64Field = random.Next(),
-    //         // EnumField = (TestEnum)CsTestEnum.None,
-    //         // NestedMessageField = new TestMessage() { StringField = RandomString() },
-    //         // TimestampField = Timestamp.FromDateTime(DateTime.UtcNow),
-    //         // DurationField = Duration.FromTimeSpan(DateTime.Now.TimeOfDay),
-    //         // DateTimeField = Timestamp.FromDateTime(DateTime.UtcNow),
-    //     };
-    //
-    //     // Initialize collections after construction
-    //     testMessage.Int32ArrayField.AddRange(
-    //         [0, 13123]
-    //     );
-    //     testMessage.StringArrayField.AddRange(
-    //         [string.Empty,Guid.NewGuid().ToString()]
-    //     );
-    //     // testMessage.MapField["key1"] = "value1";
-    //     // testMessage.MapField["key2"] = "value2";
-    //     // testMessage.EnumArrayField.AddRange(
-    //     //     new[] { (TestEnum)CsTestEnum.None, (TestEnum)CsTestEnum.OptionA }
-    //     // );
-    //     // testMessage.NestedMessageArrayField.Add(new TestMessage() { StringField = RandomString() });
-    //     // testMessage.NestedMessageArrayField.Add(new TestMessage() { StringField = RandomString() });
-    //     // testMessage.MapField2["key1"] = "value1";
-    //     // testMessage.MapField2["key2"] = "value2";
-    //     // testMessage.MapField3["key1"] = "value1";
-    //     // testMessage.MapField3["key2"] = "value2";
-    //     // testMessage.MapField4[1111] = 2222;
-    //     //
-    //     // // Add array/list test data
-    //     // testMessage.IntArrayFieldTest.AddRange([10, 20, 30]);
-    //     // testMessage.StringListFieldTest.AddRange(["array", "list", "test"]);
-    //     // testMessage.StringArrayFieldTest.AddRange(["hello", "world"]);
-    //     // testMessage.IntListFieldTest.AddRange([100, 200, 300]);
-    //
-    //     var parsed = Run2<TestMessage, CsTestMessage>(testMessage);
-    //     //parsed.NullableIntField.Should().BeNull();
-    // }
 
     string RandomString(Random random)
     {
@@ -188,36 +138,27 @@ public class Tests
 
     int RandomInt(Random random) => random.Next(10);
 
-    T2 Run2<T1, T2>(T1 obj)
-        where T1 : IPbMessageParser<T1>
-        where T2 : IProtoMessage<T2>
-    {
-        var bytes = obj.ToByteArray();
-        var parsed1= T1.Parser.ParseFrom(bytes);
-        var parsed = ProtoBuf.ParseFromBytes<T2>(bytes);
-
-        // Compare the binary serialization instead of JSON for now
-        var originalBytes = Convert.ToHexString(obj.ToByteArray());
-        var parsedBytes = Convert.ToHexString(parsed.ToByteArray());
-
-        // For now, just check that parsing doesn't throw and produces a result
-        originalBytes.Should().Be(parsedBytes);
-        parsed.CalculateSize().Should().Be(obj.CalculateSize());
-        return parsed;
-    }
-    T2 Run<T1, T2>(T1 obj)
+    T2 Run<T1, T2>(T1 origin)
         where T1 : IProtoMessage<T1>
         where T2 : IPbMessageParser<T2>
     {
-        var bytes = obj.ToByteArray();
+        var bytes = origin.ToByteArray();
         var parsed = T2.Parser.ParseFrom(bytes);
 
         // Compare the binary serialization instead of JSON for now
-        var originalBytes = Convert.ToHexString(obj.ToByteArray());
+        var originalBytes = Convert.ToHexString(origin.ToByteArray());
         var parsedBytes = Convert.ToHexString(parsed.ToByteArray());
         // For now, just check that parsing doesn't throw and produces a result
         originalBytes.Should().Be(parsedBytes);
-        parsed.CalculateSize().Should().Be(obj.CalculateSize());
+        parsed.CalculateSize().Should().Be(origin.CalculateSize());
+
+        var parseBack = T1.Reader.ParseFrom(bytes);
+        var bytes2 = parseBack.ToByteArray();
+
+        var parseBackBytes = Convert.ToHexString(bytes2);
+        parseBackBytes.Should().Be(originalBytes);
+        parseBack.CalculateSize().Should().Be(origin.CalculateSize());
+
         return parsed;
     }
     //

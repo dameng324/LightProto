@@ -12,7 +12,7 @@ public class ConcurrentBagProtoWriter<T> : IEnumerableProtoWriter<ConcurrentBag<
 public class ConcurrentBagProtoReader<T> : IEnumerableProtoReader<ConcurrentBag<T>,T>
 {
     public ConcurrentBagProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(itemReader, tag, static (capacity) => new ConcurrentBag<T>(), static (collection,i, item) => collection.Add(item),itemFixedSize)
+        : base(itemReader, tag,static (capacity) => new ConcurrentBag<T>(), static (collection,item) => collection.Add(item),itemFixedSize)
     {
     }
 }

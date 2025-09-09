@@ -20,6 +20,34 @@ public interface IProtoWriter<in T>
     public int CalculateSize(T value);
     public void WriteTo(ref WriteContext output, T value);
 }
+
+public interface IProtoMessageReader<out T> : IProtoReader<T>
+{
+    public T ParseMessageFrom(ref ParseContext input)
+    {
+        int length = ParsingPrimitives.ParseLength(ref input.buffer, ref input.state);
+        if (input.state.recursionDepth >= input.state.recursionLimit)
+        {
+            throw InvalidProtocolBufferException.RecursionLimitExceeded();
+        }
+        int oldLimit = SegmentedBufferHelper.PushLimit(ref input.state, length);
+        ++input.state.recursionDepth;
+        var message = ParseFrom(ref input);
+        
+        if (input.state.lastTag != 0)
+        {
+            throw InvalidProtocolBufferException.MoreDataAvailable();
+        }
+        // Check that we've read exactly as much data as expected.
+        if (!SegmentedBufferHelper.IsReachedLimit(ref input.state))
+        {
+            throw InvalidProtocolBufferException.TruncatedMessage();
+        }
+        --input.state.recursionDepth;
+        SegmentedBufferHelper.PopLimit(ref input.state, oldLimit);
+        return message;
+    }
+}
 public interface IProtoMessageWriter<in T>: IProtoWriter<T>
 {
     public int CalculateMessageSize(T value)

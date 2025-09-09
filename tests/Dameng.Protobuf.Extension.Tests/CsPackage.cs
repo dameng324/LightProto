@@ -1,8 +1,8 @@
-﻿using Google.Protobuf;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
 
 namespace Dameng.Protobuf.Extension.Tests;
 
@@ -10,97 +10,129 @@ namespace Dameng.Protobuf.Extension.Tests;
 public partial class CsTestMessage
 {
     [ProtoMember(1)]
-    public string StringField { get; set; }
-    
+    public string StringField { get; set; } = string.Empty;
+
     [ProtoMember(2)]
     public int Int32Field { get; set; }
-    
+
     [ProtoMember(3)]
-    public RepeatedField<int> Int32ArrayField { get; set; }
-    
+    public RepeatedField<int> Int32ArrayField { get; set; }= [];
+
     [ProtoMember(4)]
-    public RepeatedField<string> StringArrayField { get; set; }
-    
+    public RepeatedField<string> StringArrayField { get; set; }= [];
+
     [ProtoMember(5)]
-    public ByteString BytesField { get; set; }
-    
+    public ByteString BytesField { get; set; } = ByteString.Empty;
+
     [ProtoMember(6)]
     public bool BoolField { get; set; }
-    
+
     [ProtoMember(7)]
     public double DoubleField { get; set; }
-    
+
     [ProtoMember(8)]
     public float FloatField { get; set; }
-    
+
     [ProtoMember(9)]
     public long Int64Field { get; set; }
-    
+
     [ProtoMember(10)]
     public uint UInt32Field { get; set; }
-    
+
     [ProtoMember(11)]
     public ulong UInt64Field { get; set; }
-    
-    [ProtoMember(12,DataFormat = DataFormat.ZigZag)]
+
+    [ProtoMember(12, DataFormat = DataFormat.ZigZag)]
     public int SInt32Field { get; set; }
-    
-    [ProtoMember(13,DataFormat = DataFormat.ZigZag)]
+
+    [ProtoMember(13, DataFormat = DataFormat.ZigZag)]
     public long SInt64Field { get; set; }
-    
-    [ProtoMember(14,DataFormat = DataFormat.FixedSize)]
+
+    [ProtoMember(14, DataFormat = DataFormat.FixedSize)]
     public uint Fixed32Field { get; set; }
-    
-    [ProtoMember(15,DataFormat = DataFormat.FixedSize)]
+
+    [ProtoMember(15, DataFormat = DataFormat.FixedSize)]
     public ulong Fixed64Field { get; set; }
-    
-    [ProtoMember(16,DataFormat = DataFormat.FixedSize)]
+
+    [ProtoMember(16, DataFormat = DataFormat.FixedSize)]
     public int SFixed32Field { get; set; }
-    
-    [ProtoMember(17,DataFormat = DataFormat.FixedSize)]
+
+    [ProtoMember(17, DataFormat = DataFormat.FixedSize)]
     public long SFixed64Field { get; set; }
-    
-    // [ProtoMember(18)]
-    // public MapField<string, string> MapField { get; set; }
-    
+
+    [ProtoMember(18)]
+    public MapField<string, string> MapField { get; set; }= [];
+
     [ProtoMember(19)]
     public CsTestEnum EnumField { get; set; }
-    
+
     [ProtoMember(20)]
-    public RepeatedField<CsTestEnum> EnumArrayField { get; set; }
-    
+    public RepeatedField<CsTestEnum> EnumArrayField { get; set; }= [];
+
     [ProtoMember(21)]
     public CsTestMessage NestedField { get; set; }
-    
+
     [ProtoMember(22)]
-    public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }
-    
+    public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }= [];
+
     // google.protobuf.Timestamp
     [ProtoMember(27)]
     public Timestamp TimestampField { get; set; }
-    
+
     // google.protobuf.Duration
     [ProtoMember(28)]
     public Duration DurationField { get; set; }
-    
-    // [ProtoMember(29)]
-    // public Dictionary<string, string> MapField2 { get; set; }
-    
-    // [ProtoMember(50)][ProtoMap(KeyFormat = DataFormat.FixedSize,ValueFormat = DataFormat.ZigZag)] public MapField<int,long> MapField4 { get; set; }
-    // [ProtoMember(51)] public DateTime DateTimeField { get; set; }
-    // [ProtoMember(52)] public int? NullableIntField { get; set; }
-    //
-    [ProtoMember(53)] public int[] IntArrayFieldTest { get; set; }
-    // [ProtoMember(54)] public List<string> StringListFieldTest { get; set; }
-    // [ProtoMember(55)] public string[] StringArrayFieldTest { get; set; }
-    // [ProtoMember(56)] public List<int> IntListFieldTest { get; set; }
-    
-    // [ProtoMember(57)]
-    // public IDictionary<string, string> MapField5 { get; set; }
-    // [ProtoMember(58)]
-    // public IReadOnlyDictionary<string, string> MapField6 { get; set; }
-     [ProtoMember(59)]
-     public int RequiredIntField { get; set; }
+
+    [ProtoMember(29)]
+    public Dictionary<string, string> MapField2 { get; set; }= [];
+
+    [ProtoMember(50)]
+    [ProtoMap(KeyFormat = DataFormat.FixedSize, ValueFormat = DataFormat.ZigZag)]
+    public MapField<int, long> MapField4 { get; set; }= [];
+
+    [ProtoMember(51)]
+    public DateTime DateTimeField { get; set; }
+
+    [ProtoMember(52)]
+    public int? NullableIntField { get; set; }
+
+    [ProtoMember(53)]
+    public int[] IntArrayFieldTest { get; set; }= [];
+
+    [ProtoMember(54)]
+    public IEnumerable<string> StringListFieldTest { get; set; }= [];
+
+    [ProtoMember(55)]
+    public string[] StringArrayFieldTest { get; set; }= [];
+
+    [ProtoMember(56)]
+    public IList<int> IntListFieldTest { get; set; }= [];
+
+    [ProtoMember(57)]
+    public IDictionary<string, string> MapField5 { get; set; }
+
+    [ProtoMember(58)]
+    public IReadOnlyDictionary<string, string> MapField6 { get; set; }
+
+    [ProtoMember(59)]
+    public int RequiredIntField { get; set; }
+
+    [ProtoMember(60)]
+    internal ConcurrentDictionary<string, CsTestMessage> MapField7 { get; set; }= [];
+
+    [ProtoMember(61)] public HashSet<string> StringSetFieldTest { get; set; } = [];
+
+    [ProtoMember(62)]
+    public Queue<string> StringQueueFieldTest { get; set; }= [];
+
+    [ProtoMember(63)]
+    public Stack<string> StringStackFieldTest { get; set; }= [];
+
+    [ProtoMember(64)]
+    public ConcurrentQueue<string> ConcurrentStringQueueFieldTest { get; set; }= [];
+
+    [ProtoMember(65)]
+    public ConcurrentStack<string> ConcurrentStringStackFieldTest { get; set; }= [];
 }
 
 [ProtoContract]

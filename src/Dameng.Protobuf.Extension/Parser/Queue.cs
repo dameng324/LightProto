@@ -10,7 +10,7 @@ public class QueueProtoWriter<T> : IEnumerableProtoWriter<Queue<T>,T>
 public class QueueProtoReader<T> : IEnumerableProtoReader<Queue<T>,T>
 {
     public QueueProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(itemReader, tag, static (size) => new Queue<T>(size), static (collection,i, item) => collection.Enqueue(item), itemFixedSize)
+        : base(itemReader, tag,static (size) => new Queue<T>(size), static (collection,item) => collection.Enqueue(item), itemFixedSize)
     {
     }
 }

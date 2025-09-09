@@ -12,7 +12,7 @@ public class RepeatedFieldProtoWriter<T> : IEnumerableProtoWriter<RepeatedField<
 public class RepeatedFieldProtoReader<T> : IEnumerableProtoReader<RepeatedField<T>,T>
 {
     public RepeatedFieldProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(itemReader, tag, static capacity => new RepeatedField<T>(), static (collection,i, item) => collection.Add(item), itemFixedSize)
+        : base(itemReader, tag,static capacity => new RepeatedField<T>(), static (collection,item) => collection.Add(item), itemFixedSize)
     {
     }
 }

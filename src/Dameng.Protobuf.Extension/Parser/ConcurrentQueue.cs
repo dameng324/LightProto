@@ -13,7 +13,7 @@ public class ConcurrentQueueProtoWriter<T> : IEnumerableProtoWriter<ConcurrentQu
 public class ConcurrentQueueProtoReader<T> : IEnumerableProtoReader<ConcurrentQueue<T>, T>
 {
     public ConcurrentQueueProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(itemReader, tag, static (size) => new ConcurrentQueue<T>(), static (collection,i, item) => collection.Enqueue(item), itemFixedSize)
+        : base(itemReader, tag,static (size) => new ConcurrentQueue<T>(), static (collection,item) => collection.Enqueue(item), itemFixedSize)
     {
     }
 }

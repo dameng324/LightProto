@@ -42,7 +42,7 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
                 
             if (ItemWriter is IProtoMessageWriter<TItem> messageWriter)
             {
-                size += messageWriter.CalculateMessageSize( item);
+                size += messageWriter.CalculateMessageSize(item);
             }
             else
             {

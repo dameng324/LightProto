@@ -14,9 +14,9 @@ public static class ProtoBuf
         return buffer;
     }
     
-    public static T ParseFromBytes<T>(byte[] bytes) where T : IProtoParser<T>
+    public static T ParseFrom<T>(this IProtoReader<T> reader,byte[] bytes) 
     {
-        Google.Protobuf.ParseContext.Initialize(new Google.Protobuf.CodedInputStream(bytes), out var ctx);
-        return T.Reader.ParseFrom(ref ctx);
+        ParseContext.Initialize(new CodedInputStream(bytes), out var ctx);
+        return reader.ParseFrom(ref ctx);
     }
 }
