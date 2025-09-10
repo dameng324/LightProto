@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
 
-namespace Dameng.Protobuf.Extension.Generator;
+namespace Dameng.Protobuf.Generator;
 
 [Generator]
 public class SimpleProtobufGenerator : ISourceGenerator

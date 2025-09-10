@@ -14,7 +14,7 @@
         <Authors>dameng324</Authors>
         <Copyright>Copyright (c) 2025 dameng324</Copyright>
         <PackageProjectUrl>https://github.com/dameng324/Dameng.Protobuf.Extension</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/dameng324/Dameng.Protobuf.Extension.git</RepositoryUrl>
+        <RepositoryUrl>https://github.com/dameng324/Dameng.Protobuf.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <RepositoryBranch>main</RepositoryBranch>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -27,7 +27,7 @@
         <None Include="..\..\README.md" Pack="true" PackagePath="\" />
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
         <ProjectReference Include="..\Dameng.Protobuf.Generator\Dameng.Protobuf.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <None Include="../Dameng.Protobuf.Extension.Generator/bin/$(Configuration)/netstandard2.0/Dameng.Protobuf.Extension.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="../Dameng.Protobuf.Generator/bin/$(Configuration)/netstandard2.0/Dameng.Protobuf.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
             </ItemGroup>
 
 </Project>
