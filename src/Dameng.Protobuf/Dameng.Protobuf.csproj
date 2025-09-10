@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>        
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        
+        <!-- NuGet Package Metadata -->
+        <PackageId>Dameng.Protobuf</PackageId>
+        <Title>Dameng.Protobuf.Extension - Generic Protobuf Deserialization</Title>
+        <Description>A .NET library that enables generic protobuf deserialization by providing an interface and source generator for Google.Protobuf generated classes. Allows writing type-safe generic methods for protobuf message parsing.</Description>
+        <PackageTags>protobuf;google-protobuf;source-generator;generic;deserialization;codegen</PackageTags>
+        <Authors>dameng324</Authors>
+        <Copyright>Copyright (c) 2025 dameng324</Copyright>
+        <PackageProjectUrl>https://github.com/dameng324/Dameng.Protobuf.Extension</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dameng324/Dameng.Protobuf.Extension.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryBranch>main</RepositoryBranch>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Version>999.999.999-localbuild</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+        <ProjectReference Include="..\Dameng.Protobuf.Generator\Dameng.Protobuf.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <None Include="../Dameng.Protobuf.Extension.Generator/bin/$(Configuration)/netstandard2.0/Dameng.Protobuf.Extension.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            </ItemGroup>
+
+</Project>

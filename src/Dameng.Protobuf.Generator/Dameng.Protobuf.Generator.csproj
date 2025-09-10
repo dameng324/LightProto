@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+        <AnalyzerLanguage>cs</AnalyzerLanguage>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <IncludeSymbols>false</IncludeSymbols>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <IsRoslynComponent>true</IsRoslynComponent>
+
+        <!-- NuGet Package Metadata -->
+        <PackageId>Dameng.Protobuf.Generator</PackageId>
+        <Title>Dameng.Protobuf.Extension Source Generator</Title>
+        <Description>Source generator for Dameng.Protobuf.Extension that provides compile-time code generation for generic protobuf deserialization. This is a development dependency that automatically implements the IPbMessageParser interface on protobuf generated classes.</Description>
+        <PackageTags>protobuf;google-protobuf;source-generator;roslyn;analyzer;codegen;generic</PackageTags>
+        <Authors>dameng324</Authors>
+        <Copyright>Copyright (c) 2025 dameng324</Copyright>
+        <PackageProjectUrl>https://github.com/dameng324/Dameng.Protobuf.Extension</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dameng324/Dameng.Protobuf.Extension.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryBranch>main</RepositoryBranch>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <RootNamespace>Dameng.Protobuf.Extension.Generator</RootNamespace>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Include="..\Dameng.Protobuf\DataFormat.cs">
+        <Link>DataFormat.cs</Link>
+      </Compile>
+      <Compile Remove="PbMessageParserGenerator.cs" />
+    </ItemGroup>
+
+    <Target Name="PackBuildOutputs" DependsOnTargets="SatelliteDllsProjectOutputGroup;DebugSymbolsProjectOutputGroup">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="analyzers\dotnet\cs\$(TargetFileName)" />
+        </ItemGroup>
+    </Target>
+</Project>

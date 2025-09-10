@@ -1,8 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
+using Dameng.Protobuf.WellKnownTypes;
 
 namespace Dameng.Protobuf.Extension.Tests;
 
@@ -16,13 +14,13 @@ public partial class CsTestMessage
     public int Int32Field { get; set; }
 
     [ProtoMember(3)]
-    public RepeatedField<int> Int32ArrayField { get; set; }= [];
-
+    public List<int> Int32ArrayField { get; set; }= [];
+    
     [ProtoMember(4)]
-    public RepeatedField<string> StringArrayField { get; set; }= [];
-
+    public List<string> StringArrayField { get; set; }= [];
+    
     [ProtoMember(5)]
-    public ByteString BytesField { get; set; } = ByteString.Empty;
+    public List<byte> BytesField { get; set; } =[];
 
     [ProtoMember(6)]
     public bool BoolField { get; set; }
@@ -61,24 +59,24 @@ public partial class CsTestMessage
     public long SFixed64Field { get; set; }
 
     [ProtoMember(18)]
-    public MapField<string, string> MapField { get; set; }= [];
+    public Dictionary<string, string> MapField { get; set; }= [];
 
     [ProtoMember(19)]
     public CsTestEnum EnumField { get; set; }
 
     [ProtoMember(20)]
-    public RepeatedField<CsTestEnum> EnumArrayField { get; set; }= [];
+    public List<CsTestEnum> EnumArrayField { get; set; }= [];
 
     [ProtoMember(21)]
     public CsTestMessage NestedField { get; set; }
 
     [ProtoMember(22)]
-    public RepeatedField<CsTestMessage> NestedMessageArrayField { get; set; }= [];
+    public List<CsTestMessage> NestedMessageArrayField { get; set; }= [];
 
     // google.protobuf.Timestamp
     [ProtoMember(27)]
     public Timestamp TimestampField { get; set; }
-
+    
     // google.protobuf.Duration
     [ProtoMember(28)]
     public Duration DurationField { get; set; }
@@ -88,7 +86,7 @@ public partial class CsTestMessage
 
     [ProtoMember(50)]
     [ProtoMap(KeyFormat = DataFormat.FixedSize, ValueFormat = DataFormat.ZigZag)]
-    public MapField<int, long> MapField4 { get; set; }= [];
+    public Dictionary<int, long> MapField4 { get; set; }= [];
 
     [ProtoMember(51)]
     public DateTime DateTimeField { get; set; }

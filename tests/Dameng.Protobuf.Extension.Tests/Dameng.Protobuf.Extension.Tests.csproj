@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
         <LangVersion>preview</LangVersion>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <RootNamespace>Dameng.Protobuf.Extension.Tests</RootNamespace>
     </PropertyGroup>
 
@@ -14,13 +14,14 @@
         <PackageReference Include="AwesomeAssertions" Version="9.1.0" />
         <PackageReference Include="Bogus" Version="35.6.3" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.32.0" />
         <PackageReference Include="ObjectDumper.NET" Version="4.3.2" />
         <PackageReference Include="TUnit" Version="0.24.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Dameng.Protobuf.Extension\Dameng.Protobuf.Extension.csproj" />
-        <ProjectReference Include="..\..\src\Dameng.Protobuf.Extension.Generator\Dameng.Protobuf.Extension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\..\src\Dameng.Protobuf\Dameng.Protobuf.csproj" />
+        <ProjectReference Include="..\..\src\Dameng.Protobuf.Generator\Dameng.Protobuf.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         
     </ItemGroup>
     <ItemGroup>

@@ -4,10 +4,10 @@
 // using System.Collections.Generic;
 // using System.Collections.Concurrent;
 // using System.Collections.Immutable;
-// using Dameng.Protobuf.Extension;
+// using Dameng.Protobuf;
 // using Google.Protobuf.Reflection;
 //
-// namespace Dameng.Protobuf.Extension.Tests;
+// namespace Dameng.Protobuf.Tests;
 //
 // // Test struct type
 // [ProtoContract]

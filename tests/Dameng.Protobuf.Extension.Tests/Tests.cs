@@ -2,9 +2,9 @@
 using System.Text;
 using System.Text.Json;
 using AwesomeAssertions;
+using Dameng.Protobuf.WellKnownTypes;
 using Google.Protobuf;
-using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
+// using Google.Protobuf.WellKnownTypes;
 using TestPackage;
 
 namespace Dameng.Protobuf.Extension.Tests;
@@ -12,7 +12,6 @@ namespace Dameng.Protobuf.Extension.Tests;
 public class Tests
 {
     [Test]
-    [MatrixDataSource]
     public void LocalToGoogle()
     {
         var random = Random.Shared; // new Random(31);
@@ -22,18 +21,16 @@ public class Tests
                 RequiredIntField = RandomInt(random),
                 StringField = RandomString(random),
                 Int32Field = RandomInt(random),
-                Int32ArrayField = new RepeatedField<int>() { 0, 13123 },
-                StringArrayField = new RepeatedField<string>()
+                Int32ArrayField = new List<int>() { 0, 13123 },
+                StringArrayField = new List<string>()
                 {
                     string.Empty,
                     Guid.NewGuid().ToString(),
                 },
-                BytesField = ByteString.CopyFrom(
-                    Enumerable
-                        .Range(0, random.Next(100))
-                        .Select(_ => (byte)RandomInt(random))
-                        .ToArray()
-                ),
+                BytesField = Enumerable
+                    .Range(0, random.Next(100))
+                    .Select(_ => (byte)RandomInt(random))
+                    .ToList(),
                 BoolField = random.Next() % 2 == 0,
                 DoubleField = random.NextDouble(),
                 FloatField = (float)random.NextDouble(),
@@ -46,7 +43,7 @@ public class Tests
                 Fixed64Field = (ulong)random.Next(),
                 SFixed32Field = random.Next(),
                 SFixed64Field = random.Next(),
-                MapField = new MapField<string, string>()
+                MapField = new Dictionary<string, string>()
                 {
                     ["key1"] = "value1",
                     ["key2"] = "value2",
@@ -78,7 +75,7 @@ public class Tests
                     [RandomString(random)] = RandomString(random),
                     [RandomString(random)] = RandomString(random),
                 },
-                MapField4 = new MapField<int, long>() { [1111] = 2222 },
+                MapField4 = new Dictionary<int, long>() { [1111] = 2222 },
                 DateTimeField = DateTime.UtcNow,
                 IntArrayFieldTest = [10, 20, 30],
                 StringListFieldTest = ["array", "list", "test"],
@@ -113,7 +110,8 @@ public class Tests
                 StringStackFieldTest = new([RandomString(random), RandomString(random)]),
                 ConcurrentStringQueueFieldTest = new([RandomString(random), RandomString(random)]),
                 ConcurrentStringStackFieldTest = new([RandomString(random), RandomString(random)]),
-            }
+            },
+            TestMessage.Parser.ParseFrom, t2=>t2.ToByteArray()
         );
         //parsed.NullableIntField.Should().Be(0);
     }
@@ -138,19 +136,19 @@ public class Tests
 
     int RandomInt(Random random) => random.Next(10);
 
-    T2 Run<T1, T2>(T1 origin)
+    T2 Run<T1, T2>(T1 origin,Func<byte[],T2> parserFunc,Func<T2,byte[]> t2ToByteArray)
         where T1 : IProtoMessage<T1>
-        where T2 : IPbMessageParser<T2>
     {
         var bytes = origin.ToByteArray();
-        var parsed = T2.Parser.ParseFrom(bytes);
+        var parsed = parserFunc(bytes);
 
         // Compare the binary serialization instead of JSON for now
         var originalBytes = Convert.ToHexString(origin.ToByteArray());
-        var parsedBytes = Convert.ToHexString(parsed.ToByteArray());
+        var t2Array=t2ToByteArray(parsed);
+        var parsedBytes = Convert.ToHexString(t2Array);
         // For now, just check that parsing doesn't throw and produces a result
         originalBytes.Should().Be(parsedBytes);
-        parsed.CalculateSize().Should().Be(origin.CalculateSize());
+        t2Array.Length.Should().Be(origin.CalculateSize());
 
         var parseBack = T1.Reader.ParseFrom(bytes);
         var bytes2 = parseBack.ToByteArray();
@@ -352,10 +350,10 @@ public class Tests
     // }
 }
 
-public static class Extensions
-{
-    public static RepeatedField<T> ToRepeatedField<T>(this IEnumerable<T> source)
-    {
-        return new RepeatedField<T> { source };
-    }
-}
+// public static class Extensions
+// {
+//     public static List<T> ToList<T>(this IEnumerable<T> source)
+//     {
+//         return new List<T> { source };
+//     }
+// }
