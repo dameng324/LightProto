@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dameng.Protobuf", "src\Dame
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dameng.Protobuf.Extension.Tests", "tests\Dameng.Protobuf.Extension.Tests\Dameng.Protobuf.Extension.Tests.csproj", "{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dameng.Protobuf.Tests", "tests\Dameng.Protobuf.Tests\Dameng.Protobuf.Tests.csproj", "{A21EA6B7-FD7B-4AF5-A30D-61D6372F7410}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{1FFD603F-59F2-43F3-99B7-B441F835BE39}"
 	ProjectSection(SolutionItems) = preProject

@@ -103,6 +103,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 ? "partial record"
                 : "partial class";
 
+        var proxyFor= GetProxyFor(targetType.GetAttributes());
+        
         var sourceBuilder = new StringBuilder();
 
         sourceBuilder.AppendLine(
@@ -125,7 +127,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       ? "[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Auto)]"
                       : ""
               )}}
-              {{typeDeclarationString}} {{className}} : IProtoMessage<{{className}}>
+              {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoMessage<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
               """
         );
 
@@ -134,15 +136,16 @@ public class SimpleProtobufGenerator : ISourceGenerator
         sourceBuilder.AppendLine(
             $$"""
               {
-                  public static IProtoReader<{{className}}> Reader {get; } = new ProtoReader();
-                  public static IProtoWriter<{{className}}> Writer {get; } = new ProtoWriter();
-                  public sealed class ProtoWriter:IProtoMessageWriter<{{className}}>
+                  public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader {get; } = new ProtoReader();
+                  public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer {get; } = new ProtoWriter();
+                  public sealed class ProtoWriter:IProtoMessageWriter<{{proxyFor?.ToDisplayString()??className}}>
                   {
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           protoMembers.SelectMany(member => GetProtoParserMember(compilation, member, "Writer", targetType)))
                       }}
-                      public void WriteTo(ref WriterContext output, {{className}} value)
+                      public void WriteTo(ref WriterContext output, {{proxyFor?.ToDisplayString()??className}} value)
                       {
+                          {{className}} message = value;
                           {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                               protoMembers.SelectMany(member => {
                                   return Gen();
@@ -164,9 +167,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                           yield return $"{{";
                                           yield return $"    output.WriteTag({member.RawTag}); ";
                                           yield return $"    if({member.Name}_ProtoWriter is IProtoMessageWriter<{member.Type}> messageWriter) ";
-                                          yield return $"         messageWriter.WriteMessageTo(ref output, value.{member.Name});";
+                                          yield return $"         messageWriter.WriteMessageTo(ref output, message.{member.Name});";
                                           yield return $"    else";
-                                          yield return $"         {member.Name}_ProtoWriter.WriteTo(ref output, value.{member.Name});";
+                                          yield return $"         {member.Name}_ProtoWriter.WriteTo(ref output, message.{member.Name});";
                                           yield return $"}}";
                                       }
                                   }
@@ -174,7 +177,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                           }}
                       }
                       
-                      public int CalculateSize({{className}} value) {
+                      public int CalculateSize({{proxyFor?.ToDisplayString()??className}} value) {
+                          {{className}} message = value;
                           int size=0;
                           {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                               protoMembers.SelectMany(member => {
@@ -188,15 +192,15 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                       if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
                                       {
                                           yield return $"if(value.{member.Name}!=null)";
-                                          yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(value.{member.Name}); ";
+                                          yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
                                       }
                                       else
                                       {
                                           yield return $"if({checkIfNotEmpty})";
                                           yield return $"    if({member.Name}_ProtoWriter is IProtoMessageWriter<{member.Type}> messageWriter) ";
-                                          yield return $"        size += {tagSize} + messageWriter.CalculateMessageSize(value.{member.Name});";
+                                          yield return $"        size += {tagSize} + messageWriter.CalculateMessageSize(message.{member.Name});";
                                           yield return $"    else";
-                                          yield return $"        size += {tagSize} + {member.Name}_ProtoWriter.CalculateSize(value.{member.Name});";
+                                          yield return $"        size += {tagSize} + {member.Name}_ProtoWriter.CalculateSize(message.{member.Name});";
                                       }
                                   }
                               }))
@@ -205,12 +209,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       }
                   }
                   
-                  public sealed class ProtoReader:IProtoMessageReader<{{className}}>
+                  public sealed class ProtoReader:IProtoMessageReader<{{proxyFor?.ToDisplayString()??className}}>
                   {
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           protoMembers.SelectMany(member => GetProtoParserMember(compilation, member, "Reader", targetType)))
                       }}
-                      public {{className}} ParseFrom(ref ReaderContext input)
+                      public {{proxyFor?.ToDisplayString()??className}} ParseFrom(ref ReaderContext input)
                       {
                           {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                               protoMembers.Select(member => $"{member.Type} _{member.Name} = default;"))
@@ -335,7 +339,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         var protoParser = GetProtoParser(
             compilation,
-            member.ProtoWriterType ?? member.Type,
+            member.Type,
             member.DataFormat,
             member.MapFormat,
             readOrWriter,
@@ -359,6 +363,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
         if (SymbolEqualityComparer.IncludeNullability.Equals(targetType, memberType))
         {
             return "this";
+        }
+        var proxyType = GetProxyType(memberType);
+        if (proxyType is not null)
+        {
+            return GetProtoParser(compilation, proxyType, format, mapFormat, readerOrWriter, rawTag, targetType);
         }
 
         if (IsProtoBufMessage(memberType))
@@ -490,8 +499,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 );
                 var keyWriter = GetProtoParser(
                     compilation,
-                    keyType,
-                    mapFormat.keyFormat,mapFormat,
+                    GetProxyType(keyType)??keyType,
+                    mapFormat.keyFormat,
+                    mapFormat,
                     readerOrWriter,
                     keyTag,
                     targetType
@@ -503,7 +513,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 );
                 var valueWriter = GetProtoParser(
                     compilation,
-                    valueType,
+                    GetProxyType(valueType)??valueType,
                     mapFormat.valueFormat,
                     mapFormat,
                     readerOrWriter,
@@ -556,16 +566,15 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         if (type is IArrayTypeSymbol arrayType)
         {
-            return IsCollectionType(compilation, arrayType.ElementType,type);
+            return IsCollectionType(compilation, arrayType.ElementType, type);
         }
-        
+
         if (type is not INamedTypeSymbol namedType)
             return false;
 
         if (namedType.TypeArguments.Length != 1)
             return false;
         var elementType = namedType.TypeArguments[0];
-        
 
         return IsCollectionType(compilation, elementType, namedType);
     }
@@ -773,28 +782,38 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return displayString == "System.Text.StringBuilder" || displayString == "StringBuilder";
     }
 
-    private (ITypeSymbol? ReaderType, ITypeSymbol? WriterType) GetProxyType(
-        IEnumerable<AttributeData> attributeDatas
-    )
+    private ITypeSymbol? GetProxyType(IEnumerable<AttributeData> attributeDatas)
     {
         if (
             attributeDatas.FirstOrDefault(o =>
                 o.AttributeClass?.ToDisplayString()
-                    .StartsWith("Dameng.Protobuf.ProtoParserAttribute<") == true
+                    .StartsWith("Dameng.Protobuf.ProtoProxyAttribute<") == true
             ) is
             { } proxyAttr2
         )
         {
-            return (
-                proxyAttr2.AttributeClass!.TypeArguments[1],
-                proxyAttr2.AttributeClass!.TypeArguments[2]
-            );
+            return proxyAttr2.AttributeClass!.TypeArguments[0];
         }
 
-        return (null, null);
+        return null;
+    }
+    private ITypeSymbol? GetProxyFor(IEnumerable<AttributeData> attributeDatas)
+    {
+        if (
+            attributeDatas.FirstOrDefault(o =>
+                o.AttributeClass?.ToDisplayString()
+                    .StartsWith("Dameng.Protobuf.ProtoProxyForAttribute<") == true
+            ) is
+            { } proxyAttr2
+        )
+        {
+            return proxyAttr2.AttributeClass!.TypeArguments[0];
+        }
+
+        return null;
     }
 
-    private (ITypeSymbol? ReaderType, ITypeSymbol? WriterType) GetProxyType(ITypeSymbol type)
+    private ITypeSymbol? GetProxyType(ITypeSymbol type)
     {
         return GetProxyType(type.GetAttributes());
     }
@@ -808,16 +827,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
             if (!(member is IPropertySymbol property) || property.IsStatic)
                 continue;
 
-            AttributeData? protoMemberAttr =  property.GetAttributes().FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.ProtoMemberAttribute");
+            AttributeData? protoMemberAttr = property
+                .GetAttributes()
+                .FirstOrDefault(attr =>
+                    attr.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.ProtoMemberAttribute"
+                );
             if (protoMemberAttr == null)
                 continue;
-            (ITypeSymbol? ReaderType, ITypeSymbol? WriterType) = GetProxyType(
-                property.GetAttributes()
-            );
-            if (ReaderType is null || WriterType is null)
-            {
-                (ReaderType, WriterType) = GetProxyType(property.Type);
-            }
+            ITypeSymbol? ProxyType = GetProxyType(property.GetAttributes()) ?? GetProxyType(property.Type);
 
             var tag = (uint)protoMemberAttr.ConstructorArguments[0].Value!;
 
@@ -829,26 +846,30 @@ public class SimpleProtobufGenerator : ISourceGenerator
             )
                 ? _dataFormat
                 : DataFormat.Default;
-            AttributeData? protoMapAttr =  property.GetAttributes().FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.ProtoMapAttribute");
+            AttributeData? protoMapAttr = property
+                .GetAttributes()
+                .FirstOrDefault(attr =>
+                    attr.AttributeClass?.ToDisplayString() == "Dameng.Protobuf.ProtoMapAttribute"
+                );
 
             var keyFormat = Enum.TryParse<DataFormat>(
-                protoMapAttr?
-                    .NamedArguments.FirstOrDefault(kv => kv.Key == "KeyFormat")
+                protoMapAttr
+                    ?.NamedArguments.FirstOrDefault(kv => kv.Key == "KeyFormat")
                     .Value.Value?.ToString(),
                 out var _keyFormat
             )
                 ? _keyFormat
                 : DataFormat.Default;
-            
+
             var valueFormat = Enum.TryParse<DataFormat>(
-                protoMapAttr?
-                    .NamedArguments.FirstOrDefault(kv => kv.Key == "ValueFormat")
+                protoMapAttr
+                    ?.NamedArguments.FirstOrDefault(kv => kv.Key == "ValueFormat")
                     .Value.Value?.ToString(),
                 out var _valueFormat
             )
                 ? _valueFormat
                 : DataFormat.Default;
-            
+
             members.Add(
                 new ProtoMember
                 {
@@ -860,9 +881,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     IsInitOnly = property.SetMethod?.IsInitOnly == true,
                     AttributeData = property.GetAttributes(),
                     DataFormat = dataFormat,
-                    MapFormat = (keyFormat,valueFormat),
-                    ProtoReaderType = ReaderType,
-                    ProtoWriterType = WriterType,
+                    MapFormat = (keyFormat, valueFormat),
+                    ProxyType = ProxyType,
                 }
             );
         }
@@ -882,8 +902,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         public Compilation Compilation { get; set; } = null!;
 
-        public ITypeSymbol? ProtoReaderType { get; set; }
-        public ITypeSymbol? ProtoWriterType { get; set; }
+        public ITypeSymbol? ProxyType { get; set; }
         public string Name { get; set; } = "";
         public ITypeSymbol Type { get; set; } = null!;
         public DataFormat DataFormat { get; set; }

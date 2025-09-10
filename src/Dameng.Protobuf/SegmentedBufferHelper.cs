@@ -22,7 +22,7 @@ namespace Dameng.Protobuf
     {
         private int? totalLength;
         private ReadOnlySequence<byte>.Enumerator readOnlySequenceEnumerator;
-        private CodedInputStream codedInputStream;
+        private CodedInputStream? codedInputStream;
 
         /// <summary>
         /// Initialize an instance with a coded input stream.
@@ -32,7 +32,7 @@ namespace Dameng.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Initialize(CodedInputStream codedInputStream, out SegmentedBufferHelper instance)
         {
-            instance.totalLength = codedInputStream.InternalInputStream == null ? (int?)codedInputStream.InternalBuffer.Length : null;
+            instance.totalLength = codedInputStream.InternalInputStream == null ? codedInputStream.InternalBuffer.Length : null;
             instance.readOnlySequenceEnumerator = default;
             instance.codedInputStream = codedInputStream;
         }
@@ -77,7 +77,7 @@ namespace Dameng.Protobuf
 
         public int? TotalLength => totalLength;
 
-        public CodedInputStream CodedInputStream => codedInputStream;
+        public CodedInputStream? CodedInputStream => codedInputStream;
 
         /// <summary>
         /// Sets currentLimit to (current position) + byteLimit. This is called
@@ -210,12 +210,12 @@ namespace Dameng.Protobuf
                 }
             }
 
-            Stream input = codedInputStream.InternalInputStream;
+            Stream? input = codedInputStream?.InternalInputStream;
 
             state.totalBytesRetired += state.bufferSize;
 
             state.bufferPos = 0;
-            state.bufferSize = (input == null) ? 0 : input.Read(codedInputStream.InternalBuffer, 0, buffer.Length);
+            state.bufferSize = input?.Read(codedInputStream!.InternalBuffer, 0, buffer.Length) ?? 0;
             if (state.bufferSize < 0)
             {
                 throw new InvalidOperationException("Stream.Read returned a negative count");

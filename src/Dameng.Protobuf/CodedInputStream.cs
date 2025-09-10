@@ -43,7 +43,7 @@ namespace Dameng.Protobuf
         /// The stream to read further input from, or null if the byte array buffer was provided
         /// directly on construction, with no further data available.
         /// </summary>
-        private readonly Stream input;
+        private readonly Stream? input;
 
         /// <summary>
         /// The parser state is kept separately so that other parse implementations can reuse the same
@@ -107,7 +107,7 @@ namespace Dameng.Protobuf
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
+        internal CodedInputStream(Stream? input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
         {
             this.input = input;
             this.buffer = buffer;
@@ -223,7 +223,7 @@ namespace Dameng.Protobuf
 
         internal byte[] InternalBuffer => buffer;
 
-        internal Stream InternalInputStream => input;
+        internal Stream? InternalInputStream => input;
 
         internal ref ParserInternalState InternalState => ref state;
 
@@ -239,7 +239,7 @@ namespace Dameng.Protobuf
         {
             if (!leaveOpen)
             {
-                input.Dispose();
+                input?.Dispose();
             }
         }
 
@@ -269,39 +269,6 @@ namespace Dameng.Protobuf
             return ParsingPrimitives.PeekTag(ref span, ref state);
         }
 
-        /// <summary>
-        /// Reads a field tag, returning the tag of 0 for "end of stream".
-        /// </summary>
-        /// <remarks>
-        /// If this method returns 0, it doesn't necessarily mean the end of all
-        /// the data in this CodedInputStream; it may be the end of the logical stream
-        /// for an embedded message, for example.
-        /// </remarks>
-        /// <returns>The next field tag, or 0 for end of stream. (0 is never a valid tag.)</returns>
-        public uint ReadTag()
-        {
-            var span = new ReadOnlySpan<byte>(buffer);
-            return ParsingPrimitives.ParseTag(ref span, ref state);
-        }
-
-        /// <summary>
-        /// Skips the data for the field with the tag we've just read.
-        /// This should be called directly after <see cref="ReadTag"/>, when
-        /// the caller wishes to skip an unknown field.
-        /// </summary>
-        /// <remarks>
-        /// This method throws <see cref="InvalidProtocolBufferException"/> if the last-read tag was an end-group tag.
-        /// If a caller wishes to skip a group, they should skip the whole group, by calling this method after reading the
-        /// start-group tag. This behavior allows callers to call this method on any field they don't understand, correctly
-        /// resulting in an error if an end-group tag has not been paired with an earlier start-group tag.
-        /// </remarks>
-        /// <exception cref="InvalidProtocolBufferException">The last tag was an end-group tag</exception>
-        /// <exception cref="InvalidOperationException">The last read operation read to the end of the logical stream</exception>
-        public void SkipLastField()
-        {
-            var span = new ReadOnlySpan<byte>(buffer);
-            ParsingPrimitivesMessages.SkipLastField(ref span, ref state);
-        }
 
         /// <summary>
         /// Skip a group.

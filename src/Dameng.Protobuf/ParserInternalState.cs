@@ -65,7 +65,7 @@ namespace Dameng.Protobuf
 
         // If non-null, the top level parse method was started with given coded input stream as an argument
         // which also means we can potentially fallback to calling MergeFrom(CodedInputStream cis) if needed.
-        internal CodedInputStream CodedInputStream => segmentedBufferHelper.CodedInputStream;
+        internal CodedInputStream? CodedInputStream => segmentedBufferHelper.CodedInputStream;
 
         /// <summary>
         /// Internal-only property; when set to true, unknown fields will be discarded while parsing.

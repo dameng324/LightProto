@@ -1,12 +1,12 @@
 ﻿namespace Dameng.Protobuf.Parser;
 
 #pragma warning disable 1591, 0612, 3021, 8981, CS9035
-public class DictionaryProtoReader<TKey, TValue> : IEnumerableKeyValuePairProtoReader<Dictionary<TKey, TValue>,TKey, TValue>
+public class DictionaryProtoReader<TKey, TValue> : IEnumerableKeyValuePairProtoReader<Dictionary<TKey, TValue>,TKey, TValue>where TKey:notnull
 {
     public DictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader, uint tag, uint keyTag, uint valueTag) : 
         base(keyReader, valueReader, tag, keyTag, valueTag, static ()=>new(), static (dic,key,value)=>dic[key]=value) { }
 }
-public class DictionaryProtoWriter<TKey, TValue> : IEnumerableKeyValuePairProtoWriter<Dictionary<TKey, TValue>,TKey,TValue>
+public class DictionaryProtoWriter<TKey, TValue> : IEnumerableKeyValuePairProtoWriter<Dictionary<TKey, TValue>,TKey,TValue>where TKey:notnull
 {
     public DictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag, uint keyTag,
         uint valueTag)

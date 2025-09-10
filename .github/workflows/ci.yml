@@ -22,15 +22,15 @@ jobs:
           global-json-file: global.json
 
       - name: Restore dependencies
-        run: dotnet restore  tests/Dameng.Protobuf.Extension.Tests/
+        run: dotnet restore  tests/Dameng.Protobuf.Tests/
 
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore tests/Dameng.Protobuf.Extension.Tests/
+        run: dotnet build --configuration Release --no-restore tests/Dameng.Protobuf.Tests/
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Extension.Tests/
+        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Tests/
 
       - name: Test package creation
         run: |
           dotnet pack --configuration Release --no-build \
-            --output ./test-packages src/Dameng.Protobuf.Extension/
+            --output ./test-packages src/Dameng.Protobuf/

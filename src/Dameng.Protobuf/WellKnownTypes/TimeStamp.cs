@@ -4,13 +4,31 @@ using System.Text;
 namespace Dameng.Protobuf.WellKnownTypes;
 
 [ProtoContract]
-public partial class Timestamp
+public partial class Timestamp:IEquatable<Timestamp>,IComparable<Timestamp>
 {
+    public bool Equals(Timestamp? other)
+    {
+        return Seconds == other?.Seconds && Nanos == other?.Nanos;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Timestamp)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Seconds, Nanos);
+    }
+
     [ProtoMember(1)]
-    public long Seconds { get; set; }
+    private long Seconds { get; set; }
 
     [ProtoMember(2)]
-    public int Nanos { get; set; }
+    private int Nanos { get; set; }
 
     private static readonly DateTime UnixEpoch = new DateTime(
         1970,
@@ -227,9 +245,9 @@ public partial class Timestamp
     /// </remarks>
     /// <param name="other">Timestamp to compare</param>
     /// <returns>an integer indicating whether this timestamp precedes or follows the other</returns>
-    public int CompareTo(Timestamp other)
+    public int CompareTo(Timestamp? other)
     {
-        return other == null ? 1
+        return other is null ? 1
             : Seconds < other.Seconds ? -1
             : Seconds > other.Seconds ? 1
             : Nanos < other.Nanos ? -1

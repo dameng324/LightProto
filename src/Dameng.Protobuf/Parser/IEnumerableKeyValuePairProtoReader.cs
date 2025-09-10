@@ -1,6 +1,4 @@
-﻿
-
-namespace Dameng.Protobuf.Parser;
+﻿namespace Dameng.Protobuf.Parser;
 
 public class IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>
     : IProtoReader<TDictionary>
@@ -63,8 +61,8 @@ public class IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>
         int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
         ++ctx.state.recursionDepth;
 
-        TKey key = default;
-        TValue value = default;
+        TKey key = default!;
+        TValue value = default!;
         uint tag;
         while ((tag = ctx.ReadTag()) != 0)
         {
@@ -80,6 +78,11 @@ public class IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>
             {
                 ParsingPrimitivesMessages.SkipLastField(ref ctx.buffer, ref ctx.state);
             }
+        }
+
+        if (key is null)
+        {
+            throw new Exception($"Map entry is missing required key field (tag {_keyTag}).");
         }
 
         ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
