@@ -34,8 +34,7 @@ jobs:
 
       - name: Test package creation
         run: |
-          dotnet pack --configuration Release --no-build \
-            --output ./test-packages src/Dameng.Protobuf/
+          dotnet pack --configuration Release --no-build --output ./test-packages src/Dameng.Protobuf/
   
   windows-test:
     runs-on: windows-latest
@@ -59,5 +58,4 @@ jobs:
 
       - name: Test package creation
         run: |
-          dotnet pack --configuration Release --no-build \
-            --output ./test-packages src/Dameng.Protobuf/
+          dotnet pack --configuration Release --no-build --output ./test-packages src/Dameng.Protobuf/
