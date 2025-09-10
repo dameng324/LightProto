@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
-using AwesomeAssertions;
 using Dameng.Protobuf.Tests;
 using Dameng.Protobuf.WellKnownTypes;
 using Google.Protobuf;
@@ -13,6 +12,7 @@ namespace Dameng.Protobuf.Extension.Tests;
 public class Tests
 {
     private Random random = Random.Shared; // new Random(31);
+
     [Test]
     public void LocalToGoogle()
     {
@@ -23,11 +23,7 @@ public class Tests
                 StringField = RandomString(random),
                 Int32Field = RandomInt(random),
                 Int32ArrayField = new List<int>() { 0, 13123 },
-                StringArrayField = new List<string>()
-                {
-                    string.Empty,
-                    Guid.NewGuid().ToString(),
-                },
+                StringArrayField = new List<string>() { string.Empty, Guid.NewGuid().ToString() },
                 BytesField = Enumerable
                     .Range(0, random.Next(100))
                     .Select(_ => (byte)RandomInt(random))
@@ -112,9 +108,10 @@ public class Tests
                 ConcurrentStringQueueFieldTest = new([RandomString(random), RandomString(random)]),
                 ConcurrentStringStackFieldTest = new([RandomString(random), RandomString(random)]),
             },
-            TestMessage.Parser.ParseFrom, t2=>t2.ToByteArray()
+            TestMessage.Parser.ParseFrom,
+            t2 => t2.ToByteArray()
         );
-        //parsed.NullableIntField.Should().Be(0);
+        //await Assert.That(parsed.NullableIntField).IsEqualTo(0);
     }
 
     string RandomString(Random random)
@@ -137,7 +134,7 @@ public class Tests
 
     int RandomInt(Random random) => random.Next(10);
 
-    T2 Run<T1, T2>(T1 origin,Func<byte[],T2> parserFunc,Func<T2,byte[]> t2ToByteArray)
+    async Task<T2> Run<T1, T2>(T1 origin, Func<byte[], T2> parserFunc, Func<T2, byte[]> t2ToByteArray)
         where T1 : IProtoMessage<T1>
     {
         var bytes = origin.ToByteArray();
@@ -145,47 +142,54 @@ public class Tests
 
         // Compare the binary serialization instead of JSON for now
         var originalBytes = Convert.ToHexString(origin.ToByteArray());
-        var t2Array=t2ToByteArray(parsed);
+        var t2Array = t2ToByteArray(parsed);
         var parsedBytes = Convert.ToHexString(t2Array);
         // For now, just check that parsing doesn't throw and produces a result
-        originalBytes.Should().Be(parsedBytes);
-        t2Array.Length.Should().Be(origin.CalculateSize());
+        await Assert.That(originalBytes).IsEqualTo(parsedBytes);
+        await Assert.That(t2Array.Length).IsEqualTo(origin.CalculateSize());
 
         var parseBack = T1.Reader.ParseFrom(bytes);
         var bytes2 = parseBack.ToByteArray();
 
         var parseBackBytes = Convert.ToHexString(bytes2);
-        parseBackBytes.Should().Be(originalBytes);
-        parseBack.CalculateSize().Should().Be(origin.CalculateSize());
+        await Assert.That(parseBackBytes).IsEqualTo(originalBytes);
+        await Assert.That(parseBack.CalculateSize()).IsEqualTo(origin.CalculateSize());
 
         return parsed;
     }
-    
+
     [Test]
     public void TestStruct()
     {
-        Run<TestStruct, TestType>(new TestStruct { Name = RandomString(random), Value = RandomInt(random) },
-            TestType.Parser.ParseFrom, t2=>t2.ToByteArray());
+        Run<TestStruct, TestType>(
+            new TestStruct { Name = RandomString(random), Value = RandomInt(random) },
+            TestType.Parser.ParseFrom,
+            t2 => t2.ToByteArray()
+        );
     }
-    
+
     [Test]
     public void TestRecord()
     {
-        Run<TestRecord, TestType>(new TestRecord { Name = RandomString(random), Value = RandomInt(random) },
-            TestType.Parser.ParseFrom, t2=>t2.ToByteArray());
+        Run<TestRecord, TestType>(
+            new TestRecord { Name = RandomString(random), Value = RandomInt(random) },
+            TestType.Parser.ParseFrom,
+            t2 => t2.ToByteArray()
+        );
     }
-    
+
     [Test]
     public void TestRecordStruct()
     {
         Run<TestRecordStruct, TestType>(
             new TestRecordStruct { Name = RandomString(random), Value = RandomInt(random) },
-            TestType.Parser.ParseFrom, t2=>t2.ToByteArray()
+            TestType.Parser.ParseFrom,
+            t2 => t2.ToByteArray()
         );
     }
-    
+
     [Test]
-    public void TestSimpleNewTypesSupport()
+    public async Task TestSimpleNewTypesSupport()
     {
         var testObj = new TestSimpleNewTypes
         {
@@ -195,23 +199,20 @@ public class Tests
             TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
             StringBuilderField = new StringBuilder(RandomString(random)),
         };
-    
+
         var serialized = testObj.ToByteArray();
         var deserialized = TestSimpleNewTypes.Reader.ParseFrom(serialized);
-    
+
         // Verify round-trip serialization works
-        deserialized.TimeSpanField.Should().Be(testObj.TimeSpanField);
-        deserialized.DateOnlyField.Should().Be(testObj.DateOnlyField);
-        deserialized.GuidField.Should().Be(testObj.GuidField);
-        deserialized.TimeOnlyField.Ticks.Should().Be(testObj.TimeOnlyField.Ticks);
-        deserialized
-            .StringBuilderField.ToString()
-            .Should()
-            .Be(testObj.StringBuilderField.ToString());
+        await Assert.That(deserialized.TimeSpanField).IsEqualTo(testObj.TimeSpanField);
+        await Assert.That(deserialized.DateOnlyField).IsEqualTo(testObj.DateOnlyField);
+        await Assert.That(deserialized.GuidField).IsEqualTo(testObj.GuidField);
+        await Assert.That(deserialized.TimeOnlyField.Ticks).IsEqualTo(testObj.TimeOnlyField.Ticks);
+        await Assert.That(deserialized.StringBuilderField.ToString()).IsEqualTo(testObj.StringBuilderField.ToString());
     }
-    
+
     [Test]
-    public void TestHashSetSupport()
+    public async Task TestHashSetSupport()
     {
         var testObj = new TestHashSet
         {
@@ -219,23 +220,22 @@ public class Tests
             IntSet = new HashSet<int> { 1, 2, 3, RandomInt(random) },
             StringSet = new HashSet<string> { "hello", "world", RandomString(random) },
         };
-    
+
         // Test serialization/deserialization through protobuf
         var bytes = testObj.ToByteArray();
         var parsed = TestHashSet.Reader.ParseFrom(bytes);
-    
+
         // Verify the sets are equal
-        parsed.Name.Should().Be(testObj.Name);
-        parsed.IntSet.Should().BeEquivalentTo(testObj.IntSet);
-        parsed.StringSet.Should().BeEquivalentTo(testObj.StringSet);
-    
+        await Assert.That(parsed.Name).IsEqualTo(testObj.Name);
+        await Assert.That(parsed.IntSet).IsEquivalentTo(testObj.IntSet);
+        await Assert.That(parsed.StringSet).IsEquivalentTo(testObj.StringSet);
+
         // Test equality
-        //parsed.Should().Be(testObj);
-    
+        //await Assert.That(parsed).IsEqualTo(testObj);
     }
-    
+
     [Test]
-    public void TestISetSupport()
+    public async Task TestISetSupport()
     {
         var testObj = new TestISet
         {
@@ -243,23 +243,22 @@ public class Tests
             IntSet = new HashSet<int> { 4, 5, 6, RandomInt(random) },
             StringSet = new HashSet<string> { "foo", "bar", RandomString(random) },
         };
-    
+
         // Test serialization/deserialization through protobuf
         var bytes = testObj.ToByteArray();
         var parsed = TestISet.Reader.ParseFrom(bytes);
-    
+
         // Verify the sets are equal
-        parsed.Name.Should().Be(testObj.Name);
-        parsed.IntSet.Should().BeEquivalentTo(testObj.IntSet);
-        parsed.StringSet.Should().BeEquivalentTo(testObj.StringSet);
-    
+        await Assert.That(parsed.Name).IsEqualTo(testObj.Name);
+        await Assert.That(parsed.IntSet).IsEquivalentTo(testObj.IntSet);
+        await Assert.That(parsed.StringSet).IsEquivalentTo(testObj.StringSet);
+
         // Test equality
-        //parsed.Should().Be(testObj);
-    
+        //await Assert.That(parsed).IsEqualTo(testObj);
     }
-    
+
     [Test]
-    public void TestEmptyAndNullSets()
+    public async Task TestEmptyAndNullSets()
     {
         // Test with explicitly initialized empty sets
         var emptyObj = new TestHashSet
@@ -268,64 +267,69 @@ public class Tests
             IntSet = new HashSet<int>(),
             StringSet = new HashSet<string>(),
         };
-    
+
         var bytes = emptyObj.ToByteArray();
         var parsed = TestHashSet.Reader.ParseFrom(bytes);
-    
-        parsed.Name.Should().Be("empty");
-    
+
+        await Assert.That(parsed.Name).IsEqualTo("empty");
+
         // For empty sets, just verify they serialize/deserialize without errors
         // and that the basic functionality works
-        bytes.Length.Should().BeGreaterThan(0);
-        parsed.Should().NotBeNull();
-    
+
+        await Assert.That(bytes.Length).IsGreaterThan(0);
+        await Assert.That(parsed).IsNotNull();
+
         // Test that we can add items to parsed sets
         if (parsed.IntSet != null)
         {
             parsed.IntSet.Add(1);
-            parsed.IntSet.Count.Should().Be(1);
+            await Assert.That(parsed.IntSet.Count).IsEqualTo(1);
         }
     }
-    
+
     [Test]
-    public void ConcurrentCollectionTest()
+    public async Task ConcurrentCollectionTest()
     {
         TestConcurrentCollection testObj = new TestConcurrentCollection
         {
             Name = RandomString(random),
             IntBag = [RandomInt(random), RandomInt(random)],
-            ConcurrentQueue = new ConcurrentQueue<string>([RandomString(random), RandomString(random)]),
-            ConcurrentStack = new ConcurrentStack<string>([RandomString(random), RandomString(random)]),
+            ConcurrentQueue = new ConcurrentQueue<string>(
+                [RandomString(random), RandomString(random)]
+            ),
+            ConcurrentStack = new ConcurrentStack<string>(
+                [RandomString(random), RandomString(random)]
+            ),
             IntList = [RandomInt(random), RandomInt(random)],
             IntIList = [RandomInt(random), RandomInt(random)],
         };
-    
+
         var bytes = testObj.ToByteArray();
         var parsed = TestConcurrentCollection.Reader.ParseFrom(bytes);
-        parsed.Name.Should().Be(testObj.Name);
-        parsed.IntBag.Should().BeEquivalentTo(testObj.IntBag);
-        parsed.ConcurrentQueue.Should().BeEquivalentTo(testObj.ConcurrentQueue);
-        parsed.ConcurrentStack.Should().BeEquivalentTo(testObj.ConcurrentStack);
-        parsed.IntList.Should().BeEquivalentTo(testObj.IntList);
-        parsed.IntIList.Should().BeEquivalentTo(testObj.IntIList);
-    
-        //parsed.GetHashCode().Should().Be(testObj.GetHashCode());
+        await Assert.That(parsed.Name).IsEqualTo(testObj.Name);
+        await Assert.That(parsed.IntBag.Order().ToArray()).IsEquivalentTo(testObj.IntBag.Order().ToArray());
+        await Assert.That(parsed.ConcurrentQueue).IsEquivalentTo(testObj.ConcurrentQueue);
+        await Assert.That(parsed.ConcurrentStack).IsEquivalentTo(testObj.ConcurrentStack);
+        await Assert.That(parsed.IntList).IsEquivalentTo(testObj.IntList);
+        await Assert.That(parsed.IntIList).IsEquivalentTo(testObj.IntIList);
+
+        //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());
     }
-    
+
     [Test]
-    public void ProxyTest()
+    public async Task ProxyTest()
     {
         TestOrder testObj = new()
         {
             Instrument = Instrument.FromNameValue(RandomString(random), RandomInt(random)),
         };
-    
+
         var bytes = testObj.ToByteArray();
         var parsed = TestOrder.Reader.ParseFrom(bytes);
-        parsed.Instrument.Name.Should().Be(testObj.Instrument.Name);
-        parsed.Instrument.Value.Should().Be(testObj.Instrument.Value);
-    
-        //parsed.GetHashCode().Should().Be(testObj.GetHashCode());
+        await Assert.That(parsed.Instrument.Name).IsEqualTo(testObj.Instrument.Name);
+        await Assert.That(parsed.Instrument.Value).IsEqualTo(testObj.Instrument.Value);
+
+        //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());
     }
 }
 

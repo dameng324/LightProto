@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  test:
+  linux-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,14 +21,41 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Restore dependencies
-        run: dotnet restore  tests/Dameng.Protobuf.Tests/
-
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore tests/Dameng.Protobuf.Tests/
-
       - name: Run tests
         run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Tests/
+
+      - name: Run AOT tests
+        run: |
+          dotnet publish tests/Dameng.Protobuf.Tests/ -f net8.0 -r linux-x64 -c Release
+          ./tests/Dameng.Protobuf.Tests/bin/Release/net8.0/linux-x64/publish/Dameng.Protobuf.Tests
+          
+          dotnet publish tests/Dameng.Protobuf.Tests/ -f net9.0 -r linux-x64 -c Release
+          ./tests/Dameng.Protobuf.Tests/bin/Release/net9.0/linux-x64/publish/Dameng.Protobuf.Tests
+
+      - name: Test package creation
+        run: |
+          dotnet pack --configuration Release --no-build \
+            --output ./test-packages src/Dameng.Protobuf/
+  
+  windows-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Run tests
+        run: dotnet test --configuration Release --verbosity normal tests/Dameng.Protobuf.Tests/
+
+      - name: Run AOT tests
+        run: |
+          dotnet publish tests/Dameng.Protobuf.Tests/ -f net8.0 -r win-x64 -c Release
+          ./tests/Dameng.Protobuf.Tests/bin/Release/net8.0/win-x64/publish/Dameng.Protobuf.Tests.exe
+          
+          dotnet publish tests/Dameng.Protobuf.Tests/ -f net9.0 -r win-x64 -c Release
+          ./tests/Dameng.Protobuf.Tests/bin/Release/net9.0/win-x64/publish/Dameng.Protobuf.Tests.exe
 
       - name: Test package creation
         run: |
