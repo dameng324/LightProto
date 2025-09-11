@@ -62,23 +62,32 @@ namespace Dameng.Protobuf
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given byte array.
         /// </summary>
-        public CodedInputStream(byte[] buffer) : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length, true)
-        {            
-        }
+        public CodedInputStream(byte[] buffer)
+            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length, true)
+        { }
 
         /// <summary>
         /// Creates a new <see cref="CodedInputStream"/> that reads from the given byte array slice.
         /// </summary>
         public CodedInputStream(byte[] buffer, int offset, int length)
-            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length, true)
-        {            
+            : this(
+                null,
+                ProtoPreconditions.CheckNotNull(buffer, "buffer"),
+                offset,
+                offset + length,
+                true
+            )
+        {
             if (offset < 0 || offset > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException("offset", "Offset must be within the buffer");
             }
             if (length < 0 || offset + length > buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("length", "Length must be non-negative and within the buffer");
+                throw new ArgumentOutOfRangeException(
+                    "length",
+                    "Length must be non-negative and within the buffer"
+                );
             }
         }
 
@@ -87,9 +96,8 @@ namespace Dameng.Protobuf
         /// when the returned object is disposed.
         /// </summary>
         /// <param name="input">The stream to read from.</param>
-        public CodedInputStream(Stream input) : this(input, false)
-        {
-        }
+        public CodedInputStream(Stream input)
+            : this(input, false) { }
 
         /// <summary>
         /// Creates a new <see cref="CodedInputStream"/> reading data from the given stream.
@@ -99,15 +107,25 @@ namespace Dameng.Protobuf
         /// <c cref="CodedInputStream"/> is disposed; <c>false</c> to dispose of the given stream when the
         /// returned object is disposed.</param>
         public CodedInputStream(Stream input, bool leaveOpen)
-            : this(ProtoPreconditions.CheckNotNull(input, "input"), new byte[BufferSize], 0, 0, leaveOpen)
-        {
-        }
-        
+            : this(
+                ProtoPreconditions.CheckNotNull(input, "input"),
+                new byte[BufferSize],
+                0,
+                0,
+                leaveOpen
+            ) { }
+
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(Stream? input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
+        internal CodedInputStream(
+            Stream? input,
+            byte[] buffer,
+            int bufferPos,
+            int bufferSize,
+            bool leaveOpen
+        )
         {
             this.input = input;
             this.buffer = buffer;
@@ -129,7 +147,15 @@ namespace Dameng.Protobuf
         /// This chains to the version with the default limits instead of vice versa to avoid
         /// having to check that the default values are valid every time.
         /// </remarks>
-        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, int sizeLimit, int recursionLimit, bool leaveOpen)
+        internal CodedInputStream(
+            Stream input,
+            byte[] buffer,
+            int bufferPos,
+            int bufferSize,
+            int sizeLimit,
+            int recursionLimit,
+            bool leaveOpen
+        )
             : this(input, buffer, bufferPos, bufferSize, leaveOpen)
         {
             if (sizeLimit <= 0)
@@ -138,7 +164,10 @@ namespace Dameng.Protobuf
             }
             if (recursionLimit <= 0)
             {
-                throw new ArgumentOutOfRangeException("recursionLimit!", "Recursion limit must be positive");
+                throw new ArgumentOutOfRangeException(
+                    "recursionLimit!",
+                    "Recursion limit must be positive"
+                );
             }
             this.state.sizeLimit = sizeLimit;
             this.state.recursionLimit = recursionLimit;
@@ -159,22 +188,35 @@ namespace Dameng.Protobuf
         /// <param name="recursionLimit">The maximum recursion depth to allow while reading.</param>
         /// <returns>A <c>CodedInputStream</c> reading from <paramref name="input"/> with the specified size
         /// and recursion limits.</returns>
-        public static CodedInputStream CreateWithLimits(Stream input, int sizeLimit, int recursionLimit)
+        public static CodedInputStream CreateWithLimits(
+            Stream input,
+            int sizeLimit,
+            int recursionLimit
+        )
         {
             // Note: we may want an overload accepting leaveOpen
-            return new CodedInputStream(input, new byte[BufferSize], 0, 0, sizeLimit, recursionLimit, false);
+            return new CodedInputStream(
+                input,
+                new byte[BufferSize],
+                0,
+                0,
+                sizeLimit,
+                recursionLimit,
+                false
+            );
         }
 
         /// <summary>
         /// Returns the current position in the input stream, or the position in the input buffer
         /// </summary>
-        public long Position 
+        public long Position
         {
             get
             {
                 if (input != null)
                 {
-                    return input.Position - ((state.bufferSize + state.bufferSizeAfterLimit) - state.bufferPos);
+                    return input.Position
+                        - ((state.bufferSize + state.bufferSizeAfterLimit) - state.bufferPos);
                 }
                 return state.bufferPos;
             }
@@ -184,7 +226,10 @@ namespace Dameng.Protobuf
         /// Returns the last tag read, or 0 if no tags have been read or we've read beyond
         /// the end of the stream.
         /// </summary>
-        internal uint LastTag { get { return state.lastTag; } }
+        internal uint LastTag
+        {
+            get { return state.lastTag; }
+        }
 
         /// <summary>
         /// Returns the size limit for this stream.
@@ -197,7 +242,10 @@ namespace Dameng.Protobuf
         /// <value>
         /// The size limit.
         /// </value>
-        public int SizeLimit { get { return state.sizeLimit; } }
+        public int SizeLimit
+        {
+            get { return state.sizeLimit; }
+        }
 
         /// <summary>
         /// Returns the recursion limit for this stream. This limit is applied whilst reading messages,
@@ -209,7 +257,10 @@ namespace Dameng.Protobuf
         /// <value>
         /// The recursion limit for this stream.
         /// </value>
-        public int RecursionLimit { get { return state.recursionLimit; } }
+        public int RecursionLimit
+        {
+            get { return state.recursionLimit; }
+        }
 
         /// <summary>
         /// Internal-only property; when set to true, unknown fields will be discarded while parsing.
@@ -219,7 +270,6 @@ namespace Dameng.Protobuf
             get { return state.DiscardUnknownFields; }
             set { state.DiscardUnknownFields = value; }
         }
-
 
         internal byte[] InternalBuffer => buffer;
 
@@ -248,7 +298,7 @@ namespace Dameng.Protobuf
         /// Verifies that the last call to ReadTag() returned tag 0 - in other words,
         /// we've reached the end of the stream when we expected to.
         /// </summary>
-        /// <exception cref="InvalidProtocolBufferException">The 
+        /// <exception cref="InvalidProtocolBufferException">The
         /// tag read was not the one specified</exception>
         internal void CheckReadEndOfStreamTag()
         {
@@ -268,7 +318,6 @@ namespace Dameng.Protobuf
             var span = new ReadOnlySpan<byte>(buffer);
             return ParsingPrimitives.PeekTag(ref span, ref state);
         }
-
 
         /// <summary>
         /// Skip a group.
@@ -310,7 +359,7 @@ namespace Dameng.Protobuf
         /// </summary>
         public long ReadInt64()
         {
-            return (long) ReadRawVarint64();
+            return (long)ReadRawVarint64();
         }
 
         /// <summary>
@@ -318,7 +367,7 @@ namespace Dameng.Protobuf
         /// </summary>
         public int ReadInt32()
         {
-            return (int) ReadRawVarint32();
+            return (int)ReadRawVarint32();
         }
 
         /// <summary>
@@ -356,7 +405,7 @@ namespace Dameng.Protobuf
 
         /// <summary>
         /// Reads a uint32 field value from the stream.
-        /// </summary>   
+        /// </summary>
         public uint ReadUInt32()
         {
             return ReadRawVarint32();
@@ -364,32 +413,32 @@ namespace Dameng.Protobuf
 
         /// <summary>
         /// Reads an enum field value from the stream.
-        /// </summary>   
+        /// </summary>
         public int ReadEnum()
         {
             // Currently just a pass-through, but it's nice to separate it logically from WriteInt32.
-            return (int) ReadRawVarint32();
+            return (int)ReadRawVarint32();
         }
 
         /// <summary>
         /// Reads an sfixed32 field value from the stream.
-        /// </summary>   
+        /// </summary>
         public int ReadSFixed32()
         {
-            return (int) ReadRawLittleEndian32();
+            return (int)ReadRawLittleEndian32();
         }
 
         /// <summary>
         /// Reads an sfixed64 field value from the stream.
-        /// </summary>   
+        /// </summary>
         public long ReadSFixed64()
         {
-            return (long) ReadRawLittleEndian64();
+            return (long)ReadRawLittleEndian64();
         }
 
         /// <summary>
         /// Reads an sint32 field value from the stream.
-        /// </summary>   
+        /// </summary>
         public int ReadSInt32()
         {
             return ParsingPrimitives.DecodeZigZag32(ReadRawVarint32());
@@ -397,7 +446,7 @@ namespace Dameng.Protobuf
 
         /// <summary>
         /// Reads an sint64 field value from the stream.
-        /// </summary>   
+        /// </summary>
         public long ReadSInt64()
         {
             return ParsingPrimitives.DecodeZigZag64(ReadRawVarint64());
@@ -427,7 +476,7 @@ namespace Dameng.Protobuf
             return ParsingPrimitives.MaybeConsumeTag(ref span, ref state, tag);
         }
 
-#endregion
+        #endregion
 
         #region Underlying reading primitives
 
@@ -512,10 +561,7 @@ namespace Dameng.Protobuf
         /// <returns></returns>
         internal bool ReachedLimit
         {
-            get
-            {
-                return SegmentedBufferHelper.IsReachedLimit(ref state);
-            }
+            get { return SegmentedBufferHelper.IsReachedLimit(ref state); }
         }
 
         /// <summary>
@@ -544,6 +590,6 @@ namespace Dameng.Protobuf
             return ParsingPrimitives.ReadRawBytes(ref span, ref state, size);
         }
 
-#endregion
+        #endregion
     }
 }
