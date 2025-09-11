@@ -360,8 +360,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
             member.RawTag,
             targetType
         );
-        yield return $"private IProto{readOrWriter}<{member.Type}> _{member.Name}_Proto{readOrWriter};";
-        yield return $"private IProto{readOrWriter}<{member.Type}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
+
+        var memberType = member.Type.WithNullableAnnotation(NullableAnnotation.None);
+        
+        yield return $"private IProto{readOrWriter}<{memberType}> _{member.Name}_Proto{readOrWriter};";
+        yield return $"private IProto{readOrWriter}<{memberType}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
     }
 
     private string GetProtoParser(
@@ -386,7 +389,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         if (IsProtoBufMessage(memberType))
         {
-            return $"{memberType}.{readerOrWriter}";
+            return $"{memberType.WithNullableAnnotation(NullableAnnotation.None)}.{readerOrWriter}";
         }
 
         if (memberType is IArrayTypeSymbol arrayType)

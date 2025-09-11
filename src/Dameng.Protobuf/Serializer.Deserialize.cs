@@ -16,12 +16,6 @@ public static partial class Serializer
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
-    public static T Deserialize<T>(ReadOnlyMemory<byte> source)
-        where T : IProtoParser<T> => Deserialize(source, T.Reader);
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
     public static T Deserialize<T>(ReadOnlySequence<byte> source)
         where T : IProtoParser<T> => Deserialize(source, T.Reader);
 
