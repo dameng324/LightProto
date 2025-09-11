@@ -154,7 +154,17 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   {
                       public bool IsMessage => true;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                          protoMembers.SelectMany(member => GetProtoParserMember(compilation, member, "Writer", targetType)))
+                          protoMembers.SelectMany(member =>
+                          {
+                              if (TryGetInternalTypeName(member.Type, member.DataFormat, out _)==false)
+                              {
+                                  return GetProtoParserMember(compilation, member, "Writer", targetType);
+                              }
+                              else
+                              {
+                                  return [];
+                              }
+                          }))
                       }}
                       public void WriteTo(ref WriterContext output, {{proxyFor?.ToDisplayString()??className}} value)
                       {
@@ -173,6 +183,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                           yield return $"{{";
                                           yield return $"    {member.Name}_ProtoWriter.WriteTo(ref output, value.{member.Name});";
                                           yield return $"}} ";
+                                      }
+                                      else if (TryGetInternalTypeName(member.Type,member.DataFormat, out var name))
+                                      {
+                                          yield return $"if({checkIfNotEmpty})";
+                                          yield return $"{{";
+                                          yield return $"    output.WriteTag({member.RawTag}); ";
+                                          yield return $"    output.Write{name}(message.{member.Name});";
+                                          yield return $"}}";
                                       }
                                       else
                                       {
@@ -204,6 +222,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                           yield return $"if(value.{member.Name}!=null)";
                                           yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
                                       }
+                                      else if (TryGetInternalTypeName(member.Type,member.DataFormat, out var name))
+                                      {
+                                          yield return $"if({checkIfNotEmpty})";
+                                          yield return $"    size += {tagSize} + CodedOutputStream.Compute{name}Size(message.{member.Name});";
+                                      }
                                       else
                                       {
                                           yield return $"if({checkIfNotEmpty})";
@@ -220,7 +243,16 @@ public class SimpleProtobufGenerator : ISourceGenerator
                   {
                       public bool IsMessage => true;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                          protoMembers.SelectMany(member => GetProtoParserMember(compilation, member, "Reader", targetType)))
+                          protoMembers.SelectMany(member => {
+                              if (TryGetInternalTypeName(member.Type, member.DataFormat, out _)==false)
+                              {
+                                  return GetProtoParserMember(compilation, member, "Reader", targetType);
+                              }
+                              else
+                              {
+                                  return [];
+                              }
+                          }))
                       }}
                       public {{proxyFor?.ToDisplayString()??className}} ParseFrom(ref ReaderContext input)
                       {
@@ -256,10 +288,20 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                                   }
                                               }
 
-                                              yield return $"{{";
-                                              yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
-                                              yield return $"    break;";
-                                              yield return $"}}";
+                                              if (TryGetInternalTypeName(member.Type, member.DataFormat, out var name))
+                                              {
+                                                  yield return $"{{";
+                                                  yield return $"    _{member.Name} = input.Read{name}();";
+                                                  yield return $"    break;";
+                                                  yield return $"}}";
+                                              }
+                                              else
+                                              {
+                                                  yield return $"{{";
+                                                  yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
+                                                  yield return $"    break;";
+                                                  yield return $"}}";
+                                              }
                                           }
                                       }))
                                   }}
@@ -278,6 +320,31 @@ public class SimpleProtobufGenerator : ISourceGenerator
               """
         );
         return sourceBuilder.ToString();
+    }
+
+    private bool TryGetInternalTypeName(ITypeSymbol memberType,DataFormat format, out string name)
+    {
+        name= memberType.SpecialType switch
+        {
+            SpecialType.System_Boolean => "Bool",
+            SpecialType.System_Int32 => format == DataFormat.FixedSize ? "SFixed32"
+                : format == DataFormat.ZigZag ? "SInt32"
+                : "Int32",
+            SpecialType.System_UInt32 => format == DataFormat.FixedSize
+                ? "Fixed32"
+                : "UInt32",
+            SpecialType.System_Int64 => format == DataFormat.FixedSize ? "SFixed64"
+                : format == DataFormat.ZigZag ? "SInt64"
+                : "Int64",
+            SpecialType.System_UInt64 => format == DataFormat.FixedSize
+                ? "Fixed64"
+                : "UInt64",
+            SpecialType.System_Single => "Float",
+            SpecialType.System_Double => "Double",
+            SpecialType.System_String => "String",
+            _ => "",
+        };
+        return string.IsNullOrWhiteSpace(name) == false;
     }
 
     private string GetCheckIfNotEmpty(ProtoMember member)

@@ -2,16 +2,17 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
-//BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
-// BenchmarkRunner.Run<Serialize>();
+// BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 // return;
+BenchmarkRunner.Run<Deserialize>();
+return;
 
 //BenchmarkRunner.Run<Deserialize>();
 
 var serialize = new Serialize();
 for (int i = 0; i < 5000; i++)
 {
-    serialize.GoogleProtoBuf();
+    serialize.Serialize_DamengProtoBuf();
 }
 Console.WriteLine("done.");
 return;

@@ -30,7 +30,7 @@ namespace Dameng.Protobuf
     /// </para>
     /// </remarks>
     [SecuritySafeCritical]
-    internal sealed partial class CodedOutputStream : IDisposable
+    public sealed partial class CodedOutputStream : IDisposable
     {
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
@@ -332,16 +332,6 @@ namespace Dameng.Protobuf
         #endregion
 
         #region Raw tag writing
-        /// <summary>
-        /// Encodes and writes a tag.
-        /// </summary>
-        /// <param name="fieldNumber">The number of the field to write the tag for</param>
-        /// <param name="type">The wire format type of the tag to write</param>
-        public void WriteTag(int fieldNumber, WireFormat.WireType type)
-        {
-            var span = new Span<byte>(buffer);
-            WritingPrimitives.WriteTag(ref span, ref state, fieldNumber, type);
-        }
 
         /// <summary>
         /// Writes an already-encoded tag.

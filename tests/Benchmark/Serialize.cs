@@ -19,19 +19,19 @@ public class Serialize
     }
 
     [Benchmark]
-    public void ProtoBuf_net()
+    public void Serialize_ProtoBuf_net()
     {
         using var ms = new System.IO.MemoryStream();
         ProtoBuf.Serializer.Serialize<Protobuf_net.Database>(ms, protobuf_net);
     }
     [Benchmark()]
-    public void GoogleProtoBuf()
+    public void Serialize_GoogleProtoBuf()
     {
         using var ms = new System.IO.MemoryStream();
         google.WriteTo(ms);
     }
     [Benchmark(Baseline = true)]
-    public void DamengProtoBuf()
+    public void Serialize_DamengProtoBuf()
     {
         using var ms = new System.IO.MemoryStream();
         Dameng.Protobuf.Serializer.Serialize<DamengProtobuf.Database>(ms, dameng);

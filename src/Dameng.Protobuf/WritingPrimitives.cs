@@ -284,12 +284,6 @@ namespace Dameng.Protobuf
 
         private static int WriteStringToBuffer(Span<byte> buffer, ref WriterInternalState state, string value)
         {
-#if NETSTANDARD1_1
-            // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
-            byte[] bytes = Utf8Encoding.GetBytes(value);
-            WriteRawBytes(ref buffer, ref state, bytes);
-            return bytes.Length;
-#else
             ReadOnlySpan<char> source = value.AsSpan();
             int bytesUsed;
             unsafe
@@ -306,7 +300,6 @@ namespace Dameng.Protobuf
             }
             state.position += bytesUsed;
             return bytesUsed;
-#endif
         }
 
         /// <summary>

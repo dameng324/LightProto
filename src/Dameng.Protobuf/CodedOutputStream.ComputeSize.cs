@@ -14,7 +14,7 @@ namespace Dameng.Protobuf
     // This part of CodedOutputStream provides all the static entry points that are used
     // by generated code and internally to compute the size of messages prior to being
     // written to an instance of CodedOutputStream.
-    internal sealed partial class CodedOutputStream
+    sealed partial class CodedOutputStream
     {
         private const int LittleEndian64Size = 8;
         private const int LittleEndian32Size = 4;        

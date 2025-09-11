@@ -13,17 +13,17 @@ public class Deserialize
     }
 
     [Benchmark]
-    public Protobuf_net.Database ProtoBuf_net()
+    public Protobuf_net.Database Deserialize_ProtoBuf_net()
     {
         return ProtoBuf.Serializer.Deserialize<Protobuf_net.Database>(_data.AsSpan());
     }
     [Benchmark()]
-    public GoogleProtobuf.Database GoogleProtoBuf()
+    public GoogleProtobuf.Database Deserialize_GoogleProtoBuf()
     {
         return GoogleProtobuf.Database.Parser.ParseFrom(_data);
     }
     [Benchmark(Baseline = true)]
-    public DamengProtobuf.Database DamengProtoBuf()
+    public DamengProtobuf.Database Deserialize_DamengProtoBuf()
     {
         return Dameng.Protobuf.Serializer.Deserialize<DamengProtobuf.Database>(_data);
     }

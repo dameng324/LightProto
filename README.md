@@ -174,8 +174,35 @@ internal sealed class MyRequestWriter : IProtoMessageWriter<MyRequest>
 ```
 
 ## Performance & Benchmarks
+The following benchmarks compare serialization performance between Dameng.Protobuf, Protobuf-net, and Google.Protobuf.
 
-TODO: Add benchmark results comparing Dameng.Protobuf with Protobuf-net and other libraries.
+```text
+BenchmarkDotNet v0.15.2, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
+AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 9.0.305
+[Host]     : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
+DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
+
+
+| Method                   | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------------------------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Serialize_ProtoBuf_net   | 898.8 us | 18.29 us | 52.48 us |  1.61 |    0.11 | 526.41 KB |        1.03 |
+| Serialize_GoogleProtoBuf | 651.7 us | 16.70 us | 48.70 us |  1.17 |    0.10 | 512.95 KB |        1.00 |
+| Serialize_DamengProtoBuf | 559.3 us | 11.07 us | 21.34 us |  1.00 |    0.05 | 512.95 KB |        1.00 |
+```
+```text
+BenchmarkDotNet v0.15.2, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
+AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 9.0.305
+  [Host]     : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
+  DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
+| Method                     | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|--------------------------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Deserialize_ProtoBuf_net   | 664.9 us | 13.28 us | 28.00 us |  1.53 |    0.08 |    562 KB |        0.88 |
+| Deserialize_GoogleProtoBuf | 538.1 us | 10.73 us | 25.70 us |  1.24 |    0.07 |  648.7 KB |        1.02 |
+| Deserialize_DamengProtoBuf | 436.0 us |  8.53 us | 14.71 us |  1.00 |    0.05 | 635.15 KB |        1.00 |
+```
+
 
 ### Compatibility
 
