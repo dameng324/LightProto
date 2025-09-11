@@ -25,29 +25,40 @@ public class SimpleProtobufGenerator : ISourceGenerator
             {
                 INamedTypeSymbol? targetType;
 
+                TypeDeclarationSyntax targetTypeSyntax;
                 // Support class, record, record struct, and struct declarations
                 if (node is ClassDeclarationSyntax classDeclaration)
                 {
                     targetType =
                         ModelExtensions.GetDeclaredSymbol(semanticModel, classDeclaration)
                         as INamedTypeSymbol;
+                    targetTypeSyntax = classDeclaration;
                 }
                 else if (node is StructDeclarationSyntax structDeclaration)
                 {
                     targetType =
                         ModelExtensions.GetDeclaredSymbol(semanticModel, structDeclaration)
-                        as INamedTypeSymbol;
+                            as INamedTypeSymbol;
+                    targetTypeSyntax = structDeclaration;
+                }
+                else if (node is RecordDeclarationSyntax recordDeclaration)
+                {
+                    targetType =
+                        ModelExtensions.GetDeclaredSymbol(semanticModel, recordDeclaration)
+                            as INamedTypeSymbol;
+                    targetTypeSyntax = recordDeclaration;
                 }
                 else
                 {
-                    // Handle records using reflection for compatibility
-                    var nodeTypeName = node.GetType().Name;
-                    if (nodeTypeName.Contains("RecordDeclaration"))
-                    {
-                        var symbolInfo = semanticModel.GetDeclaredSymbol(node);
-                        targetType = symbolInfo as INamedTypeSymbol;
-                    }
-                    else
+                    
+                    // // Handle records using reflection for compatibility
+                    // var nodeTypeName = node.GetType().Name;
+                    // if (nodeTypeName.Contains("RecordDeclaration"))
+                    // {
+                    //     var symbolInfo = semanticModel.GetDeclaredSymbol(node);
+                    //     targetType = symbolInfo as INamedTypeSymbol;
+                    // }
+                    // else
                     {
                         continue;
                     }
@@ -80,7 +91,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     continue;
 
                 // Generate the basic IMessage implementation
-                var sourceCode = GenerateBasicProtobufMessage(context.Compilation, targetType);
+                var sourceCode = GenerateBasicProtobufMessage(context.Compilation, targetType,targetTypeSyntax);
                 var fileName = $"{targetType}.g.cs";
                 context.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
             }
@@ -89,7 +100,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
     private string GenerateBasicProtobufMessage(
         Compilation compilation,
-        INamedTypeSymbol targetType
+        INamedTypeSymbol targetType,
+        TypeDeclarationSyntax typeDeclaration 
     )
     {
         var namespaceName = targetType.ContainingNamespace.ToDisplayString();
@@ -131,7 +143,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
               """
         );
 
-        var protoMembers = GetProtoMembers(compilation, targetType);
+        var protoMembers = GetProtoMembers(compilation, targetType,typeDeclaration);
 
         sourceBuilder.AppendLine(
             $$"""
@@ -217,7 +229,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       public {{proxyFor?.ToDisplayString()??className}} ParseFrom(ref ReaderContext input)
                       {
                           {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                              protoMembers.Select(member => $"{member.Type} _{member.Name} = default;"))
+                              protoMembers.Select(member => {
+                                  return $"{member.Type} _{member.Name} = {member.Initializer??"default"};";
+                              }))
                           }}
                           uint tag;
                           while ((tag = input.ReadTag()) != 0) 
@@ -818,7 +832,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return GetProxyType(type.GetAttributes());
     }
 
-    private List<ProtoMember> GetProtoMembers(Compilation compilation, INamedTypeSymbol targetType)
+    private List<ProtoMember> GetProtoMembers(Compilation compilation, INamedTypeSymbol targetType,TypeDeclarationSyntax typeDeclaration)
     {
         var members = new List<ProtoMember>();
 
@@ -826,7 +840,17 @@ public class SimpleProtobufGenerator : ISourceGenerator
         {
             if (!(member is IPropertySymbol property) || property.IsStatic)
                 continue;
-
+            
+            var propertyDecl = typeDeclaration.Members
+                .OfType<PropertyDeclarationSyntax>()
+                .FirstOrDefault(m => m.Identifier.Text == property.Name);
+            
+            var fieldDecl = typeDeclaration.Members
+                .OfType<FieldDeclarationSyntax>()
+                .FirstOrDefault(m => m.Declaration.Variables.Any(v => v.Identifier.Text == property.Name));
+            
+            var initializer = propertyDecl?.Initializer?.Value.ToString() ?? fieldDecl?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
+            
             AttributeData? protoMemberAttr = property
                 .GetAttributes()
                 .FirstOrDefault(attr =>
@@ -883,6 +907,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     DataFormat = dataFormat,
                     MapFormat = (keyFormat, valueFormat),
                     ProxyType = ProxyType,
+                    Initializer = initializer,
                 }
             );
         }
@@ -910,6 +935,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
         public uint Tag { get; set; }
         public bool IsRequired { get; set; }
         public bool IsInitOnly { get; set; }
+        public string? Initializer { get; set; }
 
         public ImmutableArray<AttributeData> AttributeData { get; set; } =
             ImmutableArray<AttributeData>.Empty;

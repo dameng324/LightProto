@@ -13,7 +13,7 @@ enum TestEnum
 message TestMessage
 {
   string StringField = 1;
-  int32 Int32Field= 2;
+  int32 Int32Field = 2;
   repeated int32 Int32ArrayField = 3;
   repeated string StringArrayField = 4;
   bytes BytesField = 5;
@@ -28,8 +28,8 @@ message TestMessage
   fixed32 Fixed32Field = 14;
   fixed64 Fixed64Field = 15;
   sfixed32 SFixed32Field = 16;
-  sfixed64 SFixed64Field = 17;  
-  map<string, string> MapField = 18;
+  sfixed64 SFixed64Field = 17;
+  map<string, TestMessage> MapField = 18;
   TestEnum EnumField = 19;
   repeated TestEnum EnumArrayField = 20;
   TestMessage NestedMessageField = 21;
@@ -39,20 +39,27 @@ message TestMessage
   map<string, string> MapField2 = 29;
   map<sfixed32, sint64> MapField4 = 50;
   int64 DateTimeField = 51;
-  int32 NullableIntField =52;
+  int32 NullableIntField = 52;
   repeated int32 IntArrayFieldTest = 53;
   repeated string StringListFieldTest = 54;
   repeated string StringArrayFieldTest = 55;
   repeated int32 IntListFieldTest = 56;
   map<string, string> MapField5 = 57;
   map<string, string> MapField6 = 58;
-  int32 RequiredIntField=59;
+  int32 RequiredIntField = 59;
   map<string, TestMessage> MapField7 = 60;
   repeated string StringSetFieldTest = 61;
   repeated string StringQueueFieldTest = 62;
   repeated string StringStackFieldTest = 63;
   repeated string ConcurrentStringQueueFieldTest = 64;
   repeated string ConcurrentStringStackFieldTest = 65;
+  repeated int32  IntBag = 66;
+  repeated string StringISet = 67;
+  int64 TimeSpanField = 68;
+  int32 DateOnlyField = 69;
+  bytes GuidField = 70;
+  int64 TimeOnlyField = 71 ;
+  string  StringBuilderField = 72;
 }
 
 message TestType
