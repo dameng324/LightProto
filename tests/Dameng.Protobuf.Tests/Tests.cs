@@ -1,13 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
-using System.Text.Json;
-using Dameng.Protobuf.Tests;
 using Dameng.Protobuf.WellKnownTypes;
 using Google.Protobuf;
-// using Google.Protobuf.WellKnownTypes;
 using TestPackage;
+// using Google.Protobuf.WellKnownTypes;
 
-namespace Dameng.Protobuf.Extension.Tests;
+namespace Dameng.Protobuf.Tests;
 
 public class Tests
 {
@@ -19,14 +17,24 @@ public class Tests
         var parsed = Run<CsTestMessage, TestMessage>(
             new CsTestMessage
             {
-                RequiredIntField = RandomInt(random),
-                StringField = RandomString(random),
-                Int32Field = RandomInt(random),
-                Int32ArrayField = new List<int>() { 0, 13123 },
-                StringArrayField = new List<string>() { string.Empty, Guid.NewGuid().ToString() },
+                RequiredIntField = RandomInt(),
+                StringField = RandomString(),
+                Int32Field = RandomInt(),
+                Int32ArrayField = new List<int>()
+                {
+                    0,
+                    13123
+                },
+                StringArrayField = new List<string>()
+                {
+                    string.Empty,
+                    Guid.NewGuid()
+                        .ToString()
+                },
                 BytesField = Enumerable
-                    .Range(0, random.Next(100))
-                    .Select(_ => (byte)RandomInt(random))
+                    .Range(0,
+                        random.Next(100))
+                    .Select(_ => (byte)RandomInt())
                     .ToList(),
                 BoolField = random.Next() % 2 == 0,
                 DoubleField = random.NextDouble(),
@@ -40,81 +48,141 @@ public class Tests
                 Fixed64Field = (ulong)random.Next(),
                 SFixed32Field = random.Next(),
                 SFixed64Field = random.Next(),
-                MapField = new Dictionary<string, string>()
+                MapField = new Dictionary<string, CsTestMessage>()
                 {
-                    ["key1"] = "value1",
-                    ["key2"] = "value2",
+                    ["key1"] = new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
+                    },
+                    ["key2"] = new CsTestMessage()
+                    {
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
+                    },
                 },
                 EnumField = CsTestEnum.OptionB,
-                EnumArrayField = [CsTestEnum.OptionB, CsTestEnum.None, CsTestEnum.OptionA],
+                EnumArrayField =
+                [
+                    CsTestEnum.OptionB,
+                    CsTestEnum.None,
+                    CsTestEnum.OptionA
+                ],
                 NestedField = new CsTestMessage()
                 {
-                    RequiredIntField = RandomInt(random),
-                    StringField = RandomString(random),
+                    RequiredIntField = RandomInt(),
+                    StringField = RandomString(),
                 },
                 NestedMessageArrayField =
                 [
                     new CsTestMessage()
                     {
-                        RequiredIntField = RandomInt(random),
-                        StringField = RandomString(random),
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
                     },
                     new CsTestMessage()
                     {
-                        RequiredIntField = RandomInt(random),
-                        StringField = RandomString(random),
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
                     },
                 ],
                 TimestampField = DateTime.UtcNow.ToTimestamp(),
                 DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
                 MapField2 = new()
                 {
-                    [RandomString(random)] = RandomString(random),
-                    [RandomString(random)] = RandomString(random),
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
                 },
-                MapField4 = new Dictionary<int, long>() { [1111] = 2222 },
+                MapField4 = new Dictionary<int, long>()
+                {
+                    [1111] = 2222
+                },
                 DateTimeField = DateTime.UtcNow,
-                IntArrayFieldTest = [10, 20, 30],
-                StringListFieldTest = ["array", "list", "test"],
-                StringArrayFieldTest = ["hello", "world"],
-                IntListFieldTest = [100, 200, 300],
+                IntArrayFieldTest =
+                [
+                    10,
+                    20,
+                    30
+                ],
+                StringListFieldTest =
+                [
+                    "array",
+                    "list",
+                    "test"
+                ],
+                StringArrayFieldTest =
+                [
+                    "hello",
+                    "world"
+                ],
+                IntListFieldTest =
+                [
+                    100,
+                    200,
+                    300
+                ],
                 NullableIntField = 10,
                 MapField5 = new Dictionary<string, string>()
                 {
-                    [RandomString(random)] = RandomString(random),
-                    [RandomString(random)] = RandomString(random),
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
                 },
                 MapField6 = new ConcurrentDictionary<string, string>()
                 {
-                    [RandomString(random)] = RandomString(random),
-                    [RandomString(random)] = RandomString(random),
+                    [RandomString()] = RandomString(),
+                    [RandomString()] = RandomString(),
                 },
                 MapField7 = new ConcurrentDictionary<string, CsTestMessage>()
                 {
-                    [RandomString(random)] = new CsTestMessage()
+                    [RandomString()] = new CsTestMessage()
                     {
-                        RequiredIntField = RandomInt(random),
-                        StringField = RandomString(random),
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
                     },
-                    [RandomString(random)] = new CsTestMessage()
+                    [RandomString()] = new CsTestMessage()
                     {
-                        RequiredIntField = RandomInt(random),
-                        StringField = RandomString(random),
+                        RequiredIntField = RandomInt(),
+                        StringField = RandomString(),
                     },
                 },
-                StringSetFieldTest = [RandomString(random), RandomString(random)],
-                StringQueueFieldTest = new([RandomString(random), RandomString(random)]),
-                StringStackFieldTest = new([RandomString(random), RandomString(random)]),
-                ConcurrentStringQueueFieldTest = new([RandomString(random), RandomString(random)]),
-                ConcurrentStringStackFieldTest = new([RandomString(random), RandomString(random)]),
+                StringSetFieldTest =
+                [
+                    RandomString(),
+                    RandomString()
+                ],
+                StringQueueFieldTest = new([
+                    RandomString(),
+                    RandomString()
+                ]),
+                StringStackFieldTest = new([
+                    RandomString(),
+                    RandomString()
+                ]),
+                ConcurrentStringQueueFieldTest = new([
+                    RandomString(),
+                    RandomString()
+                ]),
+                ConcurrentStringStackFieldTest = new([
+                    RandomString(),
+                    RandomString()
+                ]),
+                IntBag = [RandomInt(), RandomInt()],
+                StringISet = new HashSet<string>([
+                    RandomString(),
+                    RandomString()
+                ]),
+                TimeSpanField = DateTime.Now.TimeOfDay,
+                DateOnlyField = DateOnly.FromDateTime(DateTime.Now.Date),
+                GuidField = Guid.NewGuid(),
+                TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
+                StringBuilderField = new StringBuilder(RandomString()),
             },
             TestMessage.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
-        //await Assert.That(parsed.NullableIntField).IsEqualTo(0);
     }
 
-    string RandomString(Random random)
+    string RandomString()
     {
         return random.Next(2) switch
         {
@@ -123,18 +191,13 @@ public class Tests
         };
     }
 
-    int? RandomNullableInt(Random random)
-    {
-        return random.Next(2) switch
-        {
-            0 => null,
-            _ => 1,
-        };
-    }
+    int RandomInt() => random.Next(10);
 
-    int RandomInt(Random random) => random.Next(10);
-
-    async Task<T2> Run<T1, T2>(T1 origin, Func<byte[], T2> parserFunc, Func<T2, byte[]> t2ToByteArray)
+    async Task<T2> Run<T1, T2>(
+        T1 origin,
+        Func<byte[], T2> parserFunc,
+        Func<T2, byte[]> t2ToByteArray
+    )
         where T1 : IProtoMessage<T1>
     {
         var bytes = origin.ToByteArray();
@@ -162,7 +225,7 @@ public class Tests
     public void TestStruct()
     {
         Run<TestStruct, TestType>(
-            new TestStruct { Name = RandomString(random), Value = RandomInt(random) },
+            new TestStruct { Name = RandomString(), Value = RandomInt() },
             TestType.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
@@ -172,7 +235,7 @@ public class Tests
     public void TestRecord()
     {
         Run<TestRecord, TestType>(
-            new TestRecord { Name = RandomString(random), Value = RandomInt(random) },
+            new TestRecord { Name = RandomString(), Value = RandomInt() },
             TestType.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
@@ -182,161 +245,53 @@ public class Tests
     public void TestRecordStruct()
     {
         Run<TestRecordStruct, TestType>(
-            new TestRecordStruct { Name = RandomString(random), Value = RandomInt(random) },
+            new TestRecordStruct { Name = RandomString(), Value = RandomInt() },
             TestType.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
     }
 
     [Test]
-    public async Task TestSimpleNewTypesSupport()
-    {
-        var testObj = new TestSimpleNewTypes
-        {
-            TimeSpanField = DateTime.Now.TimeOfDay,
-            DateOnlyField = DateOnly.FromDateTime(DateTime.Today),
-            GuidField = Guid.NewGuid(),
-            TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
-            StringBuilderField = new StringBuilder(RandomString(random)),
-        };
-
-        var serialized = testObj.ToByteArray();
-        var deserialized = TestSimpleNewTypes.Reader.ParseFrom(serialized);
-
-        // Verify round-trip serialization works
-        await Assert.That(deserialized.TimeSpanField).IsEqualTo(testObj.TimeSpanField);
-        await Assert.That(deserialized.DateOnlyField).IsEqualTo(testObj.DateOnlyField);
-        await Assert.That(deserialized.GuidField).IsEqualTo(testObj.GuidField);
-        await Assert.That(deserialized.TimeOnlyField.Ticks).IsEqualTo(testObj.TimeOnlyField.Ticks);
-        await Assert.That(deserialized.StringBuilderField.ToString()).IsEqualTo(testObj.StringBuilderField.ToString());
-    }
-
-    [Test]
-    public async Task TestHashSetSupport()
-    {
-        var testObj = new TestHashSet
-        {
-            Name = RandomString(random),
-            IntSet = new HashSet<int> { 1, 2, 3, RandomInt(random) },
-            StringSet = new HashSet<string> { "hello", "world", RandomString(random) },
-        };
-
-        // Test serialization/deserialization through protobuf
-        var bytes = testObj.ToByteArray();
-        var parsed = TestHashSet.Reader.ParseFrom(bytes);
-
-        // Verify the sets are equal
-        await Assert.That(parsed.Name).IsEqualTo(testObj.Name);
-        await Assert.That(parsed.IntSet).IsEquivalentTo(testObj.IntSet);
-        await Assert.That(parsed.StringSet).IsEquivalentTo(testObj.StringSet);
-
-        // Test equality
-        //await Assert.That(parsed).IsEqualTo(testObj);
-    }
-
-    [Test]
-    public async Task TestISetSupport()
-    {
-        var testObj = new TestISet
-        {
-            Name = RandomString(random),
-            IntSet = new HashSet<int> { 4, 5, 6, RandomInt(random) },
-            StringSet = new HashSet<string> { "foo", "bar", RandomString(random) },
-        };
-
-        // Test serialization/deserialization through protobuf
-        var bytes = testObj.ToByteArray();
-        var parsed = TestISet.Reader.ParseFrom(bytes);
-
-        // Verify the sets are equal
-        await Assert.That(parsed.Name).IsEqualTo(testObj.Name);
-        await Assert.That(parsed.IntSet).IsEquivalentTo(testObj.IntSet);
-        await Assert.That(parsed.StringSet).IsEquivalentTo(testObj.StringSet);
-
-        // Test equality
-        //await Assert.That(parsed).IsEqualTo(testObj);
-    }
-
-    [Test]
-    public async Task TestEmptyAndNullSets()
-    {
-        // Test with explicitly initialized empty sets
-        var emptyObj = new TestHashSet
-        {
-            Name = "empty",
-            IntSet = new HashSet<int>(),
-            StringSet = new HashSet<string>(),
-        };
-
-        var bytes = emptyObj.ToByteArray();
-        var parsed = TestHashSet.Reader.ParseFrom(bytes);
-
-        await Assert.That(parsed.Name).IsEqualTo("empty");
-
-        // For empty sets, just verify they serialize/deserialize without errors
-        // and that the basic functionality works
-
-        await Assert.That(bytes.Length).IsGreaterThan(0);
-        await Assert.That(parsed).IsNotNull();
-
-        // Test that we can add items to parsed sets
-        if (parsed.IntSet != null)
-        {
-            parsed.IntSet.Add(1);
-            await Assert.That(parsed.IntSet.Count).IsEqualTo(1);
-        }
-    }
-
-    [Test]
-    public async Task ConcurrentCollectionTest()
-    {
-        TestConcurrentCollection testObj = new TestConcurrentCollection
-        {
-            Name = RandomString(random),
-            IntBag = [RandomInt(random), RandomInt(random)],
-            ConcurrentQueue = new ConcurrentQueue<string>(
-                [RandomString(random), RandomString(random)]
-            ),
-            ConcurrentStack = new ConcurrentStack<string>(
-                [RandomString(random), RandomString(random)]
-            ),
-            IntList = [RandomInt(random), RandomInt(random)],
-            IntIList = [RandomInt(random), RandomInt(random)],
-        };
-
-        var bytes = testObj.ToByteArray();
-        var parsed = TestConcurrentCollection.Reader.ParseFrom(bytes);
-        await Assert.That(parsed.Name).IsEqualTo(testObj.Name);
-        await Assert.That(parsed.IntBag.Order().ToArray()).IsEquivalentTo(testObj.IntBag.Order().ToArray());
-        await Assert.That(parsed.ConcurrentQueue).IsEquivalentTo(testObj.ConcurrentQueue);
-        await Assert.That(parsed.ConcurrentStack).IsEquivalentTo(testObj.ConcurrentStack);
-        await Assert.That(parsed.IntList).IsEquivalentTo(testObj.IntList);
-        await Assert.That(parsed.IntIList).IsEquivalentTo(testObj.IntIList);
-
-        //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());
-    }
-
-    [Test]
     public async Task ProxyTest()
     {
-        TestOrder testObj = new()
+        ProtoProxy testObj = new()
         {
-            Instrument = Instrument.FromNameValue(RandomString(random), RandomInt(random)),
+            Instrument = Instrument.FromNameValue(RandomString(), RandomInt()),
         };
 
         var bytes = testObj.ToByteArray();
-        var parsed = TestOrder.Reader.ParseFrom(bytes);
+        var parsed = ProtoProxy.Reader.ParseFrom(bytes);
         await Assert.That(parsed.Instrument.Name).IsEqualTo(testObj.Instrument.Name);
         await Assert.That(parsed.Instrument.Value).IsEqualTo(testObj.Instrument.Value);
 
         //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());
     }
-}
 
-// public static class Extensions
-// {
-//     public static List<T> ToList<T>(this IEnumerable<T> source)
-//     {
-//         return new List<T> { source };
-//     }
-// }
+    [Test]
+    public async Task Collection_ShouldNotBeNull_WhenDefaultSizeIsSet_WhenDeserializing()
+    {
+        var obj = new CsTestMessage { };
+        await Assert.That(obj.Int32ArrayField).IsNotNull();
+        await Assert.That(obj.StringArrayField).IsNotNull();
+        await Assert.That(obj.IntListFieldTest).IsNotNull();
+        await Assert.That(obj.StringListFieldTest).IsNotNull();
+        await Assert.That(obj.IntArrayFieldTest).IsNotNull();
+        await Assert.That(obj.StringSetFieldTest).IsNotNull();
+        await Assert.That(obj.StringQueueFieldTest).IsNotNull();
+        await Assert.That(obj.StringStackFieldTest).IsNotNull();
+        await Assert.That(obj.ConcurrentStringQueueFieldTest).IsNotNull();
+        await Assert.That(obj.ConcurrentStringStackFieldTest).IsNotNull();
+        var bytes = obj.ToByteArray();
+        var parsed = CsTestMessage.Reader.ParseFrom(bytes);
+        await Assert.That(parsed.Int32ArrayField).IsNotNull();
+        await Assert.That(parsed.StringArrayField).IsNotNull();
+        await Assert.That(parsed.IntListFieldTest).IsNotNull();
+        await Assert.That(parsed.StringListFieldTest).IsNotNull();
+        await Assert.That(parsed.IntArrayFieldTest).IsNotNull();
+        await Assert.That(parsed.StringSetFieldTest).IsNotNull();
+        await Assert.That(parsed.StringQueueFieldTest).IsNotNull();
+        await Assert.That(parsed.StringStackFieldTest).IsNotNull();
+        await Assert.That(parsed.ConcurrentStringQueueFieldTest).IsNotNull();
+        await Assert.That(parsed.ConcurrentStringStackFieldTest).IsNotNull();
+    }
+}

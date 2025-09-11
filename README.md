@@ -1,131 +1,209 @@
-# Dameng.Protobuf.Extension
+# Dameng.Protobuf
 
-A .NET library that enables generic protobuf deserialization by providing an interface and source generator for Google.Protobuf generated classes. Designed as a NativeAOT-compatible alternative to protobuf-net for applications requiring ahead-of-time compilation.
+A source generator version of **Protobuf-net** with full **NativeAOT** support. This library provides the same behavior
+as Protobuf-net but uses compile-time source generation instead of runtime reflection, making it perfect for
+ahead-of-time compilation scenarios.
 
 ## Overview
 
-This library allows you to write generic deserialization functions for protobuf messages without knowing the specific type at compile time. It achieves this by adding a `IPbMessageParser<TSelf>` interface to protobuf generated classes through source generation.
+Dameng.Protobuf is designed as a drop-in replacement for Protobuf-net when you need **NativeAOT compatibility**. It
+enables generic protobuf serialization and deserialization by automatically generating implementations of
+`IProtoParser<T>`, `IProtoReader<T>`, and `IProtoWriter<T>`;
 
-**Why Choose This Over protobuf-net?**
+**Key Differences from Protobuf-net:**
 
-This library is specifically designed for **NativeAOT compatibility**, making it an ideal replacement for protobuf-net in scenarios where ahead-of-time compilation is required. Unlike protobuf-net, which relies heavily on reflection and runtime code generation, this solution uses source generation to provide the same generic capabilities with full NativeAOT support.
+- ✅ **Full NativeAOT Support** - Uses source generation instead of reflection
+- ✅ **Compile-time Code Generation** - Zero runtime overhead
+- ✅ **Same API Surface** - Familiar interface for Protobuf-net users
+
+## ⚠️ Development Status
+
+**This project is under active development and may introduce breaking changes.**
+
+- Current version: Alpha/Preview
+- API stability: Not guaranteed until v1.0
+- Use in production: At your own risk
+- Breaking changes: Expected in minor versions until stable release
 
 ## Features
 
-- **Generic Deserialization**: Write type-safe generic methods for protobuf deserialization
-- **Source Generator**: Automatically implements the interface for all protobuf generated classes
-- **Zero Runtime Overhead**: All code generation happens at compile time
-- **Easy Integration**: Just add the NuGet packages and configure your protobuf files
-- **NativeAOT Compatible**: Full support for ahead-of-time compilation scenarios
-- **protobuf-net Migration**: Smooth transition path from protobuf-net for NativeAOT projects
+- **🔄 Protobuf-net Compatibility**: Same serialization behavior and API patterns
+- **⚡ Source Generator**: Automatically implements interfaces for all protobuf classes
+- **🎯 Zero Runtime Overhead**: All code generation happens at compile time
+- **🚀 NativeAOT Ready**: Full support for ahead-of-time compilation scenarios
+- **📦 Easy Integration**: Just add the NuGet package and configure your protobuf files
+- **🔧 Generic Programming**: Write type-safe generic methods for protobuf operations
+- **🏗️ Build-time Safety**: Compile-time errors instead of runtime failures
 
 ## Installation
 
-Install packages from NuGet:
+Install the package from NuGet:
 
 ```bash
-dotnet add package Dameng.Protobuf.Extension
+dotnet add package Dameng.Protobuf
 ```
 
-## Migration & Usage
+## Quick Start
 
-### Quick Start
+### 1. Configure your ProtoContracts
 
-Add the required packages:
-```bash
-dotnet add package Dameng.Protobuf.Extension
+```cs
+using Dameng.Protobuf;
+[ProtoContract]
+public partial class MyRequest 
+{
+    [ProtoMember(1)]
+    public int RequestId { get; set; }    
+    [ProtoMember(2)]
+    public string Payload { get; set; }
+}
 ```
 
-Configure your `.csproj` with protobuf files:
+## Migration from Protobuf-net
+
+### Why Migrate?
+
+**Protobuf-net limitations with NativeAOT:**
+
+- Heavy reflection usage causes issues with AOT compilation
+- Runtime code generation not supported in NativeAOT
+- Limited trimming support
+- Performance overhead from reflection
+
+**Dameng.Protobuf advantages:**
+
+- ✅ Full NativeAOT compatibility
+- ✅ Compile-time code generation
+- ✅ No reflection at runtime
+- ✅ Better trimming support
+- ✅ Predictable performance
+
+### Step-by-Step Migration Guide
+
+#### 1. Replace Package References
+
 ```xml
-<ItemGroup>
-  <ProtoBuf Include="your-proto-file.proto">
-    <GrpcServices>Client</GrpcServices>
-    <Generator>MSBuild:PreCompile</Generator>
-  </ProtoBuf>
-</ItemGroup>
+<!-- Remove protobuf-net -->
+<PackageReference Include="protobuf-net" Version="x.x.x"/>
+
+        <!-- Add Dameng.Protobuf -->
+<PackageReference Include="Dameng.Protobuf" Version="x.x.x"/>
 ```
 
-Write generic methods that work with any protobuf message:
-```csharp
-using Dameng.Protobuf.Extension;
-using Google.Protobuf;
+#### 2. Convert Data Models
 
-// Generic deserialization
-T Deserialize<T>(byte[] bytes) where T : IPbMessageParser<T>, IMessage<T>
+Change the namespace from `Protobuf` to `Dameng.Protobuf` and ensure your classes implement the required interfaces.
+
+```diff
+-using ProtoBuf;
++using Dameng.Protobuf;
+[ProtoContract]
+public class Person
 {
-    return T.Parser.ParseFrom(bytes);
+    [ProtoMember(1)]
+    public string Name { get; set; }
+    
+    [ProtoMember(2)]  
+    public int Age { get; set; }
+}
+```
+
+#### 4. Update Serialization Code
+
+```csharp
+-using ProtoBuf;
++using Dameng.Protobuf;
+// Serialization
+var stream = new MemoryStream();
+Serializer.Serialize(stream, myObject);
+byte[] data = stream.ToArray();
+
+// Deserialization  
+var obj = Serializer.Deserialize<MyClass>(new MemoryStream(data));
+```
+
+### Migration Compatibility Matrix
+
+| Feature                 | Protobuf-net | Dameng.Protobuf | Notes                 |
+|-------------------------|--------------|-----------------|-----------------------|
+| **Basic Serialization** | ✅            | ✅               | Same wire format      |
+| **Generic Methods**     | ✅            | ✅               | Different constraints |
+| **NativeAOT**           | ❌ Limited    | ✅ Full          | Main advantage        |
+| **Reflection**          | ❌ Heavy      | ✅ None          | Compile-time only     |
+| **Performance**         | ⚠️ Dynamic   | ✅ Predictable   | No runtime overhead   |
+| **Wire Compatibility**  | ✅            | ✅               | Interoperable         |
+
+## How It Works
+
+The source generator automatically implements the required interfaces on all protobuf generated classes:
+
+```csharp
+// Generated by Dameng.Protobuf for each protobuf class
+partial class MyRequest : IProtoMessage<MyRequest>
+{
+    public static IProtoReader<MyRequest> Reader => MyRequestReader.Instance;
+    public static IProtoWriter<MyRequest> Writer => MyRequestWriter.Instance;
 }
 
-// Generic serialization  
-byte[] Serialize<T>(T message) where T : IPbMessageParser<T>, IMessage<T>
+// Generated reader implementation
+internal sealed class MyRequestReader : IProtoMessageReader<MyRequest>
 {
-    return message.ToByteArray();
-}
-
-// Usage with any protobuf generated class
-var request = Deserialize<MyRequest>(requestBytes);
-var response = Deserialize<MyResponse>(responseBytes);
-```
-
-### Migrating from protobuf-net
-
-**Why migrate?** protobuf-net has limited NativeAOT support due to heavy reflection usage, while this library provides full compatibility through compile-time source generation.
-
-**Migration steps:**
-1. Replace `protobuf-net` with `Google.Protobuf` + this extension
-2. Convert protobuf-net attributes to standard `.proto` files:
-   ```protobuf
-   // Standard .proto file
-   syntax = "proto3";
-   message MyMessage {
-     string name = 1;
-   }
-   ```
-3. Update generic code constraints from `where T : class, new()` to `where T : IPbMessageParser<T>, IMessage<T>`
-
-**Key differences:**
-
-| Aspect | protobuf-net | This Extension |
-|--------|-------------|----------------|
-| **NativeAOT** | Limited | Full support |
-| **Code Generation** | Runtime | Compile-time |
-| **Reflection** | Heavy usage | None |
-
-### How It Works
-
-The source generator automatically implements `IPbMessageParser<TSelf>` on all protobuf generated classes, exposing their static `Parser` property for generic access:
-
-```csharp
-// Auto-generated for each protobuf class
-partial class MyRequest : IPbMessageParser<MyRequest> {}
-```
-
-## Example: Generic Communication Handler
-
-```csharp
-public class GenericProtobufHandler
-{
-    public T HandleMessage<T>(byte[] messageBytes) 
-        where T : IPbMessageParser<T>, IMessage<T>
+    public static MyRequestReader Instance { get; } = new();
+    
+    public MyRequest ParseFrom(ref ReaderContext input)
     {
-        return T.Parser.ParseFrom(messageBytes);
+        // Generated parsing logic...
+    }
+}
+
+// Generated writer implementation  
+internal sealed class MyRequestWriter : IProtoMessageWriter<MyRequest>
+{
+    public static MyRequestWriter Instance { get; } = new();
+    
+    public void WriteTo(ref WriterContext output, MyRequest value)
+    {
+        // Generated writing logic...
     }
     
-    public byte[] SerializeMessage<T>(T message) 
-        where T : IPbMessageParser<T>, IMessage<T>
+    public int CalculateSize(MyRequest value)
     {
-        return message.ToByteArray();
+        // Generated size calculation...
     }
 }
 ```
 
-## Requirements
+## Performance & Benchmarks
 
-- .NET 8.0 or higher
-- Google.Protobuf package  
-- C# 11.0 or higher (for generic static interface members)
-- **NativeAOT Compatible**: Full support for ahead-of-time compilation when using `<PublishAot>true</PublishAot>`
+TODO: Add benchmark results comparing Dameng.Protobuf with Protobuf-net and other libraries.
+
+### Compatibility
+
+- **Wire Format**: 100% compatible with Google Protocol Buffers
+- **Interoperability**: Works with any protobuf implementation
+- **Cross-Platform**: Supports all .NET 8+ target platforms
+- **Trimming**: Fully compatible with assembly trimming
+
+### Getting Help
+
+- **Issues**: [GitHub Issues](https://github.com/dameng324/Dameng.Protobuf/issues)
+
+### Roadmap
+
+**Planned Features:**
+
+- Reuse object when deserializing
+- Advanced serialization options
+- Performance optimizations
+- More comprehensive documentation
+- Stability improvements leading to v1.0
+
+**Current Focus:**
+
+- API stabilization
+- Bug fixes and performance improvements
+- NativeAOT optimization
+- Better error messages
 
 ## License
 
@@ -134,3 +212,20 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
+
+**Before contributing:**
+
+1. Check existing issues and discussions
+2. Follow the coding standards used in the project
+3. Add tests for new functionality
+4. Update documentation as needed
+
+**Development Setup:**
+
+```bash
+git clone https://github.com/dameng324/Dameng.Protobuf.git
+cd Dameng.Protobuf
+dotnet restore
+dotnet build
+dotnet test
+```
