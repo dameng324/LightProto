@@ -110,7 +110,7 @@ public class Person
 
 #### 4. Update Serialization Code
 
-```csharp
+```diff
 -using ProtoBuf;
 +using Dameng.Protobuf;
 // Serialization
