@@ -2,14 +2,14 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public class BooleanProtoReader : IProtoReader<bool>
+public sealed class BooleanProtoReader : IProtoReader<bool>
 {
     public bool ParseFrom(ref ReaderContext input)
     {
         return input.ReadBool();
     }
 }
-public class BooleanProtoWriter : IProtoWriter<bool>
+public sealed class BooleanProtoWriter : IProtoWriter<bool>
 {
     public int CalculateSize(bool value)
     {
@@ -21,7 +21,7 @@ public class BooleanProtoWriter : IProtoWriter<bool>
         output.WriteBool(value);
     }
 }
-public class BooleanProtoParser : IProtoParser<bool>
+public sealed class BooleanProtoParser : IProtoParser<bool>
 {
     public static IProtoReader<bool> Reader { get; } = new BooleanProtoReader();
     public static IProtoWriter<bool> Writer { get; } = new BooleanProtoWriter();

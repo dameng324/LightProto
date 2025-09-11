@@ -2,7 +2,7 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public class NullableProtoReader<T> : IProtoReader<Nullable<T>>
+public sealed class NullableProtoReader<T> : IProtoReader<Nullable<T>>
     where T : struct
 {
     public IProtoReader<T> ValueReader { get; }
@@ -12,13 +12,14 @@ public class NullableProtoReader<T> : IProtoReader<Nullable<T>>
         ValueReader = valueReader;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public Nullable<T> ParseFrom(ref ReaderContext input)
     {
         return ValueReader.ParseFrom(ref input);
     }
 }
 
-public class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
+public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     where T : struct
 {
     public IProtoWriter<T> ValueWriter { get; }
@@ -28,11 +29,13 @@ public class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
         ValueWriter = valueWriter;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(Nullable<T> value)
     {
         return value.HasValue == false ? 0 : ValueWriter.CalculateSize(value.Value);
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public void WriteTo(ref WriterContext output, Nullable<T> value)
     {
         if (value.HasValue)

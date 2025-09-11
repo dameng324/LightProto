@@ -4,7 +4,7 @@ using System.Text;
 namespace Dameng.Protobuf.WellKnownTypes;
 
 [ProtoContract]
-public partial class Duration
+public sealed partial class Duration
 {
     [ProtoMember(1)]
     public long Seconds { get; set; }

@@ -31,20 +31,31 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
     int GetAllItemSize(TCollection collection)
     {
         int size = 0;
-        foreach (var item in collection)
+
+        if (collection is IList<TItem> list)
         {
-            if (item is null)
+            for (var index = 0; index < list.Count; index++)
             {
-                throw new Exception("Sequence contained null element");
+                var item = list[index];
+                if (item is null)
+                {
+                    throw new Exception("Sequence contained null element");
+                }
+
+                size += ItemWriter.CalculateMessageSize(item);
             }
+        }
+        else
+        {
+            
+            foreach (var item in collection)
+            {
+                if (item is null)
+                {
+                    throw new Exception("Sequence contained null element");
+                }
                 
-            if (ItemWriter is IProtoMessageWriter<TItem> messageWriter)
-            {
-                size += messageWriter.CalculateMessageSize(item);
-            }
-            else
-            {
-                size += ItemWriter.CalculateSize(item);
+                size += ItemWriter.CalculateMessageSize(item);
             }
         }
         return size;
@@ -112,39 +123,42 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
                         throw new Exception("Sequence contained null element");
                     }
 
-                    if (ItemWriter is IProtoMessageWriter<TItem> messageWriter)
-                    {
-                        messageWriter.WriteMessageTo(ref output, item);
-                    }
-                    else
-                    {
-                        ItemWriter.WriteTo(ref output, item);
-                    }
-
+                    ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
         }
         else
         {
-            foreach (var item in collection)
+            if (collection is IList<TItem> list)
             {
-                var current = item;
-                if (current is null)
+                for (var index = 0; index < list.Count; index++)
                 {
-                    throw new Exception("Sequence contained null element");
-                }
+                    var item = list[index];
+                    if (item is null)
+                    {
+                        throw new Exception("Sequence contained null element");
+                    }
 
-                output.WriteTag(Tag);
-                
-                if (ItemWriter is IProtoMessageWriter<TItem> messageWriter)
-                {
-                    messageWriter.WriteMessageTo(ref output, item);
-                }
-                else
-                {
-                    ItemWriter.WriteTo(ref output, item);
+                    output.WriteTag(Tag);
+                    ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
+            else
+            {
+                foreach (var item in collection)
+                {
+                    var current = item;
+                    if (current is null)
+                    {
+                        throw new Exception("Sequence contained null element");
+                    }
+
+                    output.WriteTag(Tag);
+                
+                    ItemWriter.WriteMessageTo(ref output, item);
+                }
+            }
+            
         }
     }
 }

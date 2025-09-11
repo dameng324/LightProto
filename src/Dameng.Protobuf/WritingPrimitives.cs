@@ -12,11 +12,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-#if GOOGLE_PROTOBUF_SIMD
+
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
-#endif
+
 
 namespace Dameng.Protobuf
 {
@@ -28,13 +28,7 @@ namespace Dameng.Protobuf
     {
       // Ideally we would use the same UTF8Encoding as parse, but we should be able to serialize
       // invalid UTF-8 that make it in via unvalidated setters without throwing an exception.
-#if NET5_0_OR_GREATER
       internal static Encoding Utf8Encoding => Encoding.UTF8;  // allows JIT to devirtualize
-#else
-      internal static readonly Encoding Utf8Encoding =
-          Encoding.UTF8;  // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a
-                          // difference.)
-#endif
 
 #region Writing of values (not including tags)
 
@@ -242,7 +236,6 @@ namespace Dameng.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void NarrowFourUtf16CharsToAsciiAndWriteToBuffer(ref byte outputBuffer, ulong value)
         {
-#if GOOGLE_PROTOBUF_SIMD
             if (Sse2.X64.IsSupported)
             {
                 // Narrows a vector of words [ w0 w1 w2 w3 ] to a vector of bytes
@@ -262,7 +255,6 @@ namespace Dameng.Protobuf
                 Unsafe.WriteUnaligned<uint>(ref outputBuffer, lower.AsUInt32().ToScalar());
             }
             else
-#endif
             {
                 // Fallback to non-SIMD approach when SIMD is not available.
                 // This could happen either because the APIs are not available, or hardware doesn't support it.

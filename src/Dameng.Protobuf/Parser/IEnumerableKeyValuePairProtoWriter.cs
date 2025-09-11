@@ -1,6 +1,4 @@
-﻿
-
-namespace Dameng.Protobuf.Parser;
+﻿namespace Dameng.Protobuf.Parser;
 
 public class IEnumerableKeyValuePairProtoWriter<TDictionary, TKey, TValue>
     : IProtoWriter<TDictionary>
@@ -34,13 +32,9 @@ public class IEnumerableKeyValuePairProtoWriter<TDictionary, TKey, TValue>
     {
         var size = 0;
         size += CodedOutputStream.ComputeRawVarint32Size(_keyTag);
-        size += _keyWriter is IProtoMessageWriter<TKey> keyMessageWriter
-            ? keyMessageWriter.CalculateMessageSize(value.Key)
-            : _keyWriter.CalculateSize(value.Key);
+        size += _keyWriter.CalculateMessageSize(value.Key);
         size += CodedOutputStream.ComputeRawVarint32Size(_valueTag);
-        size += _valueWriter is IProtoMessageWriter<TValue> valueMessageWriter
-            ? valueMessageWriter.CalculateMessageSize(value.Value)
-            : _valueWriter.CalculateSize(value.Value);
+        size += _valueWriter.CalculateMessageSize(value.Value);
         return size;
     }
 
@@ -73,24 +67,10 @@ public class IEnumerableKeyValuePairProtoWriter<TDictionary, TKey, TValue>
             output.WriteLength(size);
 
             output.WriteTag(_keyTag);
-            if (_keyWriter is IProtoMessageWriter<TKey> messageWriter)
-            {
-                messageWriter.WriteMessageTo(ref output, pair.Key);
-            }
-            else
-            {
-                _keyWriter.WriteTo(ref output, pair.Key);
-            }
+            _keyWriter.WriteMessageTo(ref output, pair.Key);
 
             output.WriteTag(_valueTag);
-            if (_valueWriter is IProtoMessageWriter<TValue> valueMessageWriter)
-            {
-                valueMessageWriter.WriteMessageTo(ref output, pair.Value);
-            }
-            else
-            {
-                _valueWriter.WriteTo(ref output, pair.Value);
-            }
+            _valueWriter.WriteMessageTo(ref output, pair.Value);
         }
     }
 }

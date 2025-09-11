@@ -5,13 +5,13 @@ using System.Runtime.CompilerServices;
 
 namespace Dameng.Protobuf.Parser;
 
-public class StackProtoWriter<T> : IEnumerableProtoWriter<Stack<T>, T>
+public sealed class StackProtoWriter<T> : IEnumerableProtoWriter<Stack<T>, T>
 {
     public StackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
         : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
 }
 
-public class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
+public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
 {
     public StackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
         : base(

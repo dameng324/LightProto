@@ -45,10 +45,7 @@ public class IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>
 
     private T Read<T>(ref ReaderContext ctx, IProtoReader<T> reader)
     {
-        if (reader is IProtoMessageReader<T> messageReader)
-            return messageReader.ParseMessageFrom(ref ctx);
-        else
-            return reader.ParseFrom(ref ctx);
+        return reader.ParseMessageFrom(ref ctx);
     }
 
     public KeyValuePair<TKey, TValue> ReadMapEntry(ref ReaderContext ctx)

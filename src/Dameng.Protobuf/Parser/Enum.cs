@@ -3,9 +3,10 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public class EnumProtoReader<T> : IProtoReader<T>
+public sealed class EnumProtoReader<T> : IProtoReader<T>
     where T : Enum
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public T ParseFrom(ref ReaderContext input)
     {
         var value = input.ReadEnum();
@@ -13,21 +14,23 @@ public class EnumProtoReader<T> : IProtoReader<T>
     }
 }
 
-public class EnumProtoWriter<T> : IProtoWriter<T>
+public sealed class EnumProtoWriter<T> : IProtoWriter<T>
     where T : Enum
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(T value)
     {
         return CodedOutputStream.ComputeEnumSize(Unsafe.As<T, int>(ref value));
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public void WriteTo(ref WriterContext output, T value)
     {
         output.WriteEnum(Unsafe.As<T, int>(ref value));
     }
 }
 
-public class EnumProtoParser<T> : IProtoParser<T>
+public sealed class EnumProtoParser<T> : IProtoParser<T>
     where T : Enum
 {
     public static IProtoReader<T> Reader { get; } = new EnumProtoReader<T>();

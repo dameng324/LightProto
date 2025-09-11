@@ -1,21 +1,24 @@
 ﻿
 namespace Dameng.Protobuf.Parser;
 
-public class GuidProtoReader : IProtoReader<Guid>
+public sealed class GuidProtoReader : IProtoReader<Guid>
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public Guid ParseFrom(ref ReaderContext input)
     {
         var length = input.ReadLength();
         return new Guid(ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state,length));
     }
 }
-public class GuidProtoWriter : IProtoWriter<Guid>
+public sealed class GuidProtoWriter : IProtoWriter<Guid>
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(Guid value)
     {
         return CodedOutputStream.ComputeLengthSize(16)+16;
     }
 
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public void WriteTo(ref WriterContext output, Guid value)
     {
         unsafe
@@ -29,7 +32,7 @@ public class GuidProtoWriter : IProtoWriter<Guid>
         }
     }
 }
-public class GuidProtoParser : IProtoParser<Guid>
+public sealed class GuidProtoParser : IProtoParser<Guid>
 {
     public static IProtoReader<Guid> Reader { get; } = new GuidProtoReader();
     public static IProtoWriter<Guid> Writer { get; } = new GuidProtoWriter();

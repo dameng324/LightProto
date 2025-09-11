@@ -150,8 +150,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
               {
                   public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader {get; } = new ProtoReader();
                   public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer {get; } = new ProtoWriter();
-                  public sealed class ProtoWriter:IProtoMessageWriter<{{proxyFor?.ToDisplayString()??className}}>
+                  public sealed class ProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
                   {
+                      public bool IsMessage => true;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           protoMembers.SelectMany(member => GetProtoParserMember(compilation, member, "Writer", targetType)))
                       }}
@@ -178,10 +179,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                           yield return $"if({checkIfNotEmpty})";
                                           yield return $"{{";
                                           yield return $"    output.WriteTag({member.RawTag}); ";
-                                          yield return $"    if({member.Name}_ProtoWriter is IProtoMessageWriter<{member.Type}> messageWriter) ";
-                                          yield return $"         messageWriter.WriteMessageTo(ref output, message.{member.Name});";
-                                          yield return $"    else";
-                                          yield return $"         {member.Name}_ProtoWriter.WriteTo(ref output, message.{member.Name});";
+                                          yield return $"    {member.Name}_ProtoWriter.WriteMessageTo(ref output, message.{member.Name});";
                                           yield return $"}}";
                                       }
                                   }
@@ -209,10 +207,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                       else
                                       {
                                           yield return $"if({checkIfNotEmpty})";
-                                          yield return $"    if({member.Name}_ProtoWriter is IProtoMessageWriter<{member.Type}> messageWriter) ";
-                                          yield return $"        size += {tagSize} + messageWriter.CalculateMessageSize(message.{member.Name});";
-                                          yield return $"    else";
-                                          yield return $"        size += {tagSize} + {member.Name}_ProtoWriter.CalculateSize(message.{member.Name});";
+                                          yield return $"    size += {tagSize} + {member.Name}_ProtoWriter.CalculateMessageSize(message.{member.Name});";
                                       }
                                   }
                               }))
@@ -221,8 +216,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       }
                   }
                   
-                  public sealed class ProtoReader:IProtoMessageReader<{{proxyFor?.ToDisplayString()??className}}>
+                  public sealed class ProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
                   {
+                      public bool IsMessage => true;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           protoMembers.SelectMany(member => GetProtoParserMember(compilation, member, "Reader", targetType)))
                       }}
@@ -261,10 +257,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                               }
 
                                               yield return $"{{";
-                                              yield return $"    if({member.Name}_ProtoReader is IProtoMessageReader<{member.Type}> messageReader) ";
-                                              yield return $"        _{member.Name} = messageReader.ParseMessageFrom(ref input);";
-                                              yield return $"    else";
-                                              yield return $"        _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
+                                              yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
                                               yield return $"    break;";
                                               yield return $"}}";
                                           }

@@ -2,8 +2,6 @@
 // Consider using 'partial classes' to extend these types
 // Input: my.proto
 
-using Dameng.Protobuf.WellKnownTypes;
-
 #pragma warning disable IDE0079
 #pragma warning disable CS1591, CS0612, CS0618, CS3021, IDE1006
 namespace DamengProtobuf

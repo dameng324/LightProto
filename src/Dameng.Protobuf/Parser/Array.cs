@@ -4,14 +4,14 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[],T>
+public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[],T>
 {
     public ArrayProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
         : base(itemWriter, tag, static collection => collection.Length, itemFixedSize)
     {
     }
 }
-public class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
+public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
 {
     private readonly uint _tag;
     public IProtoReader<TItem> ItemReader { get; }

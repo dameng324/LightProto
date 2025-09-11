@@ -2,7 +2,7 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public class StringBuilderProtoReader : IProtoReader<StringBuilder>
+public sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
 {
     public StringBuilder ParseFrom(ref ReaderContext input)
     {
@@ -10,7 +10,7 @@ public class StringBuilderProtoReader : IProtoReader<StringBuilder>
     }
 }
 
-public class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
+public sealed class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
 {
     public int CalculateSize(StringBuilder value)
     {
@@ -30,7 +30,7 @@ public class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
     }
 }
 
-public class StringBuilderProtoParser : IProtoParser<StringBuilder>
+public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
 {
     public static IProtoReader<StringBuilder> Reader { get; } = new StringBuilderProtoReader();
     public static IProtoWriter<StringBuilder> Writer { get; } = new StringBuilderProtoWriter();

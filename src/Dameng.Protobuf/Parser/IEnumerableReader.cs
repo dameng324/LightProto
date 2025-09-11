@@ -25,13 +25,6 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
         ItemFixedSize = itemFixedSize;
     }
 
-    public TItem ReadItem(ref ReaderContext ctx)
-    {
-        if (ItemReader is IProtoMessageReader<TItem> messageReader)
-            return messageReader.ParseMessageFrom(ref ctx);
-        else
-            return ItemReader.ParseFrom(ref ctx);
-    }
 
     public TCollection ParseFrom(ref ReaderContext ctx)
     {
@@ -88,7 +81,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
                             // Only FieldCodecs with a fixed size can reach here, and they are all known
                             // types that don't allow the user to specify a custom reader action.
                             // reader action will never return null.
-                            AddItem(collection, ReadItem(ref ctx));
+                            AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                         }
                     }
 
@@ -100,7 +93,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
                     // Content is variable size so add until we reach the limit.
                     while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                     {
-                        AddItem(collection, ReadItem(ref ctx));
+                        AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                     }
 
                     return collection;
@@ -117,7 +110,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
             var collection = CreateWithCapacity(4);
             do
             {
-                AddItem(collection, ReadItem(ref ctx));
+                AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
             } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
 
             return _completeAction is null ? collection : _completeAction.Invoke(collection);

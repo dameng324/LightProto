@@ -2,14 +2,14 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public class TimeSpanProtoReader : IProtoReader<TimeSpan>
+public sealed class TimeSpanProtoReader : IProtoReader<TimeSpan>
 {
     public TimeSpan ParseFrom(ref ReaderContext input)
     {
         return new TimeSpan(input.ReadInt64());
     }
 }
-public class TimeSpanProtoWriter : IProtoWriter<TimeSpan>
+public sealed class TimeSpanProtoWriter : IProtoWriter<TimeSpan>
 {
     public int CalculateSize(TimeSpan value)
     {
@@ -21,7 +21,7 @@ public class TimeSpanProtoWriter : IProtoWriter<TimeSpan>
         output.WriteInt64(value.Ticks);
     }
 }
-public class TimeSpanProtoParser : IProtoParser<TimeSpan>
+public sealed class TimeSpanProtoParser : IProtoParser<TimeSpan>
 {
     public static IProtoReader<TimeSpan> Reader { get; } = new TimeSpanProtoReader();
     public static IProtoWriter<TimeSpan> Writer { get; } = new TimeSpanProtoWriter();

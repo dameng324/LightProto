@@ -4,7 +4,7 @@ using System.Text;
 namespace Dameng.Protobuf.WellKnownTypes;
 
 [ProtoContract]
-public partial class Timestamp:IEquatable<Timestamp>,IComparable<Timestamp>
+public sealed partial class Timestamp:IEquatable<Timestamp>,IComparable<Timestamp>
 {
     public bool Equals(Timestamp? other)
     {

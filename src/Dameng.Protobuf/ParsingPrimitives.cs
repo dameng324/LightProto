@@ -556,7 +556,6 @@ namespace Dameng.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-#if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING
             if (length <= state.bufferSize - state.bufferPos)
             {
                 // Fast path: all bytes to decode appear in the same span.
@@ -581,7 +580,6 @@ namespace Dameng.Protobuf
                 state.bufferPos += length;
                 return value;
             }
-#endif
 
             return ReadStringSlow(ref buffer, ref state, length);
         }
@@ -593,13 +591,12 @@ namespace Dameng.Protobuf
         {
             ValidateCurrentLimit(ref buffer, ref state, length);
 
-#if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING
             if (IsDataAvailable(ref state, length))
             {
                 // Read string data into a temporary buffer, either stackalloc'ed or from ArrayPool
                 // Once all data is read then call Encoding.GetString on buffer and return to pool if needed.
 
-                byte[] byteArray = null;
+                byte[]? byteArray = null;
                 Span<byte> byteSpan = length <= StackallocThreshold ?
                     stackalloc byte[length] :
                     (byteArray = ArrayPool<byte>.Shared.Rent(length));
@@ -635,7 +632,6 @@ namespace Dameng.Protobuf
                     }
                 }
             }
-#endif
 
             // Slow path: Build a byte array first then copy it.
             // This will be called when reading from a Stream because we don't know the length of the stream,

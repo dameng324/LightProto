@@ -1,7 +1,7 @@
 ﻿
 namespace Dameng.Protobuf.Parser;
 
-public class ByteArrayProtoReader : IProtoReader<byte[]>
+public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 {
     public byte[] ParseFrom(ref ReaderContext input)
     {
@@ -9,8 +9,9 @@ public class ByteArrayProtoReader : IProtoReader<byte[]>
         return ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state,length);
     }
 }
-public class ByteArrayProtoWriter : IProtoWriter<byte[]>
+public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 {
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(byte[] value)
     {
         return CodedOutputStream.ComputeLengthSize(value.Length)+value.Length;
@@ -22,7 +23,7 @@ public class ByteArrayProtoWriter : IProtoWriter<byte[]>
         WritingPrimitives.WriteRawBytes(ref output.buffer,ref output.state, value);
     }
 }
-public class ByteArrayProtoParser : IProtoParser<byte[]>
+public sealed class ByteArrayProtoParser : IProtoParser<byte[]>
 {
     public static IProtoReader<byte[]> Reader { get; } = new ByteArrayProtoReader();
     public static IProtoWriter<byte[]> Writer { get; } = new ByteArrayProtoWriter();
