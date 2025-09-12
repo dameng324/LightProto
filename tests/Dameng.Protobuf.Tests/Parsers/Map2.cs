@@ -1,5 +1,5 @@
 ﻿namespace Dameng.Protobuf.Tests.Parsers;
-
+[SkipAot]
 public partial class Map2Tests
 {
     [Dameng.Protobuf.ProtoContract]
