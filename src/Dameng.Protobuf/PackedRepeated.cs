@@ -1,6 +1,6 @@
 ﻿namespace Dameng.Protobuf;
 
-public class PackedRepeated
+internal class PackedRepeated
 {
     public static bool Support<TItem>()
     {

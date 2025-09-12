@@ -1,158 +1,240 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 using Dameng.Protobuf.WellKnownTypes;
+using ProtoBuf;
+using DataFormat2 = ProtoBuf.DataFormat;
+using ProtoContract1 = Dameng.Protobuf.ProtoContractAttribute;
+using ProtoContract2 = ProtoBuf.ProtoContractAttribute;
+using ProtoMember1 = Dameng.Protobuf.ProtoMemberAttribute;
+using ProtoMember2 = ProtoBuf.ProtoMemberAttribute;
+using ProtoMap1 = Dameng.Protobuf.ProtoMapAttribute;
+using ProtoMap2 = ProtoBuf.ProtoMapAttribute;
 
 namespace Dameng.Protobuf.Tests;
 
-[ProtoContract]
+[ProtoContract1]
+[ProtoContract2]
 public partial class CsTestMessage
 {
-    [ProtoMember(1)]
+    [ProtoMember1(1)]
+    [ProtoMember2(1)]
     public string StringField { get; set; } = string.Empty;
 
-    [ProtoMember(2)]
+    [ProtoMember1(2,IsPacked = false)]
+    [ProtoMember2(2,IsPacked = false)]
     public int Int32Field { get; set; }
 
-    [ProtoMember(3)]
+    [ProtoMember1(3,IsPacked = true)]
+    [ProtoMember2(3,IsPacked = true)]
     public List<int> Int32ArrayField { get; set; } = [];
 
-    [ProtoMember(4)]
+    [ProtoMember1(4)]
+    [ProtoMember2(4)]
     public List<string> StringArrayField { get; set; } = [];
 
-    [ProtoMember(5)]
-    public List<byte> BytesField { get; set; } = [];
+    [ProtoMember1(5)]
+    [ProtoMember2(5)]
+    public byte[] BytesField { get; set; } = [];
 
-    [ProtoMember(6)]
+    [ProtoMember1(6)]
+    [ProtoMember2(6)]
     public bool BoolField { get; set; }
 
-    [ProtoMember(7)]
+    [ProtoMember1(7)]
+    [ProtoMember2(7)]
     public double DoubleField { get; set; }
 
-    [ProtoMember(8)]
+    [ProtoMember1(8)]
+    [ProtoMember2(8)]
     public float FloatField { get; set; }
 
-    [ProtoMember(9)]
+    [ProtoMember1(9)]
+    [ProtoMember2(9)]
     public long Int64Field { get; set; }
 
-    [ProtoMember(10)]
+    [ProtoMember1(10)]
+    [ProtoMember2(10)]
     public uint UInt32Field { get; set; }
 
-    [ProtoMember(11)]
+    [ProtoMember1(11)]
+    [ProtoMember2(11)]
     public ulong UInt64Field { get; set; }
 
-    [ProtoMember(12, DataFormat = DataFormat.ZigZag)]
+    [ProtoMember1(12, DataFormat = DataFormat.ZigZag)]
+    [ProtoMember2(12, DataFormat = DataFormat2.ZigZag)]
     public int SInt32Field { get; set; }
 
-    [ProtoMember(13, DataFormat = DataFormat.ZigZag)]
+    [ProtoMember1(13, DataFormat = DataFormat.ZigZag)]
+    [ProtoMember2(13, DataFormat = DataFormat2.ZigZag)]
     public long SInt64Field { get; set; }
 
-    [ProtoMember(14, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember1(14, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember2(14, DataFormat = DataFormat2.FixedSize)]
     public uint Fixed32Field { get; set; }
 
-    [ProtoMember(15, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember1(15, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember2(15, DataFormat = DataFormat2.FixedSize)]
     public ulong Fixed64Field { get; set; }
 
-    [ProtoMember(16, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember1(16, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember2(16, DataFormat = DataFormat2.FixedSize)]
     public int SFixed32Field { get; set; }
 
-    [ProtoMember(17, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember1(17, DataFormat = DataFormat.FixedSize)]
+    [ProtoMember2(17, DataFormat = DataFormat2.FixedSize)]
     public long SFixed64Field { get; set; }
 
-    [ProtoMember(18)]
+    [ProtoMember1(18)]
+    [ProtoMember2(18)]
     public Dictionary<string, CsTestMessage> MapField { get; set; } = [];
 
-    [ProtoMember(19)]
+    [ProtoMember1(19)]
+    [ProtoMember2(19)]
     public CsTestEnum EnumField { get; set; }
 
-    [ProtoMember(20)]
+    [ProtoMember1(20,IsPacked = true)]
+    [ProtoMember2(20,IsPacked = true)]
     public List<CsTestEnum> EnumArrayField { get; set; } = [];
 
-    [ProtoMember(21)]
+    [ProtoMember1(21)]
+    [ProtoMember2(21)]
     public CsTestMessage NestedField { get; set; }
 
-    [ProtoMember(22)]
+    [ProtoMember1(22)]
+    [ProtoMember2(22)]
     public List<CsTestMessage> NestedMessageArrayField { get; set; } = [];
-
+    
     // google.protobuf.Timestamp
-    [ProtoMember(27)]
-    public Timestamp TimestampField { get; set; }
+    [ProtoMember1(27)]
+    public required Timestamp TimestampField { get; set; }
+
+    [ProtoMember2(27)]
+    [ProtoBuf.CompatibilityLevel(CompatibilityLevel.Level240)]
+    public DateTime TimestampField2
+    {
+        get => TimestampField?.ToDateTime()??default(DateTime);
+        set => TimestampField = value.ToTimestamp();
+    }
 
     // google.protobuf.Duration
-    [ProtoMember(28)]
+    [ProtoMember1(28)]
     public Duration DurationField { get; set; }
 
-    [ProtoMember(29)]
+    [ProtoMember2(28)]
+    [ProtoBuf.CompatibilityLevel(CompatibilityLevel.Level240)]
+    public TimeSpan DurationField2
+    {
+        get => DurationField?.ToTimeSpan()??default;
+        set => DurationField = value.ToDuration();
+    }
+
+    [ProtoMember1(29)]
+    [ProtoMember2(29)]
     public Dictionary<string, string> MapField2 { get; set; } = [];
 
-    [ProtoMember(50)]
-    [ProtoMap(KeyFormat = DataFormat.FixedSize, ValueFormat = DataFormat.ZigZag)]
+    [ProtoMember1(50)]
+    [ProtoMember2(50)]
+    [ProtoMap1(KeyFormat = DataFormat.FixedSize, ValueFormat = DataFormat.ZigZag)]
+    [ProtoMap2(KeyFormat = DataFormat2.FixedSize, ValueFormat = DataFormat2.ZigZag)]
     public Dictionary<int, long> MapField4 { get; set; } = [];
 
-    [ProtoMember(51)]
+    [ProtoMember1(51)]
+    [ProtoMember2(51)]
     public DateTime DateTimeField { get; set; }
 
-    [ProtoMember(52)]
+    [ProtoMember1(52)]
+    [ProtoMember2(52)]
     public int? NullableIntField { get; set; }
 
-    [ProtoMember(53)]
+    [ProtoMember1(53,IsPacked = true)]
+    [ProtoMember2(53,IsPacked = true)]
     public int[] IntArrayFieldTest { get; set; } = [];
 
-    [ProtoMember(54)]
-    public IEnumerable<string> StringListFieldTest { get; set; } = [];
+    [ProtoMember1(54)]
+    [ProtoMember2(54)]
+    public IEnumerable<string> StringListFieldTest { get; set; } = new List<string>();
 
-    [ProtoMember(55)]
+    [ProtoMember1(55)]
+    [ProtoMember2(55)]
     public string[] StringArrayFieldTest { get; set; } = [];
 
-    [ProtoMember(56)]
+    [ProtoMember1(56,IsPacked = true)]
+    [ProtoMember2(56,IsPacked = true)]
     public IList<int> IntListFieldTest { get; set; } = [];
 
-    [ProtoMember(57)]
+    [ProtoMember1(57)]
+    [ProtoMember2(57)]
     public IDictionary<string, string> MapField5 { get; set; }
 
-    [ProtoMember(58)]
+    [ProtoMember1(58)]
+    [ProtoMember2(58)]
     public IReadOnlyDictionary<string, string> MapField6 { get; set; }
 
-    [ProtoMember(59)]
+    [ProtoMember1(59)]
+    [ProtoMember2(59)]
     public int RequiredIntField { get; set; }
 
-    [ProtoMember(60)]
+    [ProtoMember1(60)]
+    [ProtoMember2(60)]
     internal ConcurrentDictionary<string, CsTestMessage> MapField7 { get; set; } = [];
 
-    [ProtoMember(61)]
+    [ProtoMember1(61)]
+    [ProtoMember2(61)]
     public HashSet<string> StringSetFieldTest { get; set; } = [];
 
-    [ProtoMember(62)]
+    [ProtoMember1(62)]
+    [ProtoMember2(62)]
     public Queue<string> StringQueueFieldTest { get; set; } = [];
 
-    [ProtoMember(63)]
+    [ProtoMember1(63)]
+    [ProtoMember2(63)]
     public Stack<string> StringStackFieldTest { get; set; } = [];
 
-    [ProtoMember(64)]
+    [ProtoMember1(64)]
+    [ProtoMember2(64)]
     public ConcurrentQueue<string> ConcurrentStringQueueFieldTest { get; set; } = [];
 
-    [ProtoMember(65)]
+    [ProtoMember1(65)]
+    [ProtoMember2(65)]
     public ConcurrentStack<string> ConcurrentStringStackFieldTest { get; set; } = [];
 
-    [ProtoMember(66)]
-    public ConcurrentBag<int> IntBag { get; set; } = [];
+    [ProtoMember1(66,IsPacked = true)]
+    [ProtoMember2(66,IsPacked = true)]
+    public List<int> IntList { get; set; } = [];
 
-    [ProtoMember(67)]
+    [ProtoMember1(67)]
+    [ProtoMember2(67)]
     public ISet<string> StringISet { get; set; }
 
-    [ProtoMember(68)]
+    [ProtoMember1(68)]
+    [ProtoMember2(68)]
     public TimeSpan TimeSpanField { get; set; }
 
-    [ProtoMember(69)]
+    [ProtoMember1(69)]
+    [ProtoMember2(69)]
     public DateOnly DateOnlyField { get; set; }
 
-    [ProtoMember(70)]
+    [ProtoMember1(70)]
+    [ProtoMember2(70)]
     public Guid GuidField { get; set; }
 
-    [ProtoMember(71)]
+    [ProtoMember1(71)]
+    [ProtoMember2(71)]
     public TimeOnly TimeOnlyField { get; set; }
 
-    [ProtoMember(72)]
+    [ProtoMember1(72)]
     public StringBuilder StringBuilderField { get; set; }
+
+    [ProtoMember2(72)]
+    public string StringBuilderField2
+    {
+        get => StringBuilderField?.ToString()??string.Empty;
+        set => StringBuilderField = new StringBuilder(value);
+    }
+
+    [ProtoMember1(73)]
+    [ProtoMember2(73)]
+    public Dictionary<string, Dictionary<int, string>> NestDictionary { get; set; }
 }
 
 [ProtoContract]

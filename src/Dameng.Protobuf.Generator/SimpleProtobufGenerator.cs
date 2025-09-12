@@ -38,19 +38,18 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 {
                     targetType =
                         ModelExtensions.GetDeclaredSymbol(semanticModel, structDeclaration)
-                            as INamedTypeSymbol;
+                        as INamedTypeSymbol;
                     targetTypeSyntax = structDeclaration;
                 }
                 else if (node is RecordDeclarationSyntax recordDeclaration)
                 {
                     targetType =
                         ModelExtensions.GetDeclaredSymbol(semanticModel, recordDeclaration)
-                            as INamedTypeSymbol;
+                        as INamedTypeSymbol;
                     targetTypeSyntax = recordDeclaration;
                 }
                 else
                 {
-                    
                     // // Handle records using reflection for compatibility
                     // var nodeTypeName = node.GetType().Name;
                     // if (nodeTypeName.Contains("RecordDeclaration"))
@@ -91,7 +90,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     continue;
 
                 // Generate the basic IMessage implementation
-                var sourceCode = GenerateBasicProtobufMessage(context.Compilation, targetType,targetTypeSyntax);
+                var sourceCode = GenerateBasicProtobufMessage(
+                    context.Compilation,
+                    targetType,
+                    targetTypeSyntax
+                );
                 var fileName = $"{targetType}.g.cs";
                 context.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
             }
@@ -101,7 +104,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
     private string GenerateBasicProtobufMessage(
         Compilation compilation,
         INamedTypeSymbol targetType,
-        TypeDeclarationSyntax typeDeclaration 
+        TypeDeclarationSyntax typeDeclaration
     )
     {
         var namespaceName = targetType.ContainingNamespace.ToDisplayString();
@@ -115,8 +118,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 ? "partial record"
                 : "partial class";
 
-        var proxyFor= GetProxyFor(targetType.GetAttributes());
-        
+        var proxyFor = GetProxyFor(targetType.GetAttributes());
+
         var sourceBuilder = new StringBuilder();
 
         sourceBuilder.AppendLine(
@@ -133,20 +136,15 @@ public class SimpleProtobufGenerator : ISourceGenerator
               using Dameng.Protobuf;
               using Dameng.Protobuf.Parser;
               namespace {{namespaceName}};
-              [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-              {{(
-                  targetType.IsValueType
-                      ? "[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Auto)]"
-                      : ""
-              )}}
-              {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoMessage<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
               """
         );
 
-        var protoMembers = GetProtoMembers(compilation, targetType,typeDeclaration);
+        var protoMembers = GetProtoMembers(compilation, targetType, typeDeclaration);
 
-        sourceBuilder.AppendLine(
+        var classBody = (
             $$"""
+              [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+              {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoMessage<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
               {
                   public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader {get; } = new ProtoReader();
                   public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer {get; } = new ProtoWriter();
@@ -175,13 +173,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
                                   IEnumerable<string> Gen()
                                   {
-                                      var checkIfNotEmpty = GetCheckIfNotEmpty(member);
+                                      var checkIfNotEmpty = GetCheckIfNotEmpty(member,"message");
 
                                       if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
                                       {
                                           yield return $"if({checkIfNotEmpty})";
                                           yield return $"{{";
-                                          yield return $"    {member.Name}_ProtoWriter.WriteTo(ref output, value.{member.Name});";
+                                          yield return $"    {member.Name}_ProtoWriter.WriteTo(ref output, message.{member.Name});";
                                           yield return $"}} ";
                                       }
                                       else if (TryGetInternalTypeName(member.Type,member.DataFormat, out var name))
@@ -215,11 +213,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                   IEnumerable<string> Gen()
                                   {
                                       var tagSize = member.RawTagBytes.Length;
-                                      var checkIfNotEmpty = GetCheckIfNotEmpty(member);
+                                      var checkIfNotEmpty = GetCheckIfNotEmpty(member,"message");
 
                                       if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
                                       {
-                                          yield return $"if(value.{member.Name}!=null)";
+                                          yield return $"if(message.{member.Name}!=null)";
                                           yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
                                       }
                                       else if (TryGetInternalTypeName(member.Type,member.DataFormat, out var name))
@@ -295,6 +293,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                                   yield return $"    break;";
                                                   yield return $"}}";
                                               }
+                                              else if (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type))
+                                              {
+                                                  yield return $"{{";
+                                                  yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
+                                                  yield return $"    break;";
+                                                  yield return $"}}";
+                                              }
                                               else
                                               {
                                                   yield return $"{{";
@@ -319,26 +324,69 @@ public class SimpleProtobufGenerator : ISourceGenerator
               }
               """
         );
+        var nestedClassStructure = GenerateNestedClassStructure(targetType, classBody);
+        sourceBuilder.AppendLine(nestedClassStructure);
         return sourceBuilder.ToString();
     }
 
-    private bool TryGetInternalTypeName(ITypeSymbol memberType,DataFormat format, out string name)
+    private static string GenerateNestedClassStructure(
+        INamedTypeSymbol targetType,
+        string classMemberBody
+    )
     {
-        name= memberType.SpecialType switch
+        // Build the list of containing classes from outermost to innermost
+        var containers = new List<INamedTypeSymbol>();
+        var current = targetType.ContainingType;
+        while (current is not null)
+        {
+            containers.Add(current);
+            current = current.ContainingType;
+        }
+
+        // Reverse to get from outermost to innermost
+        containers.Reverse();
+
+        // Wrap in container classes
+        var result = classMemberBody;
+        for (int i = containers.Count - 1; i >= 0; i--)
+        {
+            var container = containers[i];
+            var containerAccessibility =
+                container.DeclaredAccessibility is Accessibility.Public ? "public" : "internal";
+            var indent = new string(' ', (containers.Count - 1 - i) * 4);
+
+            // Add indentation to current result
+            var indentedResult = string.Join(
+                "\n",
+                result
+                    .Split('\n')
+                    .Select(line => string.IsNullOrWhiteSpace(line) ? line : "    " + line)
+            );
+
+            result = $$"""
+                {{indent}}{{containerAccessibility}} partial class {{container.Name}}
+                {{indent}}{
+                {{indentedResult}}
+                {{indent}}}
+                """;
+        }
+
+        return result;
+    }
+
+    private bool TryGetInternalTypeName(ITypeSymbol memberType, DataFormat format, out string name)
+    {
+        name = memberType.SpecialType switch
         {
             SpecialType.System_Boolean => "Bool",
             SpecialType.System_Int32 => format == DataFormat.FixedSize ? "SFixed32"
-                : format == DataFormat.ZigZag ? "SInt32"
-                : "Int32",
-            SpecialType.System_UInt32 => format == DataFormat.FixedSize
-                ? "Fixed32"
-                : "UInt32",
+            : format == DataFormat.ZigZag ? "SInt32"
+            : "Int32",
+            SpecialType.System_UInt32 => format == DataFormat.FixedSize ? "Fixed32" : "UInt32",
             SpecialType.System_Int64 => format == DataFormat.FixedSize ? "SFixed64"
-                : format == DataFormat.ZigZag ? "SInt64"
-                : "Int64",
-            SpecialType.System_UInt64 => format == DataFormat.FixedSize
-                ? "Fixed64"
-                : "UInt64",
+            : format == DataFormat.ZigZag ? "SInt64"
+            : "Int64",
+            SpecialType.System_UInt64 => format == DataFormat.FixedSize ? "Fixed64" : "UInt64",
             SpecialType.System_Single => "Float",
             SpecialType.System_Double => "Double",
             SpecialType.System_String => "String",
@@ -347,27 +395,27 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return string.IsNullOrWhiteSpace(name) == false;
     }
 
-    private string GetCheckIfNotEmpty(ProtoMember member)
+    private string GetCheckIfNotEmpty(ProtoMember member, string messageName)
     {
         if (member.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
         {
-            return $"value.{member.Name}.HasValue && value.{member.Name}.Value != default";
+            return $"{messageName}.{member.Name}.HasValue && {messageName}.{member.Name}.Value != default";
         }
 
         if (member.Type.IsValueType)
         {
-            return $"value.{member.Name} != default";
+            return $"{messageName}.{member.Name} != default";
         }
 
-        var check = $"value.{member.Name} != null";
+        var check = $"{messageName}.{member.Name} != null";
 
         if (HasCountProperty(member.Type))
         {
-            return $"{check} && value.{member.Name}.Count > 0";
+            return $"{check} && {messageName}.{member.Name}.Count > 0";
         }
         if (HasLengthProperty(member.Type))
         {
-            return $"{check} && value.{member.Name}.Length > 0";
+            return $"{check} && {messageName}.{member.Name}.Length > 0";
         }
 
         return check;
@@ -418,11 +466,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
             member.MapFormat,
             readOrWriter,
             member.RawTag,
-            targetType
+            targetType,
+            member.IsPacked,
+            depth: 0
         );
 
         var memberType = member.Type.WithNullableAnnotation(NullableAnnotation.None);
-        
+
         yield return $"private IProto{readOrWriter}<{memberType}> _{member.Name}_Proto{readOrWriter};";
         yield return $"private IProto{readOrWriter}<{memberType}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
     }
@@ -434,9 +484,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
         (DataFormat keyFormat, DataFormat valueFormat) mapFormat,
         string readerOrWriter,
         uint rawTag,
-        ITypeSymbol targetType
+        ITypeSymbol targetType,
+        bool isPacked,
+        int depth
     )
     {
+        depth++;
         if (SymbolEqualityComparer.IncludeNullability.Equals(targetType, memberType))
         {
             return "this";
@@ -444,7 +497,17 @@ public class SimpleProtobufGenerator : ISourceGenerator
         var proxyType = GetProxyType(memberType);
         if (proxyType is not null)
         {
-            return GetProtoParser(compilation, proxyType, format, mapFormat, readerOrWriter, rawTag, targetType);
+            return GetProtoParser(
+                compilation,
+                proxyType,
+                format,
+                mapFormat,
+                readerOrWriter,
+                rawTag,
+                targetType,
+                isPacked,
+                depth
+            );
         }
 
         if (IsProtoBufMessage(memberType))
@@ -471,10 +534,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 mapFormat,
                 readerOrWriter,
                 0,
-                targetType
+                targetType,
+                isPacked,
+                depth
             );
             var fixedSize = GetFixedSize(elementType, format);
-            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
+            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
         }
 
         if (memberType is INamedTypeSymbol namedType)
@@ -521,7 +586,9 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     mapFormat,
                     readerOrWriter,
                     0,
-                    targetType
+                    targetType,
+                    isPacked,
+                    depth
                 );
                 var fixedSize = GetFixedSize(elementType, format);
                 if (namedType.TypeKind == TypeKind.Interface)
@@ -530,12 +597,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     {
                         if (IsListType(compilation, namedType))
                         {
-                            return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                            return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
                         }
 
                         if (IsSetType(compilation, namedType))
                         {
-                            return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                            return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
                         }
                     }
                     else if (readerOrWriter == "Writer")
@@ -551,14 +618,18 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 count = "Length";
                             }
-                            return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
+                            return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize},{(isPacked ? "true" : "false")})";
                         }
                     }
                 }
 
                 if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
                 {
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                    if (namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                    {
+                        return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                    }
+                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
                 }
             }
 
@@ -576,12 +647,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 );
                 var keyWriter = GetProtoParser(
                     compilation,
-                    GetProxyType(keyType)??keyType,
+                    GetProxyType(keyType) ?? keyType,
                     mapFormat.keyFormat,
                     mapFormat,
                     readerOrWriter,
                     keyTag,
-                    targetType
+                    targetType,
+                    isPacked: false,
+                    depth
                 );
                 var valueType = typeArguments[1];
                 var valueTag = ProtoMember.GetRawTag(
@@ -590,12 +663,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 );
                 var valueWriter = GetProtoParser(
                     compilation,
-                    GetProxyType(valueType)??valueType,
+                    GetProxyType(valueType) ?? valueType,
                     mapFormat.valueFormat,
                     mapFormat,
                     readerOrWriter,
                     valueTag,
-                    targetType
+                    targetType,
+                    isPacked: false,
+                    depth
                 );
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
@@ -874,6 +949,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         return null;
     }
+
     private ITypeSymbol? GetProxyFor(IEnumerable<AttributeData> attributeDatas)
     {
         if (
@@ -895,7 +971,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return GetProxyType(type.GetAttributes());
     }
 
-    private List<ProtoMember> GetProtoMembers(Compilation compilation, INamedTypeSymbol targetType,TypeDeclarationSyntax typeDeclaration)
+    private List<ProtoMember> GetProtoMembers(
+        Compilation compilation,
+        INamedTypeSymbol targetType,
+        TypeDeclarationSyntax typeDeclaration
+    )
     {
         var members = new List<ProtoMember>();
 
@@ -903,17 +983,21 @@ public class SimpleProtobufGenerator : ISourceGenerator
         {
             if (!(member is IPropertySymbol property) || property.IsStatic)
                 continue;
-            
-            var propertyDecl = typeDeclaration.Members
-                .OfType<PropertyDeclarationSyntax>()
+
+            var propertyDecl = typeDeclaration
+                .Members.OfType<PropertyDeclarationSyntax>()
                 .FirstOrDefault(m => m.Identifier.Text == property.Name);
-            
-            var fieldDecl = typeDeclaration.Members
-                .OfType<FieldDeclarationSyntax>()
-                .FirstOrDefault(m => m.Declaration.Variables.Any(v => v.Identifier.Text == property.Name));
-            
-            var initializer = propertyDecl?.Initializer?.Value.ToString() ?? fieldDecl?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
-            
+
+            var fieldDecl = typeDeclaration
+                .Members.OfType<FieldDeclarationSyntax>()
+                .FirstOrDefault(m =>
+                    m.Declaration.Variables.Any(v => v.Identifier.Text == property.Name)
+                );
+
+            var initializer =
+                propertyDecl?.Initializer?.Value.ToString()
+                ?? fieldDecl?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
+
             AttributeData? protoMemberAttr = property
                 .GetAttributes()
                 .FirstOrDefault(attr =>
@@ -921,7 +1005,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 );
             if (protoMemberAttr == null)
                 continue;
-            ITypeSymbol? ProxyType = GetProxyType(property.GetAttributes()) ?? GetProxyType(property.Type);
+            ITypeSymbol? ProxyType =
+                GetProxyType(property.GetAttributes()) ?? GetProxyType(property.Type);
 
             var tag = (uint)protoMemberAttr.ConstructorArguments[0].Value!;
 
@@ -933,6 +1018,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
             )
                 ? _dataFormat
                 : DataFormat.Default;
+
+            bool isPacked =
+                bool.TryParse(
+                    protoMemberAttr
+                        .NamedArguments.FirstOrDefault(kv => kv.Key == "IsPacked")
+                        .Value.Value?.ToString(),
+                    out var _isPacked
+                ) && _isPacked;
             AttributeData? protoMapAttr = property
                 .GetAttributes()
                 .FirstOrDefault(attr =>
@@ -971,6 +1064,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     MapFormat = (keyFormat, valueFormat),
                     ProxyType = ProxyType,
                     Initializer = initializer,
+                    IsPacked = isPacked,
                 }
             );
         }
@@ -1052,7 +1146,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         ? PbWireType.Fixed32
                         : PbWireType.Varint;
                 }
-                case SpecialType.System_DateTime:
                 case SpecialType.System_Int64:
                 {
                     return DataFormat == DataFormat.FixedSize
@@ -1071,12 +1164,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     return PbWireType.Fixed32;
                 case SpecialType.System_Double:
                     return PbWireType.Fixed64;
+                case SpecialType.None when IsDateOnlyType(Type): //int32
+                    return PbWireType.Varint;
+                case SpecialType.None when IsTimeOnlyType(Type): //int64
+                    return PbWireType.Varint;
                 case SpecialType.System_String:
-                case SpecialType.None when Type.ToDisplayString() == "Google.Protobuf.ByteString":
                 case SpecialType.None when IsGuidType(Type):
-                case SpecialType.None when IsTimeSpanType(Type):
-                case SpecialType.None when IsDateOnlyType(Type):
-                case SpecialType.None when IsTimeOnlyType(Type):
                 case SpecialType.None when IsStringBuilderType(Type):
                 case SpecialType.None
                     when Type.TypeKind == TypeKind.Class
@@ -1084,15 +1177,6 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         || Type.TypeKind == TypeKind.Array:
                     return PbWireType.LengthDelimited;
                 default:
-                    if (
-                        Type.ToDisplayString()
-                            .StartsWith("Google.Protobuf.Collections.RepeatedField")
-                    )
-                    {
-                        // For simplicity, assume packed repeated fields use LengthDelimited
-                        return PbWireType.LengthDelimited;
-                    }
-
                     // Default to LengthDelimited for other complex types
                     return PbWireType.LengthDelimited;
             }
@@ -1100,6 +1184,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         public uint RawTag => GetRawTag(Tag, WireType);
         public byte[] RawTagBytes => GetRawBytes(Tag, WireType);
+        public bool IsPacked { get; set; }
 
         public static uint GetRawTag(uint Tag, PbWireType WireType)
         {

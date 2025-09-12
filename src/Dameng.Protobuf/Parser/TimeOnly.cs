@@ -11,9 +11,9 @@ public sealed class TimeOnlyProtoReader : IProtoReader<TimeOnly>
 }
 public sealed class TimeOnlyProtoWriter : IProtoWriter<TimeOnly>
 {
-    public int CalculateSize(TimeOnly value)
+    public int CalculateSize(TimeOnly pair)
     {
-        return CodedOutputStream.ComputeInt64Size(value.Ticks);
+        return CodedOutputStream.ComputeInt64Size(pair.Ticks);
     }
     
     public void WriteTo(ref WriterContext output, TimeOnly value)

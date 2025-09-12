@@ -1,31 +1,97 @@
 ﻿
 
 namespace Dameng.Protobuf.Parser;
+//
+//
+// message DateTime {
+// sint64 value = 1; // the offset (in units of the selected scale) from 1970/01/01
+// TimeSpanScale scale = 2; // the scale of the timespan [default = DAYS]
+// DateTimeKind kind = 3; // the kind of date/time being represented [default = UNSPECIFIED]
+// enum TimeSpanScale {
+//     DAYS = 0;
+//     HOURS = 1;
+//     MINUTES = 2;
+//     SECONDS = 3;
+//     MILLISECONDS = 4;
+//     TICKS = 5;
+//
+//     MINMAX = 15; // dubious
+// }
+// enum DateTimeKind
+// {     
+//     // The time represented is not specified as either local time or Coordinated Universal Time (UTC).
+//     UNSPECIFIED = 0;
+//     // The time represented is UTC.
+//     UTC = 1;
+//     // The time represented is local time.
+//     LOCAL = 2;
+// }
+// }
 
-public sealed class DateTimeProtoReader : IProtoReader<DateTime>
+[ProtoContract]
+[ProtoProxyFor<DateTime>]
+public partial struct DateTimeProxy
 {
-    public DateTime ParseFrom(ref ReaderContext input)
+    [ProtoMember(1,DataFormat = DataFormat.ZigZag)]
+    internal long Ticks { get; set; }
+    [ProtoMember(2)]
+    internal TimeSpanScale Scale { get; set; }
+    
+    public static implicit operator DateTime(DateTimeProxy proxy)
     {
-        return new DateTime(input.ReadInt64());
+        switch (proxy.Scale)
+        {
+            case TimeSpanScale.DAYS:
+                proxy.Ticks *= TimeSpan.TicksPerDay;
+                break;
+            case TimeSpanScale.HOURS:
+                proxy.Ticks *= TimeSpan.TicksPerHour;
+                break;
+            case TimeSpanScale.MINUTES:
+                proxy.Ticks *= TimeSpan.TicksPerMinute;
+                break;
+            case TimeSpanScale.SECONDS:
+                proxy.Ticks *= TimeSpan.TicksPerSecond;
+                break;
+            case TimeSpanScale.MILLISECONDS:
+                proxy.Ticks *= TimeSpan.TicksPerMillisecond;
+                break;
+            case TimeSpanScale.TICKS:
+                break;
+            case TimeSpanScale.MINMAX:
+                if (proxy.Ticks == -1)
+                    return DateTime.MinValue;
+                else if(proxy.Ticks==1)
+                    return DateTime.MaxValue;
+                else
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Ticks), $"Invalid ticks for MINMAX scale: {proxy.Ticks}");
+            default:
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
+        }
+        return new DateTime(ticks: proxy.Ticks+EpochOrigin.Ticks, kind: DateTimeKind.Unspecified);
     }
+
+    internal static readonly DateTime EpochOrigin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified);
+    public static implicit operator DateTimeProxy(DateTime dt) => new DateTimeProxy
+    {
+        Ticks = dt.Ticks-EpochOrigin.Ticks,
+        Scale = TimeSpanScale.TICKS
+    };
+    
 }
-public sealed class DateTimeProtoWriter : IProtoWriter<DateTime>
+
+internal enum TimeSpanScale
 {
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(DateTime value)
-    {
-        return CodedOutputStream.ComputeInt64Size(value.Ticks);
-    }
-
-
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public void WriteTo(ref WriterContext output, DateTime value)
-    {
-        output.WriteInt64(value.Ticks);
-    }
+    DAYS = 0,
+    HOURS = 1,
+    MINUTES = 2,
+    SECONDS = 3,
+    MILLISECONDS = 4,
+    TICKS = 5,
+    MINMAX = 15
 }
 public sealed class DateTimeProtoParser : IProtoParser<DateTime>
 {
-    public static IProtoReader<DateTime> Reader { get; } = new DateTimeProtoReader();
-    public static IProtoWriter<DateTime> Writer { get; } = new DateTimeProtoWriter();
+    public static IProtoReader<DateTime> Reader { get; } = DateTimeProxy.Reader;
+    public static IProtoWriter<DateTime> Writer { get; } = DateTimeProxy.Writer;
 }

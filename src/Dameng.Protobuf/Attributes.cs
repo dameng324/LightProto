@@ -8,7 +8,6 @@ public class ProtoMemberAttribute(uint tag) : Attribute
     public DataFormat DataFormat { get; set; } = DataFormat.Default;
     [Obsolete("compatibility only, no effect")]
     public bool IsRequired { get; set; } = false;
-    [Obsolete("compatibility only, no effect")]
     public bool IsPacked { get; set; } = false;
     [Obsolete("compatibility only, no effect")]
     public bool OverwriteList { get; set; } = false;

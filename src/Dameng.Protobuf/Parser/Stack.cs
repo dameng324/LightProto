@@ -7,19 +7,24 @@ namespace Dameng.Protobuf.Parser;
 
 public sealed class StackProtoWriter<T> : IEnumerableProtoWriter<Stack<T>, T>
 {
-    public StackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
-        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
+    public StackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize,bool isPacked)
+        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize,isPacked) { }
 }
 
 public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
 {
-    public StackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
+    public StackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize,bool isPacked)
         : base(
             itemReader,
             tag,
             static (size) => new Stack<T>(size),
-            static (collection, item) => collection.Push(item),
+            static (collection,item) =>
+        {
+             collection.Push(item);
+             return collection;
+        },
             itemFixedSize,
+            isPacked,
             ReverseStack
         ) { }
 

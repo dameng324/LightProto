@@ -6,8 +6,8 @@ namespace Dameng.Protobuf.Parser;
 
 public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[],T>
 {
-    public ArrayProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
-        : base(itemWriter, tag, static collection => collection.Length, itemFixedSize)
+    public ArrayProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize,bool isPacked)
+        : base(itemWriter, tag, static collection => collection.Length, itemFixedSize,isPacked)
     {
     }
 }
@@ -16,16 +16,19 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
     private readonly uint _tag;
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
+    public bool IsPacked { get; }
 
     public ArrayProtoReader(
         IProtoReader<TItem> itemReader,
         uint tag,
-        int itemFixedSize
+        int itemFixedSize,
+        bool isPacked
     )
     {
         _tag = tag;
         ItemReader = itemReader;
         ItemFixedSize = itemFixedSize;
+        IsPacked = isPacked;
     }
 
     public TItem[] ParseFrom(ref ReaderContext ctx)
@@ -33,7 +36,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
         uint tag = _tag;
 
         var fixedSize = ItemFixedSize;
-        if (typeof(TItem).IsValueType)
+        if (IsPacked)
         {
             int length = ctx.ReadLength();
             if (length <= 0)

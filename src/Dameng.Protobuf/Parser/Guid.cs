@@ -1,39 +1,43 @@
 ﻿
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+
 namespace Dameng.Protobuf.Parser;
+// message Guid {
+// fixed64 lo = 1; // the first 8 bytes of the guid (note:crazy-endian)
+// fixed64 hi = 2; // the second 8 bytes of the guid (note:crazy-endian)
+// }
 
-public sealed class GuidProtoReader : IProtoReader<Guid>
+[ProtoContract]
+[ProtoProxyFor<Guid>]
+public partial struct GuidProxy
 {
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public Guid ParseFrom(ref ReaderContext input)
+    [ProtoMember(1, DataFormat = DataFormat.FixedSize)]
+    internal ulong Low { get; set; }
+    [ProtoMember(2, DataFormat = DataFormat.FixedSize)]
+    internal ulong High { get; set; }
+    
+    public static implicit operator Guid(GuidProxy proxy)
     {
-        var length = input.ReadLength();
-        return new Guid(ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state,length));
-    }
-}
-public sealed class GuidProtoWriter : IProtoWriter<Guid>
-{
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Guid value)
-    {
-        return CodedOutputStream.ComputeLengthSize(16)+16;
+        Span<byte> bytes = stackalloc byte[16];
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes,proxy.Low);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8),proxy.High);
+        return new Guid(bytes);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public void WriteTo(ref WriterContext output, Guid value)
+    public static implicit operator GuidProxy(Guid value)
     {
-        unsafe
+        Span<byte> bytes = stackalloc byte[16];
+        value.TryWriteBytes(bytes);
+        return new GuidProxy()
         {
-            output.WriteLength(16);
-            Span<byte> span = stackalloc byte[16];
-            value.TryWriteBytes(span);
-#pragma warning disable CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
-            WritingPrimitives.WriteRawBytes(ref output.buffer,ref output.state, span);
-#pragma warning restore CS9080 // Use of variable in this context may expose referenced variables outside of their declaration scope
-        }
+            Low = BinaryPrimitives.ReadUInt64LittleEndian(bytes),
+            High = BinaryPrimitives.ReadUInt64LittleEndian(bytes.Slice(8)),
+        };
     }
 }
 public sealed class GuidProtoParser : IProtoParser<Guid>
 {
-    public static IProtoReader<Guid> Reader { get; } = new GuidProtoReader();
-    public static IProtoWriter<Guid> Writer { get; } = new GuidProtoWriter();
+    public static IProtoReader<Guid> Reader { get; } = GuidProxy.Reader;
+    public static IProtoWriter<Guid> Writer { get; } = GuidProxy.Writer;
 }

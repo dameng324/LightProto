@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Dameng.Protobuf.WellKnownTypes;
 using Google.Protobuf;
@@ -11,189 +12,241 @@ public class Tests
 {
     private Random random = Random.Shared; // new Random(31);
 
-    [Test]
-    public void LocalToGoogle()
+    private CsTestMessage NewCsMessage() => new CsTestMessage
     {
-        var parsed = Run<CsTestMessage, TestMessage>(
-            new CsTestMessage
+        RequiredIntField = 10,
+        StringField = "hello",
+        Int32Field = 20,
+        Int32ArrayField = new List<int>()
+        {
+            0,
+            13123
+        },
+        StringArrayField = new List<string>()
+        {
+            string.Empty,
+            Guid.NewGuid().ToString()
+        },
+        BytesField = Enumerable
+            .Range(0,
+                random.Next(100))
+            .Select(_ => (byte)20)
+            .ToArray(),
+         BoolField = random.Next() % 2 == 0,
+         DoubleField = random.NextDouble(),
+         FloatField = (float)random.NextDouble(),
+         Int64Field = random.Next(),
+         UInt32Field = (uint)random.Next(),
+         UInt64Field = (ulong)random.Next(),
+         SInt32Field = random.Next(),
+         SInt64Field = random.Next(),
+         Fixed32Field = (uint)random.Next(),
+         Fixed64Field = (ulong)random.Next(),
+         SFixed32Field = random.Next(),
+         SFixed64Field = random.Next(),
+         EnumField = CsTestEnum.OptionB,
+        EnumArrayField =
+        [
+            CsTestEnum.OptionB,
+            CsTestEnum.None,
+            CsTestEnum.OptionA
+        ],
+        NestedField = new CsTestMessage()
+        {
+            RequiredIntField = 20,
+            StringField = "hello",
+            TimestampField = DateTime.UtcNow.ToTimestamp()
+        },
+        NestedMessageArrayField =
+        [
+            new CsTestMessage()
             {
-                RequiredIntField = RandomInt(),
-                StringField = RandomString(),
-                Int32Field = RandomInt(),
-                Int32ArrayField = new List<int>()
-                {
-                    0,
-                    13123
-                },
-                StringArrayField = new List<string>()
-                {
-                    string.Empty,
-                    Guid.NewGuid()
-                        .ToString()
-                },
-                BytesField = Enumerable
-                    .Range(0,
-                        random.Next(100))
-                    .Select(_ => (byte)RandomInt())
-                    .ToList(),
-                BoolField = random.Next() % 2 == 0,
-                DoubleField = random.NextDouble(),
-                FloatField = (float)random.NextDouble(),
-                Int64Field = random.Next(),
-                UInt32Field = (uint)random.Next(),
-                UInt64Field = (ulong)random.Next(),
-                SInt32Field = random.Next(),
-                SInt64Field = random.Next(),
-                Fixed32Field = (uint)random.Next(),
-                Fixed64Field = (ulong)random.Next(),
-                SFixed32Field = random.Next(),
-                SFixed64Field = random.Next(),
-                MapField = new Dictionary<string, CsTestMessage>()
-                {
-                    ["key1"] = new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(),
-                        StringField = RandomString(),
-                    },
-                    ["key2"] = new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(),
-                        StringField = RandomString(),
-                    },
-                },
-                EnumField = CsTestEnum.OptionB,
-                EnumArrayField =
-                [
-                    CsTestEnum.OptionB,
-                    CsTestEnum.None,
-                    CsTestEnum.OptionA
-                ],
-                NestedField = new CsTestMessage()
-                {
-                    RequiredIntField = RandomInt(),
-                    StringField = RandomString(),
-                },
-                NestedMessageArrayField =
-                [
-                    new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(),
-                        StringField = RandomString(),
-                    },
-                    new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(),
-                        StringField = RandomString(),
-                    },
-                ],
-                TimestampField = DateTime.UtcNow.ToTimestamp(),
-                DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
-                MapField2 = new()
-                {
-                    [RandomString()] = RandomString(),
-                    [RandomString()] = RandomString(),
-                },
-                MapField4 = new Dictionary<int, long>()
-                {
-                    [1111] = 2222
-                },
-                DateTimeField = DateTime.UtcNow,
-                IntArrayFieldTest =
-                [
-                    10,
-                    20,
-                    30
-                ],
-                StringListFieldTest =
-                [
-                    "array",
-                    "list",
-                    "test"
-                ],
-                StringArrayFieldTest =
-                [
-                    "hello",
-                    "world"
-                ],
-                IntListFieldTest =
-                [
-                    100,
-                    200,
-                    300
-                ],
-                NullableIntField = 10,
-                MapField5 = new Dictionary<string, string>()
-                {
-                    [RandomString()] = RandomString(),
-                    [RandomString()] = RandomString(),
-                },
-                MapField6 = new ConcurrentDictionary<string, string>()
-                {
-                    [RandomString()] = RandomString(),
-                    [RandomString()] = RandomString(),
-                },
-                MapField7 = new ConcurrentDictionary<string, CsTestMessage>()
-                {
-                    [RandomString()] = new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(),
-                        StringField = RandomString(),
-                    },
-                    [RandomString()] = new CsTestMessage()
-                    {
-                        RequiredIntField = RandomInt(),
-                        StringField = RandomString(),
-                    },
-                },
-                StringSetFieldTest =
-                [
-                    RandomString(),
-                    RandomString()
-                ],
-                StringQueueFieldTest = new([
-                    RandomString(),
-                    RandomString()
-                ]),
-                StringStackFieldTest = new([
-                    RandomString(),
-                    RandomString()
-                ]),
-                ConcurrentStringQueueFieldTest = new([
-                    RandomString(),
-                    RandomString()
-                ]),
-                ConcurrentStringStackFieldTest = new([
-                    RandomString(),
-                    RandomString()
-                ]),
-                IntBag = [RandomInt(), RandomInt()],
-                StringISet = new HashSet<string>([
-                    RandomString(),
-                    RandomString()
-                ]),
-                TimeSpanField = DateTime.Now.TimeOfDay,
-                DateOnlyField = DateOnly.FromDateTime(DateTime.Now.Date),
-                GuidField = Guid.NewGuid(),
-                TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
-                StringBuilderField = new StringBuilder(RandomString()),
+                RequiredIntField = 20,
+                StringField = "hello",
+                TimestampField = DateTime.UtcNow.ToTimestamp()
             },
+            new CsTestMessage()
+            {
+                RequiredIntField = 20,
+                StringField = "hello",
+                TimestampField = DateTime.UtcNow.ToTimestamp()
+            },
+        ],
+        TimestampField = DateTime.UtcNow.ToTimestamp(),
+        DurationField = DateTime.UtcNow.TimeOfDay.ToDuration(),
+        MapField2 = new()
+        {
+            ["hello"] = "hello",
+            ["hello1"] = "hello",
+        },
+        IntArrayFieldTest =
+        [
+            20,
+            20,
+            20,
+            20,
+        ],
+        StringListFieldTest =new List<string>()
+        {
+            "hello",
+            "hello",
+            "hello",
+            "hello",
+        },
+        StringArrayFieldTest =
+        [
+            "hello",
+            "hello",
+        ],
+        IntListFieldTest =
+        [
+            20,
+            20,
+            20,
+        ],
+        StringSetFieldTest =
+        [
+            "hello",
+            "hello2"
+        ],
+        StringQueueFieldTest = new([
+            "hello",
+            "hello"
+        ]),
+        StringStackFieldTest = new([
+            "hello",
+            "hello"
+        ]),
+        ConcurrentStringQueueFieldTest = new([
+            "hello",
+            "hello"
+        ]),
+        ConcurrentStringStackFieldTest = new([
+            "hello",
+            "hello"
+        ]),
+        NullableIntField = 10,
+        IntList = [20, 20],
+        StringISet = new HashSet<string>([
+            "hello",
+            "hello"
+        ]),
+        TimeSpanField = DateTime.Now.TimeOfDay,
+        DateOnlyField = DateOnly.FromDateTime(DateTime.Now.Date),
+        GuidField = Guid.NewGuid(),
+        TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
+        StringBuilderField = new StringBuilder("hello"),
+        DateTimeField = DateTime.UtcNow,
+        MapField4 = new Dictionary<int, long>()
+        {
+            [20] = 20
+        },
+        MapField = new Dictionary<string, CsTestMessage>()
+        {
+            ["key1"] = new CsTestMessage()
+            {
+                RequiredIntField = 20,
+                StringField = "hello",
+                TimestampField = DateTime.UtcNow.ToTimestamp()
+            },
+            ["key2"] = new CsTestMessage()
+            {
+                RequiredIntField = 20,
+                StringField = "hello",
+                TimestampField = DateTime.UtcNow.ToTimestamp()
+            },
+        },
+        
+        MapField5 = new Dictionary<string, string>()
+        {
+            ["hello"] = "hello",
+            ["hello2"] = "hello",
+        },
+        MapField6 = new ConcurrentDictionary<string, string>()
+        {
+            ["hello"] = "hello",
+            ["hello2"] = "hello",
+        },
+        MapField7 = new ConcurrentDictionary<string, CsTestMessage>()
+        {
+            ["hello"] = new CsTestMessage()
+            {
+                RequiredIntField = 20,
+                StringField = "hello",
+                TimestampField = DateTime.UtcNow.ToTimestamp()
+            },
+            ["hello2"] = new CsTestMessage()
+            {
+                RequiredIntField = 20,
+                StringField = "hello",
+                TimestampField = DateTime.UtcNow.ToTimestamp()
+            },
+        },
+        NestDictionary = new Dictionary<string, Dictionary<int, string>>()
+        {
+            ["hello"] = new Dictionary<int, string>()
+            {
+                [10] = "hello",
+                [20] = "hello",
+            },
+            ["hello2"] = new Dictionary<int, string>()
+            {
+                [10] = "hello",
+                [20] = "hello",
+            }
+        }
+    };
+    [Test]
+    [Repeat(100)]
+    public void GoogleProtobuf_Should_Compatible()
+    {
+        _ = RunGoogleProtobuf<CsTestMessage, TestMessage>(NewCsMessage(),
             TestMessage.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
     }
-
-    string RandomString()
+    [Test]
+    [Repeat(100)]
+    [SkipAot]
+    public async Task Protobuf_net_Should_Compatible()
     {
-        return random.Next(2) switch
-        {
-            //0 => string.Empty,
-            _ => Guid.NewGuid().ToString(),
-        };
+        await RunProtobuf_net<CsTestMessage>(NewCsMessage());
     }
+    [Test]
+    [Explicit]
+    public async Task GenProto()
+    {
+        //Console.WriteLine( ProtoBuf.Serializer.GetProto<CsTestMessage>());
+        //Console.WriteLine( ProtoBuf.Serializer.GetProto<Test2.Test2Message>());
+    }
+    async Task RunProtobuf_net<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T1>(T1 origin)
+        where T1 : IProtoMessage<T1>
+    {
+        var bytes = origin.ToByteArray();
+        byte[] byte2;
+        var parsed = ProtoBuf.Serializer.Deserialize<T1>(bytes);
+        await Assert.That(parsed.ToByteArray()).IsEquivalentTo(bytes);
+        {
+            {
+                using var ms = new MemoryStream();
+                ProtoBuf.Serializer.Serialize(ms,parsed);
+                byte2 = ms.ToArray();
+            }
+            byte[] originalBytes;
+            {
+                using var ms = new MemoryStream();
+                ProtoBuf.Serializer.Serialize(ms,origin);
+                originalBytes = ms.ToArray();
+            }
+            await Assert.That(originalBytes).IsEquivalentTo(byte2);
+        }
+        
+        var parseBack = T1.Reader.ParseFrom(byte2);
+        var bytes2 = parseBack.ToByteArray();
 
-    int RandomInt() => random.Next(10);
-
-    async Task<T2> Run<T1, T2>(
+        await Assert.That(bytes).IsEquivalentTo(bytes2);
+    }
+    async Task<T2> RunGoogleProtobuf<T1, T2>(
         T1 origin,
         Func<byte[], T2> parserFunc,
         Func<T2, byte[]> t2ToByteArray
@@ -224,8 +277,8 @@ public class Tests
     [Test]
     public void TestStruct()
     {
-        Run<TestStruct, TestType>(
-            new TestStruct { Name = RandomString(), Value = RandomInt() },
+        RunGoogleProtobuf<TestStruct, TestType>(
+            new TestStruct { Name = "hello", Value = 20 },
             TestType.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
@@ -234,8 +287,8 @@ public class Tests
     [Test]
     public void TestRecord()
     {
-        Run<TestRecord, TestType>(
-            new TestRecord { Name = RandomString(), Value = RandomInt() },
+        RunGoogleProtobuf<TestRecord, TestType>(
+            new TestRecord { Name = "hello", Value = 20 },
             TestType.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
@@ -244,8 +297,8 @@ public class Tests
     [Test]
     public void TestRecordStruct()
     {
-        Run<TestRecordStruct, TestType>(
-            new TestRecordStruct { Name = RandomString(), Value = RandomInt() },
+        RunGoogleProtobuf<TestRecordStruct, TestType>(
+            new TestRecordStruct { Name = "hello", Value = 20 },
             TestType.Parser.ParseFrom,
             t2 => t2.ToByteArray()
         );
@@ -256,7 +309,7 @@ public class Tests
     {
         ProtoProxy testObj = new()
         {
-            Instrument = Instrument.FromNameValue(RandomString(), RandomInt()),
+            Instrument = Instrument.FromNameValue("hello", 20),
         };
 
         var bytes = testObj.ToByteArray();
@@ -270,7 +323,7 @@ public class Tests
     [Test]
     public async Task Collection_ShouldNotBeNull_WhenDefaultSizeIsSet_WhenDeserializing()
     {
-        var obj = new CsTestMessage { };
+        var obj = new CsTestMessage { TimestampField = DateTime.UtcNow.ToTimestamp()};
         await Assert.That(obj.Int32ArrayField).IsNotNull();
         await Assert.That(obj.StringArrayField).IsNotNull();
         await Assert.That(obj.IntListFieldTest).IsNotNull();

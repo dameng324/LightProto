@@ -98,7 +98,8 @@ Change the namespace from `Protobuf` to `Dameng.Protobuf` and ensure your classe
 -using ProtoBuf;
 +using Dameng.Protobuf;
 [ProtoContract]
-public class Person
+-public class Person
++public partial class Person
 {
     [ProtoMember(1)]
     public string Name { get; set; }

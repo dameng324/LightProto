@@ -13,9 +13,9 @@ public sealed class Fixed64ProtoReader : IProtoReader<UInt64>
 public sealed class Fixed64ProtoWriter : IProtoWriter<UInt64>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(UInt64 value)
+    public int CalculateSize(UInt64 pair)
     {
-        return CodedOutputStream.ComputeFixed64Size(value);
+        return CodedOutputStream.ComputeFixed64Size(pair);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

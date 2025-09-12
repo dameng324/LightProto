@@ -1,37 +1,39 @@
 ﻿namespace Dameng.Protobuf.Parser;
 
-public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollection>
+public interface ICollectionReader;
+public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollection>,ICollectionReader
     where TCollection : IEnumerable<TItem>
 {
+    private readonly uint _tag;
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
-    public Action<TCollection, TItem> AddItem { get; }
+    public Func<TCollection, TItem,TCollection> AddItem { get; }
     public int ItemFixedSize { get; }
-
+    public bool IsPacked { get; }
     public IEnumerableProtoReader(
         IProtoReader<TItem> itemReader,
         uint tag,
         Func<int, TCollection> createWithCapacity,
-        Action<TCollection, TItem> addItem,
+        Func<TCollection, TItem,TCollection> addItem,
         int itemFixedSize,
+        bool isPacked,
         Func<TCollection, TCollection>? completeAction = null
     )
     {
+        _tag = tag;
         _completeAction = completeAction;
         ItemReader = itemReader;
         CreateWithCapacity = createWithCapacity;
         AddItem = addItem;
         ItemFixedSize = itemFixedSize;
+        IsPacked = isPacked;
     }
-
 
     public TCollection ParseFrom(ref ReaderContext ctx)
     {
-        uint tag = ctx.state.lastTag;
-
         var fixedSize = ItemFixedSize;
-        if (PackedRepeated.Support<TItem>())
+        if (IsPacked && PackedRepeated.Support<TItem>())
         {
             int length = ctx.ReadLength();
             if (length <= 0)
@@ -81,7 +83,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
                             // Only FieldCodecs with a fixed size can reach here, and they are all known
                             // types that don't allow the user to specify a custom reader action.
                             // reader action will never return null.
-                            AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                         }
                     }
 
@@ -93,7 +95,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
                     // Content is variable size so add until we reach the limit.
                     while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                     {
-                        AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                        collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                     }
 
                     return collection;
@@ -110,8 +112,8 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
             var collection = CreateWithCapacity(4);
             do
             {
-                AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag));
 
             return _completeAction is null ? collection : _completeAction.Invoke(collection);
         }

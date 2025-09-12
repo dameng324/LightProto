@@ -1,21 +1,23 @@
-﻿
-
+﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace Dameng.Protobuf;
 
 public static class Extensions
 {
-    public static int CalculateSize<T>(this T message) where T : IProtoMessage<T>
+    public static int CalculateSize<T>(this T message)
+        where T : IProtoMessage<T>
     {
         return T.Writer.CalculateSize(message);
     }
-    public static int CalculateMessageSize<T>(this T message) where T : IProtoMessage<T>
+
+    public static int CalculateMessageSize<T>(this T message)
+        where T : IProtoMessage<T>
     {
         var size = T.Writer.CalculateSize(message);
         return CodedOutputStream.ComputeLengthSize(size) + size;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CalculateMessageSize<T>(this IProtoWriter<T> writer, T value)
     {
@@ -41,6 +43,7 @@ public static class Extensions
         {
             output.WriteLength(writer.CalculateSize(value));
         }
+
         writer.WriteTo(ref output, value);
     }
 
@@ -77,5 +80,21 @@ public static class Extensions
         {
             return reader.ParseFrom(ref input);
         }
+    }
+
+    public static byte[] ToByteArray<T>(this T message)
+        where T : IProtoParser<T>
+    {
+        var buffer = new byte[T.Writer.CalculateSize(message)];
+        CodedOutputStream output = new CodedOutputStream(buffer);
+        WriterContext.Initialize(output, out var ctx);
+        T.Writer.WriteTo(ref ctx, message);
+        return buffer;
+    }
+
+    public static T ParseFrom<T>(this IProtoReader<T> reader, byte[] bytes)
+    {
+        ReaderContext.Initialize(new CodedInputStream(bytes), out var ctx);
+        return reader.ParseFrom(ref ctx);
     }
 }

@@ -13,9 +13,9 @@ public sealed class SingleProtoReader : IProtoReader<Single>
 public sealed class SingleProtoWriter : IProtoWriter<Single>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Single value)
+    public int CalculateSize(Single pair)
     {
-        return CodedOutputStream.ComputeFloatSize(value);
+        return CodedOutputStream.ComputeFloatSize(pair);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

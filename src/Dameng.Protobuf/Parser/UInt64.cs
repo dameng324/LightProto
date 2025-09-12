@@ -11,9 +11,9 @@ public sealed class UInt64ProtoReader : IProtoReader<UInt64>
 }
 public sealed class UInt64ProtoWriter : IProtoWriter<UInt64>
 {
-    public int CalculateSize(UInt64 value)
+    public int CalculateSize(UInt64 pair)
     {
-        return CodedOutputStream.ComputeUInt64Size(value);
+        return CodedOutputStream.ComputeUInt64Size(pair);
     }
 
     public void WriteTo(ref WriterContext output, UInt64 value)

@@ -12,10 +12,10 @@ public sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
 
 public sealed class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
 {
-    public int CalculateSize(StringBuilder value)
+    public int CalculateSize(StringBuilder pair)
     {
         int size = 0;
-        foreach (var readOnlyMemory in value.GetChunks())
+        foreach (var readOnlyMemory in pair.GetChunks())
         {
             int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(readOnlyMemory.Span);
             size+= CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;

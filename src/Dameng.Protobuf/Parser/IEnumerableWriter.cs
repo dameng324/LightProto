@@ -1,26 +1,31 @@
-
-
 namespace Dameng.Protobuf.Parser;
 
-public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollection>
+public interface ICollectionWriter;
+
+public class IEnumerableProtoWriter<TCollection, TItem>
+    : IProtoWriter<TCollection>,
+        ICollectionWriter
     where TCollection : IEnumerable<TItem>
 {
     public IProtoWriter<TItem> ItemWriter { get; }
     public uint Tag { get; }
     public Func<TCollection, int> GetCount { get; }
     public int ItemFixedSize { get; }
+    public bool IsPacked { get; }
 
     public IEnumerableProtoWriter(
         IProtoWriter<TItem> itemWriter,
         uint tag,
         Func<TCollection, int> getCount,
-        int itemFixedSize
+        int itemFixedSize,
+        bool isPacked
     )
     {
         ItemWriter = itemWriter;
         Tag = tag;
         GetCount = getCount;
         ItemFixedSize = itemFixedSize;
+        IsPacked = isPacked;
     }
 
     private int CalculatePackedDataSize(TCollection collection, int count)
@@ -47,41 +52,39 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
         }
         else
         {
-            
             foreach (var item in collection)
             {
                 if (item is null)
                 {
                     throw new Exception("Sequence contained null element");
                 }
-                
+
                 size += ItemWriter.CalculateMessageSize(item);
             }
         }
         return size;
     }
 
-    public int CalculateSize(TCollection collection)
+    public int CalculateSize(TCollection pair)
     {
-        if (collection is null)
+        if (pair is null)
             return 0;
-        var count = GetCount(collection);
+        var count = GetCount(pair);
         if (count == 0)
         {
             return 0;
         }
 
-        if (PackedRepeated.Support<TItem>())
+        if (IsPacked && PackedRepeated.Support<TItem>())
         {
-            var dataSize = CalculatePackedDataSize(collection, count);
+            var dataSize = CalculatePackedDataSize(pair, count);
             return CodedOutputStream.ComputeRawVarint32Size(Tag)
                 + CodedOutputStream.ComputeLengthSize(dataSize)
                 + dataSize;
         }
         else
         {
-            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count
-                + GetAllItemSize(collection);
+            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + GetAllItemSize(pair);
         }
     }
 
@@ -98,7 +101,7 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
             return;
         }
 
-        if (PackedRepeated.Support<TItem>())
+        if (IsPacked && PackedRepeated.Support<TItem>())
         {
             // Packed primitive type
             int size = CalculatePackedDataSize(collection, count);
@@ -123,7 +126,7 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
                         throw new Exception("Sequence contained null element");
                     }
 
-                    ItemWriter.WriteMessageTo(ref output, item);
+                    WriteItem(ref output, item);
                 }
             }
         }
@@ -140,7 +143,7 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
                     }
 
                     output.WriteTag(Tag);
-                    ItemWriter.WriteMessageTo(ref output, item);
+                    WriteItem(ref output, item);
                 }
             }
             else
@@ -154,11 +157,15 @@ public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter<TCollecti
                     }
 
                     output.WriteTag(Tag);
-                
-                    ItemWriter.WriteMessageTo(ref output, item);
+
+                    WriteItem(ref output, item);
                 }
             }
-            
         }
+    }
+
+    private void WriteItem(ref WriterContext output, TItem item)
+    {
+        ItemWriter.WriteMessageTo(ref output, item);
     }
 }

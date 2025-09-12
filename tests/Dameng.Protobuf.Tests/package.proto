@@ -14,7 +14,7 @@ message TestMessage
 {
   string StringField = 1;
   int32 Int32Field = 2;
-  repeated int32 Int32ArrayField = 3;
+  repeated int32 Int32ArrayField = 3 [packed=false];
   repeated string StringArrayField = 4;
   bytes BytesField = 5;
   bool BoolField = 6;
@@ -60,10 +60,22 @@ message TestMessage
   bytes GuidField = 70;
   int64 TimeOnlyField = 71 ;
   string  StringBuilderField = 72;
+  map<string,NestDictionary> NestDictionary = 73;
+}
+message NestDictionary
+{
+  map<string,int32> Dict = 1;
 }
 
 message TestType
 {
   string Name = 1;
   int32 Value = 2;
+}
+message Test2Message {
+  repeated KeyValuePair_Int32_Dictionary_Int32_String Property = 1;
+}
+message KeyValuePair_Int32_Dictionary_Int32_String {
+  int32 Key = 1;
+  map<int32,string> Value = 2;
 }

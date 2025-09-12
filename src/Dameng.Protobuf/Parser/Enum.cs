@@ -18,9 +18,9 @@ public sealed class EnumProtoWriter<T> : IProtoWriter<T>
     where T : Enum
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(T value)
+    public int CalculateSize(T pair)
     {
-        return CodedOutputStream.ComputeEnumSize(Unsafe.As<T, int>(ref value));
+        return CodedOutputStream.ComputeEnumSize(Unsafe.As<T, int>(ref pair));
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

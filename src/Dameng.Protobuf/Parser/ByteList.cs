@@ -14,9 +14,9 @@ public sealed class ByteListProtoReader : IProtoReader<List<byte>>
 public sealed class ByteListProtoWriter : IProtoWriter<List<byte>>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(List<byte> value)
+    public int CalculateSize(List<byte> pair)
     {
-        return CodedOutputStream.ComputeLengthSize(value.Count)+value.Count;
+        return CodedOutputStream.ComputeLengthSize(pair.Count)+pair.Count;
     }
 
     public void WriteTo(ref WriterContext output, List<byte> value)

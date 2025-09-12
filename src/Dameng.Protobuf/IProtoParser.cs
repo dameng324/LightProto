@@ -19,6 +19,6 @@ public interface IProtoReader<out T>
 public interface IProtoWriter<in T>
 {
     public bool IsMessage => false;
-    public int CalculateSize(T value);
+    public int CalculateSize(T pair);
     public void WriteTo(ref WriterContext output, T value);
 }

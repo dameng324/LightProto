@@ -1,16 +1,10 @@
 ﻿namespace Dameng.Protobuf.Parser;
 
 public class IEnumerableKeyValuePairProtoWriter<TDictionary, TKey, TValue>
-    : IProtoWriter<TDictionary>
+    : IEnumerableProtoWriter<TDictionary, KeyValuePair<TKey, TValue>>
     where TDictionary : IEnumerable<KeyValuePair<TKey, TValue>>
+    where TKey : notnull
 {
-    private readonly IProtoWriter<TKey> _keyWriter;
-    private readonly IProtoWriter<TValue> _valueWriter;
-    private readonly uint _tag;
-    private readonly uint _keyTag;
-    private readonly uint _valueTag;
-    private readonly Func<TDictionary, int> _getCount;
-
     public IEnumerableKeyValuePairProtoWriter(
         IProtoWriter<TKey> keyWriter,
         IProtoWriter<TValue> valueWriter,
@@ -18,59 +12,9 @@ public class IEnumerableKeyValuePairProtoWriter<TDictionary, TKey, TValue>
         uint keyTag,
         uint valueTag,
         Func<TDictionary, int> getCount
-    )
+    ) : base(
+        itemWriter: new KeyValuePairProtoWriter<TKey, TValue>(keyWriter, valueWriter, keyTag, valueTag),
+        tag:tag, getCount,itemFixedSize:0, isPacked: false)
     {
-        _keyWriter = keyWriter;
-        _valueWriter = valueWriter;
-        _tag = tag;
-        _keyTag = keyTag;
-        _valueTag = valueTag;
-        _getCount = getCount;
-    }
-
-    public int CalculateSize(KeyValuePair<TKey, TValue> value)
-    {
-        var size = 0;
-        size += CodedOutputStream.ComputeRawVarint32Size(_keyTag);
-        size += _keyWriter.CalculateMessageSize(value.Key);
-        size += CodedOutputStream.ComputeRawVarint32Size(_valueTag);
-        size += _valueWriter.CalculateMessageSize(value.Value);
-        return size;
-    }
-
-    public int CalculateSize(TDictionary value)
-    {
-        if (_getCount(value) == 0)
-        {
-            return 0;
-        }
-
-        var size = 0;
-        foreach (var pair in value)
-        {
-            size += CodedOutputStream.ComputeRawVarint32Size(_tag);
-
-            var entrySize = CalculateSize(pair);
-            size += CodedOutputStream.ComputeLengthSize(entrySize);
-            size += entrySize;
-        }
-
-        return size;
-    }
-
-    public void WriteTo(ref WriterContext output, TDictionary value)
-    {
-        foreach (var pair in value)
-        {
-            output.WriteTag(_tag);
-            var size = CalculateSize(pair);
-            output.WriteLength(size);
-
-            output.WriteTag(_keyTag);
-            _keyWriter.WriteMessageTo(ref output, pair.Key);
-
-            output.WriteTag(_valueTag);
-            _valueWriter.WriteMessageTo(ref output, pair.Value);
-        }
     }
 }

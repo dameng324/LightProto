@@ -2,27 +2,71 @@
 
 namespace Dameng.Protobuf.Parser;
 
-public sealed class TimeSpanProtoReader : IProtoReader<TimeSpan>
+// message TimeSpan {
+// sint64 value = 1; // the size of the timespan (in units of the selected scale)
+// TimeSpanScale scale = 2; // the scale of the timespan [default = DAYS]
+// enum TimeSpanScale {
+//     DAYS = 0;
+//     HOURS = 1;
+//     MINUTES = 2;
+//     SECONDS = 3;
+//     MILLISECONDS = 4;
+//     TICKS = 5;
+//
+//     MINMAX = 15; // dubious
+// }
+// }
+
+[ProtoProxyFor<TimeSpan>]
+[ProtoContract]
+public partial struct TimeSpanProxy
 {
-    public TimeSpan ParseFrom(ref ReaderContext input)
-    {
-        return new TimeSpan(input.ReadInt64());
-    }
-}
-public sealed class TimeSpanProtoWriter : IProtoWriter<TimeSpan>
-{
-    public int CalculateSize(TimeSpan value)
-    {
-        return CodedOutputStream.ComputeInt64Size(value.Ticks);
-    }
+    [ProtoMember(1, DataFormat = DataFormat.ZigZag)]
+    internal long Ticks { get; set; }
+
+    [ProtoMember(2)]
+    internal TimeSpanScale Scale { get; set; }
     
-    public void WriteTo(ref WriterContext output, TimeSpan value)
+    public static implicit operator TimeSpan(TimeSpanProxy proxy)
     {
-        output.WriteInt64(value.Ticks);
+        switch (proxy.Scale)
+        {
+            case TimeSpanScale.DAYS:
+                proxy.Ticks *= TimeSpan.TicksPerDay;
+                break;
+            case TimeSpanScale.HOURS:
+                proxy.Ticks *= TimeSpan.TicksPerHour;
+                break;
+            case TimeSpanScale.MINUTES:
+                proxy.Ticks *= TimeSpan.TicksPerMinute;
+                break;
+            case TimeSpanScale.SECONDS:
+                proxy.Ticks *= TimeSpan.TicksPerSecond;
+                break;
+            case TimeSpanScale.MILLISECONDS:
+                proxy.Ticks *= TimeSpan.TicksPerMillisecond;
+                break;
+            case TimeSpanScale.TICKS:
+                break;
+            case TimeSpanScale.MINMAX:
+                if (proxy.Ticks == 0)
+                    return TimeSpan.MinValue;
+                else
+                    return TimeSpan.MaxValue;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
+        }
+        return new TimeSpan(ticks: proxy.Ticks);
     }
+
+    public static implicit operator TimeSpanProxy(TimeSpan dt) => new TimeSpanProxy
+    {
+        Ticks = dt.Ticks,
+        Scale = TimeSpanScale.TICKS
+    };
 }
 public sealed class TimeSpanProtoParser : IProtoParser<TimeSpan>
 {
-    public static IProtoReader<TimeSpan> Reader { get; } = new TimeSpanProtoReader();
-    public static IProtoWriter<TimeSpan> Writer { get; } = new TimeSpanProtoWriter();
+    public static IProtoReader<TimeSpan> Reader { get; } = TimeSpanProxy.Reader;
+    public static IProtoWriter<TimeSpan> Writer { get; } = TimeSpanProxy.Writer;
 }

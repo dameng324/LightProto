@@ -22,7 +22,7 @@ jobs:
           global-json-file: global.json
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Tests/
+        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
@@ -46,7 +46,7 @@ jobs:
           submodules: true
 
       - name: Run tests
-        run: dotnet test --configuration Release --verbosity normal tests/Dameng.Protobuf.Tests/
+        run: dotnet test --configuration Release --verbosity normal tests/Dameng.Protobuf.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
