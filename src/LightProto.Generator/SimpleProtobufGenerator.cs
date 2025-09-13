@@ -148,7 +148,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
               {
                   public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader {get; } = new ProtoReader();
                   public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer {get; } = new ProtoWriter();
-                  public sealed class ProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
+                  public sealed new class ProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
                   {
                       public bool IsMessage => true;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
@@ -237,7 +237,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       }
                   }
                   
-                  public sealed class ProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
+                  public sealed new class ProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
                   {
                       public bool IsMessage => true;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
@@ -970,6 +970,20 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         return GetProxyType(type.GetAttributes());
     }
+    
+    IEnumerable<IPropertySymbol> GetAllMembers(INamedTypeSymbol type)
+    {
+        var members = new List<IPropertySymbol>();
+        var currentType = type;
+        while (currentType != null)
+        {
+            members.AddRange(
+                currentType.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic)
+            );
+            currentType = currentType.BaseType;
+        }
+        return members;
+    }
 
     private List<ProtoMember> GetProtoMembers(
         Compilation compilation,
@@ -979,10 +993,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         var members = new List<ProtoMember>();
 
-        foreach (var member in targetType.GetMembers())
+        foreach (IPropertySymbol property in GetAllMembers(targetType))
         {
-            if (!(member is IPropertySymbol property) || property.IsStatic)
-                continue;
 
             var propertyDecl = typeDeclaration
                 .Members.OfType<PropertyDeclarationSyntax>()
