@@ -22,7 +22,7 @@ jobs:
           global-json-file: global.json
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal tests/LightProto.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
@@ -34,7 +34,7 @@ jobs:
 
       - name: Test package creation
         run: |
-          dotnet pack --configuration Release --no-build --output ./test-packages src/LightProto/
+          dotnet pack --configuration Release --output ./test-packages src/LightProto/
   
   windows-test:
     runs-on: windows-latest
@@ -46,7 +46,7 @@ jobs:
           submodules: true
 
       - name: Run tests
-        run: dotnet test --configuration Release --verbosity normal tests/LightProto.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
