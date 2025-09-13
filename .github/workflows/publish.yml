@@ -29,21 +29,21 @@ jobs:
           global-json-file: global.json
 
       - name: Restore dependencies
-        run: dotnet restore  tests/Dameng.Protobuf.Tests/
+        run: dotnet restore  tests/LightProto.Tests/
 
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore tests/Dameng.Protobuf.Tests/
+        run: dotnet build --configuration Release --no-restore tests/LightProto.Tests/
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release --no-build --verbosity normal tests/LightProto.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
-          dotnet publish tests/Dameng.Protobuf.Tests/ -f net8.0 -r linux-x64 -c Release
-          ./tests/Dameng.Protobuf.Tests/bin/Release/net8.0/linux-x64/publish/Dameng.Protobuf.Tests
+          dotnet publish tests/LightProto.Tests/ -f net8.0 -r linux-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net8.0/linux-x64/publish/LightProto.Tests
           
-          dotnet publish tests/Dameng.Protobuf.Tests/ -f net9.0 -r linux-x64 -c Release
-          ./tests/Dameng.Protobuf.Tests/bin/Release/net9.0/linux-x64/publish/Dameng.Protobuf.Tests
+          dotnet publish tests/LightProto.Tests/ -f net9.0 -r linux-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net9.0/linux-x64/publish/LightProto.Tests
           
       - name: Pack packages
         run: |
@@ -58,11 +58,11 @@ jobs:
 
           echo "Publishing version: $VERSION"
 
-          dotnet build src/Dameng.Protobuf.Generator/Dameng.Protobuf.Generator.csproj \
+          dotnet build src/LightProto.Generator/LightProto.Generator.csproj \
             --configuration Release \
             -p:Version=$VERSION
 
-          dotnet pack src/Dameng.Protobuf/Dameng.Protobuf.csproj \
+          dotnet pack src/LightProto/LightProto.csproj \
             --configuration Release \
             --output ./packages \
             -p:Version=$VERSION

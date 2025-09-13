@@ -4,7 +4,7 @@
 
 #pragma warning disable IDE0079
 #pragma warning disable CS1591, CS0612, CS0618, CS3021, IDE1006
-namespace Protobuf_net
+namespace ProtoBuf
 {
 
     [global::ProtoBuf.ProtoContract()]

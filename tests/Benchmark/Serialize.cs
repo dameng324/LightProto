@@ -6,23 +6,23 @@ namespace Benchmark;
 [MemoryDiagnoser(false)]
 public class Serialize
 {
-    private readonly Protobuf_net.Database protobuf_net;
+    private readonly ProtoBuf.Database protobuf_net;
     private readonly GoogleProtobuf.Database google;
-    private readonly DamengProtobuf.Database dameng;
+    private readonly LightProto.Database dameng;
 
     public Serialize()
     {
         var _data = System.IO.File.ReadAllBytes("test.bin");
-        protobuf_net= ProtoBuf.Serializer.Deserialize<Protobuf_net.Database>(_data.AsSpan());
+        protobuf_net= ProtoBuf.Serializer.Deserialize<ProtoBuf.Database>(_data.AsSpan());
         google= GoogleProtobuf.Database.Parser.ParseFrom(_data);
-        dameng= Dameng.Protobuf.Serializer.Deserialize<DamengProtobuf.Database>(_data);
+        dameng= LightProto.Serializer.Deserialize<LightProto.Database>(_data);
     }
 
     [Benchmark]
     public void Serialize_ProtoBuf_net()
     {
         using var ms = new System.IO.MemoryStream();
-        ProtoBuf.Serializer.Serialize<Protobuf_net.Database>(ms, protobuf_net);
+        ProtoBuf.Serializer.Serialize<ProtoBuf.Database>(ms, protobuf_net);
     }
     [Benchmark()]
     public void Serialize_GoogleProtoBuf()
@@ -31,9 +31,9 @@ public class Serialize
         google.WriteTo(ms);
     }
     [Benchmark(Baseline = true)]
-    public void Serialize_DamengProtoBuf()
+    public void Serialize_LightProto()
     {
         using var ms = new System.IO.MemoryStream();
-        Dameng.Protobuf.Serializer.Serialize<DamengProtobuf.Database>(ms, dameng);
+        LightProto.Serializer.Serialize<LightProto.Database>(ms, dameng);
     }
 }

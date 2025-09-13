@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 
+
 namespace Benchmark;
 
 [MemoryDiagnoser(false)]
@@ -11,11 +12,10 @@ public class Deserialize
     {
         _data = System.IO.File.ReadAllBytes("test.bin");
     }
-
     [Benchmark]
-    public Protobuf_net.Database Deserialize_ProtoBuf_net()
+    public ProtoBuf.Database Deserialize_ProtoBuf_net()
     {
-        return ProtoBuf.Serializer.Deserialize<Protobuf_net.Database>(_data.AsSpan());
+        return ProtoBuf.Serializer.Deserialize<ProtoBuf.Database>(_data.AsSpan());
     }
     [Benchmark()]
     public GoogleProtobuf.Database Deserialize_GoogleProtoBuf()
@@ -23,8 +23,8 @@ public class Deserialize
         return GoogleProtobuf.Database.Parser.ParseFrom(_data);
     }
     [Benchmark(Baseline = true)]
-    public DamengProtobuf.Database Deserialize_DamengProtoBuf()
+    public LightProto.Database Deserialize_LightProto()
     {
-        return Dameng.Protobuf.Serializer.Deserialize<DamengProtobuf.Database>(_data);
+        return LightProto.Serializer.Deserialize<LightProto.Database>(_data);
     }
 }

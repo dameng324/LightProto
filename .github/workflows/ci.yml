@@ -22,19 +22,19 @@ jobs:
           global-json-file: global.json
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal tests/Dameng.Protobuf.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release --no-build --verbosity normal tests/LightProto.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
-          dotnet publish tests/Dameng.Protobuf.Tests/ -f net8.0 -r linux-x64 -c Release
-          ./tests/Dameng.Protobuf.Tests/bin/Release/net8.0/linux-x64/publish/Dameng.Protobuf.Tests
+          dotnet publish tests/LightProto.Tests/ -f net8.0 -r linux-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net8.0/linux-x64/publish/LightProto.Tests
           
-          dotnet publish tests/Dameng.Protobuf.Tests/ -f net9.0 -r linux-x64 -c Release
-          ./tests/Dameng.Protobuf.Tests/bin/Release/net9.0/linux-x64/publish/Dameng.Protobuf.Tests
+          dotnet publish tests/LightProto.Tests/ -f net9.0 -r linux-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net9.0/linux-x64/publish/LightProto.Tests
 
       - name: Test package creation
         run: |
-          dotnet pack --configuration Release --no-build --output ./test-packages src/Dameng.Protobuf/
+          dotnet pack --configuration Release --no-build --output ./test-packages src/LightProto/
   
   windows-test:
     runs-on: windows-latest
@@ -46,16 +46,16 @@ jobs:
           submodules: true
 
       - name: Run tests
-        run: dotnet test --configuration Release --verbosity normal tests/Dameng.Protobuf.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release --verbosity normal tests/LightProto.Tests/ -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
-          dotnet publish tests/Dameng.Protobuf.Tests/ -f net8.0 -r win-x64 -c Release
-          ./tests/Dameng.Protobuf.Tests/bin/Release/net8.0/win-x64/publish/Dameng.Protobuf.Tests.exe
+          dotnet publish tests/LightProto.Tests/ -f net8.0 -r win-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net8.0/win-x64/publish/LightProto.Tests.exe
           
-          dotnet publish tests/Dameng.Protobuf.Tests/ -f net9.0 -r win-x64 -c Release
-          ./tests/Dameng.Protobuf.Tests/bin/Release/net9.0/win-x64/publish/Dameng.Protobuf.Tests.exe
+          dotnet publish tests/LightProto.Tests/ -f net9.0 -r win-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net9.0/win-x64/publish/LightProto.Tests.exe
 
       - name: Test package creation
         run: |
-          dotnet pack --configuration Release --no-build --output ./test-packages src/Dameng.Protobuf/
+          dotnet pack --configuration Release --no-build --output ./test-packages src/LightProto/

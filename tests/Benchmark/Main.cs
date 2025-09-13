@@ -4,15 +4,15 @@ using BenchmarkDotNet.Running;
 
 // BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 // return;
+//BenchmarkRunner.Run<Deserialize>();
+//return;
+
 BenchmarkRunner.Run<Deserialize>();
 return;
-
-//BenchmarkRunner.Run<Deserialize>();
-
 var serialize = new Serialize();
 for (int i = 0; i < 5000; i++)
 {
-    serialize.Serialize_DamengProtoBuf();
+    serialize.Serialize_LightProto();
 }
 Console.WriteLine("done.");
 return;
@@ -22,10 +22,10 @@ return;
 // for (int i = 0; i < 100; i++)
 // {
 //     var d2 = GoogleProtobuf.Database.Parser.ParseFrom(_data);
-//     var d3 = Dameng.Protobuf.Serializer.Deserialize<DamengProtobuf.Database>(_data);
+//     var d3 = LightProto.Serializer.Deserialize<LightProto.Database>(_data);
 // }
 //
 // {
 //     var d2 = GoogleProtobuf.Database.Parser.ParseFrom(_data);
-//     var d3 = Dameng.Protobuf.Serializer.Deserialize<DamengProtobuf.Database>(_data);
+//     var d3 = LightProto.Serializer.Deserialize<LightProto.Database>(_data);
 // }

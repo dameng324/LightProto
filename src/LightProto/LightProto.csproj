@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>        
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <IsAotCompatible>true</IsAotCompatible>
+        
+        <!-- NuGet Package Metadata -->
+        <PackageId>LightProto</PackageId>
+        <Title>LightProto.Extension - Generic Protobuf Deserialization</Title>
+        <Description>A .NET library that enables generic protobuf deserialization by providing an interface and source generator for Google.Protobuf generated classes. Allows writing type-safe generic methods for protobuf message parsing.</Description>
+        <PackageTags>protobuf;google-protobuf;source-generator;generic;deserialization;codegen</PackageTags>
+        <Authors>dameng324</Authors>
+        <Copyright>Copyright (c) 2025 dameng324</Copyright>
+        <PackageProjectUrl>https://github.com/dameng324/LightProto.Extension</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dameng324/LightProto.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryBranch>main</RepositoryBranch>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Version>999.999.999-localbuild</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+        <ProjectReference Include="..\LightProto.Generator\LightProto.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <None Include="../LightProto.Generator/bin/$(Configuration)/netstandard2.0/LightProto.Generator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            </ItemGroup>
+
+</Project>

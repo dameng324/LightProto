@@ -1,102 +1,99 @@
-# Dameng.Protobuf
+# LightProto
 
-A source generator version of **Protobuf-net** with full **NativeAOT** support. This library provides the same behavior
-as Protobuf-net but uses compile-time source generation instead of runtime reflection, making it perfect for
-ahead-of-time compilation scenarios.
+[![NuGet](https://img.shields.io/nuget/v/LightProto.svg)](https://www.nuget.org/packages/LightProto/)
+[![License](https://img.shields.io/github/license/dameng324/LightProto.svg)](LICENSE)
 
-## Overview
+A high-performance, NativeAOT-compatible Protocol Buffers implementation for C#/.NET, designed as a native aot solution
+for [Protobuf-net](https://github.com/protobuf-net/protobuf-net).
 
-Dameng.Protobuf is designed as a drop-in replacement for Protobuf-net when you need **NativeAOT compatibility**. It
-enables generic protobuf serialization and deserialization by automatically generating implementations of
-`IProtoParser<T>`, `IProtoReader<T>`, and `IProtoWriter<T>`;
+## Why LightProto?
 
-**Key Differences from Protobuf-net:**
+Protobuf-net is a popular choice for Protocol Buffers in .NET,However it has limitations when it comes to NativeAOT
+scenarios. LightProto addresses these issues by providing a fully NativeAOT-compatible solution with zero runtime
+overhead.
 
-- ✅ **Full NativeAOT Support** - Uses source generation instead of reflection
-- ✅ **Compile-time Code Generation** - Zero runtime overhead
-- ✅ **Same API Surface** - Familiar interface for Protobuf-net users
+So, LightProto has three main goals:
+
+1. **NativeAOT Compatibility**: Ensure full support for ahead-of-time compilation scenarios without any runtime
+   reflection or code generation.
+2. **Protobuf-net Compatibility**: Maintain the same serialization behavior and API patterns as Protobuf-net, making
+   migration seamless.
+3. **Performance**: Performance should be better or at least same as Protobuf-net.
+
+## Performance & Benchmarks
+
+The following benchmarks compare serialization performance between LightProto, Protobuf-net, and Google.Protobuf.
+
+You can reproduce these benchmarks by cloning the repository and running the `tests/Benchmark` project.
+
+```md
+BenchmarkDotNet v0.15.2, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
+AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 9.0.305
+[Host]     : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
+DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
+```
+
+| Method                   |     Mean |    Error |   StdDev | Ratio | RatioSD | Allocated | Alloc Ratio |
+|--------------------------|---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Serialize_ProtoBuf_net   | 898.8 us | 18.29 us | 52.48 us |  1.61 |    0.11 | 526.41 KB |        1.03 |
+| Serialize_GoogleProtoBuf | 651.7 us | 16.70 us | 48.70 us |  1.17 |    0.10 | 512.95 KB |        1.00 |
+| Serialize_LightProto     | 559.3 us | 11.07 us | 21.34 us |  1.00 |    0.05 | 512.95 KB |        1.00 |
+
+| Method                     |     Mean |    Error |   StdDev | Ratio | RatioSD | Allocated | Alloc Ratio |
+|----------------------------|---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Deserialize_ProtoBuf_net   | 664.9 us | 13.28 us | 28.00 us |  1.53 |    0.08 |    562 KB |        0.88 |
+| Deserialize_GoogleProtoBuf | 538.1 us | 10.73 us | 25.70 us |  1.24 |    0.07 |  648.7 KB |        1.02 |
+| Deserialize_LightProto     | 436.0 us |  8.53 us | 14.71 us |  1.00 |    0.05 | 635.15 KB |        1.00 |
 
 ## ⚠️ Development Status
 
-**This project is under active development and may introduce breaking changes.**
+**This project is under active development and may introduce breaking changes. use it in production at your own risk.**
 
-- Current version: Alpha/Preview
-- API stability: Not guaranteed until v1.0
-- Use in production: At your own risk
-- Breaking changes: Expected in minor versions until stable release
+Todo list:
 
-## Features
-
-- **🔄 Protobuf-net Compatibility**: Same serialization behavior and API patterns
-- **⚡ Source Generator**: Automatically implements interfaces for all protobuf classes
-- **🎯 Zero Runtime Overhead**: All code generation happens at compile time
-- **🚀 NativeAOT Ready**: Full support for ahead-of-time compilation scenarios
-- **📦 Easy Integration**: Just add the NuGet package and configure your protobuf files
-- **🔧 Generic Programming**: Write type-safe generic methods for protobuf operations
-- **🏗️ Build-time Safety**: Compile-time errors instead of runtime failures
-
-## Installation
-
-Install the package from NuGet:
-
-```bash
-dotnet add package Dameng.Protobuf
-```
+- [ ] Add more tests for other possible types supported by Protobuf-net
+- [ ] Add more benchmarks and performance tests
+- [ ] Improve documentation and examples
 
 ## Quick Start
+
+```bash
+dotnet add package LightProto
+```
 
 ### 1. Configure your ProtoContracts
 
 ```cs
-using Dameng.Protobuf;
+using LightProto;
 [ProtoContract]
-public partial class MyRequest 
+public partial class Person 
 {
     [ProtoMember(1)]
-    public int RequestId { get; set; }    
-    [ProtoMember(2)]
-    public string Payload { get; set; }
+    public string Name { get; set; }
+    
+    [ProtoMember(2)]  
+    public int Age { get; set; }
 }
+var person = new Person { Name = "Alice", Age = 30 };
+// Serialization
+var bytes = person.ToByteArray();
+// or through API in protobuf-net style
+var stream = new MemoryStream();
+Serializer.Serialize(stream, person);
+var bytes = stream.ToArray();
+
+// Deserialization  
+var obj = Serializer.Deserialize<Person>(bytes);
 ```
 
 ## Migration from Protobuf-net
 
-### Why Migrate?
-
-**Protobuf-net limitations with NativeAOT:**
-
-- Heavy reflection usage causes issues with AOT compilation
-- Runtime code generation not supported in NativeAOT
-- Limited trimming support
-- Performance overhead from reflection
-
-**Dameng.Protobuf advantages:**
-
-- ✅ Full NativeAOT compatibility
-- ✅ Compile-time code generation
-- ✅ No reflection at runtime
-- ✅ Better trimming support
-- ✅ Predictable performance
-
-### Step-by-Step Migration Guide
-
-#### 1. Replace Package References
-
-```xml
-<!-- Remove protobuf-net -->
-<PackageReference Include="protobuf-net" Version="x.x.x"/>
-
-        <!-- Add Dameng.Protobuf -->
-<PackageReference Include="Dameng.Protobuf" Version="x.x.x"/>
-```
-
-#### 2. Convert Data Models
-
-Change the namespace from `Protobuf` to `Dameng.Protobuf` and ensure your classes implement the required interfaces.
+Change the namespace from `ProtoBuf` to `LightProto` and ensure your classes marked as `partial`.
 
 ```diff
 -using ProtoBuf;
-+using Dameng.Protobuf;
++using LightProto;
 [ProtoContract]
 -public class Person
 +public partial class Person
@@ -107,13 +104,7 @@ Change the namespace from `Protobuf` to `Dameng.Protobuf` and ensure your classe
     [ProtoMember(2)]  
     public int Age { get; set; }
 }
-```
-
-#### 4. Update Serialization Code
-
-```diff
--using ProtoBuf;
-+using Dameng.Protobuf;
+var myObject = new MyClass { /* Initialize properties */ };
 // Serialization
 var stream = new MemoryStream();
 Serializer.Serialize(stream, myObject);
@@ -123,115 +114,23 @@ byte[] data = stream.ToArray();
 var obj = Serializer.Deserialize<MyClass>(new MemoryStream(data));
 ```
 
-### Migration Compatibility Matrix
+### Known Differences
 
-| Feature                 | Protobuf-net | Dameng.Protobuf | Notes                 |
-|-------------------------|--------------|-----------------|-----------------------|
-| **Basic Serialization** | ✅            | ✅               | Same wire format      |
-| **Generic Methods**     | ✅            | ✅               | Different constraints |
-| **NativeAOT**           | ❌ Limited    | ✅ Full          | Main advantage        |
-| **Reflection**          | ❌ Heavy      | ✅ None          | Compile-time only     |
-| **Performance**         | ⚠️ Dynamic   | ✅ Predictable   | No runtime overhead   |
-| **Wire Compatibility**  | ✅            | ✅               | Interoperable         |
+- **Partial Classes**: Ensure all protobuf classes are declared as `partial` to allow the source generator to extend
+  them.
 
-## How It Works
+| Feature         | Protobuf-net Behavior                                                                                                     | LightProto Behavior                     |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|
+| Partial Classes | No need                                                                                                                   | must                                    |
+| Inheritance     | [Supported](https://github.com/protobuf-net/protobuf-net?tab=readme-ov-file#inheritance)                                  | Not support                             |
+| Surrogate       | [Supported](https://stackoverflow.com/questions/14796296/serializing-listt-using-a-surrogate-with-protobuf-net-exception) | Supported(see InstrumentProxy in tests) |
 
-The source generator automatically implements the required interfaces on all protobuf generated classes:
+If you found any other different behavior with Protobuf-net, please report them via GitHub issues.
 
-```csharp
-// Generated by Dameng.Protobuf for each protobuf class
-partial class MyRequest : IProtoMessage<MyRequest>
-{
-    public static IProtoReader<MyRequest> Reader => MyRequestReader.Instance;
-    public static IProtoWriter<MyRequest> Writer => MyRequestWriter.Instance;
-}
+## .proto files
 
-// Generated reader implementation
-internal sealed class MyRequestReader : IProtoMessageReader<MyRequest>
-{
-    public static MyRequestReader Instance { get; } = new();
-    
-    public MyRequest ParseFrom(ref ReaderContext input)
-    {
-        // Generated parsing logic...
-    }
-}
-
-// Generated writer implementation  
-internal sealed class MyRequestWriter : IProtoMessageWriter<MyRequest>
-{
-    public static MyRequestWriter Instance { get; } = new();
-    
-    public void WriteTo(ref WriterContext output, MyRequest value)
-    {
-        // Generated writing logic...
-    }
-    
-    public int CalculateSize(MyRequest value)
-    {
-        // Generated size calculation...
-    }
-}
-```
-
-## Performance & Benchmarks
-The following benchmarks compare serialization performance between Dameng.Protobuf, Protobuf-net, and Google.Protobuf.
-
-```text
-BenchmarkDotNet v0.15.2, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
-AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 9.0.305
-[Host]     : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
-DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
-
-
-| Method                   | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
-|------------------------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
-| Serialize_ProtoBuf_net   | 898.8 us | 18.29 us | 52.48 us |  1.61 |    0.11 | 526.41 KB |        1.03 |
-| Serialize_GoogleProtoBuf | 651.7 us | 16.70 us | 48.70 us |  1.17 |    0.10 | 512.95 KB |        1.00 |
-| Serialize_DamengProtoBuf | 559.3 us | 11.07 us | 21.34 us |  1.00 |    0.05 | 512.95 KB |        1.00 |
-```
-```text
-BenchmarkDotNet v0.15.2, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
-AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 9.0.305
-  [Host]     : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
-  DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
-| Method                     | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
-|--------------------------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
-| Deserialize_ProtoBuf_net   | 664.9 us | 13.28 us | 28.00 us |  1.53 |    0.08 |    562 KB |        0.88 |
-| Deserialize_GoogleProtoBuf | 538.1 us | 10.73 us | 25.70 us |  1.24 |    0.07 |  648.7 KB |        1.02 |
-| Deserialize_DamengProtoBuf | 436.0 us |  8.53 us | 14.71 us |  1.00 |    0.05 | 635.15 KB |        1.00 |
-```
-
-
-### Compatibility
-
-- **Wire Format**: 100% compatible with Google Protocol Buffers
-- **Interoperability**: Works with any protobuf implementation
-- **Cross-Platform**: Supports all .NET 8+ target platforms
-- **Trimming**: Fully compatible with assembly trimming
-
-### Getting Help
-
-- **Issues**: [GitHub Issues](https://github.com/dameng324/Dameng.Protobuf/issues)
-
-### Roadmap
-
-**Planned Features:**
-
-- Reuse object when deserializing
-- Advanced serialization options
-- Performance optimizations
-- More comprehensive documentation
-- Stability improvements leading to v1.0
-
-**Current Focus:**
-
-- API stabilization
-- Bug fixes and performance improvements
-- NativeAOT optimization
-- Better error messages
+LightProto does not include a built-in tool for generating C# classes from `.proto` files. However, you can use the
+`protobuf-net` tool to generate the classes and then modify them to be compatible with LightProto.
 
 ## License
 
@@ -251,8 +150,8 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 **Development Setup:**
 
 ```bash
-git clone https://github.com/dameng324/Dameng.Protobuf.git
-cd Dameng.Protobuf
+git clone https://github.com/dameng324/LightProto.git
+cd LightProto
 dotnet restore
 dotnet build
 dotnet test
