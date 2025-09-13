@@ -993,10 +993,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         var members = new List<ProtoMember>();
 
-        foreach (var member in GetAllMembers(targetType))
+        foreach (IPropertySymbol property in GetAllMembers(targetType))
         {
-            if (!(member is IPropertySymbol property) || property.IsStatic)
-                continue;
 
             var propertyDecl = typeDeclaration
                 .Members.OfType<PropertyDeclarationSyntax>()
