@@ -971,7 +971,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return GetProxyType(type.GetAttributes());
     }
     
-    IEnumerable<ISymbol> GetAllMembers(INamedTypeSymbol type)
+    IEnumerable<IPropertySymbol> GetAllMembers(INamedTypeSymbol type)
     {
         var members = new List<IPropertySymbol>();
         var currentType = type;
