@@ -13,9 +13,9 @@ public sealed class Fixed32ProtoReader : IProtoReader<UInt32>
 public sealed class Fixed32ProtoWriter : IProtoWriter<UInt32>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(UInt32 pair)
+    public int CalculateSize(UInt32 value)
     {
-        return CodedOutputStream.ComputeFixed32Size(pair);
+        return CodedOutputStream.ComputeFixed32Size(value);
     }
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 

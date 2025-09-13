@@ -13,9 +13,9 @@ public sealed class DoubleProtoReader : IProtoReader<Double>
 public sealed class DoubleProtoWriter : IProtoWriter<Double>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Double pair)
+    public int CalculateSize(Double value)
     {
-        return CodedOutputStream.ComputeDoubleSize(pair);
+        return CodedOutputStream.ComputeDoubleSize(value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

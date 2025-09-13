@@ -256,7 +256,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                       {
                           {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                               protoMembers.Select(member => {
-                                  return $"{member.Type} _{member.Name} = {member.Initializer??"default"};";
+                                  return $"{member.Type} _{member.Name} = {member.Initializer};";
                               }))
                           }}
                           uint tag;
@@ -279,7 +279,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                                               if (IsCollectionType(compilation, member.Type))
                                               {
                                                   var elementType = GetElementType(compilation, member.Type);
-                                                  var tag2 = ProtoMember.GetRawTag(member.Tag, ProtoMember.GetPbWireType(compilation, elementType, member.DataFormat));
+                                                  var tag2 = ProtoMember.GetRawTag(member.FieldNumber, ProtoMember.GetPbWireType(compilation, elementType, member.DataFormat));
                                                   if (tag2 != member.RawTag)
                                                   {
                                                       yield return $"case {tag2}:";
@@ -374,7 +374,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
         return result;
     }
 
-    private bool TryGetInternalTypeName(ITypeSymbol memberType, LightProto.DataFormat format, out string name)
+    private bool TryGetInternalTypeName(
+        ITypeSymbol memberType,
+        LightProto.DataFormat format,
+        out string name
+    )
     {
         name = memberType.SpecialType switch
         {
@@ -382,11 +386,15 @@ public class SimpleProtobufGenerator : ISourceGenerator
             SpecialType.System_Int32 => format == LightProto.DataFormat.FixedSize ? "SFixed32"
             : format == LightProto.DataFormat.ZigZag ? "SInt32"
             : "Int32",
-            SpecialType.System_UInt32 => format == LightProto.DataFormat.FixedSize ? "Fixed32" : "UInt32",
+            SpecialType.System_UInt32 => format == LightProto.DataFormat.FixedSize
+                ? "Fixed32"
+                : "UInt32",
             SpecialType.System_Int64 => format == LightProto.DataFormat.FixedSize ? "SFixed64"
             : format == LightProto.DataFormat.ZigZag ? "SInt64"
             : "Int64",
-            SpecialType.System_UInt64 => format == LightProto.DataFormat.FixedSize ? "Fixed64" : "UInt64",
+            SpecialType.System_UInt64 => format == LightProto.DataFormat.FixedSize
+                ? "Fixed64"
+                : "UInt64",
             SpecialType.System_Single => "Float",
             SpecialType.System_Double => "Double",
             SpecialType.System_String => "String",
@@ -468,7 +476,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
             member.RawTag,
             targetType,
             member.IsPacked,
-            depth: 0
+            depth: 0,
+            member.CompatibilityLevel
         );
 
         var memberType = member.Type.WithNullableAnnotation(NullableAnnotation.None);
@@ -477,16 +486,22 @@ public class SimpleProtobufGenerator : ISourceGenerator
         yield return $"private IProto{readOrWriter}<{memberType}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
     }
 
+    public uint GetFieldNumber(uint rawTag)
+    {
+        return rawTag >> 3;
+    }
+
     private string GetProtoParser(
         Compilation compilation,
         ITypeSymbol memberType,
-        LightProto.DataFormat format,
-        (LightProto.DataFormat keyFormat, LightProto.DataFormat valueFormat) mapFormat,
+        DataFormat format,
+        (DataFormat keyFormat, DataFormat valueFormat) mapFormat,
         string readerOrWriter,
         uint rawTag,
         ITypeSymbol targetType,
         bool isPacked,
-        int depth
+        int depth,
+        CompatibilityLevel compatibilityLevel
     )
     {
         depth++;
@@ -506,7 +521,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 rawTag,
                 targetType,
                 isPacked,
-                depth
+                depth,
+                compatibilityLevel
             );
         }
 
@@ -515,6 +531,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return $"{memberType.WithNullableAnnotation(NullableAnnotation.None)}.{readerOrWriter}";
         }
 
+        var fieldNumber = GetFieldNumber(rawTag);
         if (memberType is IArrayTypeSymbol arrayType)
         {
             if (rawTag == 0)
@@ -527,6 +544,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
             {
                 return $"ByteArrayProtoParser.{readerOrWriter}";
             }
+            var tag2 = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
             var elementWriter = GetProtoParser(
                 compilation,
                 elementType,
@@ -536,10 +554,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 0,
                 targetType,
                 isPacked,
-                depth
+                depth,
+                compatibilityLevel
             );
             var fixedSize = GetFixedSize(elementType, format);
-            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
+            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
         }
 
         if (memberType is INamedTypeSymbol namedType)
@@ -555,14 +574,41 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
                 var name = namedType.SpecialType switch
                 {
-                    SpecialType.System_Int32 when format is LightProto.DataFormat.ZigZag => "SInt32",
-                    SpecialType.System_Int64 when format is LightProto.DataFormat.ZigZag => "SInt64",
-                    SpecialType.System_Int32 when format is LightProto.DataFormat.FixedSize => "SFixed32",
-                    SpecialType.System_Int64 when format is LightProto.DataFormat.FixedSize => "SFixed64",
-                    SpecialType.System_UInt32 when format is LightProto.DataFormat.FixedSize => "Fixed32",
-                    SpecialType.System_UInt64 when format is LightProto.DataFormat.FixedSize => "Fixed64",
+                    SpecialType.System_Int32 when format is LightProto.DataFormat.ZigZag =>
+                        "SInt32",
+                    SpecialType.System_Int64 when format is LightProto.DataFormat.ZigZag =>
+                        "SInt64",
+                    SpecialType.System_Int32 when format is LightProto.DataFormat.FixedSize =>
+                        "SFixed32",
+                    SpecialType.System_Int64 when format is LightProto.DataFormat.FixedSize =>
+                        "SFixed64",
+                    SpecialType.System_UInt32 when format is LightProto.DataFormat.FixedSize =>
+                        "Fixed32",
+                    SpecialType.System_UInt64 when format is LightProto.DataFormat.FixedSize =>
+                        "Fixed64",
                     _ => namedType.Name,
                 };
+                if (compatibilityLevel >= CompatibilityLevel.Level240)
+                {
+                    if (
+                        namedType.SpecialType is SpecialType.System_DateTime
+                        || IsTimeSpanType(namedType)
+                    )
+                    {
+                        name = $"{name}240";
+                    }
+                }
+
+                if (compatibilityLevel >= CompatibilityLevel.Level300)
+                {
+                    if (
+                        IsGuidType(namedType)
+                        || namedType.SpecialType == SpecialType.System_Decimal
+                    )
+                    {
+                        name = $"{name}300";
+                    }
+                }
 
                 return $"{name}ProtoParser.{readerOrWriter}";
             }
@@ -588,21 +634,23 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     0,
                     targetType,
                     isPacked,
-                    depth
+                    depth,
+                    compatibilityLevel
                 );
                 var fixedSize = GetFixedSize(elementType, format);
+                var tag2 = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
                     if (readerOrWriter == "Reader")
                     {
                         if (IsListType(compilation, namedType))
                         {
-                            return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
+                            return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
                         }
 
                         if (IsSetType(compilation, namedType))
                         {
-                            return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
+                            return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
                         }
                     }
                     else if (readerOrWriter == "Writer")
@@ -618,7 +666,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 count = "Length";
                             }
-                            return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize},{(isPacked ? "true" : "false")})";
+                            return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
                         }
                     }
                 }
@@ -629,7 +677,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     {
                         return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                     }
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")})";
+                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
                 }
             }
 
@@ -654,7 +702,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     keyTag,
                     targetType,
                     isPacked: false,
-                    depth
+                    depth: depth,
+                    compatibilityLevel
                 );
                 var valueType = typeArguments[1];
                 var valueTag = ProtoMember.GetRawTag(
@@ -670,8 +719,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     valueTag,
                     targetType,
                     isPacked: false,
-                    depth
+                    depth: depth,
+                    compatibilityLevel
                 );
+                var tag2 = ProtoMember.GetRawTag(fieldNumber, ProtoMember.PbWireType.LengthDelimited);
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
                     if (readerOrWriter == "Reader")
@@ -679,14 +730,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
                         var mapType = compilation
                             .GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
                             ?.Construct(keyType, valueType)!;
-                        var conversion = CSharpExtensions.ClassifyConversion(
-                            compilation,
-                            mapType,
-                            namedType
-                        );
+                        var conversion = compilation.ClassifyConversion(mapType, namedType);
                         if (conversion.IsImplicit)
                         {
-                            return $"new DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag})";
+                            return $"new DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},{tag2})";
                         }
                     }
                     else if (readerOrWriter == "Writer")
@@ -699,14 +746,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
                             {
                                 count = "Count";
                             }
-                            return $"new IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},static (d)=>d.{count})";
+                            return $"new IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},static (d)=>d.{count},{tag2})";
                         }
                     }
                 }
 
                 if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
                 {
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag})";
+                    return $"new {memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},{tag2})";
                 }
             }
         }
@@ -814,8 +861,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 && memberType
                     .GetAttributes()
                     .Any(o =>
-                        o.AttributeClass?.ToDisplayString()
-                        == "LightProto.ProtoContractAttribute"
+                        o.AttributeClass?.ToDisplayString() == "LightProto.ProtoContractAttribute"
                     )
             || (
                 memberType is INamedTypeSymbol namedType
@@ -938,8 +984,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         if (
             attributeDatas.FirstOrDefault(o =>
-                o.AttributeClass?.ToDisplayString()
-                    .StartsWith("LightProto.ProtoProxyAttribute<") == true
+                o.AttributeClass?.ToDisplayString().StartsWith("LightProto.ProtoProxyAttribute<")
+                == true
             ) is
             { } proxyAttr2
         )
@@ -954,8 +1000,8 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         if (
             attributeDatas.FirstOrDefault(o =>
-                o.AttributeClass?.ToDisplayString()
-                    .StartsWith("LightProto.ProtoProxyForAttribute<") == true
+                o.AttributeClass?.ToDisplayString().StartsWith("LightProto.ProtoProxyForAttribute<")
+                == true
             ) is
             { } proxyAttr2
         )
@@ -970,7 +1016,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         return GetProxyType(type.GetAttributes());
     }
-    
+
     IEnumerable<IPropertySymbol> GetAllMembers(INamedTypeSymbol type)
     {
         var members = new List<IPropertySymbol>();
@@ -993,9 +1039,13 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         var members = new List<ProtoMember>();
 
-        foreach (IPropertySymbol property in GetAllMembers(targetType))
+        foreach (
+            IPropertySymbol property in targetType
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(o => o.IsStatic == false)
+        )
         {
-
             var propertyDecl = typeDeclaration
                 .Members.OfType<PropertyDeclarationSyntax>()
                 .FirstOrDefault(m => m.Identifier.Text == property.Name);
@@ -1009,6 +1059,67 @@ public class SimpleProtobufGenerator : ISourceGenerator
             var initializer =
                 propertyDecl?.Initializer?.Value.ToString()
                 ?? fieldDecl?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
+            if (initializer is null)
+            {
+                if (property.Type.NullableAnnotation == NullableAnnotation.Annotated)
+                {
+                    initializer = "null";
+                }
+                else if (HasEmptyStaticField(property.Type))
+                {
+                    initializer = $"{property.Type.ToDisplayString()}.Empty";
+                }
+                else if (
+                    IsCollectionType(compilation, property.Type)
+                    || IsDictionaryType(compilation, property.Type)
+                )
+                {
+                    if (property.Type is IArrayTypeSymbol arrayTypeSymbol)
+                    {
+                        initializer = $"Array.Empty<{arrayTypeSymbol.ElementType}>()";
+                    }
+                    else if (
+                        property.Type.TypeKind == TypeKind.Interface
+                        || property.Type.IsAbstract
+                    )
+                    {
+                        var concreteType = ResolveConcreteTypeSymbol(
+                            compilation,
+                            (property.Type as INamedTypeSymbol)!
+                        );
+                        initializer = $"new {concreteType.ToDisplayString()}()";
+                    }
+                    else
+                    {
+                        initializer = HasParameterlessConstructor(property.Type)
+                            ? $"new ()"
+                            : "default";
+                    }
+                }
+                else
+                {
+                    initializer = HasParameterlessConstructor(property.Type)
+                        ? $"new ()"
+                        : "default";
+                }
+            }
+
+            bool HasEmptyStaticField(ITypeSymbol type)
+            {
+                return type.GetMembers()
+                    .OfType<IFieldSymbol>()
+                    .Any(o => o.IsStatic && o.Name == "Empty");
+            }
+            bool HasParameterlessConstructor(ITypeSymbol type)
+            {
+                if (type is INamedTypeSymbol namedType)
+                {
+                    return namedType.InstanceConstructors.Any(c =>
+                        c.Parameters.Length == 0 && c.DeclaredAccessibility == Accessibility.Public
+                    );
+                }
+                return false;
+            }
 
             AttributeData? protoMemberAttr = property
                 .GetAttributes()
@@ -1031,6 +1142,36 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 ? _dataFormat
                 : LightProto.DataFormat.Default;
 
+            AttributeData? GetCompatibilityLevelAttribute(IEnumerable<AttributeData> attributeDatas)
+            {
+                return attributeDatas.FirstOrDefault(attr =>
+                    attr.AttributeClass?.ToDisplayString()
+                    == "LightProto.CompatibilityLevelAttribute"
+                );
+            }
+
+            AttributeData? compatibilityLevelAttr =
+                GetCompatibilityLevelAttribute(property.GetAttributes())
+                ?? GetCompatibilityLevelAttribute(targetType.GetAttributes())
+                ?? GetCompatibilityLevelAttribute(targetType.ContainingModule.GetAttributes())
+                ?? GetCompatibilityLevelAttribute(targetType.ContainingAssembly.GetAttributes());
+
+            CompatibilityLevel compatibilityLevel = Enum.TryParse<LightProto.CompatibilityLevel>(
+                compatibilityLevelAttr?.ConstructorArguments[0].Value?.ToString(),
+                out var _compatibilityLevel
+            )
+                ? _compatibilityLevel
+                : CompatibilityLevel.Level200;
+
+            if (
+#pragma warning disable CS0618 // Type or member is obsolete
+                dataFormat is DataFormat.WellKnown
+#pragma warning restore CS0618 // Type or member is obsolete
+                && compatibilityLevel <= CompatibilityLevel.Level200
+            )
+            {
+                compatibilityLevel = CompatibilityLevel.Level240;
+            }
             bool isPacked =
                 bool.TryParse(
                     protoMemberAttr
@@ -1067,7 +1208,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
                 {
                     Name = property.Name,
                     Type = property.Type,
-                    Tag = tag,
+                    FieldNumber = tag,
                     Compilation = compilation,
                     IsRequired = property.IsRequired,
                     IsInitOnly = property.SetMethod?.IsInitOnly == true,
@@ -1077,11 +1218,12 @@ public class SimpleProtobufGenerator : ISourceGenerator
                     ProxyType = ProxyType,
                     Initializer = initializer,
                     IsPacked = isPacked,
+                    CompatibilityLevel = compatibilityLevel,
                 }
             );
         }
 
-        return members.OrderBy(m => m.Tag).ToList();
+        return members.OrderBy(m => m.FieldNumber).ToList();
     }
 
     private class ProtoMember
@@ -1100,11 +1242,14 @@ public class SimpleProtobufGenerator : ISourceGenerator
         public string Name { get; set; } = "";
         public ITypeSymbol Type { get; set; } = null!;
         public LightProto.DataFormat DataFormat { get; set; }
-        public (LightProto.DataFormat keyFormat, LightProto.DataFormat valueFormat) MapFormat { get; set; }
-        public uint Tag { get; set; }
+        public (
+            LightProto.DataFormat keyFormat,
+            LightProto.DataFormat valueFormat
+        ) MapFormat { get; set; }
+        public uint FieldNumber { get; set; }
         public bool IsRequired { get; set; }
         public bool IsInitOnly { get; set; }
-        public string? Initializer { get; set; }
+        public string Initializer { get; set; } = "default";
 
         public ImmutableArray<AttributeData> AttributeData { get; set; } =
             ImmutableArray<AttributeData>.Empty;
@@ -1194,9 +1339,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
             }
         }
 
-        public uint RawTag => GetRawTag(Tag, WireType);
-        public byte[] RawTagBytes => GetRawBytes(Tag, WireType);
+        public uint RawTag => GetRawTag(FieldNumber, WireType);
+        public byte[] RawTagBytes => GetRawBytes(FieldNumber, WireType);
         public bool IsPacked { get; set; }
+        public CompatibilityLevel CompatibilityLevel { get; set; }
 
         public static uint GetRawTag(uint Tag, PbWireType WireType)
         {

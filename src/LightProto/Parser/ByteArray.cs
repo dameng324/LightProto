@@ -12,9 +12,9 @@ public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(byte[] pair)
+    public int CalculateSize(byte[] value)
     {
-        return CodedOutputStream.ComputeLengthSize(pair.Length)+pair.Length;
+        return CodedOutputStream.ComputeLengthSize(value.Length)+value.Length;
     }
 
     public void WriteTo(ref WriterContext output, byte[] value)

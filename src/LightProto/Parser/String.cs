@@ -13,9 +13,9 @@ public sealed class StringProtoReader : IProtoReader<string>
 public sealed class StringProtoWriter : IProtoWriter<string>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(string pair)
+    public int CalculateSize(string value)
     {
-        return CodedOutputStream.ComputeStringSize(pair);
+        return CodedOutputStream.ComputeStringSize(value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

@@ -1,19 +1,28 @@
-﻿
+﻿namespace LightProto.Parser;
 
-
-
-namespace LightProto.Parser;
-
-public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[],T>
+public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[], T>
 {
-    public ArrayProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize,bool isPacked)
-        : base(itemWriter, tag, static collection => collection.Length, itemFixedSize,isPacked)
-    {
-    }
+    public ArrayProtoWriter(
+        IProtoWriter<T> itemWriter,
+        uint tag,
+        int itemFixedSize,
+        bool isPacked,
+        uint tag2
+    )
+        : base(
+            itemWriter,
+            tag,
+            static collection => collection.Length,
+            itemFixedSize,
+            isPacked,
+            tag2
+        ) { }
 }
+
 public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
 {
     private readonly uint _tag;
+    private readonly uint _tag2;
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
     public bool IsPacked { get; }
@@ -22,10 +31,12 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
         IProtoReader<TItem> itemReader,
         uint tag,
         int itemFixedSize,
-        bool isPacked
+        bool isPacked,
+        uint tag2
     )
     {
         _tag = tag;
+        _tag2 = tag2;
         ItemReader = itemReader;
         ItemFixedSize = itemFixedSize;
         IsPacked = isPacked;
@@ -33,8 +44,6 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
 
     public TItem[] ParseFrom(ref ReaderContext ctx)
     {
-        uint tag = _tag;
-
         var fixedSize = ItemFixedSize;
         if (IsPacked)
         {
@@ -87,7 +96,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
                             // Only FieldCodecs with a fixed size can reach here, and they are all known
                             // types that don't allow the user to specify a custom reader action.
                             // reader action will never return null.
-                            collection[i++] =  ItemReader.ParseFrom(ref ctx);
+                            collection[i++] = ItemReader.ParseFrom(ref ctx);
                         }
                     }
 
@@ -116,7 +125,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
             do
             {
                 collection.Add(ItemReader.ParseFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state,  tag));
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag)||ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag2));
             return collection.ToArray();
         }
     }

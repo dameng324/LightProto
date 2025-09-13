@@ -4,15 +4,18 @@ namespace LightProto.Parser;
 
 public sealed class ConcurrentStackProtoWriter<T> : IEnumerableProtoWriter<ConcurrentStack<T>, T>
 {
-    public ConcurrentStackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize, bool isPacked)
-        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize, isPacked)
+    public ConcurrentStackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize, bool isPacked,
+        uint tag2)
+        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize, isPacked,
+            tag2)
     {
     }
 }
 
 public sealed class ConcurrentStackProtoReader<T> : IEnumerableProtoReader<ConcurrentStack<T>, T>
 {
-    public ConcurrentStackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize, bool isPacked)
+    public ConcurrentStackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize, bool isPacked,
+        uint tag2)
         : base(
             itemReader,
             tag,
@@ -23,6 +26,7 @@ public sealed class ConcurrentStackProtoReader<T> : IEnumerableProtoReader<Concu
              return collection;
         },
             itemFixedSize, isPacked,
+            tag2,
             stack => new ConcurrentStack<T>(stack)
         )
     {

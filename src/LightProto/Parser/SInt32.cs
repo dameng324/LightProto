@@ -13,9 +13,9 @@ public sealed class SInt32ProtoReader : IProtoReader<Int32>
 public sealed class SInt32ProtoWriter : IProtoWriter<Int32>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Int32 pair)
+    public int CalculateSize(Int32 value)
     {
-        return CodedOutputStream.ComputeSInt32Size(pair);
+        return CodedOutputStream.ComputeSInt32Size(value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

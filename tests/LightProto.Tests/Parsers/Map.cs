@@ -1,15 +1,15 @@
 ﻿using LightProto;
 
 namespace LightProto.Tests.Parsers;
-[SkipAot]
-public partial class MapTests
+[InheritsTests]
+public partial class MapTests: BaseTests<MapTests.Message>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
     public partial record Message
     {
-        [ProtoMember(1, IsPacked = true)]
-        [ProtoBuf.ProtoMember(1, IsPacked = true)]
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
         public Dictionary<int, string> Property { get; set; } = [];
 
         public override string ToString()
@@ -18,7 +18,7 @@ public partial class MapTests
         }
     }
 
-    public static IEnumerable<Message> GetMessages()
+    public override IEnumerable<Message> GetMessages()
     {
         yield return new Message() { Property = new Dictionary<int, string>() };
         yield return new Message() { Property = new  Dictionary<int, string>()
@@ -29,43 +29,8 @@ public partial class MapTests
         } };
     }
 
-    [Test]
-    [MethodDataSource(nameof(GetMessages))]
-    public async Task SerializeAndDeserialize(Message message)
+    public override async Task AssertResult(Message clone, Message message)
     {
-        byte[] data = message.ToByteArray();
-        var clone = Serializer.Deserialize<Message>(data);
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
-    }
-
-    [Test]
-    [MethodDataSource(nameof(GetMessages))]
-    public async Task ProtoBuf_net_Serialize(Message message)
-    {
-        var ms = new MemoryStream();
-        ProtoBuf.Serializer.Serialize<Message>(ms, message);
-        ms.Position = 0;
-        var clone = Serializer.Deserialize<Message>(ms.ToArray());
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
-    }
-
-    [Test]
-    [MethodDataSource(nameof(GetMessages))]
-    public async Task ProtoBuf_net_Deserialize(Message message)
-    {
-        byte[] data = message.ToByteArray();
-        var clone = ProtoBuf.Serializer.Deserialize<Message>(data);
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
-    }
-
-    [Test]
-    [MethodDataSource(nameof(GetMessages))]
-    public async Task ProtoBuf_net_SerializeAndDeserialize(Message message)
-    {
-        var ms = new MemoryStream();
-        ProtoBuf.Serializer.Serialize<Message>(ms, message);
-        ms.Position = 0;
-        var clone = ProtoBuf.Serializer.Deserialize<Message>(ms.ToArray());
         await Assert.That(clone.Property).IsEquivalentTo(message.Property);
     }
 }

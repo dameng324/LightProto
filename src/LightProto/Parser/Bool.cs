@@ -11,9 +11,9 @@ public sealed class BooleanProtoReader : IProtoReader<bool>
 }
 public sealed class BooleanProtoWriter : IProtoWriter<bool>
 {
-    public int CalculateSize(bool pair)
+    public int CalculateSize(bool value)
     {
-        return CodedOutputStream.ComputeBoolSize(pair);
+        return CodedOutputStream.ComputeBoolSize(value);
     }
 
     public void WriteTo(ref WriterContext output, bool value)

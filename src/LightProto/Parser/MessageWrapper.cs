@@ -31,14 +31,14 @@ struct MessageWrapper<T>
             ItemWriter.WriteTo(ref output, value.Value);
         }
 
-        public int CalculateSize(MessageWrapper<T> pair)
+        public int CalculateSize(MessageWrapper<T> value)
         {
             int size = 0;
             if (ItemWriter is not ICollectionWriter)
             {
                 size += CodedOutputStream.ComputeRawVarint32Size(tag);
             }
-            size += ItemWriter.CalculateSize(pair.Value);
+            size += ItemWriter.CalculateSize(value.Value);
             return size;
         }
     }

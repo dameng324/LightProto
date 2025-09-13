@@ -24,8 +24,7 @@
     
     <ItemGroup>
       <Compile Remove="PbMessageParserGenerator.cs" />
-      <Compile Include="..\LightProto\DataFormat.cs">
-        <Link>DataFormat.cs</Link>
-      </Compile>
+        <Compile Include="..\LightProto\DataFormat.cs"/>
+        <Compile Include="..\LightProto\CompatibilityLevel.cs"/>
     </ItemGroup>
 </Project>

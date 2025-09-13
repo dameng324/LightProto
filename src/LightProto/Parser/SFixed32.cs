@@ -13,9 +13,9 @@ public sealed class SFixed32ProtoReader : IProtoReader<int>
 public sealed class SFixed32ProtoWriter : IProtoWriter<int>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(int pair)
+    public int CalculateSize(int value)
     {
-        return CodedOutputStream.ComputeSFixed32Size(pair);
+        return CodedOutputStream.ComputeSFixed32Size(value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

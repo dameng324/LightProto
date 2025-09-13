@@ -5,6 +5,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
     where TCollection : IEnumerable<TItem>
 {
     private readonly uint _tag;
+    private readonly uint _tag2;
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
@@ -18,10 +19,12 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
         Func<TCollection, TItem,TCollection> addItem,
         int itemFixedSize,
         bool isPacked,
+        uint tag2,
         Func<TCollection, TCollection>? completeAction = null
     )
     {
         _tag = tag;
+        _tag2 = tag2;
         _completeAction = completeAction;
         ItemReader = itemReader;
         CreateWithCapacity = createWithCapacity;
@@ -113,7 +116,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
             do
             {
                 collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag));
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag)||ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag2));
 
             return _completeAction is null ? collection : _completeAction.Invoke(collection);
         }

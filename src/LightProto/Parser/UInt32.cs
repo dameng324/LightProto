@@ -11,9 +11,9 @@ public sealed class UInt32ProtoReader : IProtoReader<UInt32>
 }
 public sealed class UInt32ProtoWriter : IProtoWriter<UInt32>
 {
-    public int CalculateSize(UInt32 pair)
+    public int CalculateSize(UInt32 value)
     {
-        return CodedOutputStream.ComputeUInt32Size(pair);
+        return CodedOutputStream.ComputeUInt32Size(value);
     }
 
     public void WriteTo(ref WriterContext output, UInt32 value)

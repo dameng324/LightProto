@@ -13,9 +13,9 @@ public sealed class SInt64ProtoReader : IProtoReader<Int64>
 public sealed class SInt64ProtoWriter : IProtoWriter<Int64>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Int64 pair)
+    public int CalculateSize(Int64 value)
     {
-        return CodedOutputStream.ComputeSInt64Size(pair);
+        return CodedOutputStream.ComputeSInt64Size(value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

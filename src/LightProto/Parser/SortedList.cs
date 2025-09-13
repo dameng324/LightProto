@@ -10,7 +10,8 @@ public sealed class SortedListProtoReader<TKey, TValue>
         IProtoReader<TValue> valueReader,
         uint tag,
         uint keyTag,
-        uint valueTag
+        uint valueTag,
+        uint tag2
     )
         : base(
             keyReader,
@@ -23,7 +24,8 @@ public sealed class SortedListProtoReader<TKey, TValue>
             {
                 dic[pair.Key] = pair.Value;
                 return dic;
-            }
+            },
+            tag2
         ) { }
 }
 
@@ -36,7 +38,9 @@ public sealed class SortedListProtoWriter<TKey, TValue>
         IProtoWriter<TValue> valueWriter,
         uint tag,
         uint keyTag,
-        uint valueTag
+        uint valueTag,
+        uint tag2
     )
-        : base(keyWriter, valueWriter, tag, keyTag, valueTag, (dic) => dic.Count) { }
+        : base(keyWriter, valueWriter, tag, keyTag, valueTag, (dic) => dic.Count,
+            tag2) { }
 }

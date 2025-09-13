@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
-using LightProto.WellKnownTypes;
 using ProtoBuf;
 using DataFormat2 = ProtoBuf.DataFormat;
 using ProtoContract1 = LightProto.ProtoContractAttribute;
@@ -104,29 +103,17 @@ public partial class CsTestMessage
     [ProtoMember2(22)]
     public List<CsTestMessage> NestedMessageArrayField { get; set; } = [];
     
-    // google.protobuf.Timestamp
-    [ProtoMember1(27)]
-    public required Timestamp TimestampField { get; set; }
-
     [ProtoMember2(27)]
-    [ProtoBuf.CompatibilityLevel(CompatibilityLevel.Level240)]
-    public DateTime TimestampField2
-    {
-        get => TimestampField?.ToDateTime()??default(DateTime);
-        set => TimestampField = value.ToTimestamp();
-    }
+    [LightProto.CompatibilityLevel(LightProto.CompatibilityLevel.Level240)]
+    [ProtoBuf.CompatibilityLevel(ProtoBuf.CompatibilityLevel.Level240)]
+    public DateTime TimestampField2{ get; set; }
 
     // google.protobuf.Duration
-    [ProtoMember1(28)]
-    public Duration DurationField { get; set; }
 
     [ProtoMember2(28)]
-    [ProtoBuf.CompatibilityLevel(CompatibilityLevel.Level240)]
-    public TimeSpan DurationField2
-    {
-        get => DurationField?.ToTimeSpan()??default;
-        set => DurationField = value.ToDuration();
-    }
+    [LightProto.CompatibilityLevel(LightProto.CompatibilityLevel.Level240)]
+    [ProtoBuf.CompatibilityLevel(ProtoBuf.CompatibilityLevel.Level240)]
+    public TimeSpan DurationField2 { get; set; }
 
     [ProtoMember1(29)]
     [ProtoMember2(29)]

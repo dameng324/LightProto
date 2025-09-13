@@ -16,8 +16,8 @@ So, LightProto has three main goals:
 
 1. **NativeAOT Compatibility**: Ensure full support for ahead-of-time compilation scenarios without any runtime
    reflection or code generation.
-2. **Protobuf-net Compatibility**: Maintain the same serialization behavior and API patterns as Protobuf-net, making
-   migration seamless.
+2. **Protobuf-net Compatibility**: implement the most features of Protobuf-net, making it easy to migrate existing
+   Protobuf-net codebases to LightProto. but unfortunately, some features may not be supported due to NativeAOT limitations or rarely used features.
 3. **Performance**: Performance should be better or at least same as Protobuf-net.
 
 ## Performance & Benchmarks
@@ -52,6 +52,7 @@ DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
 
 Todo list:
 
+- [ ] CompatibilityLevel support
 - [ ] Add more tests for other possible types supported by Protobuf-net
 - [ ] Add more benchmarks and performance tests
 - [ ] Improve documentation and examples
@@ -114,21 +115,71 @@ byte[] data = stream.ToArray();
 var obj = Serializer.Deserialize<MyClass>(new MemoryStream(data));
 ```
 
-### Known Differences
+## Known Differences with Protobuf-net
 
-| Feature         | Protobuf-net                                                                                                                                         | LightProto                         |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
-| Partial Classes | No need                                                                                                                                              | must                               |
-| Inheritance     | [use `[ProtoInclude]`](https://github.com/protobuf-net/protobuf-net?tab=readme-ov-file#inheritance)                                                  | no need`[ProtoInclude]`            |
-| Surrogate       | [Register a Surrogate to RuntimeModel](https://stackoverflow.com/questions/14796296/serializing-listt-using-a-surrogate-with-protobuf-net-exception) | use (`[ProtoProxy]`+`ProxyFor<T>`) |
-| SkipConstructor | `[ProtoContract(SkipConstructor=true)]`                                                                                                              | not supported)                     |
+Here are some known differences between LightProto and Protobuf-net. The goal is to minimize these differences, but if you found any other different behavior with Protobuf-net, please report them via GitHub issues.
 
-If you found any other different behavior with Protobuf-net, please report them via GitHub issues.
+### Partial Classes
+
+There is no need to mark your classes as `partial` in Protobuf-net, but LightProto requires it to generate the necessary
+serialization code at compile time.
+
+### Inheritance
+
+Protobuf-net requires the use of the `[ProtoInclude]` attribute to handle inheritance, while LightProto automatically
+supports inheritance without additional attributes.
+
+Some behavior may not be exactly the same, here is an example
+```csharp
+[ProtoContract]
+public partial class BaseClass
+{
+    [ProtoMember(1)]
+    public int BaseProperty { get; set; }
+}
+[ProtoContract]
+public partial class DerivedClass : BaseClass
+{
+    [ProtoMember(2)]
+    public string DerivedProperty { get; set; }
+}
+public partial class Container
+{
+    [ProtoMember(1)]
+    public BaseClass Item { get; set; }
+}
+
+Container container = new Container
+{
+    Item = new DerivedClass
+    {
+        BaseProperty = 42,
+        DerivedProperty = "Hello"
+    }
+};
+// Serialization
+var bytes = container.ToByteArray();
+// Deserialization
+var deserializedContainer = Serializer.Deserialize<Container>(bytes); 
+Console.WriteLine(deserializedContainer.Item.GetType().Name);// output type is BaseClass in LightProto, but DerivedClass in Protobuf-net
+```
+
+### IExtensible
+
+LightProto does not support the `IExtensible` interface, which is used in Protobuf-net to allow for dynamic
+extensions. Instead, LightProto encourages the use of well-defined schemas.
+
+These interface are defined in LightProto for compatibility, but they are no effect.
+
+### Surrogate
+
+Protobuf-net allows registering a surrogate type at runtime using `RuntimeTypeModel`. LightProto requires the use of
+`[ProtoProxy]` and `ProxyFor<T>` attributes to define surrogate types at compile time.
 
 ## .proto files
 
 LightProto does not include a built-in tool for generating C# classes from `.proto` files. However, you can use the
-`protobuf-net` tool to generate the classes and then modify them to be compatible with LightProto.
+`protobuf-net` tool to generate the classes and then modify them to be compatible with LightProto(just replace `ProtoBuf` to `LightProto` should work, if not, fire an issue please).
 
 ## License
 

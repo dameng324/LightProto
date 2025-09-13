@@ -77,7 +77,6 @@ public partial struct DateTimeProxy
         Ticks = dt.Ticks-EpochOrigin.Ticks,
         Scale = TimeSpanScale.TICKS
     };
-    
 }
 
 internal enum TimeSpanScale

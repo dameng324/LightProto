@@ -79,3 +79,8 @@ message KeyValuePair_Int32_Dictionary_Int32_String {
   int32 Key = 1;
   map<int32,string> Value = 2;
 }
+
+message TestArrayMessage
+{
+  repeated int32 Items = 1 [packed=false];
+}

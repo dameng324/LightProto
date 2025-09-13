@@ -13,9 +13,9 @@ public sealed class SFixed64ProtoReader : IProtoReader<Int64>
 public sealed class SFixed64ProtoWriter : IProtoWriter<Int64>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Int64 pair)
+    public int CalculateSize(Int64 value)
     {
-        return CodedOutputStream.ComputeSFixed64Size(pair);
+        return CodedOutputStream.ComputeSFixed64Size(value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

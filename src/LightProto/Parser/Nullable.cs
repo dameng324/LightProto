@@ -30,9 +30,9 @@ public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(Nullable<T> pair)
+    public int CalculateSize(Nullable<T> value)
     {
-        return pair.HasValue == false ? 0 : ValueWriter.CalculateSize(pair.Value);
+        return value.HasValue == false ? 0 : ValueWriter.CalculateSize(value.Value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

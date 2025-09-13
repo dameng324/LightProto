@@ -12,13 +12,15 @@ public class IEnumerableProtoWriter<TCollection, TItem>
     public Func<TCollection, int> GetCount { get; }
     public int ItemFixedSize { get; }
     public bool IsPacked { get; }
+    public uint Tag2 { get; }
 
     public IEnumerableProtoWriter(
         IProtoWriter<TItem> itemWriter,
         uint tag,
         Func<TCollection, int> getCount,
         int itemFixedSize,
-        bool isPacked
+        bool isPacked,
+        uint tag2
     )
     {
         ItemWriter = itemWriter;
@@ -26,6 +28,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         GetCount = getCount;
         ItemFixedSize = itemFixedSize;
         IsPacked = isPacked;
+        Tag2 = tag2;
     }
 
     private int CalculatePackedDataSize(TCollection collection, int count)
@@ -65,11 +68,11 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         return size;
     }
 
-    public int CalculateSize(TCollection pair)
+    public int CalculateSize(TCollection value)
     {
-        if (pair is null)
+        if (value is null)
             return 0;
-        var count = GetCount(pair);
+        var count = GetCount(value);
         if (count == 0)
         {
             return 0;
@@ -77,14 +80,14 @@ public class IEnumerableProtoWriter<TCollection, TItem>
 
         if (IsPacked && PackedRepeated.Support<TItem>())
         {
-            var dataSize = CalculatePackedDataSize(pair, count);
+            var dataSize = CalculatePackedDataSize(value, count);
             return CodedOutputStream.ComputeRawVarint32Size(Tag)
                 + CodedOutputStream.ComputeLengthSize(dataSize)
                 + dataSize;
         }
         else
         {
-            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + GetAllItemSize(pair);
+            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + GetAllItemSize(value);
         }
     }
 
@@ -132,6 +135,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         }
         else
         {
+            bool first = true;
             if (collection is IList<TItem> list)
             {
                 for (var index = 0; index < list.Count; index++)
@@ -142,7 +146,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                         throw new Exception("Sequence contained null element");
                     }
 
-                    output.WriteTag(Tag);
+                    output.WriteTag(Tag2);
                     WriteItem(ref output, item);
                 }
             }
@@ -156,8 +160,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                         throw new Exception("Sequence contained null element");
                     }
 
-                    output.WriteTag(Tag);
-
+                    output.WriteTag(Tag2);
                     WriteItem(ref output, item);
                 }
             }

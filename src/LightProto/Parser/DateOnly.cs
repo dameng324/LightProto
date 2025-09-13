@@ -12,9 +12,9 @@ public sealed class DateOnlyProtoReader : IProtoReader<DateOnly>
 public sealed class DateOnlyProtoWriter : IProtoWriter<DateOnly>
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public int CalculateSize(DateOnly pair)
+    public int CalculateSize(DateOnly value)
     {
-        return CodedOutputStream.ComputeInt32Size(pair.DayNumber);
+        return CodedOutputStream.ComputeInt32Size(value.DayNumber);
     }
     
     public void WriteTo(ref WriterContext output, DateOnly value)
