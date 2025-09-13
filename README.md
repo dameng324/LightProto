@@ -116,14 +116,12 @@ var obj = Serializer.Deserialize<MyClass>(new MemoryStream(data));
 
 ### Known Differences
 
-- **Partial Classes**: Ensure all protobuf classes are declared as `partial` to allow the source generator to extend
-  them.
-
-| Feature         | Protobuf-net Behavior                                                                                                     | LightProto Behavior                              |
-|-----------------|---------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|
-| Partial Classes | No need                                                                                                                   | must                                             |
-| Inheritance     | [Supported](https://github.com/protobuf-net/protobuf-net?tab=readme-ov-file#inheritance)                                  | Supported out of box                             |
-| Surrogate       | [Supported](https://stackoverflow.com/questions/14796296/serializing-listt-using-a-surrogate-with-protobuf-net-exception) | Supported(ProtoProxyAttribute+ProxyForAttribute) |
+| Feature         | Protobuf-net                                                                                                                                         | LightProto                         |
+|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| Partial Classes | No need                                                                                                                                              | must                               |
+| Inheritance     | [use `[ProtoInclude]`](https://github.com/protobuf-net/protobuf-net?tab=readme-ov-file#inheritance)                                                  | no need`[ProtoInclude]`            |
+| Surrogate       | [Register a Surrogate to RuntimeModel](https://stackoverflow.com/questions/14796296/serializing-listt-using-a-surrogate-with-protobuf-net-exception) | use (`[ProtoProxy]`+`ProxyFor<T>`) |
+| SkipConstructor | `[ProtoContract(SkipConstructor=true)]`                                                                                                              | not supported)                     |
 
 If you found any other different behavior with Protobuf-net, please report them via GitHub issues.
 

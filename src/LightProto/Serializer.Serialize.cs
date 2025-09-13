@@ -4,7 +4,6 @@ namespace LightProto;
 
 public static partial class Serializer
 {
-
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.
     /// </summary>
@@ -38,5 +37,28 @@ public static partial class Serializer
     {
         WriterContext.Initialize(new CodedOutputStream(destination), out var ctx);
         writer.WriteTo(ref ctx, instance);
+    }
+
+    public static T DeepClone<T>(T message)
+        where T : IProtoParser<T>
+    {
+        unsafe
+        {
+            var size = T.Writer.CalculateSize(message);
+            Span<byte> buffer;
+            if (size < 256)
+            {
+#pragma warning disable CS9081 // A result of a stackalloc expression of this type in this context may be exposed outside of the containing method
+                buffer = stackalloc byte[size];
+#pragma warning restore CS9081 // A result of a stackalloc expression of this type in this context may be exposed outside of the containing method
+            }
+            else
+            {
+                buffer = new byte[size];
+            }
+            WriterContext.Initialize(ref buffer, out var ctx);
+            T.Writer.WriteTo(ref ctx, message);
+            return Deserialize<T>(buffer);
+        }
     }
 }
