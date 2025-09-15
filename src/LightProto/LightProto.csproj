@@ -10,7 +10,7 @@
         <!-- NuGet Package Metadata -->
         <PackageId>LightProto</PackageId>
         <Title>LightProto.Extension - Generic Protobuf Deserialization</Title>
-        <Description>A .NET library that enables generic protobuf deserialization by providing an interface and source generator for Google.Protobuf generated classes. Allows writing type-safe generic methods for protobuf message parsing.</Description>
+        <Description>Native AOT solution for protobuf-net</Description>
         <PackageTags>protobuf;google-protobuf;source-generator;generic;deserialization;codegen</PackageTags>
         <Authors>dameng324</Authors>
         <Copyright>Copyright (c) 2025 dameng324</Copyright>
