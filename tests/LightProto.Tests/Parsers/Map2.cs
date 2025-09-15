@@ -1,8 +1,9 @@
-﻿using LightProto;
+﻿using Google.Protobuf.Collections;
+using LightProto;
 
 namespace LightProto.Tests.Parsers;
 [InheritsTests]
-public partial class Map2Tests: BaseTests<Map2Tests.Message>
+public partial class Map2Tests: BaseTests<Map2Tests.Message,Map2TestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -20,8 +21,8 @@ public partial class Map2Tests: BaseTests<Map2Tests.Message>
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new Message() { Property = new () };
-        yield return new Message() { Property = new  ()
+        yield return new () { Property = new () };
+        yield return new () { Property = new  ()
         {
             [10] = new Dictionary<int, string>()
             {
@@ -45,6 +46,36 @@ public partial class Map2Tests: BaseTests<Map2Tests.Message>
     }
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Property.Keys.ToArray()).IsEquivalentTo(message.Property.Keys.ToArray());
+        foreach (var kv in message.Property)
+        {
+            await Assert.That(clone.Property[kv.Key]).IsEquivalentTo(kv.Value);
+        }
+    }
+    public override IEnumerable<Map2TestsMessage> GetGoogleMessages()
+    {
+        return GetMessages().Select(o=>
+        {
+            var map2TestsMessage = new Map2TestsMessage();
+            
+            foreach(var kv in o.Property)
+            {
+                map2TestsMessage.Property.Add(new Int32NestMapMessage()
+                {
+                    Key = kv.Key,
+                    Value = { kv.Value }
+                });
+            }
+
+            return map2TestsMessage;
+        });
+    }
+    public override async Task AssertGoogleResult(Map2TestsMessage clone, Message message)
+    {
+        await Assert.That(clone.Property.Count).IsEqualTo(message.Property.Count);
+        foreach (var kv in message.Property)
+        {
+            await Assert.That(clone.Property.First(o=>o.Key==kv.Key).Value).IsEquivalentTo(kv.Value);
+        }
     }
 }

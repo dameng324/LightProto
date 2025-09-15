@@ -410,6 +410,17 @@ public class SimpleProtobufGenerator : ISourceGenerator
             return $"{messageName}.{member.Name}.HasValue && {messageName}.{member.Name}.Value != default";
         }
 
+        if (member.Type.SpecialType == SpecialType.System_DateTime)
+        {
+            return "true";
+        }
+
+        if (member.CompatibilityLevel >= CompatibilityLevel.Level300 &&
+            (IsGuidType(member.Type) || IsDecimalType(member.Type)))
+        {
+            return "true";
+        }
+
         if (member.Type.IsValueType)
         {
             return $"{messageName}.{member.Name} != default";
@@ -427,6 +438,11 @@ public class SimpleProtobufGenerator : ISourceGenerator
         }
 
         return check;
+    }
+
+    private bool IsDecimalType(ITypeSymbol memberType)
+    {
+        return memberType.OriginalDefinition.SpecialType == SpecialType.System_Decimal;
     }
 
     public static bool HasCountProperty(ITypeSymbol type)

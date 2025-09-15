@@ -1,0 +1,109 @@
+﻿syntax = "proto3";
+option csharp_namespace = "LightProto.Tests.Parsers";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "protobuf-net/bcl.proto";
+
+message ArrayTestsMessage {
+  repeated int32 Property = 1 [packed = false];
+}
+message DateTimeTestsMessage
+{
+  bcl.DateTime Property = 1;
+}
+message DateTime240TestsMessage
+{
+  google.protobuf.Timestamp Property = 1;
+}
+message DecimalTestsMessage
+{
+  bcl.Decimal Property = 1;
+}
+message Decimal300TestsMessage
+{
+  string Property = 1;
+}
+message GuidTestsMessage
+{
+  bcl.Guid Property = 1;
+}
+message Guid300TestsMessage
+{
+  string Property = 1;
+}
+message HashSetPackedTestsMessage
+{
+  repeated int32 Property = 1 [packed = false];
+}
+message IListPackedTestsMessage
+{
+  repeated int32 Property = 1 [packed = false];
+}
+message ISetPackedTestsMessage
+{
+  repeated int32 Property = 1 [packed = false];
+}
+message ListPackedTestsMessage
+{
+  repeated int32 Property = 1;
+}
+message ListUnPackedTestsMessage
+{
+  repeated int32 Property = 1 [packed = false];
+}
+message ConcurrentBagPackedTestsMessage{
+  repeated int32 Property = 1 [packed = false];
+}
+message ConcurrentQueuePackedTestsMessage{
+  repeated int32 Property = 1 [packed = false];
+}
+message ConcurrentStackPackedTestsMessage{
+  repeated int32 Property = 1 [packed = false];
+}
+message StackPackedTestsMessage{
+  repeated int32 Property = 1 [packed = false];
+}
+message QueuePackedTestsMessage{
+  repeated int32 Property = 1 [packed = false];
+}
+message MapTestsMessage
+{
+  map<int32, string> Property = 1;
+}
+message Map2TestsMessage
+{
+  repeated Int32NestMapMessage Property = 1;
+}
+message Int32NestMapMessage
+{
+  int32 Key = 1;
+  map<int32, string> Value = 2;
+}
+message RecordStructTestsMessage
+{
+  string Property = 1;
+}
+message StructTestsMessage
+{
+  string Property = 1;
+}
+message TimeSpanTestsMessage
+{
+  bcl.TimeSpan Property = 1;
+}
+message TimeSpan240TestsMessage
+{
+  google.protobuf.Duration Property = 1;
+}
+
+message InheritanceTestsBaseMessage
+{
+  string BaseValue = 1;
+  oneof Inheritance {
+    InheritanceTestsMessage Derived = 2;
+  }
+}
+message InheritanceTestsMessage
+{
+  string Value = 1;
+}

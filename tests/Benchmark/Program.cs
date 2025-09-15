@@ -1,0 +1,43 @@
+﻿using Benchmark;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
+using LightProto;
+
+
+var proto = ProtoBuf.Serializer.GetProto<Message>();
+Console.WriteLine(proto);
+return;
+
+[ProtoBuf.ProtoContract]
+public partial record Message
+{
+    [ProtoBuf.ProtoMember(1)]
+    public DateTime Property { get; set; }
+}
+// BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+// return;
+// BenchmarkRunner.Run<Serialize>();
+// return;
+
+// BenchmarkRunner.Run<Deserialize>();
+// return;
+// var serialize = new Serialize();
+// for (int i = 0; i < 5000; i++)
+// {
+//     serialize.Serialize_LightProto();
+// }
+// Console.WriteLine("done.");
+// return;
+
+// byte[] _data = System.IO.File.ReadAllBytes("test.bin");
+// //warn up
+// for (int i = 0; i < 100; i++)
+// {
+//     var d2 = GoogleProtobuf.Database.Parser.ParseFrom(_data);
+//     var d3 = LightProto.Serializer.Deserialize<LightProto.Database>(_data);
+// }
+//
+// {
+//     var d2 = GoogleProtobuf.Database.Parser.ParseFrom(_data);
+//     var d3 = LightProto.Serializer.Deserialize<LightProto.Database>(_data);
+// }

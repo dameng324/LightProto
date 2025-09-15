@@ -55,3 +55,5 @@ public sealed class CompatibilityLevelAttribute(CompatibilityLevel level) : Attr
     /// </summary>
     public CompatibilityLevel Level { get; } = level;
 }
+
+public sealed class IncludeDateTimeKindAttribute() : Attribute;

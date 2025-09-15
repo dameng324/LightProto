@@ -14,7 +14,7 @@ namespace LightProto
             => global::LightProto.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
         [global::LightProto.ProtoMember(1)]
-        public global::System.Collections.Generic.List<Order> Orders { get; } = new global::System.Collections.Generic.List<Order>();
+        public global::System.Collections.Generic.List<Order> Orders { get; set; } = new global::System.Collections.Generic.List<Order>();
 
     }
 
@@ -75,7 +75,7 @@ namespace LightProto
         public string ShipCountry { get; set; } = "";
 
         [global::LightProto.ProtoMember(15)]
-        public global::System.Collections.Generic.List<OrderLine> Lines { get; } = new global::System.Collections.Generic.List<OrderLine>();
+        public global::System.Collections.Generic.List<OrderLine> Lines { get; set; } = new global::System.Collections.Generic.List<OrderLine>();
 
     }
 

@@ -3,7 +3,7 @@
 [InheritsTests]
 [Explicit]
 //TODO re-enable when inheritance is supported
-public partial class InheritanceTests: BaseTests<InheritanceTests.Message>
+public partial class InheritanceTests: BaseProtoBufTests<InheritanceTests.Message>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -19,8 +19,8 @@ public partial class InheritanceTests: BaseTests<InheritanceTests.Message>
     [ProtoBuf.ProtoContract]
     public partial record Message : Base
     {
-        [ProtoMember(2)]
-        [ProtoBuf.ProtoMember(2)]
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
         public string Value { get; set; } = "";
     }
 

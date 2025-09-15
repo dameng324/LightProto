@@ -52,7 +52,6 @@ DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
 
 Todo list:
 
-- [ ] CompatibilityLevel support
 - [ ] Add more tests for other possible types supported by Protobuf-net
 - [ ] Add more benchmarks and performance tests
 - [ ] Improve documentation and examples
@@ -126,43 +125,9 @@ serialization code at compile time.
 
 ### Inheritance
 
-Protobuf-net requires the use of the `[ProtoInclude]` attribute to handle inheritance, while LightProto automatically
-supports inheritance without additional attributes.
+Protobuf-net requires the use of the `[ProtoInclude]` attribute to handle inheritance, This a really complex and not common feature, so LightProto does not support it currently. 
 
-Some behavior may not be exactly the same, here is an example
-```csharp
-[ProtoContract]
-public partial class BaseClass
-{
-    [ProtoMember(1)]
-    public int BaseProperty { get; set; }
-}
-[ProtoContract]
-public partial class DerivedClass : BaseClass
-{
-    [ProtoMember(2)]
-    public string DerivedProperty { get; set; }
-}
-public partial class Container
-{
-    [ProtoMember(1)]
-    public BaseClass Item { get; set; }
-}
-
-Container container = new Container
-{
-    Item = new DerivedClass
-    {
-        BaseProperty = 42,
-        DerivedProperty = "Hello"
-    }
-};
-// Serialization
-var bytes = container.ToByteArray();
-// Deserialization
-var deserializedContainer = Serializer.Deserialize<Container>(bytes); 
-Console.WriteLine(deserializedContainer.Item.GetType().Name);// output type is BaseClass in LightProto, but DerivedClass in Protobuf-net
-```
+If you need this feature, please let me known.
 
 ### IExtensible
 

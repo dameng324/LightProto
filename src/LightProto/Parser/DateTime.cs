@@ -1,6 +1,5 @@
-﻿
+﻿namespace LightProto.Parser;
 
-namespace LightProto.Parser;
 //
 //
 // message DateTime {
@@ -18,7 +17,7 @@ namespace LightProto.Parser;
 //     MINMAX = 15; // dubious
 // }
 // enum DateTimeKind
-// {     
+// {
 //     // The time represented is not specified as either local time or Coordinated Universal Time (UTC).
 //     UNSPECIFIED = 0;
 //     // The time represented is UTC.
@@ -32,63 +31,85 @@ namespace LightProto.Parser;
 [ProtoProxyFor<DateTime>]
 public partial struct DateTimeProxy
 {
-    [ProtoMember(1,DataFormat = DataFormat.ZigZag)]
+    [ProtoMember(1, DataFormat = DataFormat.ZigZag)]
     internal long Ticks { get; set; }
+
     [ProtoMember(2)]
     internal TimeSpanScale Scale { get; set; }
-    
+
+    [ProtoMember(3)]
+    internal DateTimeKind Kind { get; set; }
+
     public static implicit operator DateTime(DateTimeProxy proxy)
     {
+        long ticks;
         switch (proxy.Scale)
         {
-            case TimeSpanScale.DAYS:
-                proxy.Ticks *= TimeSpan.TicksPerDay;
+            case TimeSpanScale.Days:
+                ticks = proxy.Ticks * TimeSpan.TicksPerDay;
                 break;
-            case TimeSpanScale.HOURS:
-                proxy.Ticks *= TimeSpan.TicksPerHour;
+            case TimeSpanScale.Hours:
+                ticks = proxy.Ticks * TimeSpan.TicksPerHour;
                 break;
-            case TimeSpanScale.MINUTES:
-                proxy.Ticks *= TimeSpan.TicksPerMinute;
+            case TimeSpanScale.Minutes:
+                ticks = proxy.Ticks * TimeSpan.TicksPerMinute;
                 break;
-            case TimeSpanScale.SECONDS:
-                proxy.Ticks *= TimeSpan.TicksPerSecond;
+            case TimeSpanScale.Seconds:
+                ticks = proxy.Ticks * TimeSpan.TicksPerSecond;
                 break;
-            case TimeSpanScale.MILLISECONDS:
-                proxy.Ticks *= TimeSpan.TicksPerMillisecond;
+            case TimeSpanScale.Milliseconds:
+                ticks = proxy.Ticks * TimeSpan.TicksPerMillisecond;
                 break;
-            case TimeSpanScale.TICKS:
+            case TimeSpanScale.Ticks:
+                ticks = proxy.Ticks;
                 break;
-            case TimeSpanScale.MINMAX:
+            case TimeSpanScale.Minmax:
                 if (proxy.Ticks == -1)
                     return DateTime.MinValue;
-                else if(proxy.Ticks==1)
+                else if (proxy.Ticks == 1)
                     return DateTime.MaxValue;
                 else
-                    throw new ArgumentOutOfRangeException(nameof(proxy.Ticks), $"Invalid ticks for MINMAX scale: {proxy.Ticks}");
+                    throw new ArgumentOutOfRangeException(
+                        nameof(proxy.Ticks),
+                        $"Invalid ticks for MINMAX scale: {proxy.Ticks}"
+                    );
             default:
-                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
+                throw new ArgumentOutOfRangeException(
+                    nameof(proxy.Scale),
+                    $"Unknown scale: {proxy.Scale}"
+                );
         }
-        return new DateTime(ticks: proxy.Ticks+EpochOrigin.Ticks, kind: DateTimeKind.Unspecified);
+
+        return new DateTime(ticks: ticks + EpochOriginsTicks[(int)proxy.Kind], kind: proxy.Kind);
     }
 
-    internal static readonly DateTime EpochOrigin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified);
-    public static implicit operator DateTimeProxy(DateTime dt) => new DateTimeProxy
-    {
-        Ticks = dt.Ticks-EpochOrigin.Ticks,
-        Scale = TimeSpanScale.TICKS
-    };
+    internal static readonly long[] EpochOriginsTicks =
+    [
+        new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified).Ticks,
+        new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).Ticks,
+        new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local).Ticks,
+    ];
+
+    public static implicit operator DateTimeProxy(DateTime dt) =>
+        new DateTimeProxy
+        {
+            Ticks = dt.Ticks - EpochOriginsTicks[(int)dt.Kind],
+            Scale = TimeSpanScale.Ticks,
+            Kind = dt.Kind,
+        };
 }
 
 internal enum TimeSpanScale
 {
-    DAYS = 0,
-    HOURS = 1,
-    MINUTES = 2,
-    SECONDS = 3,
-    MILLISECONDS = 4,
-    TICKS = 5,
-    MINMAX = 15
+    Days = 0,
+    Hours = 1,
+    Minutes = 2,
+    Seconds = 3,
+    Milliseconds = 4,
+    Ticks = 5,
+    Minmax = 15,
 }
+
 public sealed class DateTimeProtoParser : IProtoParser<DateTime>
 {
     public static IProtoReader<DateTime> Reader { get; } = LightProto.Parser.DateTimeProxy.Reader;

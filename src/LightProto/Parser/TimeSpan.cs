@@ -27,26 +27,28 @@ public partial struct TimeSpanProxy
 
     public static implicit operator TimeSpan(TimeSpanProxy proxy)
     {
+        long ticks;
         switch (proxy.Scale)
         {
-            case TimeSpanScale.DAYS:
-                proxy.Ticks *= TimeSpan.TicksPerDay;
+            case TimeSpanScale.Days:
+                ticks=proxy.Ticks* TimeSpan.TicksPerDay;
                 break;
-            case TimeSpanScale.HOURS:
-                proxy.Ticks *= TimeSpan.TicksPerHour;
+            case TimeSpanScale.Hours:
+                ticks=proxy.Ticks* TimeSpan.TicksPerHour;
                 break;
-            case TimeSpanScale.MINUTES:
-                proxy.Ticks *= TimeSpan.TicksPerMinute;
+            case TimeSpanScale.Minutes:
+                ticks=proxy.Ticks* TimeSpan.TicksPerMinute;
                 break;
-            case TimeSpanScale.SECONDS:
-                proxy.Ticks *= TimeSpan.TicksPerSecond;
+            case TimeSpanScale.Seconds:
+                ticks=proxy.Ticks* TimeSpan.TicksPerSecond;
                 break;
-            case TimeSpanScale.MILLISECONDS:
-                proxy.Ticks *= TimeSpan.TicksPerMillisecond;
+            case TimeSpanScale.Milliseconds:
+                ticks=proxy.Ticks* TimeSpan.TicksPerMillisecond;
                 break;
-            case TimeSpanScale.TICKS:
+            case TimeSpanScale.Ticks:
+                ticks = proxy.Ticks;
                 break;
-            case TimeSpanScale.MINMAX:
+            case TimeSpanScale.Minmax:
                 if (proxy.Ticks == -1)
                     return TimeSpan.MinValue;
                 else if (proxy.Ticks == 1)
@@ -62,11 +64,11 @@ public partial struct TimeSpanProxy
                     $"Unknown scale: {proxy.Scale}"
                 );
         }
-        return new TimeSpan(ticks: proxy.Ticks);
+        return new TimeSpan(ticks);
     }
 
     public static implicit operator TimeSpanProxy(TimeSpan dt) =>
-        new TimeSpanProxy { Ticks = dt.Ticks, Scale = TimeSpanScale.TICKS };
+        new TimeSpanProxy { Ticks = dt.Ticks, Scale = TimeSpanScale.Ticks };
 }
 
 public sealed class TimeSpanProtoParser : IProtoParser<TimeSpan>
