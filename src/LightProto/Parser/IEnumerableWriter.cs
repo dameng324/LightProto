@@ -14,6 +14,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
     public bool IsPacked { get; }
     public uint Tag2 { get; }
 
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public IEnumerableProtoWriter(
         IProtoWriter<TItem> itemWriter,
         uint tag,
@@ -135,7 +136,6 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         }
         else
         {
-            bool first = true;
             if (collection is IList<TItem> list)
             {
                 for (var index = 0; index < list.Count; index++)

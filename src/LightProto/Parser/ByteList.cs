@@ -5,6 +5,7 @@ namespace LightProto.Parser;
 
 public sealed class ByteListProtoReader : IProtoReader<List<byte>>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public List<byte> ParseFrom(ref ReaderContext input)
     {
         var length = input.ReadLength();
@@ -13,6 +14,7 @@ public sealed class ByteListProtoReader : IProtoReader<List<byte>>
 }
 public sealed class ByteListProtoWriter : IProtoWriter<List<byte>>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(List<byte> value)
     {

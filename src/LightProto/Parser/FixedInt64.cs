@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class Fixed64ProtoReader : IProtoReader<UInt64>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public UInt64 ParseFrom(ref ReaderContext input)
     {
@@ -12,6 +13,7 @@ public sealed class Fixed64ProtoReader : IProtoReader<UInt64>
 }
 public sealed class Fixed64ProtoWriter : IProtoWriter<UInt64>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(UInt64 value)
     {

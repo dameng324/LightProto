@@ -91,14 +91,30 @@ public static partial class Serializer
         }
     }
 
+    public static byte[] ToByteArray<T>(this T message, IProtoWriter<T> writer)
+    {
+        var buffer = new byte[writer.CalculateSize(message)];
+        CodedOutputStream output = new CodedOutputStream(buffer);
+        WriterContext.Initialize(output, out var ctx);
+        writer.WriteTo(ref ctx, message);
+        return buffer;
+    }
+
     public static byte[] ToByteArray<T>(this T message)
         where T : IProtoParser<T>
     {
-        var buffer = new byte[T.Writer.CalculateSize(message)];
-        CodedOutputStream output = new CodedOutputStream(buffer);
-        WriterContext.Initialize(output, out var ctx);
-        T.Writer.WriteTo(ref ctx, message);
-        return buffer;
+        return ToByteArray(message, T.Writer);
+    }
+
+    public static byte[] ToByteArray<T>(this ICollection<T> message, IProtoWriter<T> writer)
+    {
+        return ToByteArray(message, writer.GetCollectionWriter());
+    }
+
+    public static byte[] ToByteArray<T>(this ICollection<T> message)
+        where T : IProtoParser<T>
+    {
+        return ToByteArray(message, T.Writer);
     }
 
     /// <summary>

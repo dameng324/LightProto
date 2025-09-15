@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class SFixed32ProtoReader : IProtoReader<int>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int ParseFrom(ref ReaderContext input)
     {
@@ -12,6 +13,7 @@ public sealed class SFixed32ProtoReader : IProtoReader<int>
 }
 public sealed class SFixed32ProtoWriter : IProtoWriter<int>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(int value)
     {

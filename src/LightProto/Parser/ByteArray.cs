@@ -3,6 +3,7 @@ namespace LightProto.Parser;
 
 public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public byte[] ParseFrom(ref ReaderContext input)
     {
         var length = input.ReadLength();
@@ -11,6 +12,7 @@ public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 }
 public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(byte[] value)
     {

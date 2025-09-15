@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class DateOnlyProtoReader : IProtoReader<DateOnly>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     public DateOnly ParseFrom(ref ReaderContext input)
     {
         return DateOnly.FromDayNumber(input.ReadInt32());
@@ -11,6 +12,7 @@ public sealed class DateOnlyProtoReader : IProtoReader<DateOnly>
 }
 public sealed class DateOnlyProtoWriter : IProtoWriter<DateOnly>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(DateOnly value)
     {

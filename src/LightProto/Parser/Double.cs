@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class DoubleProtoReader : IProtoReader<Double>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public Double ParseFrom(ref ReaderContext input)
     {
@@ -12,6 +13,7 @@ public sealed class DoubleProtoReader : IProtoReader<Double>
 }
 public sealed class DoubleProtoWriter : IProtoWriter<Double>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(Double value)
     {

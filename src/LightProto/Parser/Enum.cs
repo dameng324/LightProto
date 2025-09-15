@@ -5,6 +5,7 @@ namespace LightProto.Parser;
 public sealed class EnumProtoReader<T> : IProtoReader<T>
     where T : Enum
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public T ParseFrom(ref ReaderContext input)
     {
@@ -16,6 +17,7 @@ public sealed class EnumProtoReader<T> : IProtoReader<T>
 public sealed class EnumProtoWriter<T> : IProtoWriter<T>
     where T : Enum
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(T value)
     {

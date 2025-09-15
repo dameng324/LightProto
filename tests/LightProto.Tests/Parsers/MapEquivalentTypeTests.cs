@@ -8,7 +8,7 @@ public partial class MapEquivalentTypeTests
     public partial record Message
     {
         [ProtoMember(1)]
-        public Dictionary<int, string> Property { get; set; }
+        public Dictionary<int, string> Property { get; set; } = [];
     }
 
     public override IEnumerable<Message> GetLightProtoMessages()

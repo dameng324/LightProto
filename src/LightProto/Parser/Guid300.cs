@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class Guid300ProtoReader : IProtoReader<Guid>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public Guid ParseFrom(ref ReaderContext input)
     {
         var str= input.ReadString();
@@ -12,6 +13,7 @@ public sealed class Guid300ProtoReader : IProtoReader<Guid>
 }
 public sealed class Guid300ProtoWriter : IProtoWriter<Guid>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public int CalculateSize(Guid value)
     {
         return CodedOutputStream.ComputeStringSize(value.ToString());

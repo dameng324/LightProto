@@ -4,6 +4,7 @@ public interface ICollectionReader;
 public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollection>,ICollectionReader
     where TCollection : IEnumerable<TItem>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     private readonly uint _tag;
     private readonly uint _tag2;
     private readonly Func<TCollection, TCollection>? _completeAction;

@@ -40,12 +40,11 @@ public static partial class Serializer
 
     internal static IProtoWriter<ICollection<T>> GetCollectionWriter<T>(
         this IProtoWriter<T> writer,
-        int fieldNumber = 1,
-        WireFormat.WireType wireType = WireFormat.WireType.LengthDelimited
+        int fieldNumber = 1
     )
     {
         uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
-        uint tag2 = tag;
+        uint tag2 = WireFormat.MakeTag(1, writer.WireType);
         return new IEnumerableProtoWriter<ICollection<T>,T>(
             writer,
             tag,

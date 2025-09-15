@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class UInt64ProtoReader : IProtoReader<UInt64>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     public UInt64 ParseFrom(ref ReaderContext input)
     {
         return input.ReadUInt64();
@@ -11,6 +12,7 @@ public sealed class UInt64ProtoReader : IProtoReader<UInt64>
 }
 public sealed class UInt64ProtoWriter : IProtoWriter<UInt64>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     public int CalculateSize(UInt64 value)
     {
         return CodedOutputStream.ComputeUInt64Size(value);

@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class SInt32ProtoReader : IProtoReader<Int32>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public Int32 ParseFrom(ref ReaderContext input)
     {
@@ -12,6 +13,7 @@ public sealed class SInt32ProtoReader : IProtoReader<Int32>
 }
 public sealed class SInt32ProtoWriter : IProtoWriter<Int32>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.Varint;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(Int32 value)
     {

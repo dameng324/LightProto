@@ -18,7 +18,7 @@ namespace LightProto
     /// the Protocol Buffer wire format.
     /// </para>
     /// </summary>
-    internal static class WireFormat
+    public static class WireFormat
     {
         /// <summary>
         /// Wire types within protobuf encoding.

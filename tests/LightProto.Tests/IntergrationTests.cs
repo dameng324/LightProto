@@ -210,7 +210,7 @@ public class IntergrationTests
     
     [Test]
     [Explicit]
-    public async Task GenProto()
+    public void GenProto()
     {
         {
             TestArrayMessage message = new();

@@ -97,7 +97,7 @@ public partial class CsTestMessage
 
     [ProtoMember1(21)]
     [ProtoMember2(21)]
-    public CsTestMessage NestedField { get; set; }
+    public CsTestMessage? NestedField { get; set; }
 
     [ProtoMember1(22)]
     [ProtoMember2(22)]
@@ -151,11 +151,11 @@ public partial class CsTestMessage
 
     [ProtoMember1(57)]
     [ProtoMember2(57)]
-    public IDictionary<string, string> MapField5 { get; set; }
+    public IDictionary<string, string>? MapField5 { get; set; }
 
     [ProtoMember1(58)]
     [ProtoMember2(58)]
-    public IReadOnlyDictionary<string, string> MapField6 { get; set; }
+    public IReadOnlyDictionary<string, string>? MapField6 { get; set; }
 
     [ProtoMember1(59)]
     [ProtoMember2(59)]
@@ -191,7 +191,7 @@ public partial class CsTestMessage
 
     [ProtoMember1(67)]
     [ProtoMember2(67)]
-    public ISet<string> StringISet { get; set; }
+    public ISet<string>? StringISet { get; set; }
 
     [ProtoMember1(68)]
     [ProtoMember2(68)]
@@ -210,7 +210,7 @@ public partial class CsTestMessage
     public TimeOnly TimeOnlyField { get; set; }
 
     [ProtoMember1(72)]
-    public StringBuilder StringBuilderField { get; set; }
+    public StringBuilder? StringBuilderField { get; set; }
 
     [ProtoMember2(72)]
     public string StringBuilderField2
@@ -221,7 +221,7 @@ public partial class CsTestMessage
 
     [ProtoMember1(73)]
     [ProtoMember2(73)]
-    public Dictionary<string, Dictionary<int, string>> NestDictionary { get; set; }
+    public Dictionary<string, Dictionary<int, string>>? NestDictionary { get; set; }
 }
 
 [ProtoContract1]

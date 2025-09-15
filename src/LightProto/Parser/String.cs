@@ -4,6 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class StringProtoReader : IProtoReader<string>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public string ParseFrom(ref ReaderContext input)
     {
@@ -12,6 +13,7 @@ public sealed class StringProtoReader : IProtoReader<string>
 }
 public sealed class StringProtoWriter : IProtoWriter<string>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(string value)
     {

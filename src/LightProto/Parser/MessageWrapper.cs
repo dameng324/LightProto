@@ -13,6 +13,7 @@ struct MessageWrapper<T>
     {
         private readonly uint tag;
         public bool IsMessage => true;
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         private IProtoWriter<T> ItemWriter;
 
         public ProtoWriter(uint tag, IProtoWriter<T> itemWriter)
@@ -46,6 +47,7 @@ struct MessageWrapper<T>
     public struct ProtoReader : IProtoReader<MessageWrapper<T>>
     {
         public uint Tag { get; }
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
 
         public ProtoReader(uint tag, IProtoReader<T> itemReader)
         {

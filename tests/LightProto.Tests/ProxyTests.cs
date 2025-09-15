@@ -11,14 +11,6 @@ public partial class ProxyTests
         var parsed = ProtoProxy.Reader.ParseFrom(bytes);
         await Assert.That(parsed.Instrument.Name).IsEqualTo(testObj.Instrument.Name);
         await Assert.That(parsed.Instrument.Value).IsEqualTo(testObj.Instrument.Value);
-
-        List<ProtoProxy> protoProxies = [];
-        using var ms = new MemoryStream();
-        Serializer.Serialize(ms, protoProxies);
-        ms.Position = 0;
-
-        var cloned = Serializer.Deserialize<List<ProtoProxy>, ProtoProxy>(ms);
-
         //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());
     }
 
@@ -46,7 +38,7 @@ public partial class ProxyTests
     [ProtoProxyFor<Instrument>()]
     public partial class InstrumentProxy
     {
-        [ProtoMember(11)] public string Name { get; set; }
+        [ProtoMember(11)] public string Name { get; set; }=string.Empty;
 
         [ProtoMember(12)] public int Value { get; set; }
 
