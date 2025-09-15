@@ -9,7 +9,6 @@ public class CollectionSerializerTest
     {
         List<int> list = [1, 2, 3, 4];
         var bytes = list.ToByteArray(Int32ProtoParser.Writer);
-
         var clone = Serializer.Deserialize<List<int>, int>(bytes.AsSpan(), Int32ProtoParser.Reader);
         await Assert.That(clone).IsEquivalentTo(list);
     }
@@ -33,6 +32,9 @@ public class CollectionSerializerTest
         var map = new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
         var bytes = map.ToByteArray(StringProtoParser.Writer, Int32ProtoParser.Writer);
 
+        var ms = new MemoryStream();
+        ProtoBuf.Serializer.Serialize(ms,map);
+        var bytes2= ms.ToArray();
         var clone = Serializer.Deserialize<Dictionary<string, int>, string, int>(
             bytes.AsSpan(),
             StringProtoParser.Reader,

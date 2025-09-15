@@ -35,11 +35,12 @@ public static partial class Serializer
         IProtoWriter<TValue> valueWriter)
         where TKey : notnull
     {
-        var buffer = new ArrayBufferWriter<byte>();
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
-        WriterContext.Initialize(buffer, out var ctx);
+        var buffer = new byte[collectionWriter.CalculateSize(instance)];
+        CodedOutputStream output = new CodedOutputStream(buffer);
+        WriterContext.Initialize(output, out var ctx);
         collectionWriter.WriteTo(ref ctx, instance);
-        return buffer.WrittenSpan.ToArray();
+        return buffer;
     }
     public static void Serialize<TKey, TValue>(
         Stream destination,

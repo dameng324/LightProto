@@ -1,12 +1,17 @@
 ﻿namespace LightProto.Parser;
 
-public interface ICollectionReader;
+public interface ICollectionReader
+{
+    public uint Tag { get; }
+    public uint Tag2 { get; }
+    public int ItemFixedSize { get; }
+}
 public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollection>,ICollectionReader
     where TCollection : IEnumerable<TItem>
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-    private readonly uint _tag;
-    private readonly uint _tag2;
+    public uint Tag { get; }
+    public uint Tag2 { get; }
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
@@ -24,8 +29,8 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
         Func<TCollection, TCollection>? completeAction = null
     )
     {
-        _tag = tag;
-        _tag2 = tag2;
+        Tag = tag;
+        Tag2 = tag2;
         _completeAction = completeAction;
         ItemReader = itemReader;
         CreateWithCapacity = createWithCapacity;
@@ -117,7 +122,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
             do
             {
                 collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag)||ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag2));
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag)||ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag2));
 
             return _completeAction is null ? collection : _completeAction.Invoke(collection);
         }

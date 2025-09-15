@@ -33,7 +33,7 @@ public static partial class Serializer
             valueReader
         );
         ReaderContext.Initialize(source, out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 
     /// <summary>
@@ -52,10 +52,15 @@ public static partial class Serializer
             valueReader
         );
         ReaderContext.Initialize(source, out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 
-    internal static IProtoReader<TDictionary> GetDictionaryReader<TDictionary, TKey, TValue>(
+
+    internal static IEnumerableKeyValuePairProtoReader<
+        TDictionary,
+        TKey,
+        TValue
+    > GetDictionaryReader<TDictionary, TKey, TValue>(
         IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader
     )
@@ -98,6 +103,6 @@ public static partial class Serializer
             valueReader
         );
         ReaderContext.Initialize(new CodedInputStream(source), out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 }

@@ -130,7 +130,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                         throw new Exception("Sequence contained null element");
                     }
 
-                    WriteItem(ref output, item);
+                    ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
         }
@@ -147,7 +147,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                     }
 
                     output.WriteTag(Tag2);
-                    WriteItem(ref output, item);
+                    ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
             else
@@ -161,14 +161,9 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                     }
 
                     output.WriteTag(Tag2);
-                    WriteItem(ref output, item);
+                    ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
         }
-    }
-
-    private void WriteItem(ref WriterContext output, TItem item)
-    {
-        ItemWriter.WriteMessageTo(ref output, item);
     }
 }
