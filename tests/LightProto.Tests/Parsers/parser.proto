@@ -107,3 +107,7 @@ message InheritanceTestsMessage
 {
   string Value = 1;
 }
+message NullableIntTestsMessage
+{
+  int32 Property = 1;
+}

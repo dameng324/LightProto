@@ -89,14 +89,88 @@ public partial struct DateTimeProxy
         new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).Ticks,
         new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local).Ticks,
     ];
-
-    public static implicit operator DateTimeProxy(DateTime dt) =>
-        new DateTimeProxy
+    public static implicit operator DateTimeProxy(DateTime dt)
+    {
+        if (dt == DateTime.MinValue)
         {
-            Ticks = dt.Ticks - EpochOriginsTicks[(int)dt.Kind],
+            return new DateTimeProxy
+            {
+                Ticks = -1,
+                Scale = TimeSpanScale.Minmax,
+                Kind = DateTimeKind.Unspecified
+            };
+        }
+
+        if (dt == DateTime.MaxValue)
+        {
+            return new DateTimeProxy
+            {
+                Ticks = 1,
+                Scale = TimeSpanScale.Minmax,
+                Kind = DateTimeKind.Unspecified
+            };
+        }
+        
+        var ticks = dt.Ticks - EpochOriginsTicks[(int)dt.Kind];
+        var left = Math.DivRem(ticks, TimeSpan.TicksPerDay, out var reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Days,
+                Kind = dt.Kind,
+            };
+        }
+
+        left = Math.DivRem(ticks, TimeSpan.TicksPerHour, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Hours,
+                Kind = dt.Kind,
+            };
+        }
+        left = Math.DivRem(ticks, TimeSpan.TicksPerMinute, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Minutes,
+                Kind = dt.Kind,
+            };
+        }
+        left = Math.DivRem(ticks, TimeSpan.TicksPerSecond, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Seconds,
+                Kind = dt.Kind,
+            };
+        }
+        left = Math.DivRem(ticks, TimeSpan.TicksPerMillisecond, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Milliseconds,
+                Kind = dt.Kind,
+            };
+        }
+
+        return new()
+        {
+            Ticks = ticks,
             Scale = TimeSpanScale.Ticks,
             Kind = dt.Kind,
         };
+    }
 }
 
 internal enum TimeSpanScale

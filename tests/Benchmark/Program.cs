@@ -8,11 +8,11 @@ var proto = ProtoBuf.Serializer.GetProto<Message>();
 Console.WriteLine(proto);
 return;
 
+
 [ProtoBuf.ProtoContract]
 public partial record Message
 {
-    [ProtoBuf.ProtoMember(1)]
-    public DateTime Property { get; set; }
+    [ProtoBuf.ProtoMember(1)] public DateTime? Property { get; set; }
 }
 // BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 // return;

@@ -15,7 +15,7 @@ public sealed class NullableProtoReader<T> : IProtoReader<Nullable<T>>
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public Nullable<T> ParseFrom(ref ReaderContext input)
     {
-        return ValueReader.ParseFrom(ref input);
+        return ValueReader.ParseMessageFrom(ref input);
     }
 }
 
@@ -32,7 +32,7 @@ public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public int CalculateSize(Nullable<T> value)
     {
-        return value.HasValue == false ? 0 : ValueWriter.CalculateSize(value.Value);
+        return value.HasValue == false ? 0 : ValueWriter.CalculateMessageSize(value.Value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -40,7 +40,7 @@ public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     {
         if (value.HasValue)
         {
-            ValueWriter.WriteTo(ref output, value.Value);
+            ValueWriter.WriteMessageTo(ref output, value.Value);
         }
     }
 }

@@ -67,8 +67,80 @@ public partial struct TimeSpanProxy
         return new TimeSpan(ticks);
     }
 
-    public static implicit operator TimeSpanProxy(TimeSpan dt) =>
-        new TimeSpanProxy { Ticks = dt.Ticks, Scale = TimeSpanScale.Ticks };
+    public static implicit operator TimeSpanProxy(TimeSpan dt)
+    {
+        if (dt == TimeSpan.MinValue)
+        {
+            return new TimeSpanProxy
+            {
+                Ticks = -1,
+                Scale = TimeSpanScale.Minmax,
+            };
+        }
+
+        if (dt == TimeSpan.MaxValue)
+        {
+            return new TimeSpanProxy
+            {
+                Ticks = 1,
+                Scale = TimeSpanScale.Minmax,
+            };
+        }
+
+        var ticks = dt.Ticks;
+        var left = Math.DivRem(ticks, TimeSpan.TicksPerDay, out var reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Days,
+            };
+        }
+
+        left = Math.DivRem(ticks, TimeSpan.TicksPerHour, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Hours,
+            };
+        }
+        left = Math.DivRem(ticks, TimeSpan.TicksPerMinute, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Minutes,
+            };
+        }
+        left = Math.DivRem(ticks, TimeSpan.TicksPerSecond, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Seconds,
+            };
+        }
+        left = Math.DivRem(ticks, TimeSpan.TicksPerMillisecond, out reminder);
+        if (reminder == 0)
+        {
+            return new()
+            {
+                Ticks = left,
+                Scale = TimeSpanScale.Milliseconds,
+            };
+        }
+
+        return new()
+        {
+            Ticks = ticks,
+            Scale = TimeSpanScale.Ticks,
+        };
+    }
 }
 
 public sealed class TimeSpanProtoParser : IProtoParser<TimeSpan>

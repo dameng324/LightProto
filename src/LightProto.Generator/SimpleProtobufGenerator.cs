@@ -407,7 +407,7 @@ public class SimpleProtobufGenerator : ISourceGenerator
     {
         if (member.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
         {
-            return $"{messageName}.{member.Name}.HasValue && {messageName}.{member.Name}.Value != default";
+            return $"{messageName}.{member.Name}.HasValue";
         }
 
         if (member.Type.SpecialType == SpecialType.System_DateTime)
@@ -789,6 +789,10 @@ public class SimpleProtobufGenerator : ISourceGenerator
 
         if (namedType.TypeArguments.Length != 1)
             return false;
+
+        if (namedType.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
+            return false;
+        
         var elementType = namedType.TypeArguments[0];
 
         return IsCollectionType(compilation, elementType, namedType);
