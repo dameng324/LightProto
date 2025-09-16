@@ -1133,30 +1133,34 @@ public class LightProtoGenerator : ISourceGenerator
             bool isReadOnly;
             bool isRequired;
             bool isInitOnly;
-            if (member is  IPropertySymbol property)
+            if (member is IPropertySymbol property)
             {
                 memberName = property.Name;
                 initializer = typeDeclaration
                     .Members.OfType<PropertyDeclarationSyntax>()
-                    .FirstOrDefault(m => m.Identifier.Text == memberName)?.Initializer?.Value.ToString();
+                    .FirstOrDefault(m => m.Identifier.Text == memberName)
+                    ?.Initializer?.Value.ToString();
                 nullableAnnotation = property.NullableAnnotation;
                 memberType = property.Type;
                 isReadOnly = property.IsReadOnly;
                 isRequired = property.IsRequired;
                 isInitOnly = property.SetMethod?.IsInitOnly == true;
-            }else if (member is IFieldSymbol field)
+            }
+            else if (member is IFieldSymbol field)
             {
                 memberName = field.Name;
                 initializer = typeDeclaration
                     .Members.OfType<FieldDeclarationSyntax>()
                     .FirstOrDefault(m =>
                         m.Declaration.Variables.Any(v => v.Identifier.Text == memberName)
-                    )?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
+                    )
+                    ?.Declaration.Variables.FirstOrDefault()
+                    ?.Initializer?.Value.ToString();
                 nullableAnnotation = field.NullableAnnotation;
                 memberType = field.Type;
                 isReadOnly = field.IsReadOnly;
                 isRequired = field.IsRequired;
-                isInitOnly= false;
+                isInitOnly = false;
             }
             else
             {
@@ -1182,10 +1186,7 @@ public class LightProtoGenerator : ISourceGenerator
                     {
                         initializer = $"Array.Empty<{arrayTypeSymbol.ElementType}>()";
                     }
-                    else if (
-                        memberType.TypeKind == TypeKind.Interface
-                        || memberType.IsAbstract
-                    )
+                    else if (memberType.TypeKind == TypeKind.Interface || memberType.IsAbstract)
                     {
                         var concreteType = ResolveConcreteTypeSymbol(
                             compilation,
@@ -1202,9 +1203,7 @@ public class LightProtoGenerator : ISourceGenerator
                 }
                 else
                 {
-                    initializer = HasParameterlessConstructor(memberType)
-                        ? $"new ()"
-                        : "default";
+                    initializer = HasParameterlessConstructor(memberType) ? $"new ()" : "default";
                 }
             }
 
@@ -1306,7 +1305,7 @@ public class LightProtoGenerator : ISourceGenerator
             )
                 ? _valueFormat
                 : LightProto.DataFormat.Default;
-            
+
             members.Add(
                 new ProtoMember
                 {
