@@ -1095,20 +1095,6 @@ public class LightProtoGenerator : ISourceGenerator
         return GetProxyType(type.GetAttributes());
     }
 
-    IEnumerable<IPropertySymbol> GetAllMembers(INamedTypeSymbol type)
-    {
-        var members = new List<IPropertySymbol>();
-        var currentType = type;
-        while (currentType != null)
-        {
-            members.AddRange(
-                currentType.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic)
-            );
-            currentType = currentType.BaseType;
-        }
-        return members;
-    }
-
     private List<ProtoMember> GetProtoMembers(
         Compilation compilation,
         INamedTypeSymbol targetType,
@@ -1117,66 +1103,90 @@ public class LightProtoGenerator : ISourceGenerator
     {
         var members = new List<ProtoMember>();
 
-        foreach (
-            IPropertySymbol property in targetType
-                .GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(o => o.IsStatic == false)
-        )
+        foreach (var member in targetType.GetMembers())
         {
-            var propertyDecl = typeDeclaration
-                .Members.OfType<PropertyDeclarationSyntax>()
-                .FirstOrDefault(m => m.Identifier.Text == property.Name);
+            if (member.IsStatic)
+            {
+                continue;
+            }
 
-            var fieldDecl = typeDeclaration
-                .Members.OfType<FieldDeclarationSyntax>()
-                .FirstOrDefault(m =>
-                    m.Declaration.Variables.Any(v => v.Identifier.Text == property.Name)
-                );
+            string memberName;
+            string? initializer;
+            NullableAnnotation nullableAnnotation;
+            ITypeSymbol memberType;
+            bool isReadOnly;
+            bool isRequired;
+            bool isInitOnly;
+            if (member is  IPropertySymbol property)
+            {
+                memberName = property.Name;
+                initializer = typeDeclaration
+                    .Members.OfType<PropertyDeclarationSyntax>()
+                    .FirstOrDefault(m => m.Identifier.Text == memberName)?.Initializer?.Value.ToString();
+                nullableAnnotation = property.NullableAnnotation;
+                memberType = property.Type;
+                isReadOnly = property.IsReadOnly;
+                isRequired = property.IsRequired;
+                isInitOnly = property.SetMethod?.IsInitOnly == true;
+            }else if (member is IFieldSymbol field)
+            {
+                memberName = field.Name;
+                initializer = typeDeclaration
+                    .Members.OfType<FieldDeclarationSyntax>()
+                    .FirstOrDefault(m =>
+                        m.Declaration.Variables.Any(v => v.Identifier.Text == memberName)
+                    )?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
+                nullableAnnotation = field.NullableAnnotation;
+                memberType = field.Type;
+                isReadOnly = field.IsReadOnly;
+                isRequired = field.IsRequired;
+                isInitOnly= false;
+            }
+            else
+            {
+                continue;
+            }
 
-            var initializer =
-                propertyDecl?.Initializer?.Value.ToString()
-                ?? fieldDecl?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
             if (initializer is null)
             {
-                if (property.Type.NullableAnnotation == NullableAnnotation.Annotated)
+                if (nullableAnnotation == NullableAnnotation.Annotated)
                 {
                     initializer = "null";
                 }
-                else if (HasEmptyStaticField(property.Type))
+                else if (HasEmptyStaticField(memberType))
                 {
-                    initializer = $"{property.Type.ToDisplayString()}.Empty";
+                    initializer = $"{memberType}.Empty";
                 }
                 else if (
-                    IsCollectionType(compilation, property.Type)
-                    || IsDictionaryType(compilation, property.Type)
+                    IsCollectionType(compilation, memberType)
+                    || IsDictionaryType(compilation, memberType)
                 )
                 {
-                    if (property.Type is IArrayTypeSymbol arrayTypeSymbol)
+                    if (memberType is IArrayTypeSymbol arrayTypeSymbol)
                     {
                         initializer = $"Array.Empty<{arrayTypeSymbol.ElementType}>()";
                     }
                     else if (
-                        property.Type.TypeKind == TypeKind.Interface
-                        || property.Type.IsAbstract
+                        memberType.TypeKind == TypeKind.Interface
+                        || memberType.IsAbstract
                     )
                     {
                         var concreteType = ResolveConcreteTypeSymbol(
                             compilation,
-                            (property.Type as INamedTypeSymbol)!
+                            (memberType as INamedTypeSymbol)!
                         );
                         initializer = $"new {concreteType.ToDisplayString()}()";
                     }
                     else
                     {
-                        initializer = HasParameterlessConstructor(property.Type)
+                        initializer = HasParameterlessConstructor(memberType)
                             ? $"new ()"
                             : "default";
                     }
                 }
                 else
                 {
-                    initializer = HasParameterlessConstructor(property.Type)
+                    initializer = HasParameterlessConstructor(memberType)
                         ? $"new ()"
                         : "default";
                 }
@@ -1199,7 +1209,7 @@ public class LightProtoGenerator : ISourceGenerator
                 return false;
             }
 
-            AttributeData? protoMemberAttr = property
+            AttributeData? protoMemberAttr = member
                 .GetAttributes()
                 .FirstOrDefault(attr =>
                     attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoMemberAttribute"
@@ -1207,7 +1217,7 @@ public class LightProtoGenerator : ISourceGenerator
             if (protoMemberAttr == null)
                 continue;
             ITypeSymbol? ProxyType =
-                GetProxyType(property.GetAttributes()) ?? GetProxyType(property.Type);
+                GetProxyType(member.GetAttributes()) ?? GetProxyType(memberType);
 
             var tag = (uint)protoMemberAttr.ConstructorArguments[0].Value!;
 
@@ -1229,7 +1239,7 @@ public class LightProtoGenerator : ISourceGenerator
             }
 
             AttributeData? compatibilityLevelAttr =
-                GetCompatibilityLevelAttribute(property.GetAttributes())
+                GetCompatibilityLevelAttribute(member.GetAttributes())
                 ?? GetCompatibilityLevelAttribute(targetType.GetAttributes())
                 ?? GetCompatibilityLevelAttribute(targetType.ContainingModule.GetAttributes())
                 ?? GetCompatibilityLevelAttribute(targetType.ContainingAssembly.GetAttributes());
@@ -1257,7 +1267,7 @@ public class LightProtoGenerator : ISourceGenerator
                         .Value.Value?.ToString(),
                     out var _isPacked
                 ) && _isPacked;
-            AttributeData? protoMapAttr = property
+            AttributeData? protoMapAttr = member
                 .GetAttributes()
                 .FirstOrDefault(attr =>
                     attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoMapAttribute"
@@ -1280,19 +1290,17 @@ public class LightProtoGenerator : ISourceGenerator
             )
                 ? _valueFormat
                 : LightProto.DataFormat.Default;
-
-            var isReadOnly = property.IsReadOnly;
             
             members.Add(
                 new ProtoMember
                 {
-                    Name = property.Name,
-                    Type = property.Type,
+                    Name = memberName,
+                    Type = memberType,
                     FieldNumber = tag,
                     Compilation = compilation,
-                    IsRequired = property.IsRequired,
-                    IsInitOnly = property.SetMethod?.IsInitOnly == true,
-                    AttributeData = property.GetAttributes(),
+                    IsRequired = isRequired,
+                    IsInitOnly = isInitOnly,
+                    AttributeData = member.GetAttributes(),
                     DataFormat = dataFormat,
                     MapFormat = (keyFormat, valueFormat),
                     ProxyType = ProxyType,
