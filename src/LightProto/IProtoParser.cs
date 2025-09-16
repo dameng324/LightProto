@@ -1,6 +1,4 @@
-﻿
-
-namespace LightProto;
+﻿namespace LightProto;
 
 public interface IProtoParser<T>
 {
@@ -8,7 +6,8 @@ public interface IProtoParser<T>
     public static abstract IProtoWriter<T> Writer { get; }
 }
 
-public interface IProtoMessage<T> : IProtoParser<T> where T : IProtoParser<T>;
+public interface IProtoMessage<T> : IProtoParser<T>
+    where T : IProtoParser<T>;
 
 public interface IProtoReader<out T>
 {

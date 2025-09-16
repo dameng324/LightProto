@@ -24,7 +24,5 @@ public class IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>
             isPacked: false,
             tag2,
             completeAction: null
-        )
-    {
-    }
+        ) { }
 }

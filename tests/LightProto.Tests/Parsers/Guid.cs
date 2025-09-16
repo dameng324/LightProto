@@ -4,8 +4,9 @@ using LightProto;
 using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
+
 [InheritsTests]
-public partial class GuidTests: BaseTests<GuidTests.Message,GuidTestsMessage>
+public partial class GuidTests : BaseTests<GuidTests.Message, GuidTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -18,8 +19,8 @@ public partial class GuidTests: BaseTests<GuidTests.Message,GuidTestsMessage>
 
     public override IEnumerable<GuidTestsMessage> GetGoogleMessages()
     {
-        yield return new () { Property = Guid.Empty.ToProtobuf() };
-        yield return new () { Property = Guid.NewGuid() .ToProtobuf()};
+        yield return new() { Property = Guid.Empty.ToProtobuf() };
+        yield return new() { Property = Guid.NewGuid().ToProtobuf() };
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -34,8 +35,8 @@ public partial class GuidTests: BaseTests<GuidTests.Message,GuidTestsMessage>
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new () { Property = Guid.Empty };
-        yield return new () { Property = Guid.NewGuid() };
+        yield return new() { Property = Guid.Empty };
+        yield return new() { Property = Guid.NewGuid() };
     }
 }
 
@@ -59,8 +60,8 @@ file static class BclExtension
             return Guid.Empty;
         }
         Span<byte> bytes = stackalloc byte[16];
-        BinaryPrimitives.WriteUInt64LittleEndian(bytes,proxy.Lo);
-        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8),proxy.Hi);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes, proxy.Lo);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), proxy.Hi);
         return new Guid(bytes);
     }
 }

@@ -32,7 +32,8 @@ public static partial class Serializer
     public static byte[] ToByteArray<TKey, TValue>(
         this IDictionary<TKey, TValue> instance,
         IProtoWriter<TKey> keyWriter,
-        IProtoWriter<TValue> valueWriter)
+        IProtoWriter<TValue> valueWriter
+    )
         where TKey : notnull
     {
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
@@ -42,6 +43,7 @@ public static partial class Serializer
         collectionWriter.WriteTo(ref ctx, instance);
         return buffer;
     }
+
     public static void Serialize<TKey, TValue>(
         Stream destination,
         IDictionary<TKey, TValue> instance,
@@ -61,8 +63,8 @@ public static partial class Serializer
         IProtoWriter<TKey> keyWriter,
         IProtoWriter<TValue> valueWriter
     )
-        where TKey : notnull
-    => Serialize(destination, instance, keyWriter, valueWriter);
+        where TKey : notnull => Serialize(destination, instance, keyWriter, valueWriter);
+
     internal static IProtoWriter<IDictionary<TKey, TValue>> GetDictionaryWriter<TKey, TValue>(
         IProtoWriter<TKey> keyWriter,
         IProtoWriter<TValue> valueWriter

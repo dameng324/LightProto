@@ -3,7 +3,8 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class RecordStructTests : BaseTests<RecordStructTests.Message,RecordStructTestsMessage>
+public partial class RecordStructTests
+    : BaseTests<RecordStructTests.Message, RecordStructTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -14,22 +15,21 @@ public partial class RecordStructTests : BaseTests<RecordStructTests.Message,Rec
         public string Property { get; set; }
     }
 
-
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new () { Property = string.Empty};
-        yield return new () { Property = Guid.NewGuid().ToString("N")};
+        yield return new() { Property = string.Empty };
+        yield return new() { Property = Guid.NewGuid().ToString("N") };
     }
 
     public override IEnumerable<RecordStructTestsMessage> GetGoogleMessages()
     {
-        yield return new () { Property = string.Empty};
-        yield return new () { Property = Guid.NewGuid().ToString("N")};
+        yield return new() { Property = string.Empty };
+        yield return new() { Property = Guid.NewGuid().ToString("N") };
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property??string.Empty).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property);
     }
 
     public override async Task AssertGoogleResult(RecordStructTestsMessage clone, Message message)

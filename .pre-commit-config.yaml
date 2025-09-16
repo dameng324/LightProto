@@ -1,0 +1,11 @@
+repos:
+  - repo: local
+    hooks:
+      - id: csharpier
+        name: Run CSharpier on C# files
+        entry: dotnet 
+        args: [tool, run, csharpier, format]
+        language: system
+        types:
+          - c#
+        description: CSharpier is an opinionated C# formatter inspired by Prettier.

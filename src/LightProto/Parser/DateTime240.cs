@@ -24,6 +24,7 @@ public sealed partial class DateTime240Proxy
     private const long BclSecondsAtUnixEpoch = 62135596800;
     internal const long UnixSecondsAtBclMaxValue = 253402300799;
     internal const long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
+
     /// <summary>
     /// The number of nanoseconds in a second.
     /// </summary>
@@ -50,8 +51,7 @@ public sealed partial class DateTime240Proxy
     {
         // Do the arithmetic using DateTime.Ticks, which is always non-negative, making things simpler.
         long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
-        int nanoseconds =
-            (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * NanosecondsPerTick;
+        int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * NanosecondsPerTick;
         return new DateTime240Proxy
         {
             Seconds = secondsSinceBclEpoch - BclSecondsAtUnixEpoch,
@@ -68,6 +68,8 @@ public sealed partial class DateTime240Proxy
 
 public sealed class DateTime240ProtoParser : IProtoParser<DateTime>
 {
-    public static IProtoReader<DateTime> Reader { get; } = LightProto.Parser.DateTime240Proxy.Reader;
-    public static IProtoWriter<DateTime> Writer { get; } = LightProto.Parser.DateTime240Proxy.Writer;
+    public static IProtoReader<DateTime> Reader { get; } =
+        LightProto.Parser.DateTime240Proxy.Reader;
+    public static IProtoWriter<DateTime> Writer { get; } =
+        LightProto.Parser.DateTime240Proxy.Writer;
 }

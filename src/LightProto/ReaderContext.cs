@@ -49,7 +49,11 @@ namespace LightProto
         /// Initialize a <see cref="ReaderContext"/> using existing <see cref="ParserInternalState"/>, e.g. from <see cref="CodedInputStream"/>.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ReadOnlySpan<byte> buffer, ref ParserInternalState state, out ReaderContext ctx)
+        internal static void Initialize(
+            ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state,
+            out ReaderContext ctx
+        )
         {
             // Note: if this code ever changes, also change the initialization above.
             ctx.buffer = buffer;
@@ -78,7 +82,11 @@ namespace LightProto
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ReadOnlySequence<byte> input, int recursionLimit, out ReaderContext ctx)
+        internal static void Initialize(
+            ReadOnlySequence<byte> input,
+            int recursionLimit,
+            out ReaderContext ctx
+        )
         {
             ctx.buffer = default;
             ctx.state = default;
@@ -87,7 +95,11 @@ namespace LightProto
             ctx.state.sizeLimit = DefaultSizeLimit;
             ctx.state.recursionLimit = recursionLimit;
             ctx.state.currentLimit = int.MaxValue;
-            SegmentedBufferHelper.Initialize(input, out ctx.state.segmentedBufferHelper, out ctx.buffer);
+            SegmentedBufferHelper.Initialize(
+                input,
+                out ctx.state.segmentedBufferHelper,
+                out ctx.buffer
+            );
             ctx.state.bufferPos = 0;
             ctx.state.bufferSize = ctx.buffer.Length;
 
@@ -155,13 +167,15 @@ namespace LightProto
         /// Reads a fixed64 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadFixed64() => ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
+        public ulong ReadFixed64() =>
+            ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
 
         /// <summary>
         /// Reads a fixed32 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadFixed32() => ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
+        public uint ReadFixed32() =>
+            ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
 
         /// <summary>
         /// Reads a bool field from the input.
@@ -195,25 +209,33 @@ namespace LightProto
         /// Reads an sfixed32 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadSFixed32() => (int)ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
+        public int ReadSFixed32() =>
+            (int)ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
 
         /// <summary>
         /// Reads an sfixed64 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadSFixed64() => (long)ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
+        public long ReadSFixed64() =>
+            (long)ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
 
         /// <summary>
         /// Reads an sint32 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadSInt32() => ParsingPrimitives.DecodeZigZag32(ParsingPrimitives.ParseRawVarint32(ref buffer, ref state));
+        public int ReadSInt32() =>
+            ParsingPrimitives.DecodeZigZag32(
+                ParsingPrimitives.ParseRawVarint32(ref buffer, ref state)
+            );
 
         /// <summary>
         /// Reads an sint64 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadSInt64() => ParsingPrimitives.DecodeZigZag64(ParsingPrimitives.ParseRawVarint64(ref buffer, ref state));
+        public long ReadSInt64() =>
+            ParsingPrimitives.DecodeZigZag64(
+                ParsingPrimitives.ParseRawVarint64(ref buffer, ref state)
+            );
 
         /// <summary>
         /// Reads a length for length-delimited data.

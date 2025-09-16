@@ -456,8 +456,10 @@ public class LightProtoGenerator : ISourceGenerator
             return "true";
         }
 
-        if (member.CompatibilityLevel >= CompatibilityLevel.Level300 &&
-            (IsGuidType(member.Type) || IsDecimalType(member.Type)))
+        if (
+            member.CompatibilityLevel >= CompatibilityLevel.Level300
+            && (IsGuidType(member.Type) || IsDecimalType(member.Type))
+        )
         {
             return "true";
         }
@@ -601,7 +603,10 @@ public class LightProtoGenerator : ISourceGenerator
             {
                 return $"ByteArrayProtoParser.{readerOrWriter}";
             }
-            var tag2 = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
+            var tag2 = ProtoMember.GetRawTag(
+                fieldNumber,
+                ProtoMember.GetPbWireType(compilation, elementType, format)
+            );
             var elementWriter = GetProtoParser(
                 compilation,
                 elementType,
@@ -695,7 +700,10 @@ public class LightProtoGenerator : ISourceGenerator
                     compatibilityLevel
                 );
                 var fixedSize = GetFixedSize(elementType, format);
-                var tag2 = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
+                var tag2 = ProtoMember.GetRawTag(
+                    fieldNumber,
+                    ProtoMember.GetPbWireType(compilation, elementType, format)
+                );
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
                     if (readerOrWriter == "Reader")
@@ -779,7 +787,10 @@ public class LightProtoGenerator : ISourceGenerator
                     depth: depth,
                     compatibilityLevel
                 );
-                var tag2 = ProtoMember.GetRawTag(fieldNumber, ProtoMember.PbWireType.LengthDelimited);
+                var tag2 = ProtoMember.GetRawTag(
+                    fieldNumber,
+                    ProtoMember.PbWireType.LengthDelimited
+                );
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
                     if (readerOrWriter == "Reader")
@@ -833,7 +844,7 @@ public class LightProtoGenerator : ISourceGenerator
 
         if (namedType.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
             return false;
-        
+
         var elementType = namedType.TypeArguments[0];
 
         return IsCollectionType(compilation, elementType, namedType);
@@ -853,22 +864,27 @@ public class LightProtoGenerator : ISourceGenerator
         var conversion = compilation.ClassifyConversion(type, baseCollectionType);
         return conversion.IsImplicit;
     }
-    
+
     private static bool IsStackType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
 
         var constructedFrom = namedType.OriginalDefinition.ToDisplayString();
-        return constructedFrom is "System.Collections.Generic.Stack<T>" or "System.Collections.Concurrent.ConcurrentStack<T>";
+        return constructedFrom
+            is "System.Collections.Generic.Stack<T>"
+                or "System.Collections.Concurrent.ConcurrentStack<T>";
     }
+
     private static bool IsQueueType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;
 
         var constructedFrom = namedType.OriginalDefinition.ToDisplayString();
-        return constructedFrom is "System.Collections.Generic.Queue<T>" or "System.Collections.Concurrent.ConcurrentQueue<T>";
+        return constructedFrom
+            is "System.Collections.Generic.Queue<T>"
+                or "System.Collections.Concurrent.ConcurrentQueue<T>";
     }
 
     private static bool IsDictionaryType(
@@ -1117,30 +1133,34 @@ public class LightProtoGenerator : ISourceGenerator
             bool isReadOnly;
             bool isRequired;
             bool isInitOnly;
-            if (member is  IPropertySymbol property)
+            if (member is IPropertySymbol property)
             {
                 memberName = property.Name;
                 initializer = typeDeclaration
                     .Members.OfType<PropertyDeclarationSyntax>()
-                    .FirstOrDefault(m => m.Identifier.Text == memberName)?.Initializer?.Value.ToString();
+                    .FirstOrDefault(m => m.Identifier.Text == memberName)
+                    ?.Initializer?.Value.ToString();
                 nullableAnnotation = property.NullableAnnotation;
                 memberType = property.Type;
                 isReadOnly = property.IsReadOnly;
                 isRequired = property.IsRequired;
                 isInitOnly = property.SetMethod?.IsInitOnly == true;
-            }else if (member is IFieldSymbol field)
+            }
+            else if (member is IFieldSymbol field)
             {
                 memberName = field.Name;
                 initializer = typeDeclaration
                     .Members.OfType<FieldDeclarationSyntax>()
                     .FirstOrDefault(m =>
                         m.Declaration.Variables.Any(v => v.Identifier.Text == memberName)
-                    )?.Declaration.Variables.FirstOrDefault()?.Initializer?.Value.ToString();
+                    )
+                    ?.Declaration.Variables.FirstOrDefault()
+                    ?.Initializer?.Value.ToString();
                 nullableAnnotation = field.NullableAnnotation;
                 memberType = field.Type;
                 isReadOnly = field.IsReadOnly;
                 isRequired = field.IsRequired;
-                isInitOnly= false;
+                isInitOnly = false;
             }
             else
             {
@@ -1166,10 +1186,7 @@ public class LightProtoGenerator : ISourceGenerator
                     {
                         initializer = $"Array.Empty<{arrayTypeSymbol.ElementType}>()";
                     }
-                    else if (
-                        memberType.TypeKind == TypeKind.Interface
-                        || memberType.IsAbstract
-                    )
+                    else if (memberType.TypeKind == TypeKind.Interface || memberType.IsAbstract)
                     {
                         var concreteType = ResolveConcreteTypeSymbol(
                             compilation,
@@ -1186,9 +1203,7 @@ public class LightProtoGenerator : ISourceGenerator
                 }
                 else
                 {
-                    initializer = HasParameterlessConstructor(memberType)
-                        ? $"new ()"
-                        : "default";
+                    initializer = HasParameterlessConstructor(memberType) ? $"new ()" : "default";
                 }
             }
 
@@ -1290,7 +1305,7 @@ public class LightProtoGenerator : ISourceGenerator
             )
                 ? _valueFormat
                 : LightProto.DataFormat.Default;
-            
+
             members.Add(
                 new ProtoMember
                 {

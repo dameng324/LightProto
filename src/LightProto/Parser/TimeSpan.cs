@@ -31,19 +31,19 @@ public partial struct TimeSpanProxy
         switch (proxy.Scale)
         {
             case TimeSpanScale.Days:
-                ticks=proxy.Ticks* TimeSpan.TicksPerDay;
+                ticks = proxy.Ticks * TimeSpan.TicksPerDay;
                 break;
             case TimeSpanScale.Hours:
-                ticks=proxy.Ticks* TimeSpan.TicksPerHour;
+                ticks = proxy.Ticks * TimeSpan.TicksPerHour;
                 break;
             case TimeSpanScale.Minutes:
-                ticks=proxy.Ticks* TimeSpan.TicksPerMinute;
+                ticks = proxy.Ticks * TimeSpan.TicksPerMinute;
                 break;
             case TimeSpanScale.Seconds:
-                ticks=proxy.Ticks* TimeSpan.TicksPerSecond;
+                ticks = proxy.Ticks * TimeSpan.TicksPerSecond;
                 break;
             case TimeSpanScale.Milliseconds:
-                ticks=proxy.Ticks* TimeSpan.TicksPerMillisecond;
+                ticks = proxy.Ticks * TimeSpan.TicksPerMillisecond;
                 break;
             case TimeSpanScale.Ticks:
                 ticks = proxy.Ticks;
@@ -71,75 +71,43 @@ public partial struct TimeSpanProxy
     {
         if (dt == TimeSpan.MinValue)
         {
-            return new TimeSpanProxy
-            {
-                Ticks = -1,
-                Scale = TimeSpanScale.Minmax,
-            };
+            return new TimeSpanProxy { Ticks = -1, Scale = TimeSpanScale.Minmax };
         }
 
         if (dt == TimeSpan.MaxValue)
         {
-            return new TimeSpanProxy
-            {
-                Ticks = 1,
-                Scale = TimeSpanScale.Minmax,
-            };
+            return new TimeSpanProxy { Ticks = 1, Scale = TimeSpanScale.Minmax };
         }
 
         var ticks = dt.Ticks;
         var left = Math.DivRem(ticks, TimeSpan.TicksPerDay, out var reminder);
         if (reminder == 0)
         {
-            return new()
-            {
-                Ticks = left,
-                Scale = TimeSpanScale.Days,
-            };
+            return new() { Ticks = left, Scale = TimeSpanScale.Days };
         }
 
         left = Math.DivRem(ticks, TimeSpan.TicksPerHour, out reminder);
         if (reminder == 0)
         {
-            return new()
-            {
-                Ticks = left,
-                Scale = TimeSpanScale.Hours,
-            };
+            return new() { Ticks = left, Scale = TimeSpanScale.Hours };
         }
         left = Math.DivRem(ticks, TimeSpan.TicksPerMinute, out reminder);
         if (reminder == 0)
         {
-            return new()
-            {
-                Ticks = left,
-                Scale = TimeSpanScale.Minutes,
-            };
+            return new() { Ticks = left, Scale = TimeSpanScale.Minutes };
         }
         left = Math.DivRem(ticks, TimeSpan.TicksPerSecond, out reminder);
         if (reminder == 0)
         {
-            return new()
-            {
-                Ticks = left,
-                Scale = TimeSpanScale.Seconds,
-            };
+            return new() { Ticks = left, Scale = TimeSpanScale.Seconds };
         }
         left = Math.DivRem(ticks, TimeSpan.TicksPerMillisecond, out reminder);
         if (reminder == 0)
         {
-            return new()
-            {
-                Ticks = left,
-                Scale = TimeSpanScale.Milliseconds,
-            };
+            return new() { Ticks = left, Scale = TimeSpanScale.Milliseconds };
         }
 
-        return new()
-        {
-            Ticks = ticks,
-            Scale = TimeSpanScale.Ticks,
-        };
+        return new() { Ticks = ticks, Scale = TimeSpanScale.Ticks };
     }
 }
 

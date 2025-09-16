@@ -4,7 +4,8 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ConcurrentQueuePackedTests : BaseTests<ConcurrentQueuePackedTests.Message,ConcurrentQueuePackedTestsMessage>
+public partial class ConcurrentQueuePackedTests
+    : BaseTests<ConcurrentQueuePackedTests.Message, ConcurrentQueuePackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -19,26 +20,30 @@ public partial class ConcurrentQueuePackedTests : BaseTests<ConcurrentQueuePacke
             return $"Property: {string.Join(", ", Property)}";
         }
     }
+
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new () { Property = new ([1, 2, 3, 4, 5]) };
-        yield return new () { Property = new ([-1, -2, -3, -4, -5]) };
-        yield return new () { Property = new ([0]) };
-        yield return new () { Property = new () };
+        yield return new() { Property = new([1, 2, 3, 4, 5]) };
+        yield return new() { Property = new([-1, -2, -3, -4, -5]) };
+        yield return new() { Property = new([0]) };
+        yield return new() { Property = new() };
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property).IsEquivalentTo(message.Property);
     }
+
     public override IEnumerable<ConcurrentQueuePackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages().Select(o=>new ConcurrentQueuePackedTestsMessage()
-        {
-            Property = { o.Property }
-        });
+        return GetMessages()
+            .Select(o => new ConcurrentQueuePackedTestsMessage() { Property = { o.Property } });
     }
-    public override async Task AssertGoogleResult(ConcurrentQueuePackedTestsMessage clone, Message message)
+
+    public override async Task AssertGoogleResult(
+        ConcurrentQueuePackedTestsMessage clone,
+        Message message
+    )
     {
         await Assert.That(clone.Property.ToArray()).IsEquivalentTo(message.Property.ToArray());
     }

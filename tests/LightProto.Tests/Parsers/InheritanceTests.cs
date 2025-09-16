@@ -3,7 +3,7 @@
 [InheritsTests]
 [Explicit]
 //TODO re-enable when inheritance is supported
-public partial class InheritanceTests: BaseProtoBufTests<InheritanceTests.Message>
+public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Message>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -26,11 +26,7 @@ public partial class InheritanceTests: BaseProtoBufTests<InheritanceTests.Messag
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new Message
-        {
-            BaseValue = "base",
-            Value = "value"
-        };
+        yield return new Message { BaseValue = "base", Value = "value" };
     }
 
     public override async Task AssertResult(Message clone, Message message)

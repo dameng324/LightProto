@@ -2,7 +2,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using LightProto;
-    
 
 // BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 // return;

@@ -23,7 +23,8 @@ namespace LightProto
         /// Throws an ArgumentNullException if the given value is null, otherwise
         /// return the value to the caller.
         /// </summary>
-        public static T CheckNotNull<T>(T value, string name) where T : class
+        public static T CheckNotNull<T>(T value, string name)
+            where T : class
         {
             if (value == null)
             {

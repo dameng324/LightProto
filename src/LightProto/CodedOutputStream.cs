@@ -49,9 +49,8 @@ namespace LightProto
         /// byte array. If more bytes are written than fit in the array,
         /// OutOfSpaceException will be thrown.
         /// </summary>
-        public CodedOutputStream(byte[] flatArray) : this(flatArray, 0, flatArray.Length)
-        {
-        }
+        public CodedOutputStream(byte[] flatArray)
+            : this(flatArray, 0, flatArray.Length) { }
 
         /// <summary>
         /// Creates a new CodedOutputStream that writes directly to the given
@@ -83,9 +82,8 @@ namespace LightProto
         /// stream when the returned <c>CodedOutputStream</c> is disposed.
         /// </summary>
         /// <param name="output">The stream to write to. It will be disposed when the returned <c>CodedOutputStream is disposed.</c></param>
-        public CodedOutputStream(Stream output) : this(output, DefaultBufferSize, false)
-        {
-        }
+        public CodedOutputStream(Stream output)
+            : this(output, DefaultBufferSize, false) { }
 
         /// <summary>
         /// Creates a new CodedOutputStream which write to the given stream and uses
@@ -93,9 +91,8 @@ namespace LightProto
         /// </summary>
         /// <param name="output">The stream to write to. It will be disposed when the returned <c>CodedOutputStream is disposed.</c></param>
         /// <param name="bufferSize">The size of buffer to use internally.</param>
-        public CodedOutputStream(Stream output, int bufferSize) : this(output, new byte[bufferSize], false)
-        {
-        }
+        public CodedOutputStream(Stream output, int bufferSize)
+            : this(output, new byte[bufferSize], false) { }
 
         /// <summary>
         /// Creates a new CodedOutputStream which write to the given stream.
@@ -103,9 +100,8 @@ namespace LightProto
         /// <param name="output">The stream to write to.</param>
         /// <param name="leaveOpen">If <c>true</c>, <paramref name="output"/> is left open when the returned <c>CodedOutputStream</c> is disposed;
         /// if <c>false</c>, the provided stream is disposed as well.</param>
-        public CodedOutputStream(Stream output, bool leaveOpen) : this(output, DefaultBufferSize, leaveOpen)
-        {
-        }
+        public CodedOutputStream(Stream output, bool leaveOpen)
+            : this(output, DefaultBufferSize, leaveOpen) { }
 
         /// <summary>
         /// Creates a new CodedOutputStream which write to the given stream and uses
@@ -115,9 +111,8 @@ namespace LightProto
         /// <param name="bufferSize">The size of buffer to use internally.</param>
         /// <param name="leaveOpen">If <c>true</c>, <paramref name="output"/> is left open when the returned <c>CodedOutputStream</c> is disposed;
         /// if <c>false</c>, the provided stream is disposed as well.</param>
-        public CodedOutputStream(Stream output, int bufferSize, bool leaveOpen) : this(output, new byte[bufferSize], leaveOpen)
-        {
-        }
+        public CodedOutputStream(Stream output, int bufferSize, bool leaveOpen)
+            : this(output, new byte[bufferSize], leaveOpen) { }
         #endregion
 
         /// <summary>
@@ -254,7 +249,6 @@ namespace LightProto
             var span = new Span<byte>(buffer);
             WritingPrimitives.WriteString(ref span, ref state, value);
         }
-
 
         /// <summary>
         /// Writes a uint32 value, without a tag, to the stream.
@@ -462,8 +456,7 @@ namespace LightProto
         {
             internal OutOfSpaceException()
                 : base("CodedOutputStream was writing to a flat byte array and ran out of space.")
-            {
-            }
+            { }
         }
 
         /// <summary>

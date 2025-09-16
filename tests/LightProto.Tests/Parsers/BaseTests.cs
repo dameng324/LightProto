@@ -18,7 +18,7 @@ public abstract class BaseTests<Message, GoogleProtobufMessage> : BaseProtoBufTe
     public async Task GoogleProto_Serialize_LightProto_Deserialize(GoogleProtobufMessage google)
     {
         var bytes = google.ToByteArray();
-        TestContext.Current!.WriteLine($"bytes: {string.Join(",",bytes)}");
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
         var clone = Serializer.Deserialize<Message>(bytes);
         await AssertGoogleResult(google, clone);
     }
@@ -28,7 +28,7 @@ public abstract class BaseTests<Message, GoogleProtobufMessage> : BaseProtoBufTe
     public async Task LightProto_Serialize_GoogleProto_Deserialize(Message message)
     {
         byte[] bytes = message.ToByteArray();
-        TestContext.Current!.WriteLine($"bytes: {string.Join(",",bytes)}");
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
         var googleClone = new GoogleProtobufMessage();
         googleClone.MergeFrom(bytes);
         await AssertGoogleResult(googleClone, message);
@@ -48,7 +48,7 @@ public abstract class BaseProtoBufTests<Message>
     public async Task LightProto_Serialize_Deserialize(Message message)
     {
         byte[] bytes = message.ToByteArray();
-        TestContext.Current!.WriteLine($"bytes: {string.Join(",",bytes)}");
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
         var clone = Serializer.Deserialize<Message>(bytes);
         await AssertResult(clone, message);
     }
@@ -62,7 +62,7 @@ public abstract class BaseProtoBufTests<Message>
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
         var bytes = ms.ToArray();
-        TestContext.Current!.WriteLine($"bytes: {string.Join(",",bytes)}");
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
         var clone = Serializer.Deserialize<Message>(bytes);
         await AssertResult(clone, message);
     }
@@ -73,7 +73,7 @@ public abstract class BaseProtoBufTests<Message>
     public async Task LightProto_Serialize_ProtoBuf_net_Deserialize(Message message)
     {
         byte[] bytes = message.ToByteArray();
-        TestContext.Current!.WriteLine($"bytes: {string.Join(",",bytes)}");
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
         var clone = ProtoBuf.Serializer.Deserialize<Message>(bytes.AsSpan());
         await AssertResult(clone, message);
     }
@@ -87,7 +87,7 @@ public abstract class BaseProtoBufTests<Message>
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
         var bytes = ms.ToArray();
-        TestContext.Current!.WriteLine($"bytes: {string.Join(",",bytes)}");
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
         var clone = ProtoBuf.Serializer.Deserialize<Message>(bytes.AsSpan());
         await AssertResult(clone, message);
     }

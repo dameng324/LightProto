@@ -15,16 +15,19 @@ public enum CompatibilityLevel
     /// Functionally identical to <see cref="Level200"/>
     /// </summary>
     NotSpecified = 0,
+
     /// <summary>
     /// Uses bcl.proto for <see cref="DateTime"/>, <see cref="TimeSpan"/>, <see cref="Guid"/> and <see cref="decimal"/>, for compatibility
     /// with all versions of protobuf-net, at the expense of being inconvenient for use with other protobuf implementations.
     /// </summary>
     Level200 = 200,
+
     /// <summary>
     /// Like <see cref="Level200"/>, but uses '.google.protobuf.Timestamp' for <see cref="DateTime"/> and '.google.protobuf.Duration' for <see cref="TimeSpan"/>.
     /// This is functionally identical to a <see cref="Level200"/> configuration that specifies <see cref="DataFormat.WellKnown"/>.
     /// </summary>
     Level240 = 240,
+
     /// <summary>
     /// Like <see cref="Level240"/>, but uses 'string' for <see cref="Guid"/> (big-endian hyphenated UUID format; a shorter 'bytes' variant is also available via <see cref="DataFormat.FixedSize"/>)
     /// and <see cref="decimal"/> (invariant "general" format).

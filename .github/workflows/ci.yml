@@ -21,6 +21,9 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Check format
+        run: dotnet tool restore && dotnet tool run csharpier check .
+        
       - name: Run tests
         run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false
 
@@ -45,6 +48,9 @@ jobs:
         with:
           submodules: true
 
+      - name: Check format
+        run: dotnet tool restore && dotnet tool run csharpier check .
+        
       - name: Run tests
         run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false
 

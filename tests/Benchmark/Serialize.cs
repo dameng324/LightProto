@@ -13,9 +13,9 @@ public class Serialize
     public Serialize()
     {
         var _data = System.IO.File.ReadAllBytes("test.bin");
-        protobuf_net= ProtoBuf.Serializer.Deserialize<ProtoBuf.Database>(_data.AsSpan());
-        google= GoogleProtobuf.Database.Parser.ParseFrom(_data);
-        dameng= LightProto.Serializer.Deserialize<LightProto.Database>(_data);
+        protobuf_net = ProtoBuf.Serializer.Deserialize<ProtoBuf.Database>(_data.AsSpan());
+        google = GoogleProtobuf.Database.Parser.ParseFrom(_data);
+        dameng = LightProto.Serializer.Deserialize<LightProto.Database>(_data);
     }
 
     [Benchmark]
@@ -24,12 +24,14 @@ public class Serialize
         using var ms = new System.IO.MemoryStream();
         ProtoBuf.Serializer.Serialize<ProtoBuf.Database>(ms, protobuf_net);
     }
+
     [Benchmark()]
     public void Serialize_GoogleProtoBuf()
     {
         using var ms = new System.IO.MemoryStream();
         google.WriteTo(ms);
     }
+
     [Benchmark(Baseline = true)]
     public void Serialize_LightProto()
     {

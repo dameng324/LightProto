@@ -28,6 +28,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
     public bool IsPacked { get; }
 
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+
     public ArrayProtoReader(
         IProtoReader<TItem> itemReader,
         uint tag,
@@ -126,7 +127,10 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
             do
             {
                 collection.Add(ItemReader.ParseFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag)||ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag2));
+            } while (
+                ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag)
+                || ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag2)
+            );
             return collection.ToArray();
         }
     }

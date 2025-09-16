@@ -4,7 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class DateTime240Tests:BaseTests<DateTime240Tests.Message,DateTime240TestsMessage>
+public partial class DateTime240Tests : BaseTests<DateTime240Tests.Message, DateTime240TestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -20,15 +20,21 @@ public partial class DateTime240Tests:BaseTests<DateTime240Tests.Message,DateTim
     public override IEnumerable<Message> GetMessages()
     {
         //yield return new () { Property = DateTime.MinValue.ToUniversalTime() };
-        yield return new () { Property = DateTime.MaxValue.ToUniversalTime() };
-        yield return new () { Property = DateTime.UtcNow };
-        yield return new () { Property = DateTime.Now.ToUniversalTime() };
+        yield return new() { Property = DateTime.MaxValue.ToUniversalTime() };
+        yield return new() { Property = DateTime.UtcNow };
+        yield return new() { Property = DateTime.Now.ToUniversalTime() };
     }
 
     public override IEnumerable<DateTime240TestsMessage> GetGoogleMessages()
     {
-        yield return new DateTime240TestsMessage() { Property = DateTime.MaxValue.ToUniversalTime().ToTimestamp() };
-        yield return new DateTime240TestsMessage() { Property = DateTime.MinValue.ToUniversalTime().ToTimestamp() };
+        yield return new DateTime240TestsMessage()
+        {
+            Property = DateTime.MaxValue.ToUniversalTime().ToTimestamp(),
+        };
+        yield return new DateTime240TestsMessage()
+        {
+            Property = DateTime.MinValue.ToUniversalTime().ToTimestamp(),
+        };
         yield return new DateTime240TestsMessage() { Property = DateTime.UtcNow.ToTimestamp() };
     }
 
