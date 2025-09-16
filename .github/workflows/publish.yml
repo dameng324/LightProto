@@ -13,6 +13,9 @@ on:
         required: true
         default: '1.0.0'
 
+permissions:
+  contents: write
+  
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -81,3 +84,12 @@ jobs:
         with:
           name: nuget-packages
           path: ./packages/*.nupkg
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          gh release create "$VERSION" ./packages/*.nupkg \
+            --title "Release $VERSION" \
+            --notes "Automated release for version $VERSION" \
+            --generate-notes
