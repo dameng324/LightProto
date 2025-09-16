@@ -315,12 +315,51 @@ public class LightProtoGenerator : ISourceGenerator
                               }
                           }
                           
-                          return new {{className}}()
+                          var parsed = new {{className}}()
                           {
                               {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                                  protoMembers.Select(member => $"{member.Name} = _{member.Name},"))
+                                  protoMembers.Select(member => {
+                                      if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
+                                      {
+                                          return $"// {member.Name} is readonly";
+                                      }
+                                      else
+                                      {
+                                          return $"{member.Name} = _{member.Name},";
+                                      }
+                                  }))
                               }}
                           };
+                          {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              protoMembers.SelectMany(member => {
+                                  return Gen();
+                                  IEnumerable<string> Gen()
+                                  {   
+                                      if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
+                                      {
+                                          yield return $"if(parsed.{member.Name}!=null) {{";
+                                          yield return $"    parsed.{member.Name}.Clear();";
+                                          yield return $"    if(_{member.Name}!=null) {{";
+                                          if(IsStackType(member.Type))
+                                              yield return $"        foreach(var v in _{member.Name}.Reverse()) {{";
+                                          else 
+                                              yield return $"        foreach(var v in _{member.Name}) {{";
+                                          if(IsStackType(member.Type))
+                                              yield return $"            parsed.{member.Name}.Push(v);";
+                                          else if(IsQueueType(member.Type))
+                                              yield return $"            parsed.{member.Name}.Enqueue(v);";
+                                          else if(IsDictionaryType(compilation, member.Type))
+                                              yield return $"            parsed.{member.Name}.Add(v.Key,v.Value);";
+                                          else 
+                                              yield return $"            parsed.{member.Name}.Add(v);";
+                                          yield return $"        }}";
+                                          yield return $"    }}";
+                                          yield return $"}}";
+                                      }
+                                  }
+                              }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
+                          }}
+                          return parsed;
                       }
                   }
               }
@@ -814,6 +853,23 @@ public class LightProtoGenerator : ISourceGenerator
         var conversion = compilation.ClassifyConversion(type, baseCollectionType);
         return conversion.IsImplicit;
     }
+    
+    private static bool IsStackType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var constructedFrom = namedType.OriginalDefinition.ToDisplayString();
+        return constructedFrom is "System.Collections.Generic.Stack<T>" or "System.Collections.Concurrent.ConcurrentStack<T>";
+    }
+    private static bool IsQueueType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var constructedFrom = namedType.OriginalDefinition.ToDisplayString();
+        return constructedFrom is "System.Collections.Generic.Queue<T>" or "System.Collections.Concurrent.ConcurrentQueue<T>";
+    }
 
     private static bool IsDictionaryType(
         Compilation compilation,
@@ -1225,6 +1281,8 @@ public class LightProtoGenerator : ISourceGenerator
                 ? _valueFormat
                 : LightProto.DataFormat.Default;
 
+            var isReadOnly = property.IsReadOnly;
+            
             members.Add(
                 new ProtoMember
                 {
@@ -1241,6 +1299,7 @@ public class LightProtoGenerator : ISourceGenerator
                     Initializer = initializer,
                     IsPacked = isPacked,
                     CompatibilityLevel = compatibilityLevel,
+                    IsReadOnly = isReadOnly,
                 }
             );
         }
@@ -1365,6 +1424,7 @@ public class LightProtoGenerator : ISourceGenerator
         public byte[] RawTagBytes => GetRawBytes(FieldNumber, WireType);
         public bool IsPacked { get; set; }
         public CompatibilityLevel CompatibilityLevel { get; set; }
+        public bool IsReadOnly { get; set; }
 
         public static uint GetRawTag(uint Tag, PbWireType WireType)
         {
