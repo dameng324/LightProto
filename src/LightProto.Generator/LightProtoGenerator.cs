@@ -349,7 +349,7 @@ public class LightProtoGenerator : ISourceGenerator
                                           else if(IsQueueType(member.Type))
                                               yield return $"            parsed.{member.Name}.Enqueue(v);";
                                           else if(IsDictionaryType(compilation, member.Type))
-                                              yield return $"            parsed.{member.Name}.Add(v.Key,v.Value);";
+                                              yield return $"            parsed.{member.Name}[v.Key]=v.Value;";
                                           else 
                                               yield return $"            parsed.{member.Name}.Add(v);";
                                           yield return $"        }}";
