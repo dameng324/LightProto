@@ -20,23 +20,21 @@
     />
   </ItemGroup>
   <ItemGroup>
-      <ProtoBuf Include="package.proto">
-          <GrpcServices>Client</GrpcServices>
-          <Generator>MSBuild:PreCompile</Generator>
-      </ProtoBuf>
-      <ProtoBuf Include="Parsers/parser.proto">
-          <GrpcServices>Client</GrpcServices>
-          <Generator>MSBuild:PreCompile</Generator>
-      </ProtoBuf>
-      <ProtoBuf Include="protobuf-net/bcl.proto">
-          <GrpcServices>Client</GrpcServices>
-          <Generator>MSBuild:PreCompile</Generator>
-      </ProtoBuf>
+    <ProtoBuf Include="package.proto">
+      <GrpcServices>Client</GrpcServices>
+      <Generator>MSBuild:PreCompile</Generator>
+    </ProtoBuf>
+    <ProtoBuf Include="Parsers/parser.proto">
+      <GrpcServices>Client</GrpcServices>
+      <Generator>MSBuild:PreCompile</Generator>
+    </ProtoBuf>
+    <ProtoBuf Include="protobuf-net/bcl.proto">
+      <GrpcServices>Client</GrpcServices>
+      <Generator>MSBuild:PreCompile</Generator>
+    </ProtoBuf>
     <PackageReference Include="Grpc.Tools" Version="2.72.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <Compile Remove="CsTestMessage.Manual.cs" />
-    <Compile Remove="CsTestMessage.Compare.cs" />
   </ItemGroup>
 </Project>

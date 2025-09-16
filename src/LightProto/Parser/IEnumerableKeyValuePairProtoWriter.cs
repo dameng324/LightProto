@@ -13,10 +13,18 @@ public class IEnumerableKeyValuePairProtoWriter<TDictionary, TKey, TValue>
         uint valueTag,
         Func<TDictionary, int> getCount,
         uint tag2
-    ) : base(
-        itemWriter: new KeyValuePairProtoWriter<TKey, TValue>(keyWriter, valueWriter, keyTag, valueTag),
-        tag:tag, getCount,itemFixedSize:0, isPacked: false,
-        tag2)
-    {
-    }
+    )
+        : base(
+            itemWriter: new KeyValuePairProtoWriter<TKey, TValue>(
+                keyWriter,
+                valueWriter,
+                keyTag,
+                valueTag
+            ),
+            tag: tag,
+            getCount,
+            itemFixedSize: 0,
+            isPacked: false,
+            tag2
+        ) { }
 }

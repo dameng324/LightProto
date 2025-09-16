@@ -2,6 +2,4 @@
 
 namespace LightProto;
 
-public static class Extensions
-{
-}
+public static class Extensions { }

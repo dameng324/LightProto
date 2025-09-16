@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Binary;
 
 namespace LightProto.Parser;
+
 // message Guid {
 // fixed64 lo = 1; // the first 8 bytes of the guid (note:crazy-endian)
 // fixed64 hi = 2; // the second 8 bytes of the guid (note:crazy-endian)
@@ -12,14 +13,15 @@ public partial struct GuidProxy
 {
     [ProtoMember(1, DataFormat = DataFormat.FixedSize)]
     internal ulong Low { get; set; }
+
     [ProtoMember(2, DataFormat = DataFormat.FixedSize)]
     internal ulong High { get; set; }
-    
+
     public static implicit operator Guid(GuidProxy proxy)
     {
         Span<byte> bytes = stackalloc byte[16];
-        BinaryPrimitives.WriteUInt64LittleEndian(bytes,proxy.Low);
-        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8),proxy.High);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes, proxy.Low);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), proxy.High);
         return new Guid(bytes);
     }
 
@@ -34,6 +36,7 @@ public partial struct GuidProxy
         };
     }
 }
+
 public sealed class GuidProtoParser : IProtoParser<Guid>
 {
     public static IProtoReader<Guid> Reader { get; } = LightProto.Parser.GuidProxy.Reader;

@@ -3,8 +3,9 @@ using LightProto;
 using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
+
 [InheritsTests]
-public partial class TimeSpan240Tests: BaseTests<TimeSpan240Tests.Message,TimeSpan240TestsMessage>
+public partial class TimeSpan240Tests : BaseTests<TimeSpan240Tests.Message, TimeSpan240TestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -19,15 +20,14 @@ public partial class TimeSpan240Tests: BaseTests<TimeSpan240Tests.Message,TimeSp
 
     public override IEnumerable<Message> GetMessages()
     {
-
-        yield return new () { Property = TimeSpan.Zero };
-        yield return new () { Property = DateTime.Now.TimeOfDay };
+        yield return new() { Property = TimeSpan.Zero };
+        yield return new() { Property = DateTime.Now.TimeOfDay };
     }
 
     public override IEnumerable<TimeSpan240TestsMessage> GetGoogleMessages()
     {
-        yield return new () { Property = DateTime.Now.TimeOfDay.ToDuration() };
-        yield return new () { Property = TimeSpan.Zero.ToDuration() };
+        yield return new() { Property = DateTime.Now.TimeOfDay.ToDuration() };
+        yield return new() { Property = TimeSpan.Zero.ToDuration() };
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -37,6 +37,6 @@ public partial class TimeSpan240Tests: BaseTests<TimeSpan240Tests.Message,TimeSp
 
     public override async Task AssertGoogleResult(TimeSpan240TestsMessage clone, Message message)
     {
-        await Assert.That(clone.Property?.ToTimeSpan()??default).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Property?.ToTimeSpan() ?? default).IsEquivalentTo(message.Property);
     }
 }

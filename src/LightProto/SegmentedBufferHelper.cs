@@ -30,9 +30,15 @@ namespace LightProto
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(CodedInputStream codedInputStream, out SegmentedBufferHelper instance)
+        public static void Initialize(
+            CodedInputStream codedInputStream,
+            out SegmentedBufferHelper instance
+        )
         {
-            instance.totalLength = codedInputStream.InternalInputStream == null ? codedInputStream.InternalBuffer.Length : null;
+            instance.totalLength =
+                codedInputStream.InternalInputStream == null
+                    ? codedInputStream.InternalBuffer.Length
+                    : null;
             instance.readOnlySequenceEnumerator = default;
             instance.codedInputStream = codedInputStream;
         }
@@ -43,7 +49,11 @@ namespace LightProto
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(ReadOnlySequence<byte> sequence, out SegmentedBufferHelper instance, out ReadOnlySpan<byte> firstSpan)
+        public static void Initialize(
+            ReadOnlySequence<byte> sequence,
+            out SegmentedBufferHelper instance,
+            out ReadOnlySpan<byte> firstSpan
+        )
         {
             instance.codedInputStream = null;
             if (sequence.IsSingleSegment)
@@ -55,15 +65,19 @@ namespace LightProto
             else
             {
                 instance.readOnlySequenceEnumerator = sequence.GetEnumerator();
-                instance.totalLength = (int) sequence.Length;
+                instance.totalLength = (int)sequence.Length;
 
                 // set firstSpan to the first segment
                 instance.readOnlySequenceEnumerator.MoveNext();
                 firstSpan = instance.readOnlySequenceEnumerator.Current.Span;
             }
         }
-        
-        public bool RefillBuffer(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, bool mustSucceed)
+
+        public bool RefillBuffer(
+            ref ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state,
+            bool mustSucceed
+        )
         {
             if (codedInputStream != null)
             {
@@ -135,10 +149,15 @@ namespace LightProto
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAtEnd(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
-            return state.bufferPos == state.bufferSize && !state.segmentedBufferHelper.RefillBuffer(ref buffer, ref state, false);
+            return state.bufferPos == state.bufferSize
+                && !state.segmentedBufferHelper.RefillBuffer(ref buffer, ref state, false);
         }
 
-        private bool RefillFromReadOnlySequence(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, bool mustSucceed)
+        private bool RefillFromReadOnlySequence(
+            ref ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state,
+            bool mustSucceed
+        )
         {
             CheckCurrentBufferIsEmpty(ref state);
 
@@ -193,7 +212,11 @@ namespace LightProto
             }
         }
 
-        private bool RefillFromCodedInputStream(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, bool mustSucceed)
+        private bool RefillFromCodedInputStream(
+            ref ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state,
+            bool mustSucceed
+        )
         {
             CheckCurrentBufferIsEmpty(ref state);
 
@@ -264,7 +287,9 @@ namespace LightProto
         {
             if (state.bufferPos < state.bufferSize)
             {
-                throw new InvalidOperationException("RefillBuffer() called when buffer wasn't empty.");
+                throw new InvalidOperationException(
+                    "RefillBuffer() called when buffer wasn't empty."
+                );
             }
         }
     }

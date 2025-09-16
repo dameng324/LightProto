@@ -1,30 +1,35 @@
-﻿
-namespace LightProto.Parser;
+﻿namespace LightProto.Parser;
 
 public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+
     public byte[] ParseFrom(ref ReaderContext input)
     {
         var length = input.ReadLength();
-        return ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state,length);
+        return ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
     }
 }
+
 public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+    )]
     public int CalculateSize(byte[] value)
     {
-        return CodedOutputStream.ComputeLengthSize(value.Length)+value.Length;
+        return CodedOutputStream.ComputeLengthSize(value.Length) + value.Length;
     }
 
     public void WriteTo(ref WriterContext output, byte[] value)
     {
         output.WriteLength(value.Length);
-        WritingPrimitives.WriteRawBytes(ref output.buffer,ref output.state, value);
+        WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, value);
     }
 }
+
 public sealed class ByteArrayProtoParser : IProtoParser<byte[]>
 {
     public static IProtoReader<byte[]> Reader { get; } = new ByteArrayProtoReader();

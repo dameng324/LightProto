@@ -73,6 +73,8 @@ public sealed partial class TimeSpan240Proxy
 
 public sealed class TimeSpan240ProtoParser : IProtoParser<TimeSpan>
 {
-    public static IProtoReader<TimeSpan> Reader { get; } = LightProto.Parser.TimeSpan240Proxy.Reader;
-    public static IProtoWriter<TimeSpan> Writer { get; } = LightProto.Parser.TimeSpan240Proxy.Writer;
+    public static IProtoReader<TimeSpan> Reader { get; } =
+        LightProto.Parser.TimeSpan240Proxy.Reader;
+    public static IProtoWriter<TimeSpan> Writer { get; } =
+        LightProto.Parser.TimeSpan240Proxy.Writer;
 }

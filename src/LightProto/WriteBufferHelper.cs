@@ -30,7 +30,10 @@ namespace LightProto
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(CodedOutputStream codedOutputStream, out WriteBufferHelper instance)
+        public static void Initialize(
+            CodedOutputStream codedOutputStream,
+            out WriteBufferHelper instance
+        )
         {
             instance.bufferWriter = null;
             instance.codedOutputStream = codedOutputStream;
@@ -42,11 +45,15 @@ namespace LightProto
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(IBufferWriter<byte> bufferWriter, out WriteBufferHelper instance, out Span<byte> buffer)
+        public static void Initialize(
+            IBufferWriter<byte> bufferWriter,
+            out WriteBufferHelper instance,
+            out Span<byte> buffer
+        )
         {
             instance.bufferWriter = bufferWriter;
             instance.codedOutputStream = null;
-            buffer = default;  // TODO: initialize the initial buffer so that the first write is not via slowpath.
+            buffer = default; // TODO: initialize the initial buffer so that the first write is not via slowpath.
         }
 
         /// <summary>
@@ -80,15 +87,19 @@ namespace LightProto
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetSpaceLeft(ref WriterInternalState state)
         {
-            if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream == null && state.writeBufferHelper.bufferWriter == null)
+            if (
+                state.writeBufferHelper.codedOutputStream?.InternalOutputStream == null
+                && state.writeBufferHelper.bufferWriter == null
+            )
             {
                 return state.limit - state.position;
             }
             else
             {
                 throw new InvalidOperationException(
-                    "SpaceLeft can only be called on CodedOutputStreams that are " +
-                        "writing to a flat array or when writing to a single span.");
+                    "SpaceLeft can only be called on CodedOutputStreams that are "
+                        + "writing to a flat array or when writing to a single span."
+                );
             }
         }
 
@@ -98,7 +109,11 @@ namespace LightProto
             if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream != null)
             {
                 // because we're using coded output stream, we know that "buffer" and codedOutputStream.InternalBuffer are identical.
-                state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(state.writeBufferHelper.codedOutputStream.InternalBuffer, 0, state.position);
+                state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(
+                    state.writeBufferHelper.codedOutputStream.InternalBuffer,
+                    0,
+                    state.position
+                );
                 // reset position, limit stays the same because we are reusing the codedOutputStream's internal buffer.
                 state.position = 0;
             }
@@ -123,7 +138,11 @@ namespace LightProto
             if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream != null)
             {
                 // because we're using coded output stream, we know that "buffer" and codedOutputStream.InternalBuffer are identical.
-                state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(state.writeBufferHelper.codedOutputStream.InternalBuffer, 0, state.position);
+                state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(
+                    state.writeBufferHelper.codedOutputStream.InternalBuffer,
+                    0,
+                    state.position
+                );
                 state.position = 0;
             }
             else if (state.writeBufferHelper.bufferWriter != null)
@@ -134,7 +153,7 @@ namespace LightProto
                 state.writeBufferHelper.bufferWriter.Advance(state.position);
                 state.position = 0;
                 state.limit = 0;
-                buffer = default;  // invalidate the current buffer
+                buffer = default; // invalidate the current buffer
             }
         }
     }

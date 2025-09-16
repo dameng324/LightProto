@@ -3,7 +3,8 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadonlyListPropertyTests : BaseTests<ReadonlyListPropertyTests.Message, ListUnPackedTestsMessage>
+public partial class ReadonlyListPropertyTests
+    : BaseTests<ReadonlyListPropertyTests.Message, ListUnPackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -34,10 +35,8 @@ public partial class ReadonlyListPropertyTests : BaseTests<ReadonlyListPropertyT
 
     public override IEnumerable<ListUnPackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages().Select(o => new ListUnPackedTestsMessage()
-        {
-            Property = { o.Property }
-        });
+        return GetMessages()
+            .Select(o => new ListUnPackedTestsMessage() { Property = { o.Property } });
     }
 
     public override async Task AssertGoogleResult(ListUnPackedTestsMessage clone, Message message)

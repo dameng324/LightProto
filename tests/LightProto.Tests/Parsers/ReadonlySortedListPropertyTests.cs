@@ -4,7 +4,8 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadonlySortedListPropertyTests : BaseTests<ReadonlySortedListPropertyTests.Message, MapTestsMessage>
+public partial class ReadonlySortedListPropertyTests
+    : BaseTests<ReadonlySortedListPropertyTests.Message, MapTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -12,7 +13,7 @@ public partial class ReadonlySortedListPropertyTests : BaseTests<ReadonlySortedL
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public SortedList<int,string> Property { get; } = [];
+        public SortedList<int, string> Property { get; } = [];
 
         public override string ToString()
         {
@@ -22,26 +23,28 @@ public partial class ReadonlySortedListPropertyTests : BaseTests<ReadonlySortedL
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new () {  };
-        yield return new () { Property = 
+        yield return new() { };
+        yield return new()
         {
-            [1] = "one",
-            [2] = "two",
-            [3] = "three"
-        } };
+            Property =
+            {
+                [1] = "one",
+                [2] = "two",
+                [3] = "three",
+            },
+        };
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property).IsEquivalentTo(message.Property);
     }
+
     public override IEnumerable<MapTestsMessage> GetGoogleMessages()
     {
-        return GetMessages().Select(o=>new MapTestsMessage()
-        {
-            Property = { o.Property }
-        });
+        return GetMessages().Select(o => new MapTestsMessage() { Property = { o.Property } });
     }
+
     public override async Task AssertGoogleResult(MapTestsMessage clone, Message message)
     {
         await Assert.That(clone.Property.ToArray()).IsEquivalentTo(message.Property.ToArray());

@@ -6,25 +6,36 @@
 #pragma warning disable CS1591, CS0612, CS0618, CS3021, IDE1006, CS8618
 namespace LightProto
 {
-
     [global::LightProto.ProtoContract()]
     public partial class Database : global::LightProto.IExtensible
     {
         private global::LightProto.IExtension __pbn__extensionData;
-        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(bool createIfMissing)
-            => global::LightProto.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
+
+        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(
+            bool createIfMissing
+        ) =>
+            global::LightProto.Extensible.GetExtensionObject(
+                ref __pbn__extensionData,
+                createIfMissing
+            );
 
         [global::LightProto.ProtoMember(1)]
-        public global::System.Collections.Generic.List<Order> Orders { get; } = new global::System.Collections.Generic.List<Order>();
-
+        public global::System.Collections.Generic.List<Order> Orders { get; } =
+            new global::System.Collections.Generic.List<Order>();
     }
 
     [global::LightProto.ProtoContract()]
     public partial class Order : global::LightProto.IExtensible
     {
         private global::LightProto.IExtension __pbn__extensionData;
-        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(bool createIfMissing)
-            => global::LightProto.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
+
+        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(
+            bool createIfMissing
+        ) =>
+            global::LightProto.Extensible.GetExtensionObject(
+                ref __pbn__extensionData,
+                createIfMissing
+            );
 
         [global::LightProto.ProtoMember(1)]
         public int OrderID { get; set; }
@@ -76,16 +87,22 @@ namespace LightProto
         public string ShipCountry { get; set; } = "";
 
         [global::LightProto.ProtoMember(15)]
-        public global::System.Collections.Generic.List<OrderLine> Lines { get; } = new global::System.Collections.Generic.List<OrderLine>();
-
+        public global::System.Collections.Generic.List<OrderLine> Lines { get; } =
+            new global::System.Collections.Generic.List<OrderLine>();
     }
 
     [global::LightProto.ProtoContract()]
     public partial class OrderLine : global::LightProto.IExtensible
     {
         private global::LightProto.IExtension __pbn__extensionData;
-        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(bool createIfMissing)
-            => global::LightProto.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
+
+        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(
+            bool createIfMissing
+        ) =>
+            global::LightProto.Extensible.GetExtensionObject(
+                ref __pbn__extensionData,
+                createIfMissing
+            );
 
         [global::LightProto.ProtoMember(1)]
         public int OrderID { get; set; }
@@ -101,9 +118,7 @@ namespace LightProto
 
         [global::LightProto.ProtoMember(5)]
         public float Discount { get; set; }
-
     }
-
 }
 
 #pragma warning restore IDE0079, CS1591, CS0612, CS0618, CS3021, IDE1006

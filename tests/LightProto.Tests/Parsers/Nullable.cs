@@ -3,7 +3,8 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class NullableDateTimeTests : BaseTests<NullableDateTimeTests.Message, DateTimeTestsMessage>
+public partial class NullableDateTimeTests
+    : BaseTests<NullableDateTimeTests.Message, DateTimeTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -32,15 +33,17 @@ public partial class NullableDateTimeTests : BaseTests<NullableDateTimeTests.Mes
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property.HasValue).IsEquivalentTo(message.Property.HasValue);
-        if(clone.Property.HasValue&& message.Property.HasValue)
-            await Assert.That(clone.Property.Value.Ticks).IsEquivalentTo(message.Property.Value.Ticks);
+        if (clone.Property.HasValue && message.Property.HasValue)
+            await Assert
+                .That(clone.Property.Value.Ticks)
+                .IsEquivalentTo(message.Property.Value.Ticks);
         //await Assert.That(clone.Property.Kind).IsEquivalentTo(message.Property.Kind); // Kind is not include by default in protobuf-net
     }
 
     public override async Task AssertGoogleResult(DateTimeTestsMessage clone, Message message)
     {
         await Assert.That(clone.Property is null).IsEquivalentTo(message.Property is null);
-        if(clone.Property is not null && message.Property is not null)
+        if (clone.Property is not null && message.Property is not null)
             await Assert.That(clone.Property.ToDateTime()).IsEquivalentTo(message.Property);
     }
 }
@@ -53,7 +56,7 @@ file static class Extension
         {
             Value = dt.Ticks - EpochOriginsTicks[(int)dt.Kind],
             Scale = ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Ticks,
-            Kind = (ProtoBuf.Bcl.DateTime.Types.DateTimeKind) dt.Kind,
+            Kind = (ProtoBuf.Bcl.DateTime.Types.DateTimeKind)dt.Kind,
         };
     }
 
@@ -70,22 +73,22 @@ file static class Extension
         switch (proxy.Scale)
         {
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Days:
-                ticks = proxy.Value* TimeSpan.TicksPerDay;
+                ticks = proxy.Value * TimeSpan.TicksPerDay;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Hours:
-                ticks = proxy.Value* TimeSpan.TicksPerHour;
+                ticks = proxy.Value * TimeSpan.TicksPerHour;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Minutes:
-                ticks = proxy.Value* TimeSpan.TicksPerMinute;
+                ticks = proxy.Value * TimeSpan.TicksPerMinute;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Seconds:
-                ticks = proxy.Value* TimeSpan.TicksPerSecond;
+                ticks = proxy.Value * TimeSpan.TicksPerSecond;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Milliseconds:
-                ticks = proxy.Value* TimeSpan.TicksPerMillisecond;
+                ticks = proxy.Value * TimeSpan.TicksPerMillisecond;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Ticks:
-                ticks= proxy.Value;
+                ticks = proxy.Value;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Minmax:
                 if (proxy.Value == -1)
@@ -105,7 +108,7 @@ file static class Extension
         }
         return new DateTime(
             ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-            kind: (System.DateTimeKind) proxy.Kind
+            kind: (System.DateTimeKind)proxy.Kind
         );
     }
 }

@@ -43,6 +43,5 @@ public sealed class ConcurrentDictionaryProtoWriter<TKey, TValue>
         uint valueTag,
         uint tag2
     )
-        : base(keyWriter, valueWriter, tag, keyTag, valueTag, (dic) => dic.Count,
-            tag2) { }
+        : base(keyWriter, valueWriter, tag, keyTag, valueTag, (dic) => dic.Count, tag2) { }
 }

@@ -6,7 +6,10 @@ public sealed class EnumProtoReader<T> : IProtoReader<T>
     where T : Enum
 {
     public WireFormat.WireType WireType => WireFormat.WireType.Varint;
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+    )]
     public T ParseFrom(ref ReaderContext input)
     {
         var value = input.ReadEnum();
@@ -18,13 +21,18 @@ public sealed class EnumProtoWriter<T> : IProtoWriter<T>
     where T : Enum
 {
     public WireFormat.WireType WireType => WireFormat.WireType.Varint;
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+    )]
     public int CalculateSize(T value)
     {
         return CodedOutputStream.ComputeEnumSize(Unsafe.As<T, int>(ref value));
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+    )]
     public void WriteTo(ref WriterContext output, T value)
     {
         output.WriteEnum(Unsafe.As<T, int>(ref value));

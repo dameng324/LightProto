@@ -89,6 +89,7 @@ public partial struct DateTimeProxy
         new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).Ticks,
         new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local).Ticks,
     ];
+
     public static implicit operator DateTimeProxy(DateTime dt)
     {
         if (dt == DateTime.MinValue)
@@ -97,7 +98,7 @@ public partial struct DateTimeProxy
             {
                 Ticks = -1,
                 Scale = TimeSpanScale.Minmax,
-                Kind = DateTimeKind.Unspecified
+                Kind = DateTimeKind.Unspecified,
             };
         }
 
@@ -107,10 +108,10 @@ public partial struct DateTimeProxy
             {
                 Ticks = 1,
                 Scale = TimeSpanScale.Minmax,
-                Kind = DateTimeKind.Unspecified
+                Kind = DateTimeKind.Unspecified,
             };
         }
-        
+
         var ticks = dt.Ticks - EpochOriginsTicks[(int)dt.Kind];
         var left = Math.DivRem(ticks, TimeSpan.TicksPerDay, out var reminder);
         if (reminder == 0)

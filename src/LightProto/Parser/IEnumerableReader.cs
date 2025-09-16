@@ -6,7 +6,10 @@ public interface ICollectionReader
     public uint Tag2 { get; }
     public int ItemFixedSize { get; }
 }
-public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollection>,ICollectionReader
+
+public class IEnumerableProtoReader<TCollection, TItem>
+    : IProtoReader<TCollection>,
+        ICollectionReader
     where TCollection : IEnumerable<TItem>
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -15,14 +18,15 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
-    public Func<TCollection, TItem,TCollection> AddItem { get; }
+    public Func<TCollection, TItem, TCollection> AddItem { get; }
     public int ItemFixedSize { get; }
     public bool IsPacked { get; }
+
     public IEnumerableProtoReader(
         IProtoReader<TItem> itemReader,
         uint tag,
         Func<int, TCollection> createWithCapacity,
-        Func<TCollection, TItem,TCollection> addItem,
+        Func<TCollection, TItem, TCollection> addItem,
         int itemFixedSize,
         bool isPacked,
         uint tag2,
@@ -92,7 +96,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
                             // Only FieldCodecs with a fixed size can reach here, and they are all known
                             // types that don't allow the user to specify a custom reader action.
                             // reader action will never return null.
-                            collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                         }
                     }
 
@@ -104,7 +108,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
                     // Content is variable size so add until we reach the limit.
                     while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                     {
-                        collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                        collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                     }
 
                     return collection;
@@ -121,8 +125,11 @@ public class IEnumerableProtoReader<TCollection, TItem> : IProtoReader<TCollecti
             var collection = CreateWithCapacity(4);
             do
             {
-                collection= AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag)||ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag2));
+                collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+            } while (
+                ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag)
+                || ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag2)
+            );
 
             return _completeAction is null ? collection : _completeAction.Invoke(collection);
         }

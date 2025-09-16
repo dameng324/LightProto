@@ -7,25 +7,41 @@ namespace LightProto.Parser;
 
 public sealed class StackProtoWriter<T> : IEnumerableProtoWriter<Stack<T>, T>
 {
-    public StackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize,bool isPacked,
-        uint tag2)
-        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize,isPacked,
-            tag2) { }
+    public StackProtoWriter(
+        IProtoWriter<T> itemWriter,
+        uint tag,
+        int itemFixedSize,
+        bool isPacked,
+        uint tag2
+    )
+        : base(
+            itemWriter,
+            tag,
+            static collection => collection.Count,
+            itemFixedSize,
+            isPacked,
+            tag2
+        ) { }
 }
 
 public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
 {
-    public StackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize,bool isPacked,
-        uint tag2)
+    public StackProtoReader(
+        IProtoReader<T> itemReader,
+        uint tag,
+        int itemFixedSize,
+        bool isPacked,
+        uint tag2
+    )
         : base(
             itemReader,
             tag,
             static (size) => new Stack<T>(size),
-            static (collection,item) =>
-        {
-             collection.Push(item);
-             return collection;
-        },
+            static (collection, item) =>
+            {
+                collection.Push(item);
+                return collection;
+            },
             itemFixedSize,
             isPacked,
             tag2,
@@ -49,6 +65,7 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
 #else
     private static readonly Func<Stack<T>, T[]> _getArray;
     private static readonly Func<Stack<T>, int> _getSize;
+
     [DynamicDependency("_array", "System.Collections.Generic.Stack`1", "System.Collections")]
     [DynamicDependency("_size", "System.Collections.Generic.Stack`1", "System.Collections")]
     static StackProtoReader()

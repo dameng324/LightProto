@@ -4,10 +4,10 @@ using ProtoBuf;
 using DataFormat2 = ProtoBuf.DataFormat;
 using ProtoContract1 = LightProto.ProtoContractAttribute;
 using ProtoContract2 = ProtoBuf.ProtoContractAttribute;
-using ProtoMember1 = LightProto.ProtoMemberAttribute;
-using ProtoMember2 = ProtoBuf.ProtoMemberAttribute;
 using ProtoMap1 = LightProto.ProtoMapAttribute;
 using ProtoMap2 = ProtoBuf.ProtoMapAttribute;
+using ProtoMember1 = LightProto.ProtoMemberAttribute;
+using ProtoMember2 = ProtoBuf.ProtoMemberAttribute;
 
 namespace LightProto.Tests;
 
@@ -19,12 +19,12 @@ public partial class CsTestMessage
     [ProtoMember2(1)]
     public string StringField { get; set; } = string.Empty;
 
-    [ProtoMember1(2,IsPacked = false)]
-    [ProtoMember2(2,IsPacked = false)]
+    [ProtoMember1(2, IsPacked = false)]
+    [ProtoMember2(2, IsPacked = false)]
     public int Int32Field { get; set; }
 
-    [ProtoMember1(3,IsPacked = true)]
-    [ProtoMember2(3,IsPacked = true)]
+    [ProtoMember1(3, IsPacked = true)]
+    [ProtoMember2(3, IsPacked = true)]
     public List<int> Int32ArrayField { get; set; } = [];
 
     [ProtoMember1(4)]
@@ -91,8 +91,8 @@ public partial class CsTestMessage
     [ProtoMember2(19)]
     public CsTestEnum EnumField { get; set; }
 
-    [ProtoMember1(20,IsPacked = true)]
-    [ProtoMember2(20,IsPacked = true)]
+    [ProtoMember1(20, IsPacked = true)]
+    [ProtoMember2(20, IsPacked = true)]
     public List<CsTestEnum> EnumArrayField { get; set; } = [];
 
     [ProtoMember1(21)]
@@ -102,11 +102,11 @@ public partial class CsTestMessage
     [ProtoMember1(22)]
     [ProtoMember2(22)]
     public List<CsTestMessage> NestedMessageArrayField { get; set; } = [];
-    
+
     [ProtoMember2(27)]
     [LightProto.CompatibilityLevel(LightProto.CompatibilityLevel.Level240)]
     [ProtoBuf.CompatibilityLevel(ProtoBuf.CompatibilityLevel.Level240)]
-    public DateTime TimestampField2{ get; set; }
+    public DateTime TimestampField2 { get; set; }
 
     // google.protobuf.Duration
 
@@ -133,8 +133,8 @@ public partial class CsTestMessage
     [ProtoMember2(52)]
     public int? NullableIntField { get; set; }
 
-    [ProtoMember1(53,IsPacked = true)]
-    [ProtoMember2(53,IsPacked = true)]
+    [ProtoMember1(53, IsPacked = true)]
+    [ProtoMember2(53, IsPacked = true)]
     public int[] IntArrayFieldTest { get; set; } = [];
 
     [ProtoMember1(54)]
@@ -145,8 +145,8 @@ public partial class CsTestMessage
     [ProtoMember2(55)]
     public string[] StringArrayFieldTest { get; set; } = [];
 
-    [ProtoMember1(56,IsPacked = true)]
-    [ProtoMember2(56,IsPacked = true)]
+    [ProtoMember1(56, IsPacked = true)]
+    [ProtoMember2(56, IsPacked = true)]
     public IList<int> IntListFieldTest { get; set; } = [];
 
     [ProtoMember1(57)]
@@ -185,8 +185,8 @@ public partial class CsTestMessage
     [ProtoMember2(65)]
     public ConcurrentStack<string> ConcurrentStringStackFieldTest { get; set; } = [];
 
-    [ProtoMember1(66,IsPacked = true)]
-    [ProtoMember2(66,IsPacked = true)]
+    [ProtoMember1(66, IsPacked = true)]
+    [ProtoMember2(66, IsPacked = true)]
     public List<int> IntList { get; set; } = [];
 
     [ProtoMember1(67)]
@@ -215,7 +215,7 @@ public partial class CsTestMessage
     [ProtoMember2(72)]
     public string StringBuilderField2
     {
-        get => StringBuilderField?.ToString()??string.Empty;
+        get => StringBuilderField?.ToString() ?? string.Empty;
         set => StringBuilderField = new StringBuilder(value);
     }
 

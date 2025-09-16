@@ -18,10 +18,7 @@ public static partial class Serializer
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
     /// <param name="destination">The destination stream to write to.</param>
-    public static void Serialize<T>(
-        IBufferWriter<byte> destination,
-        ICollection<T> instance
-    )
+    public static void Serialize<T>(IBufferWriter<byte> destination, ICollection<T> instance)
         where T : IProtoParser<T> => Serialize(destination, instance, T.Writer);
 
     /// <summary>
@@ -45,7 +42,7 @@ public static partial class Serializer
     {
         uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
         uint tag2 = WireFormat.MakeTag(1, writer.WireType);
-        return new IEnumerableProtoWriter<ICollection<T>,T>(
+        return new IEnumerableProtoWriter<ICollection<T>, T>(
             writer,
             tag,
             (collection) => collection.Count,

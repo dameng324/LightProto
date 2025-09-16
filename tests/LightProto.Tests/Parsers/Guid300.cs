@@ -3,7 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class Guid300Tests: BaseTests<Guid300Tests.Message,Guid300TestsMessage>
+public partial class Guid300Tests : BaseTests<Guid300Tests.Message, Guid300TestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -18,8 +18,8 @@ public partial class Guid300Tests: BaseTests<Guid300Tests.Message,Guid300TestsMe
 
     public override IEnumerable<Guid300TestsMessage> GetGoogleMessages()
     {
-        yield return new () { Property = Guid.Empty.ToString() };
-        yield return new () { Property = Guid.NewGuid().ToString() };
+        yield return new() { Property = Guid.Empty.ToString() };
+        yield return new() { Property = Guid.NewGuid().ToString() };
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -29,12 +29,12 @@ public partial class Guid300Tests: BaseTests<Guid300Tests.Message,Guid300TestsMe
 
     public override async Task AssertGoogleResult(Guid300TestsMessage clone, Message message)
     {
-        await Assert.That(Guid.Parse( clone.Property)).IsEquivalentTo(message.Property);
+        await Assert.That(Guid.Parse(clone.Property)).IsEquivalentTo(message.Property);
     }
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new () { Property = Guid.Empty };
-        yield return new () { Property = Guid.NewGuid() };
+        yield return new() { Property = Guid.Empty };
+        yield return new() { Property = Guid.NewGuid() };
     }
 }

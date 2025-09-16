@@ -1,8 +1,9 @@
 ﻿using LightProto;
 
 namespace LightProto.Tests.Parsers;
+
 [InheritsTests]
-public partial class Decimal300Tests: BaseTests<Decimal300Tests.Message,Decimal300TestsMessage>
+public partial class Decimal300Tests : BaseTests<Decimal300Tests.Message, Decimal300TestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -17,20 +18,20 @@ public partial class Decimal300Tests: BaseTests<Decimal300Tests.Message,Decimal3
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new () { Property = Decimal.MinValue };
-        yield return new () { Property = Decimal.MaxValue };
-        yield return new () { Property = 0 };
-        yield return new () { Property = 1000M };
-        yield return new () { Property = -1000M };
+        yield return new() { Property = Decimal.MinValue };
+        yield return new() { Property = Decimal.MaxValue };
+        yield return new() { Property = 0 };
+        yield return new() { Property = 1000M };
+        yield return new() { Property = -1000M };
     }
 
     public override IEnumerable<Decimal300TestsMessage> GetGoogleMessages()
     {
-        yield return new () { Property = Decimal.MinValue.ToString() };
-        yield return new () { Property = Decimal.MaxValue.ToString() };
-        yield return new () { Property = 0.ToString() };
-        yield return new () { Property = 1000M.ToString() };
-        yield return new () { Property = (-1000M).ToString() };
+        yield return new() { Property = Decimal.MinValue.ToString() };
+        yield return new() { Property = Decimal.MaxValue.ToString() };
+        yield return new() { Property = 0.ToString() };
+        yield return new() { Property = 1000M.ToString() };
+        yield return new() { Property = (-1000M).ToString() };
     }
 
     public override async Task AssertResult(Message clone, Message message)

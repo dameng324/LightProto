@@ -55,7 +55,6 @@ public static partial class Serializer
         return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 
-
     internal static IEnumerableKeyValuePairProtoReader<
         TDictionary,
         TKey,

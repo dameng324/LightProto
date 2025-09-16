@@ -48,7 +48,7 @@ file static class Extension
         {
             Value = dt.Ticks - EpochOriginsTicks[(int)dt.Kind],
             Scale = ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Ticks,
-            Kind = (ProtoBuf.Bcl.DateTime.Types.DateTimeKind) dt.Kind,
+            Kind = (ProtoBuf.Bcl.DateTime.Types.DateTimeKind)dt.Kind,
         };
     }
 
@@ -65,22 +65,22 @@ file static class Extension
         switch (proxy.Scale)
         {
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Days:
-                ticks = proxy.Value* TimeSpan.TicksPerDay;
+                ticks = proxy.Value * TimeSpan.TicksPerDay;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Hours:
-                ticks = proxy.Value* TimeSpan.TicksPerHour;
+                ticks = proxy.Value * TimeSpan.TicksPerHour;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Minutes:
-                ticks = proxy.Value* TimeSpan.TicksPerMinute;
+                ticks = proxy.Value * TimeSpan.TicksPerMinute;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Seconds:
-                ticks = proxy.Value* TimeSpan.TicksPerSecond;
+                ticks = proxy.Value * TimeSpan.TicksPerSecond;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Milliseconds:
-                ticks = proxy.Value* TimeSpan.TicksPerMillisecond;
+                ticks = proxy.Value * TimeSpan.TicksPerMillisecond;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Ticks:
-                ticks= proxy.Value;
+                ticks = proxy.Value;
                 break;
             case global::ProtoBuf.Bcl.DateTime.Types.TimeSpanScale.Minmax:
                 if (proxy.Value == -1)
@@ -100,7 +100,7 @@ file static class Extension
         }
         return new DateTime(
             ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-            kind: (System.DateTimeKind) proxy.Kind
+            kind: (System.DateTimeKind)proxy.Kind
         );
     }
 }

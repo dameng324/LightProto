@@ -43,7 +43,7 @@ namespace LightProto
         /// </summary>
         internal int totalBytesRetired;
 
-        internal int recursionDepth;  // current recursion depth
+        internal int recursionDepth; // current recursion depth
 
         internal SegmentedBufferHelper segmentedBufferHelper;
 

@@ -79,21 +79,21 @@ public class KeyValuePairProtoWriter<TKey, TValue> : IProtoWriter<KeyValuePair<T
         int size = 0;
         if (_keyWriter is ICollectionWriter)
         {
-            size+= _keyWriter.CalculateMessageSize(value.Key);
+            size += _keyWriter.CalculateMessageSize(value.Key);
         }
         else
         {
-            size+= CodedOutputStream.ComputeRawVarint32Size(_keyTag);
-            size+= _keyWriter.CalculateMessageSize(value.Key);
+            size += CodedOutputStream.ComputeRawVarint32Size(_keyTag);
+            size += _keyWriter.CalculateMessageSize(value.Key);
         }
         if (_valueWriter is ICollectionWriter)
         {
-            size+= _valueWriter.CalculateSize(value.Value);
+            size += _valueWriter.CalculateSize(value.Value);
         }
         else
         {
-            size+=  CodedOutputStream.ComputeRawVarint32Size(_valueTag);
-            size+= _valueWriter.CalculateMessageSize(value.Value);
+            size += CodedOutputStream.ComputeRawVarint32Size(_valueTag);
+            size += _valueWriter.CalculateMessageSize(value.Value);
         }
 
         return size;

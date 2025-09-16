@@ -1,4 +1,3 @@
-﻿
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("LightProto.Google")]
+[assembly: InternalsVisibleTo("LightProto.Google")]
