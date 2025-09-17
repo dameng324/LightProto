@@ -3,14 +3,14 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using LightProto;
 
-// BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
-// return;
+BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+return;
 
 // BenchmarkRunner.Run<Serialize>();
 // return;
-
-BenchmarkRunner.Run<Deserialize>();
-return;
+//
+// BenchmarkRunner.Run<Deserialize>();
+// return;
 
 // var serialize = new Serialize();
 // for (int i = 0; i < 5000; i++)
