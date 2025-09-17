@@ -59,7 +59,8 @@ public static partial class Serializer
     )
     {
         var protoWriter = GetCollectionWriter<T>(writer);
-        WriterContext.Initialize(new CodedOutputStream(destination), out var ctx);
+        using var codedOutputStream = new CodedOutputStream(destination);
+        WriterContext.Initialize(codedOutputStream, out var ctx);
         protoWriter.WriteTo(ref ctx, instance);
     }
 }

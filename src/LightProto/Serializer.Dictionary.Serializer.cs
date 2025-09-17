@@ -37,11 +37,11 @@ public static partial class Serializer
         where TKey : notnull
     {
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
-        var buffer = new byte[collectionWriter.CalculateSize(instance)];
-        CodedOutputStream output = new CodedOutputStream(buffer);
-        WriterContext.Initialize(output, out var ctx);
+        var buffer = new ArrayBufferWriter<byte>();
+        WriterContext.Initialize(buffer, out var ctx);
         collectionWriter.WriteTo(ref ctx, instance);
-        return buffer;
+        ctx.Flush();
+        return buffer.WrittenSpan.ToArray();
     }
 
     public static void Serialize<TKey, TValue>(
@@ -52,8 +52,9 @@ public static partial class Serializer
     )
         where TKey : notnull
     {
+        using var output = new CodedOutputStream(destination);
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
-        WriterContext.Initialize(new CodedOutputStream(destination), out var ctx);
+        WriterContext.Initialize(output, out var ctx);
         collectionWriter.WriteTo(ref ctx, instance);
     }
 

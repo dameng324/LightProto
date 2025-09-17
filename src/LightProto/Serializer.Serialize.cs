@@ -31,11 +31,13 @@ public static partial class Serializer
     {
         WriterContext.Initialize(destination, out var ctx);
         writer.WriteTo(ref ctx, instance);
+        ctx.Flush();
     }
 
     public static void Serialize<T>(Stream destination, T instance, IProtoWriter<T> writer)
     {
-        WriterContext.Initialize(new CodedOutputStream(destination), out var ctx);
+        using var codedOutputStream = new CodedOutputStream(destination);
+        WriterContext.Initialize(codedOutputStream, out var ctx);
         writer.WriteTo(ref ctx, instance);
     }
 
