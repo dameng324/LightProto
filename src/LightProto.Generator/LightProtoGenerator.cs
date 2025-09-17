@@ -155,7 +155,7 @@ public class LightProtoGenerator : ISourceGenerator
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           protoMembers.SelectMany(member =>
                           {
-                              if (TryGetInternalTypeName(member.Type, member.DataFormat, out _)==false)
+                              if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
                               {
                                   return GetProtoParserMember(compilation, member, "Writer", targetType);
                               }
@@ -183,7 +183,7 @@ public class LightProtoGenerator : ISourceGenerator
                                           yield return $"    {member.Name}_ProtoWriter.WriteTo(ref output, message.{member.Name});";
                                           yield return $"}} ";
                                       }
-                                      else if (TryGetInternalTypeName(member.Type,member.DataFormat, out var name))
+                                      else if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                       {
                                           yield return $"if({checkIfNotEmpty})";
                                           yield return $"{{";
@@ -221,7 +221,7 @@ public class LightProtoGenerator : ISourceGenerator
                                           yield return $"if(message.{member.Name}!=null)";
                                           yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
                                       }
-                                      else if (TryGetInternalTypeName(member.Type,member.DataFormat, out var name))
+                                      else if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                       {
                                           yield return $"if({checkIfNotEmpty})";
                                           yield return $"    size += {tagSize} + CodedOutputStream.Compute{name}Size(message.{member.Name});";
@@ -244,7 +244,7 @@ public class LightProtoGenerator : ISourceGenerator
                       public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
                       {{string.Join(Environment.NewLine + GetIntendedSpace(2),
                           protoMembers.SelectMany(member => {
-                              if (TryGetInternalTypeName(member.Type, member.DataFormat, out _)==false)
+                              if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
                               {
                                   return GetProtoParserMember(compilation, member, "Reader", targetType);
                               }
@@ -288,7 +288,7 @@ public class LightProtoGenerator : ISourceGenerator
                                                   }
                                               }
 
-                                              if (TryGetInternalTypeName(member.Type, member.DataFormat, out var name))
+                                              if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                               {
                                                   yield return $"{{";
                                                   yield return $"    _{member.Name} = input.Read{name}();";
@@ -418,6 +418,7 @@ public class LightProtoGenerator : ISourceGenerator
     private bool TryGetInternalTypeName(
         ITypeSymbol memberType,
         LightProto.DataFormat format,
+        bool stringIntern,
         out string name
     )
     {
@@ -438,7 +439,7 @@ public class LightProtoGenerator : ISourceGenerator
                 : "UInt64",
             SpecialType.System_Single => "Float",
             SpecialType.System_Double => "Double",
-            SpecialType.System_String => "String",
+            SpecialType.System_String when stringIntern is false => "String",
             _ => "",
         };
         return string.IsNullOrWhiteSpace(name) == false;
@@ -536,7 +537,8 @@ public class LightProtoGenerator : ISourceGenerator
             targetType,
             member.IsPacked,
             depth: 0,
-            member.CompatibilityLevel
+            member.CompatibilityLevel,
+            member.StringIntern
         );
 
         var memberType = member.Type.WithNullableAnnotation(NullableAnnotation.None);
@@ -560,7 +562,8 @@ public class LightProtoGenerator : ISourceGenerator
         ITypeSymbol targetType,
         bool isPacked,
         int depth,
-        CompatibilityLevel compatibilityLevel
+        CompatibilityLevel compatibilityLevel,
+        bool stringIntern
     )
     {
         depth++;
@@ -581,7 +584,8 @@ public class LightProtoGenerator : ISourceGenerator
                 targetType,
                 isPacked,
                 depth,
-                compatibilityLevel
+                compatibilityLevel,
+                stringIntern
             );
         }
 
@@ -617,7 +621,8 @@ public class LightProtoGenerator : ISourceGenerator
                 targetType,
                 isPacked,
                 depth,
-                compatibilityLevel
+                compatibilityLevel,
+                stringIntern
             );
             var fixedSize = GetFixedSize(elementType, format);
             return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
@@ -671,6 +676,10 @@ public class LightProtoGenerator : ISourceGenerator
                         name = $"{name}300";
                     }
                 }
+                if (namedType.SpecialType == SpecialType.System_String && stringIntern)
+                {
+                    name = "InternedString";
+                }
 
                 return $"{name}ProtoParser.{readerOrWriter}";
             }
@@ -697,7 +706,8 @@ public class LightProtoGenerator : ISourceGenerator
                     targetType,
                     isPacked,
                     depth,
-                    compatibilityLevel
+                    compatibilityLevel,
+                    stringIntern
                 );
                 var fixedSize = GetFixedSize(elementType, format);
                 var tag2 = ProtoMember.GetRawTag(
@@ -768,7 +778,8 @@ public class LightProtoGenerator : ISourceGenerator
                     targetType,
                     isPacked: false,
                     depth: depth,
-                    compatibilityLevel
+                    compatibilityLevel,
+                    stringIntern
                 );
                 var valueType = typeArguments[1];
                 var valueTag = ProtoMember.GetRawTag(
@@ -785,7 +796,8 @@ public class LightProtoGenerator : ISourceGenerator
                     targetType,
                     isPacked: false,
                     depth: depth,
-                    compatibilityLevel
+                    compatibilityLevel,
+                    stringIntern
                 );
                 var tag2 = ProtoMember.GetRawTag(
                     fieldNumber,
@@ -1245,6 +1257,19 @@ public class LightProtoGenerator : ISourceGenerator
                 ? _dataFormat
                 : LightProto.DataFormat.Default;
 
+            bool HasStringInternAttribute(IEnumerable<AttributeData> attributeDatas)
+            {
+                return attributeDatas.Any(attr =>
+                    attr.AttributeClass?.ToDisplayString() == "LightProto.StringInternAttribute"
+                );
+            }
+
+            bool stringIntern =
+                HasStringInternAttribute(member.GetAttributes())
+                || HasStringInternAttribute(targetType.GetAttributes())
+                || HasStringInternAttribute(targetType.ContainingModule.GetAttributes())
+                || HasStringInternAttribute(targetType.ContainingAssembly.GetAttributes());
+
             AttributeData? GetCompatibilityLevelAttribute(IEnumerable<AttributeData> attributeDatas)
             {
                 return attributeDatas.FirstOrDefault(attr =>
@@ -1323,6 +1348,7 @@ public class LightProtoGenerator : ISourceGenerator
                     IsPacked = isPacked,
                     CompatibilityLevel = compatibilityLevel,
                     IsReadOnly = isReadOnly,
+                    StringIntern = stringIntern,
                 }
             );
         }
@@ -1354,6 +1380,7 @@ public class LightProtoGenerator : ISourceGenerator
         public bool IsRequired { get; set; }
         public bool IsInitOnly { get; set; }
         public string Initializer { get; set; } = "default";
+        public bool StringIntern { get; set; }
 
         public ImmutableArray<AttributeData> AttributeData { get; set; } =
             ImmutableArray<AttributeData>.Empty;
