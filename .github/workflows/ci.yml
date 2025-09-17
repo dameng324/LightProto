@@ -9,7 +9,8 @@ on:
 jobs:
   linux-test:
     runs-on: ubuntu-latest
-
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,7 +35,19 @@ jobs:
           
           dotnet publish tests/LightProto.Tests/ -f net9.0 -r linux-x64 -c Release
           ./tests/LightProto.Tests/bin/Release/net9.0/linux-x64/publish/LightProto.Tests
-
+          
+      - name: Run Benchmarks
+        run: |
+          dotnet run -c Release --project ./tests/Benchmark -- --filter "*" --exporters github --artifacts ./BenchmarkResults
+          cat ./BenchmarkResults/results/*.md >> $GITHUB_STEP_SUMMARY        
+        
+      - name: Post benchmark result as PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+         path: ./BenchmarkResults/results/*.md
+         hide_and_recreate: true
+         hide_classify: "OUTDATED"
+      
       - name: Test package creation
         run: |
           dotnet pack --configuration Release --output ./test-packages src/LightProto/
