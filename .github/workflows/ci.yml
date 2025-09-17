@@ -39,7 +39,7 @@ jobs:
       - name: Run Benchmarks
         run: |
           dotnet run -c Release --project ./tests/Benchmark -- --filter "*" --exporters github --artifacts ./BenchmarkResults
-          cat ./BenchmarkResults/**/*.md >> $GITHUB_STEP_SUMMARY        
+          cat ./BenchmarkResults/results/*.md >> $GITHUB_STEP_SUMMARY        
         
       - name: Post benchmark result as PR comment
         uses: marocchino/sticky-pull-request-comment@v2
