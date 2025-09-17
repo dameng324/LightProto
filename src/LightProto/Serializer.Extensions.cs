@@ -94,7 +94,7 @@ public static partial class Serializer
     public static byte[] ToByteArray<T>(this T message, IProtoWriter<T> writer)
     {
         var buffer = new byte[writer.CalculateSize(message)];
-        CodedOutputStream output = new CodedOutputStream(buffer);
+        using CodedOutputStream output = new CodedOutputStream(buffer);
         WriterContext.Initialize(output, out var ctx);
         writer.WriteTo(ref ctx, message);
         return buffer;
