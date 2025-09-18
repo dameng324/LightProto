@@ -23,8 +23,8 @@ public class ProtoContractAttribute : Attribute
     public ImplicitFields ImplicitFields { get; set; }
 
     /// <summary>
-    /// Gets or sets the fist offset to use with implicit field tags;
-    /// only uesd if ImplicitFields is set.
+    /// Gets or sets the first offset to use with implicit field tags;
+    /// only used if ImplicitFields is set.
     /// </summary>
     public uint ImplicitFirstTag { get; set; } = 1;
 }
