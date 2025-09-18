@@ -8,7 +8,8 @@ public partial class ImplicitFieldsAllPublicTests
     >
 {
     /// <summary>
-    /// hello
+    /// Represents a test message with all public fields and properties included for serialization.
+    /// Used to verify implicit field handling in LightProto and ProtoBuf serializers.
     /// </summary>
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public partial record LightProtoMessage
