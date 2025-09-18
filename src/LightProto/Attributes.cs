@@ -4,8 +4,7 @@ namespace LightProto;
 
 public class ProtoContractAttribute : Attribute
 {
-    // [Obsolete("compatibility protobuf-net only, no effect")]
-    // public bool SkipConstructor { get; set; } = false;
+    public bool SkipConstructor { get; set; } = false;
 }
 
 public class ProtoMemberAttribute(uint tag) : Attribute
