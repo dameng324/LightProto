@@ -11,7 +11,7 @@ public enum ImplicitFields
 {
     /// <summary>
     /// No members are serialized implicitly; all members require a suitable
-    /// attribute such as [ProtoMember]. This is the recmomended mode for
+    /// attribute such as [ProtoMember]. This is the recommended mode for
     /// most scenarios.
     /// </summary>
     None = 0,
