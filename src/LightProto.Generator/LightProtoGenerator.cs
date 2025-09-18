@@ -139,6 +139,22 @@ public class LightProtoGenerator : ISourceGenerator
                 .NamedArguments.FirstOrDefault(arg => arg.Key == "SkipConstructor")
                 .Value.Value?.ToString() == "True";
 
+        ImplicitFields implicitFields = (ImplicitFields)(
+            protoContractAttribute
+                .NamedArguments.FirstOrDefault(arg => arg.Key == "ImplicitFields")
+                .Value.Value
+            ?? ImplicitFields.None
+        );
+
+        uint implicitFirstTag = uint.TryParse(
+            protoContractAttribute
+                .NamedArguments.FirstOrDefault(arg => arg.Key == "ImplicitFirstTag")
+                .Value.Value?.ToString(),
+            out var _implicitFirstTag
+        )
+            ? _implicitFirstTag
+            : 1;
+
         var sourceBuilder = new StringBuilder();
 
         sourceBuilder.AppendLine(
@@ -158,10 +174,31 @@ public class LightProtoGenerator : ISourceGenerator
               """
         );
 
-        var protoMembers = GetProtoMembers(compilation, targetType, typeDeclaration);
+        var protoMembers = GetProtoMembers(
+            compilation,
+            targetType,
+            typeDeclaration,
+            implicitFields,
+            implicitFirstTag
+        );
+
+        string showFiledNumber = string.Empty;
+        if (implicitFields is not ImplicitFields.None)
+        {
+            showFiledNumber = string.Join(
+                Environment.NewLine,
+                protoMembers
+                    .OrderBy(o => o.FieldNumber)
+                    .Select(o => $"/// {o.Name} FieldNumber: {o.FieldNumber} <br/>")
+            );
+        }
 
         var classBody = (
             $$"""
+              /// <summary>
+              /// Auto-generated IMessage implementation for {{targetType.ToDisplayString()}}<br/>
+              {{showFiledNumber}}
+              /// </summary>
               [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
               {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoMessage<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
               {
@@ -1181,7 +1218,9 @@ public class LightProtoGenerator : ISourceGenerator
     private List<ProtoMember> GetProtoMembers(
         Compilation compilation,
         INamedTypeSymbol targetType,
-        TypeDeclarationSyntax typeDeclaration
+        TypeDeclarationSyntax typeDeclaration,
+        ImplicitFields implicitFields,
+        uint firstImplicitTag
     )
     {
         var members = new List<ProtoMember>();
@@ -1198,13 +1237,60 @@ public class LightProtoGenerator : ISourceGenerator
                 continue;
             }
 
+            uint tag;
+            DataFormat dataFormat;
+            bool isPacked;
             AttributeData? protoMemberAttr = member
                 .GetAttributes()
                 .FirstOrDefault(attr =>
                     attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoMemberAttribute"
                 );
-            if (protoMemberAttr == null)
-                continue;
+            if (protoMemberAttr is not null)
+            {
+                tag = (uint)protoMemberAttr.ConstructorArguments[0].Value!;
+
+                dataFormat = Enum.TryParse<DataFormat>(
+                    protoMemberAttr
+                        .NamedArguments.FirstOrDefault(kv => kv.Key == "DataFormat")
+                        .Value.Value?.ToString(),
+                    out var _dataFormat
+                )
+                    ? _dataFormat
+                    : DataFormat.Default;
+
+                isPacked =
+                    bool.TryParse(
+                        protoMemberAttr
+                            .NamedArguments.FirstOrDefault(kv => kv.Key == "IsPacked")
+                            .Value.Value?.ToString(),
+                        out var _isPacked
+                    ) && _isPacked;
+            }
+            else
+            {
+                if (implicitFields is ImplicitFields.None)
+                {
+                    continue;
+                }
+
+                if (
+                    implicitFields is ImplicitFields.AllPublic
+                    && member.DeclaredAccessibility is not Accessibility.Public
+                )
+                {
+                    continue;
+                }
+
+                if (member is not IPropertySymbol and not IFieldSymbol)
+                {
+                    continue;
+                }
+
+                tag = firstImplicitTag;
+                firstImplicitTag++;
+                dataFormat = DataFormat.Default;
+                isPacked = false;
+            }
 
             string memberName;
             string? initializer;
@@ -1324,17 +1410,6 @@ public class LightProtoGenerator : ISourceGenerator
             ITypeSymbol? ProxyType =
                 GetProxyType(member.GetAttributes()) ?? GetProxyType(memberType);
 
-            var tag = (uint)protoMemberAttr.ConstructorArguments[0].Value!;
-
-            var dataFormat = Enum.TryParse<DataFormat>(
-                protoMemberAttr
-                    .NamedArguments.FirstOrDefault(kv => kv.Key == "DataFormat")
-                    .Value.Value?.ToString(),
-                out var _dataFormat
-            )
-                ? _dataFormat
-                : DataFormat.Default;
-
             bool HasStringInternAttribute(IEnumerable<AttributeData> attributeDatas)
             {
                 return attributeDatas.Any(attr =>
@@ -1378,13 +1453,6 @@ public class LightProtoGenerator : ISourceGenerator
             {
                 compatibilityLevel = CompatibilityLevel.Level240;
             }
-            bool isPacked =
-                bool.TryParse(
-                    protoMemberAttr
-                        .NamedArguments.FirstOrDefault(kv => kv.Key == "IsPacked")
-                        .Value.Value?.ToString(),
-                    out var _isPacked
-                ) && _isPacked;
             AttributeData? protoMapAttr = member
                 .GetAttributes()
                 .FirstOrDefault(attr =>
@@ -1408,6 +1476,20 @@ public class LightProtoGenerator : ISourceGenerator
             )
                 ? _valueFormat
                 : DataFormat.Default;
+
+            if (members.Any(o => o.FieldNumber == tag))
+            {
+                throw new LightProtoGeneratorException(
+                    $"Member:{member.Name} Tag:{tag} is duplicated"
+                )
+                {
+                    Id = "LIGHT_PROTO_005",
+                    Title = "Tag is duplicated",
+                    Category = "Usage",
+                    Severity = DiagnosticSeverity.Error,
+                    Location = memberDeclarationSyntax.GetLocation(),
+                };
+            }
 
             members.Add(
                 new ProtoMember

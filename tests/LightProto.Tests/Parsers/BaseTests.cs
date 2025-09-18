@@ -5,7 +5,10 @@ namespace LightProto.Tests.Parsers;
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
 [InheritsTests]
-public abstract class BaseTests<Message, GoogleProtobufMessage> : BaseProtoBufTests<Message>
+public abstract class BaseTests<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message,
+    GoogleProtobufMessage
+> : BaseProtoBufTests<Message>
     where Message : IProtoMessage<Message>
     where GoogleProtobufMessage : IMessage<GoogleProtobufMessage>, new()
 {
@@ -36,7 +39,9 @@ public abstract class BaseTests<Message, GoogleProtobufMessage> : BaseProtoBufTe
 }
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
-public abstract class BaseProtoBufTests<Message>
+public abstract class BaseProtoBufTests<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message
+>
     where Message : IProtoMessage<Message>
 {
     public abstract IEnumerable<Message> GetMessages();
@@ -94,13 +99,20 @@ public abstract class BaseProtoBufTests<Message>
 }
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
-public abstract class BaseEquivalentTypeTests<LightProtoMessage, ProtoNetMessage>
+public abstract class BaseEquivalentTypeTests<
+    LightProtoMessage,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] ProtoNetMessage
+>
     where LightProtoMessage : IProtoMessage<LightProtoMessage>
 {
     public abstract IEnumerable<LightProtoMessage> GetLightProtoMessages();
     public abstract IEnumerable<ProtoNetMessage> GetProtoNetMessages();
 
-    public abstract Task AssertResult(LightProtoMessage clone, ProtoNetMessage message);
+    public abstract Task AssertResult(
+        LightProtoMessage lightProto,
+        ProtoNetMessage protobuf,
+        bool lightProtoToProtoBuf
+    );
 
     [Test]
     [MethodDataSource(nameof(GetProtoNetMessages))]
@@ -111,7 +123,7 @@ public abstract class BaseEquivalentTypeTests<LightProtoMessage, ProtoNetMessage
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
         var clone = Serializer.Deserialize<LightProtoMessage>(ms.ToArray());
-        await AssertResult(clone, message);
+        await AssertResult(clone, message, false);
     }
 
     [Test]
@@ -121,6 +133,6 @@ public abstract class BaseEquivalentTypeTests<LightProtoMessage, ProtoNetMessage
     {
         byte[] data = message.ToByteArray();
         var clone = ProtoBuf.Serializer.Deserialize<ProtoNetMessage>(data.AsSpan());
-        await AssertResult(message, clone);
+        await AssertResult(message, clone, true);
     }
 }

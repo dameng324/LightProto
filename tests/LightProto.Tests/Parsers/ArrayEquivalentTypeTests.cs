@@ -27,8 +27,12 @@ public partial class ArrayEquivalentTypeTests
         yield return new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     }
 
-    public override async Task AssertResult(Message clone, int[] message)
+    public override async Task AssertResult(
+        Message lightProto,
+        int[] protobuf,
+        bool lightProtoToProtoBuf
+    )
     {
-        await Assert.That(clone.Values).IsEquivalentTo(message);
+        await Assert.That(lightProto.Values).IsEquivalentTo(protobuf);
     }
 }

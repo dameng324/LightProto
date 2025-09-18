@@ -23,5 +23,6 @@
     <Compile Remove="PbMessageParserGenerator.cs" />
     <Compile Include="..\LightProto\DataFormat.cs" />
     <Compile Include="..\LightProto\CompatibilityLevel.cs" />
+    <Compile Include="..\LightProto\ImplicitFields.cs" />
   </ItemGroup>
 </Project>

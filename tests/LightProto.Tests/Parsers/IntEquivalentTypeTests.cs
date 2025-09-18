@@ -27,8 +27,12 @@ public partial class IntEquivalentTypeTests
         yield return int.MinValue;
     }
 
-    public override async Task AssertResult(Message clone, int message)
+    public override async Task AssertResult(
+        Message lightProto,
+        int protobuf,
+        bool lightProtoToProtoBuf
+    )
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message);
+        await Assert.That(lightProto.Property).IsEquivalentTo(protobuf);
     }
 }
