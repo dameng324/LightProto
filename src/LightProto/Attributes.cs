@@ -4,7 +4,29 @@ namespace LightProto;
 
 public class ProtoContractAttribute : Attribute
 {
+    /// <summary>
+    /// Gets or sets the defined name of the type. This can be fully qualified , for example <c>.foo.bar.someType</c> if required.
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// If true, the constructor for the type is bypassed during deserialization, meaning any field initializers
+    /// or other initialization code is skipped.
+    /// </summary>
     public bool SkipConstructor { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the mechanism used to automatically infer field tags
+    /// for members. This option should be used in advanced scenarios only.
+    /// Please review the important notes against the ImplicitFields enumeration.
+    /// </summary>
+    public ImplicitFields ImplicitFields { get; set; }
+
+    /// <summary>
+    /// Gets or sets the fist offset to use with implicit field tags;
+    /// only uesd if ImplicitFields is set.
+    /// </summary>
+    public uint ImplicitFirstTag { get; set; } = 1;
 }
 
 public class ProtoMemberAttribute(uint tag) : Attribute

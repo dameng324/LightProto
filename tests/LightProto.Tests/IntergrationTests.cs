@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 using System.Text;
 using Google.Protobuf;
 using LightProto;
@@ -104,31 +105,39 @@ public class IntergrationTests
         );
     }
 
-    [ProtoBuf.ProtoContract]
+    [ProtoBuf.ProtoContract(
+        ImplicitFields = ProtoBuf.ImplicitFields.AllPublic,
+        ImplicitFirstTag = 10
+    )]
+    [DataContract]
     public class TestProtobufContract
     {
+        public Guid guid3 { get; set; }
+
         [ProtoBuf.ProtoMember(1)]
         [ProtoBuf.CompatibilityLevel(ProtoBuf.CompatibilityLevel.Level300)]
         public Guid guid { get; set; }
+
+        internal Guid guid2 { get; set; }
     }
 
     [Test]
     [Explicit]
     public void GenProto()
     {
-        {
-            TestArrayMessage message = new();
-            message.Items.AddRange([1, 2, 3, 4, 5]);
-            var bytes = message.ToByteArray();
-        }
-        {
-            var message = new ArrayTests.Message() { Property = [1, 2, 3, 4, 5] };
-            var ms = new MemoryStream();
-            ProtoBuf.Serializer.Serialize<ArrayTests.Message>(ms, message);
-            var bytes = ms.ToArray();
-        }
+        // {
+        //     TestArrayMessage message = new();
+        //     message.Items.AddRange([1, 2, 3, 4, 5]);
+        //     var bytes = message.ToByteArray();
+        // }
+        // {
+        //     var message = new ArrayTests.Message() { Property = [1, 2, 3, 4, 5] };
+        //     var ms = new MemoryStream();
+        //     ProtoBuf.Serializer.Serialize<ArrayTests.Message>(ms, message);
+        //     var bytes = ms.ToArray();
+        // }
         //Console.WriteLine( ProtoBuf.Serializer.GetProto<CsTestMessage>());
-        //Console.WriteLine( ProtoBuf.Serializer.GetProto<TestProtobufContract>());
+        Console.WriteLine(ProtoBuf.Serializer.GetProto<TestProtobufContract>());
         //Console.WriteLine( ProtoBuf.Serializer.GetProto<InheritanceTests.Container>());
     }
 

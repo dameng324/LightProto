@@ -100,7 +100,11 @@ public abstract class BaseEquivalentTypeTests<LightProtoMessage, ProtoNetMessage
     public abstract IEnumerable<LightProtoMessage> GetLightProtoMessages();
     public abstract IEnumerable<ProtoNetMessage> GetProtoNetMessages();
 
-    public abstract Task AssertResult(LightProtoMessage clone, ProtoNetMessage message);
+    public abstract Task AssertResult(
+        LightProtoMessage lightProto,
+        ProtoNetMessage protobuf,
+        bool lightProtoToProtoBuf
+    );
 
     [Test]
     [MethodDataSource(nameof(GetProtoNetMessages))]
@@ -111,7 +115,7 @@ public abstract class BaseEquivalentTypeTests<LightProtoMessage, ProtoNetMessage
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
         var clone = Serializer.Deserialize<LightProtoMessage>(ms.ToArray());
-        await AssertResult(clone, message);
+        await AssertResult(clone, message, false);
     }
 
     [Test]
@@ -121,6 +125,6 @@ public abstract class BaseEquivalentTypeTests<LightProtoMessage, ProtoNetMessage
     {
         byte[] data = message.ToByteArray();
         var clone = ProtoBuf.Serializer.Deserialize<ProtoNetMessage>(data.AsSpan());
-        await AssertResult(message, clone);
+        await AssertResult(message, clone, true);
     }
 }
