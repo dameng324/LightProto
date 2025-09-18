@@ -18,13 +18,13 @@ public enum ImplicitFields
 
     /// <summary>
     /// Public properties and fields are eligible for implicit serialization;
-    /// this treats the public API as a contract. Ordering beings from ImplicitFirstTag.
+    /// this treats the public API as a contract. Ordering begins from ImplicitFirstTag.
     /// </summary>
     AllPublic = 1,
 
     /// <summary>
     /// Public and non-public fields are eligible for implicit serialization;
-    /// this acts as a state/implementation serializer. Ordering beings from ImplicitFirstTag.
+    /// this acts as a state/implementation serializer. Ordering begins from ImplicitFirstTag.
     /// </summary>
     AllFields = 2,
 }
