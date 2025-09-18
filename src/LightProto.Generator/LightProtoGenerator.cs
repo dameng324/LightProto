@@ -379,11 +379,11 @@ public class LightProtoGenerator : ISourceGenerator
                          protoMembers.Select(member => {
                              if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
                              {
-                                 throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DelclarationSyntax.GetLocation() };
+                                 throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
                              }
                              else if (member.IsInitOnly)
                              {
-                                 throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DelclarationSyntax.GetLocation() };
+                                 throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
                              }
                              else
                              {
@@ -892,7 +892,7 @@ public class LightProtoGenerator : ISourceGenerator
             Title = $"MemberType is not supported",
             Category = "Usage",
             Severity = DiagnosticSeverity.Error,
-            Location = member.DelclarationSyntax.GetLocation(),
+            Location = member.DeclarationSyntax.GetLocation(),
         };
     }
 
@@ -1258,7 +1258,7 @@ public class LightProtoGenerator : ISourceGenerator
                 )
                 {
                     Id = "LIGHT_PROTO_003",
-                    Title = "DelclarationSyntax not found",
+                    Title = "DeclarationSyntaxnot found",
                     Category = "Usage",
                     Severity = DiagnosticSeverity.Warning,
                     Location = null,
@@ -1427,7 +1427,7 @@ public class LightProtoGenerator : ISourceGenerator
                     CompatibilityLevel = compatibilityLevel,
                     IsReadOnly = isReadOnly,
                     StringIntern = stringIntern,
-                    DelclarationSyntax = memberDeclarationSyntax,
+                    DeclarationSyntax = memberDeclarationSyntax,
                 }
             );
         }
@@ -1551,7 +1551,7 @@ public class LightProtoGenerator : ISourceGenerator
         public bool IsPacked { get; set; }
         public CompatibilityLevel CompatibilityLevel { get; set; }
         public bool IsReadOnly { get; set; }
-        public MemberDeclarationSyntax DelclarationSyntax { get; set; } = null!;
+        public MemberDeclarationSyntax DeclarationSyntax { get; set; } = null!;
 
         public static uint GetRawTag(uint Tag, PbWireType WireType)
         {
