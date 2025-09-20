@@ -1,13 +1,12 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-[Explicit]
-//TODO re-enable when inheritance is supported
-public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Message>
+public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Base>
 {
-    [ProtoContract]
+    [ProtoContract(SkipConstructor = true)]
+    [ProtoInclude(3, typeof(Message))]
     [ProtoBuf.ProtoContract]
-    [ProtoBuf.ProtoInclude(2, typeof(Message))]
+    [ProtoBuf.ProtoInclude(3, typeof(Message))]
     public partial record Base
     {
         [ProtoMember(1)]
@@ -15,8 +14,8 @@ public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Messa
         public string BaseValue { get; set; } = "";
     }
 
-    [ProtoContract]
-    [ProtoBuf.ProtoContract]
+    [ProtoContract(SkipConstructor = true)]
+    [ProtoBuf.ProtoContract()]
     public partial record Message : Base
     {
         [ProtoMember(1)]
@@ -24,14 +23,18 @@ public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Messa
         public string Value { get; set; } = "";
     }
 
-    public override IEnumerable<Message> GetMessages()
+    public override IEnumerable<Base> GetMessages()
     {
         yield return new Message { BaseValue = "base", Value = "value" };
     }
 
-    public override async Task AssertResult(Message clone, Message message)
+    public override async Task AssertResult(Base clone, Base message)
     {
         await Assert.That(clone.BaseValue).IsEqualTo(message.BaseValue);
-        //await Assert.That(clone.Value).IsEqualTo(message.Value);
+
+        await Assert.That(clone is Message).IsTrue();
+        await Assert.That(message is Message).IsTrue();
+
+        await Assert.That((clone as Message)!.Value).IsEqualTo((message as Message)!.Value);
     }
 }
