@@ -1,8 +1,8 @@
 ﻿namespace LightProto.Parser;
 
 [ProtoContract]
-[ProtoProxyFor<TimeSpan>]
-public sealed partial class TimeSpan240Proxy
+[ProtoSurrogateFor<TimeSpan>]
+public sealed partial class TimeSpan240ProtoParser
 {
     [ProtoMember(1)]
     public long Seconds { get; set; }
@@ -50,31 +50,25 @@ public sealed partial class TimeSpan240Proxy
         return Math.Sign(seconds) * Math.Sign(nanoseconds) != -1;
     }
 
-    public static implicit operator TimeSpan(TimeSpan240Proxy proxy)
+    public static implicit operator TimeSpan(TimeSpan240ProtoParser protoParser)
     {
         checked
         {
-            long ticks = proxy.Seconds * TimeSpan.TicksPerSecond + proxy.Nanos / NanosecondsPerTick;
+            long ticks =
+                protoParser.Seconds * TimeSpan.TicksPerSecond
+                + protoParser.Nanos / NanosecondsPerTick;
             return TimeSpan.FromTicks(ticks);
         }
     }
 
-    public static implicit operator TimeSpan240Proxy(TimeSpan timeSpan)
+    public static implicit operator TimeSpan240ProtoParser(TimeSpan timeSpan)
     {
         checked
         {
             long ticks = timeSpan.Ticks;
             long seconds = ticks / TimeSpan.TicksPerSecond;
             int nanos = (int)(ticks % TimeSpan.TicksPerSecond) * NanosecondsPerTick;
-            return new TimeSpan240Proxy { Seconds = seconds, Nanos = nanos };
+            return new TimeSpan240ProtoParser { Seconds = seconds, Nanos = nanos };
         }
     }
-}
-
-public sealed class TimeSpan240ProtoParser : IProtoParser<TimeSpan>
-{
-    public static IProtoReader<TimeSpan> Reader { get; } =
-        LightProto.Parser.TimeSpan240Proxy.Reader;
-    public static IProtoWriter<TimeSpan> Writer { get; } =
-        LightProto.Parser.TimeSpan240Proxy.Writer;
 }

@@ -1777,8 +1777,8 @@ public class LightProtoGenerator : ISourceGenerator
     {
         if (
             attributeDatas.FirstOrDefault(o =>
-                o.AttributeClass?.ToDisplayString().StartsWith("LightProto.ProtoProxyForAttribute<")
-                == true
+                o.AttributeClass?.ToDisplayString()
+                    .StartsWith("LightProto.ProtoSurrogateForAttribute<") == true
             ) is
             { } proxyAttr2
         )
@@ -1925,11 +1925,11 @@ public class LightProtoGenerator : ISourceGenerator
         if (derivedTypeContracts.Any() && proxyFor is not null)
         {
             throw new LightProtoGeneratorException(
-                "ProtoProxyFor attribute cannot be used with ProtoInclude attribute"
+                "ProtoSurrogateForAttribute cannot be used with ProtoInclude attribute"
             )
             {
                 Id = "LIGHT_PROTO_007",
-                Title = $"ProtoProxyFor attribute cannot be used with ProtoInclude attribute",
+                Title = $"ProtoSurrogateForAttribute cannot be used with ProtoInclude attribute",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = typeDeclaration.GetLocation(),
@@ -2025,6 +2025,17 @@ public class LightProtoGenerator : ISourceGenerator
                 }
 
                 if (member is not IPropertySymbol and not IFieldSymbol)
+                {
+                    continue;
+                }
+
+                if (
+                    member
+                        .GetAttributes()
+                        .Any(o =>
+                            o.AttributeClass?.ToDisplayString() == "LightProto.ProtoIgnoreAttribute"
+                        )
+                )
                 {
                     continue;
                 }
