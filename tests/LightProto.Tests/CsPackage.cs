@@ -28,7 +28,7 @@ namespace LightProto.Tests
         public int Int32Field { get; set; }
 
         [global::LightProto.ProtoMember(3, Name = @"Int32ArrayField", IsPacked = true)]
-        public List<int> Int32ArrayFields { get; set; }
+        public List<int> Int32ArrayFields { get; set; } = new();
 
         [global::LightProto.ProtoMember(4, Name = @"StringArrayField")]
         public global::System.Collections.Generic.List<string> StringArrayFields { get; } = new ();
@@ -111,7 +111,7 @@ namespace LightProto.Tests
         public int NullableIntField { get; set; }
 
         [global::LightProto.ProtoMember(53, Name = @"IntArrayFieldTest", IsPacked = true)]
-        public int[] IntArrayFieldTests { get; set; }
+        public int[] IntArrayFieldTests { get; set; } = [];
 
         [global::LightProto.ProtoMember(54, Name = @"StringListFieldTest")]
         public global::System.Collections.Generic.List<string> StringListFieldTests { get; } = new ();
@@ -120,7 +120,7 @@ namespace LightProto.Tests
         public global::System.Collections.Generic.List<string> StringArrayFieldTests { get; } = new ();
 
         [global::LightProto.ProtoMember(56, Name = @"IntListFieldTest", IsPacked = true)]
-        public int[] IntListFieldTests { get; set; }
+        public int[] IntListFieldTests { get; set; } = [];
 
         [global::LightProto.ProtoMember(57, Name = @"MapField5")]
         [global::LightProto.ProtoMap]
