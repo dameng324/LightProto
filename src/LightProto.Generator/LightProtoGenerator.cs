@@ -1928,7 +1928,7 @@ public class LightProtoGenerator : ISourceGenerator
                 "ProtoProxyFor attribute cannot be used with ProtoInclude attribute"
             )
             {
-                Id = "LIGHT_PROTO_006",
+                Id = "LIGHT_PROTO_007",
                 Title = $"ProtoProxyFor attribute cannot be used with ProtoInclude attribute",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
