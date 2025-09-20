@@ -32,16 +32,6 @@ public static partial class Serializer
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
     public static TCollection Deserialize<TCollection, TItem>(
-        ReadOnlyMemory<byte> source,
-        IProtoReader<TItem> reader
-    )
-        where TCollection : ICollection<TItem>, new() =>
-        Deserialize<TCollection, TItem>(source.Span, reader);
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TCollection Deserialize<TCollection, TItem>(
         ReadOnlySequence<byte> source,
         IProtoReader<TItem> reader
     )

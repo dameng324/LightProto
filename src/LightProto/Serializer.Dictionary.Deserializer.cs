@@ -9,18 +9,6 @@ public static partial class Serializer
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
     public static TDictionary Deserialize<TDictionary, TKey, TValue>(
-        ReadOnlyMemory<byte> source,
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader
-    )
-        where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull =>
-        Deserialize<TDictionary, TKey, TValue>(source.Span, keyReader, valueReader);
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TDictionary Deserialize<TDictionary, TKey, TValue>(
         ReadOnlySequence<byte> source,
         IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader

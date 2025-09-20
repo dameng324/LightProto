@@ -1,9 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Buffers;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
 using Google.Protobuf;
 using LightProto;
+using LightProto.Parser;
 using LightProto.Tests;
 using LightProto.Tests.Parsers;
 using TestPackage;
