@@ -83,7 +83,9 @@ namespace LightProto.Tests
         public global::System.Collections.Generic.List<CsTestEnum> EnumArrayFields { get; } = new global::System.Collections.Generic.List<CsTestEnum>();
 
         [global::LightProto.ProtoMember(21)] 
+#pragma warning disable CS8669 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. Auto-generated code requires an explicit '#nullable' directive in source.
         public CsTestMessage? NestedMessageField { get; set; }
+#pragma warning restore CS8669 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. Auto-generated code requires an explicit '#nullable' directive in source.
 
         [global::LightProto.ProtoMember(22, Name = @"NestedMessageArrayField")]
         public global::System.Collections.Generic.List<CsTestMessage> NestedMessageArrayFields { get; set; } = new global::System.Collections.Generic.List<CsTestMessage>();

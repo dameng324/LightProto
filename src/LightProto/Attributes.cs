@@ -93,3 +93,28 @@ public sealed class CompatibilityLevelAttribute(CompatibilityLevel level) : Attr
         | AttributeTargets.Property
 )]
 public sealed class StringInternAttribute : Attribute;
+
+/// <summary>
+/// Indicates the known-types to support for an individual
+/// message. This serializes each level in the hierarchy as
+/// a nested message to retain wire-compatibility with
+/// other protocol-buffer implementations.
+/// <param name="tag">The unique index (within the type) that will identify this data.</param>
+/// <param name="knownType">The additional type to serialize/deserialize.</param>
+/// </summary>
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Interface,
+    AllowMultiple = true,
+    Inherited = false
+)]
+public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
+{
+    public uint Tag { get; } = tag;
+    public Type KnownType => knownType;
+
+    /// <summary>
+    /// Specifies whether the inherited type's sub-message should be
+    /// written with a length-prefix (default), or with group markers.
+    /// </summary>
+    public DataFormat DataFormat { get; set; } = DataFormat.Default;
+}
