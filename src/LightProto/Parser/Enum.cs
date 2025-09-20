@@ -42,6 +42,6 @@ public sealed class EnumProtoWriter<T> : IProtoWriter<T>
 public sealed class EnumProtoParser<T> : IProtoParser<T>
     where T : Enum
 {
-    public static IProtoReader<T> Reader { get; } = new EnumProtoReader<T>();
-    public static IProtoWriter<T> Writer { get; } = new EnumProtoWriter<T>();
+    public static IProtoReader<T> ProtoReader { get; } = new EnumProtoReader<T>();
+    public static IProtoWriter<T> ProtoWriter { get; } = new EnumProtoWriter<T>();
 }

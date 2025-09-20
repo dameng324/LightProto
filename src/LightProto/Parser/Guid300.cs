@@ -30,6 +30,6 @@ public sealed class Guid300ProtoWriter : IProtoWriter<Guid>
 
 public sealed class Guid300ProtoParser : IProtoParser<Guid>
 {
-    public static IProtoReader<Guid> Reader { get; } = new Guid300ProtoReader();
-    public static IProtoWriter<Guid> Writer { get; } = new Guid300ProtoWriter();
+    public static IProtoReader<Guid> ProtoReader { get; } = new Guid300ProtoReader();
+    public static IProtoWriter<Guid> ProtoWriter { get; } = new Guid300ProtoWriter();
 }

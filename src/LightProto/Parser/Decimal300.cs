@@ -31,6 +31,6 @@ public sealed class Decimal300ProtoWriter : IProtoWriter<Decimal>
 
 public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
 {
-    public static IProtoReader<Decimal> Reader { get; } = new Decimal300ProtoReader();
-    public static IProtoWriter<Decimal> Writer { get; } = new Decimal300ProtoWriter();
+    public static IProtoReader<Decimal> ProtoReader { get; } = new Decimal300ProtoReader();
+    public static IProtoWriter<Decimal> ProtoWriter { get; } = new Decimal300ProtoWriter();
 }

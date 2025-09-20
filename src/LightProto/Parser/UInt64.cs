@@ -27,6 +27,6 @@ public sealed class UInt64ProtoWriter : IProtoWriter<UInt64>
 
 public sealed class UInt64ProtoParser : IProtoParser<UInt64>
 {
-    public static IProtoReader<UInt64> Reader { get; } = new UInt64ProtoReader();
-    public static IProtoWriter<UInt64> Writer { get; } = new UInt64ProtoWriter();
+    public static IProtoReader<UInt64> ProtoReader { get; } = new UInt64ProtoReader();
+    public static IProtoWriter<UInt64> ProtoWriter { get; } = new UInt64ProtoWriter();
 }

@@ -36,6 +36,6 @@ public sealed class SInt32ProtoWriter : IProtoWriter<Int32>
 
 public sealed class SInt32ProtoParser : IProtoParser<Int32>
 {
-    public static IProtoReader<Int32> Reader { get; } = new SInt32ProtoReader();
-    public static IProtoWriter<Int32> Writer { get; } = new SInt32ProtoWriter();
+    public static IProtoReader<Int32> ProtoReader { get; } = new SInt32ProtoReader();
+    public static IProtoWriter<Int32> ProtoWriter { get; } = new SInt32ProtoWriter();
 }

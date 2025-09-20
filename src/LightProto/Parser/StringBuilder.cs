@@ -35,6 +35,6 @@ public sealed class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
 
 public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
 {
-    public static IProtoReader<StringBuilder> Reader { get; } = new StringBuilderProtoReader();
-    public static IProtoWriter<StringBuilder> Writer { get; } = new StringBuilderProtoWriter();
+    public static IProtoReader<StringBuilder> ProtoReader { get; } = new StringBuilderProtoReader();
+    public static IProtoWriter<StringBuilder> ProtoWriter { get; } = new StringBuilderProtoWriter();
 }

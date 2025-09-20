@@ -27,6 +27,6 @@ public sealed class BooleanProtoWriter : IProtoWriter<bool>
 
 public sealed class BooleanProtoParser : IProtoParser<bool>
 {
-    public static IProtoReader<bool> Reader { get; } = new BooleanProtoReader();
-    public static IProtoWriter<bool> Writer { get; } = new BooleanProtoWriter();
+    public static IProtoReader<bool> ProtoReader { get; } = new BooleanProtoReader();
+    public static IProtoWriter<bool> ProtoWriter { get; } = new BooleanProtoWriter();
 }

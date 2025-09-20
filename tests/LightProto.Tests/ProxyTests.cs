@@ -8,7 +8,7 @@ public partial class ProxyTests
         ProtoProxy testObj = new() { Instrument = Instrument.FromNameValue("hello", 20) };
 
         var bytes = testObj.ToByteArray();
-        var parsed = ProtoProxy.Reader.ParseFrom(bytes);
+        var parsed = ProtoProxy.ProtoReader.ParseFrom(bytes);
         await Assert.That(parsed.Instrument.Name).IsEqualTo(testObj.Instrument.Name);
         await Assert.That(parsed.Instrument.Value).IsEqualTo(testObj.Instrument.Value);
         //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());

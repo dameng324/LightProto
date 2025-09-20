@@ -36,6 +36,6 @@ public sealed class DoubleProtoWriter : IProtoWriter<Double>
 
 public sealed class DoubleProtoParser : IProtoParser<Double>
 {
-    public static IProtoReader<Double> Reader { get; } = new DoubleProtoReader();
-    public static IProtoWriter<Double> Writer { get; } = new DoubleProtoWriter();
+    public static IProtoReader<Double> ProtoReader { get; } = new DoubleProtoReader();
+    public static IProtoWriter<Double> ProtoWriter { get; } = new DoubleProtoWriter();
 }

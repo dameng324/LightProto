@@ -36,6 +36,6 @@ public sealed class Fixed32ProtoWriter : IProtoWriter<UInt32>
 
 public sealed class Fixed32ProtoParser : IProtoParser<UInt32>
 {
-    public static IProtoReader<UInt32> Reader { get; } = new Fixed32ProtoReader();
-    public static IProtoWriter<UInt32> Writer { get; } = new Fixed32ProtoWriter();
+    public static IProtoReader<UInt32> ProtoReader { get; } = new Fixed32ProtoReader();
+    public static IProtoWriter<UInt32> ProtoWriter { get; } = new Fixed32ProtoWriter();
 }

@@ -36,6 +36,6 @@ public sealed class SFixed32ProtoWriter : IProtoWriter<int>
 
 public sealed class SFixed32ProtoParser : IProtoParser<int>
 {
-    public static IProtoReader<int> Reader { get; } = new SFixed32ProtoReader();
-    public static IProtoWriter<int> Writer { get; } = new SFixed32ProtoWriter();
+    public static IProtoReader<int> ProtoReader { get; } = new SFixed32ProtoReader();
+    public static IProtoWriter<int> ProtoWriter { get; } = new SFixed32ProtoWriter();
 }

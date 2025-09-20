@@ -27,6 +27,6 @@ public sealed class TimeOnlyProtoWriter : IProtoWriter<TimeOnly>
 
 public sealed class TimeOnlyProtoParser : IProtoParser<TimeOnly>
 {
-    public static IProtoReader<TimeOnly> Reader { get; } = new TimeOnlyProtoReader();
-    public static IProtoWriter<TimeOnly> Writer { get; } = new TimeOnlyProtoWriter();
+    public static IProtoReader<TimeOnly> ProtoReader { get; } = new TimeOnlyProtoReader();
+    public static IProtoWriter<TimeOnly> ProtoWriter { get; } = new TimeOnlyProtoWriter();
 }

@@ -179,10 +179,10 @@ public class LightProtoGenerator : ISourceGenerator
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
                   {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
-                      public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader => {{targetType.BaseType}}.{{className}}Reader;
-                      public static new IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer => {{targetType.BaseType}}.Writer;
-                      public static IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructProtoReader();
-                      public static IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructProtoWriter();
+                      public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader => {{targetType.BaseType}}.{{className}}ProtoReader;
+                      public static new IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter => {{targetType.BaseType}}.ProtoWriter;
+                      public static IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
+                      public static IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
                       public struct MemberStruct
                       {
                           {{string.Join(Environment.NewLine + GetIntendedSpace(1),
@@ -198,7 +198,7 @@ public class LightProtoGenerator : ISourceGenerator
                               };
                           }
                       }
-                      public sealed class MemberStructProtoWriter:IProtoWriter<MemberStruct>
+                      public sealed class MemberStructLightProtoWriter:IProtoWriter<MemberStruct>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -285,7 +285,7 @@ public class LightProtoGenerator : ISourceGenerator
                           }
                       }
                       
-                      public sealed class MemberStructProtoReader:IProtoReader<MemberStruct>
+                      public sealed class MemberStructLightProtoReader:IProtoReader<MemberStruct>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -421,13 +421,13 @@ public class LightProtoGenerator : ISourceGenerator
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
                   {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
-                      public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader {get; } = new ProtoReader();
-                      public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer {get; } = new ProtoWriter();
+                      public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader {get; } = new LightProtoReader();
+                      public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter {get; } = new LightProtoWriter();
                       {{
                           string.Join(Environment.NewLine+GetIntendedSpace(1),
                               contract.DerivedTypeContracts.Select(t=>$$"""
-                              public static IProtoReader<{{t.Contract.Type.ToDisplayString()}}> {{t.Contract.Type.Name}}Reader {get; } = new {{className}}_{{t.Contract.Type.Name}}Reader();
-                              public sealed class {{className}}_{{t.Contract.Type.Name}}Reader:IProtoReader<{{t.Contract.Type}}>
+                              public static IProtoReader<{{t.Contract.Type.ToDisplayString()}}> {{t.Contract.Type.Name}}ProtoReader {get; } = new {{className}}_{{t.Contract.Type.Name}}LightProtoReader();
+                              public sealed class {{className}}_{{t.Contract.Type.Name}}LightProtoReader:IProtoReader<{{t.Contract.Type}}>
                               {
                                   public bool IsMessage => true;
                                   public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -650,7 +650,7 @@ public class LightProtoGenerator : ISourceGenerator
                           )
                       }}
                       
-                      public sealed class ProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
+                      public sealed class LightProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -776,7 +776,7 @@ public class LightProtoGenerator : ISourceGenerator
                           }
                       }
                       
-                      public sealed class ProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
+                      public sealed class LightProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -1255,7 +1255,7 @@ public class LightProtoGenerator : ISourceGenerator
 
         if (IsProtoBufMessage(memberType))
         {
-            return $"{memberType.WithNullableAnnotation(NullableAnnotation.None)}.{readerOrWriter}";
+            return $"{memberType.WithNullableAnnotation(NullableAnnotation.None)}.Proto{readerOrWriter}";
         }
 
         var fieldNumber = GetFieldNumber(rawTag);
@@ -1269,7 +1269,7 @@ public class LightProtoGenerator : ISourceGenerator
             var elementType = arrayType.ElementType;
             if (elementType.SpecialType == SpecialType.System_Byte)
             {
-                return $"ByteArrayProtoParser.{readerOrWriter}";
+                return $"ByteArrayProtoParser.Proto{readerOrWriter}";
             }
             var tag2 = ProtoMember.GetRawTag(
                 fieldNumber,
@@ -1301,7 +1301,7 @@ public class LightProtoGenerator : ISourceGenerator
             {
                 if (namedType.TypeKind == TypeKind.Enum)
                 {
-                    return $"EnumProtoParser<{namedType}>.{readerOrWriter}";
+                    return $"EnumProtoParser<{namedType}>.Proto{readerOrWriter}";
                 }
 
                 var name = namedType.SpecialType switch
@@ -1340,7 +1340,7 @@ public class LightProtoGenerator : ISourceGenerator
                     name = "InternedString";
                 }
 
-                return $"{name}ProtoParser.{readerOrWriter}";
+                return $"{name}ProtoParser.Proto{readerOrWriter}";
             }
 
             if (typeArguments.Length == 1)
@@ -1353,7 +1353,7 @@ public class LightProtoGenerator : ISourceGenerator
                 var elementType = typeArguments[0];
                 if (elementType.SpecialType == SpecialType.System_Byte)
                 {
-                    return $"ByteListProtoParser.{readerOrWriter}";
+                    return $"ByteListProtoParser.Proto{readerOrWriter}";
                 }
                 var elementParser = GetProtoParser(
                     compilation,

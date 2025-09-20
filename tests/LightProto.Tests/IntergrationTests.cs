@@ -152,7 +152,7 @@ public class IntergrationTests
         await Assert.That(originalBytes).IsEqualTo(parsedBytes);
         await Assert.That(t2Array.Length).IsEqualTo(origin.CalculateSize());
 
-        var parseBack = T1.Reader.ParseFrom(bytes);
+        var parseBack = T1.ProtoReader.ParseFrom(bytes);
         var bytes2 = parseBack.ToByteArray();
 
         var parseBackBytes = Convert.ToHexString(bytes2);
@@ -177,7 +177,7 @@ public class IntergrationTests
         await Assert.That(obj.ConcurrentStringQueueFieldTests).IsNotNull();
         await Assert.That(obj.ConcurrentStringStackFieldTests).IsNotNull();
         var bytes = obj.ToByteArray();
-        var parsed = CsTestMessage.Reader.ParseFrom(bytes);
+        var parsed = CsTestMessage.ProtoReader.ParseFrom(bytes);
         await Assert.That(parsed.Int32ArrayFields).IsNotNull();
         await Assert.That(parsed.StringArrayFields).IsNotNull();
         await Assert.That(parsed.IntListFieldTests).IsNotNull();

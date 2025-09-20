@@ -2,8 +2,8 @@
 
 public interface IProtoParser<T>
 {
-    public static abstract IProtoReader<T> Reader { get; }
-    public static abstract IProtoWriter<T> Writer { get; }
+    public static abstract IProtoReader<T> ProtoReader { get; }
+    public static abstract IProtoWriter<T> ProtoWriter { get; }
 }
 
 public interface IProtoReader<out T>

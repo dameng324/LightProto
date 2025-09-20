@@ -10,7 +10,7 @@ public static partial class Serializer
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
     /// <param name="destination">The destination stream to write to.</param>
     public static void Serialize<T>(Stream destination, T instance)
-        where T : IProtoParser<T> => Serialize(destination, instance, T.Writer);
+        where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
 
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
@@ -18,7 +18,7 @@ public static partial class Serializer
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
     /// <param name="destination">The destination stream to write to.</param>
     public static void Serialize<T>(IBufferWriter<byte> destination, T instance)
-        where T : IProtoParser<T> => Serialize(destination, instance, T.Writer);
+        where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
 
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
@@ -46,7 +46,7 @@ public static partial class Serializer
     {
         unsafe
         {
-            var size = T.Writer.CalculateSize(message);
+            var size = T.ProtoWriter.CalculateSize(message);
             Span<byte> buffer;
             if (size < 256)
             {
@@ -59,7 +59,7 @@ public static partial class Serializer
                 buffer = new byte[size];
             }
             WriterContext.Initialize(ref buffer, out var ctx);
-            T.Writer.WriteTo(ref ctx, message);
+            T.ProtoWriter.WriteTo(ref ctx, message);
             return Deserialize<T>(buffer);
         }
     }

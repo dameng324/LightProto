@@ -8,8 +8,11 @@ public class CollectionSerializerTest
     public async Task IntListTest()
     {
         List<int> list = [1, 2, 3, 4];
-        var bytes = list.ToByteArray(Int32ProtoParser.Writer);
-        var clone = Serializer.Deserialize<List<int>, int>(bytes.AsSpan(), Int32ProtoParser.Reader);
+        var bytes = list.ToByteArray(Int32ProtoParser.ProtoWriter);
+        var clone = Serializer.Deserialize<List<int>, int>(
+            bytes.AsSpan(),
+            Int32ProtoParser.ProtoReader
+        );
         await Assert.That(clone).IsEquivalentTo(list);
     }
 
@@ -17,11 +20,11 @@ public class CollectionSerializerTest
     public async Task StringListTest()
     {
         List<string> list = ["123", "", "111"];
-        var bytes = list.ToByteArray(StringProtoParser.Writer);
+        var bytes = list.ToByteArray(StringProtoParser.ProtoWriter);
 
         var clone = Serializer.Deserialize<List<string>, string>(
             bytes.AsSpan(),
-            StringProtoParser.Reader
+            StringProtoParser.ProtoReader
         );
         await Assert.That(clone).IsEquivalentTo(list);
     }
@@ -30,12 +33,12 @@ public class CollectionSerializerTest
     public async Task DictionaryTest()
     {
         var map = new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
-        var bytes = map.ToByteArray(StringProtoParser.Writer, Int32ProtoParser.Writer);
+        var bytes = map.ToByteArray(StringProtoParser.ProtoWriter, Int32ProtoParser.ProtoWriter);
 
         var clone = Serializer.Deserialize<Dictionary<string, int>, string, int>(
             bytes.AsSpan(),
-            StringProtoParser.Reader,
-            Int32ProtoParser.Reader
+            StringProtoParser.ProtoReader,
+            Int32ProtoParser.ProtoReader
         );
         await Assert.That(clone).IsEquivalentTo(map);
     }
