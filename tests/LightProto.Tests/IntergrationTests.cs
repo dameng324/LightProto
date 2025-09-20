@@ -137,7 +137,7 @@ public class IntergrationTests
         Func<byte[], T2> parserFunc,
         Func<T2, byte[]> t2ToByteArray
     )
-        where T1 : IProtoMessage<T1>
+        where T1 : IProtoParser<T1>
     {
         var bytes = origin.ToByteArray();
         var parsed = parserFunc(bytes);

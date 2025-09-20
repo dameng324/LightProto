@@ -6,7 +6,7 @@ namespace LightProto;
 public static partial class Serializer
 {
     public static int CalculateSize<T>(this T message)
-        where T : IProtoMessage<T>
+        where T : IProtoParser<T>
     {
         return T.Writer.CalculateSize(message);
     }
