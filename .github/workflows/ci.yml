@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+          dotnet-version: '9.0.x'
 
       - name: Check format
         run: dotnet tool restore && dotnet tool run csharpier check .
@@ -35,6 +36,9 @@ jobs:
           
           dotnet publish tests/LightProto.Tests/ -f net9.0 -r linux-x64 -c Release
           ./tests/LightProto.Tests/bin/Release/net9.0/linux-x64/publish/LightProto.Tests
+          
+          dotnet publish tests/LightProto.Tests/ -f net10.0 -r linux-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net10.0/linux-x64/publish/LightProto.Tests
           
       - name: Run Benchmarks
         run: |
@@ -74,6 +78,9 @@ jobs:
           
           dotnet publish tests/LightProto.Tests/ -f net9.0 -r win-x64 -c Release
           ./tests/LightProto.Tests/bin/Release/net9.0/win-x64/publish/LightProto.Tests.exe
+          
+          dotnet publish tests/LightProto.Tests/ -f net10.0 -r win-x64 -c Release
+          ./tests/LightProto.Tests/bin/Release/net10.0/win-x64/publish/LightProto.Tests.exe
 
       - name: Test package creation
         run: |
