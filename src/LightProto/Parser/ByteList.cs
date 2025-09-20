@@ -38,6 +38,6 @@ public sealed class ByteListProtoWriter : IProtoWriter<List<byte>>
 
 public sealed class ByteListProtoParser : IProtoParser<List<byte>>
 {
-    public static IProtoReader<List<byte>> Reader { get; } = new ByteListProtoReader();
-    public static IProtoWriter<List<byte>> Writer { get; } = new ByteListProtoWriter();
+    public static IProtoReader<List<byte>> ProtoReader { get; } = new ByteListProtoReader();
+    public static IProtoWriter<List<byte>> ProtoWriter { get; } = new ByteListProtoWriter();
 }

@@ -12,21 +12,24 @@ public static partial class Serializer
     /// <returns>A new, initialized instance.</returns>
     public static TCollection Deserialize<TCollection, TItem>(Stream source)
         where TCollection : ICollection<TItem>, new()
-        where TItem : IProtoParser<TItem> => Deserialize<TCollection, TItem>(source, TItem.Reader);
+        where TItem : IProtoParser<TItem> =>
+        Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
     public static TCollection Deserialize<TCollection, TItem>(ReadOnlySequence<byte> source)
         where TCollection : ICollection<TItem>, new()
-        where TItem : IProtoParser<TItem> => Deserialize<TCollection, TItem>(source, TItem.Reader);
+        where TItem : IProtoParser<TItem> =>
+        Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
     public static TCollection Deserialize<TCollection, TItem>(ReadOnlySpan<byte> source)
         where TCollection : ICollection<TItem>, new()
-        where TItem : IProtoParser<TItem> => Deserialize<TCollection, TItem>(source, TItem.Reader);
+        where TItem : IProtoParser<TItem> =>
+        Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream

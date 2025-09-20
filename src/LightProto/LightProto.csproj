@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
+    <LangVersion>preview</LangVersion>
     <!-- NuGet Package Metadata -->
     <PackageId>LightProto</PackageId>
     <Title>LightProto.Extension - Generic Protobuf Deserialization</Title>

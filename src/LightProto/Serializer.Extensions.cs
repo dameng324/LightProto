@@ -8,7 +8,7 @@ public static partial class Serializer
     public static int CalculateSize<T>(this T message)
         where T : IProtoParser<T>
     {
-        return T.Writer.CalculateSize(message);
+        return T.ProtoWriter.CalculateSize(message);
     }
 
     public static int CalculateMessageSize<T>(this IProtoWriter<T> writer, T value)
@@ -103,7 +103,7 @@ public static partial class Serializer
     public static byte[] ToByteArray<T>(this T message)
         where T : IProtoParser<T>
     {
-        return ToByteArray(message, T.Writer);
+        return ToByteArray(message, T.ProtoWriter);
     }
 
     public static byte[] ToByteArray<T>(this ICollection<T> message, IProtoWriter<T> writer)
@@ -114,7 +114,7 @@ public static partial class Serializer
     public static byte[] ToByteArray<T>(this ICollection<T> message)
         where T : IProtoParser<T>
     {
-        return ToByteArray(message, T.Writer);
+        return ToByteArray(message, T.ProtoWriter);
     }
 
     /// <summary>

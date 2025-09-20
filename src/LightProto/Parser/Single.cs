@@ -36,6 +36,6 @@ public sealed class SingleProtoWriter : IProtoWriter<Single>
 
 public sealed class SingleProtoParser : IProtoParser<Single>
 {
-    public static IProtoReader<Single> Reader { get; } = new SingleProtoReader();
-    public static IProtoWriter<Single> Writer { get; } = new SingleProtoWriter();
+    public static IProtoReader<Single> ProtoReader { get; } = new SingleProtoReader();
+    public static IProtoWriter<Single> ProtoWriter { get; } = new SingleProtoWriter();
 }

@@ -27,6 +27,6 @@ public sealed class UInt32ProtoWriter : IProtoWriter<UInt32>
 
 public sealed class UInt32ProtoParser : IProtoParser<UInt32>
 {
-    public static IProtoReader<UInt32> Reader { get; } = new UInt32ProtoReader();
-    public static IProtoWriter<UInt32> Writer { get; } = new UInt32ProtoWriter();
+    public static IProtoReader<UInt32> ProtoReader { get; } = new UInt32ProtoReader();
+    public static IProtoWriter<UInt32> ProtoWriter { get; } = new UInt32ProtoWriter();
 }

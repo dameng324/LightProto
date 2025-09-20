@@ -15,6 +15,6 @@ public sealed class InternedStringProtoReader : IProtoReader<string>
 
 public sealed class InternedStringProtoParser : IProtoParser<string>
 {
-    public static IProtoReader<string> Reader { get; } = new InternedStringProtoReader();
-    public static IProtoWriter<string> Writer { get; } = new StringProtoWriter();
+    public static IProtoReader<string> ProtoReader { get; } = new InternedStringProtoReader();
+    public static IProtoWriter<string> ProtoWriter { get; } = new StringProtoWriter();
 }
