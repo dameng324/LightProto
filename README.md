@@ -119,7 +119,7 @@ serialization code at compile time.
 
 ### Generic Serialize / Deserialize Methods
 
-LightProto does not support `Serialize<int>`,`Deserialize<int>` generic methods. The type parameter must be IProto,
+LightProto does not support `Serialize<int>`,`Deserialize<int>` generic methods. The type parameter must be `IProtoParser<T>`,
 
 ```diff
 
