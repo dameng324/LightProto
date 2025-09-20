@@ -1,8 +1,8 @@
 ﻿namespace LightProto.Parser;
 
 [ProtoContract]
-[ProtoProxyFor<DateTime>]
-public sealed partial class DateTime240Proxy
+[ProtoSurrogateFor<DateTime>]
+public partial struct DateTime240ProtoParser
 {
     [ProtoMember(1)]
     private long Seconds { get; set; }
@@ -36,23 +36,25 @@ public sealed partial class DateTime240Proxy
     public const int NanosecondsPerTick = 100;
     internal const int MaxNanos = NanosecondsPerSecond - 1;
 
-    public static implicit operator DateTime(DateTime240Proxy proxy)
+    public static implicit operator DateTime(DateTime240ProtoParser protoParser)
     {
-        if (!IsNormalized(proxy.Seconds, proxy.Nanos))
+        if (!IsNormalized(protoParser.Seconds, protoParser.Nanos))
         {
             throw new InvalidOperationException(
                 @"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}"
             );
         }
-        return UnixEpoch.AddSeconds(proxy.Seconds).AddTicks(proxy.Nanos / NanosecondsPerTick);
+        return UnixEpoch
+            .AddSeconds(protoParser.Seconds)
+            .AddTicks(protoParser.Nanos / NanosecondsPerTick);
     }
 
-    public static implicit operator DateTime240Proxy(DateTime dateTime)
+    public static implicit operator DateTime240ProtoParser(DateTime dateTime)
     {
         // Do the arithmetic using DateTime.Ticks, which is always non-negative, making things simpler.
         long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
         int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * NanosecondsPerTick;
-        return new DateTime240Proxy
+        return new DateTime240ProtoParser
         {
             Seconds = secondsSinceBclEpoch - BclSecondsAtUnixEpoch,
             Nanos = nanoseconds,
@@ -64,12 +66,4 @@ public sealed partial class DateTime240Proxy
         && nanoseconds <= MaxNanos
         && seconds >= UnixSecondsAtBclMinValue
         && seconds <= UnixSecondsAtBclMaxValue;
-}
-
-public sealed class DateTime240ProtoParser : IProtoParser<DateTime>
-{
-    public static IProtoReader<DateTime> Reader { get; } =
-        LightProto.Parser.DateTime240Proxy.Reader;
-    public static IProtoWriter<DateTime> Writer { get; } =
-        LightProto.Parser.DateTime240Proxy.Writer;
 }

@@ -20,33 +20,15 @@ public partial class ProxyTests
         [ProtoMember(1)]
         public Instrument Instrument { get; set; } = null!;
     }
+}
 
-    [ProtoProxy<InstrumentProxy>()]
-    public class Instrument
-    {
-        public static Instrument FromNameValue(string name, int value) =>
-            new Instrument { Name = name, Value = value };
+public class Instrument
+{
+    public static Instrument FromNameValue(string name, int value) =>
+        new Instrument { Name = name, Value = value };
 
-        private Instrument() { }
+    private Instrument() { }
 
-        public required string Name { get; set; }
-        public required int Value { get; set; }
-    }
-
-    [ProtoContract]
-    [ProtoProxyFor<Instrument>()]
-    public partial class InstrumentProxy
-    {
-        [ProtoMember(11)]
-        public string Name { get; set; } = string.Empty;
-
-        [ProtoMember(12)]
-        public int Value { get; set; }
-
-        public static implicit operator Instrument(InstrumentProxy proxy) =>
-            Instrument.FromNameValue(proxy.Name, proxy.Value);
-
-        public static implicit operator InstrumentProxy(Instrument instrument) =>
-            new InstrumentProxy { Name = instrument.Name, Value = instrument.Value };
-    }
+    public required string Name { get; set; }
+    public required int Value { get; set; }
 }

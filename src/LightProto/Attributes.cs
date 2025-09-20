@@ -50,12 +50,9 @@ public class ProtoMapAttribute : Attribute
     public DataFormat ValueFormat { get; set; } = DataFormat.Default;
 }
 
-[Obsolete("compatibility protobuf-net only, no effect")]
 public class ProtoIgnoreAttribute : Attribute;
 
-public class ProtoProxyAttribute<T> : Attribute;
-
-public class ProtoProxyForAttribute<T> : Attribute;
+public class ProtoSurrogateForAttribute<T> : Attribute;
 
 // donot support ProtoInclude for now
 // [Obsolete("compatibility protobuf-net only, no effect")]

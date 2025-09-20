@@ -28,12 +28,6 @@ public static partial class Serializer
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
-    public static T Deserialize<T>(ReadOnlyMemory<byte> source, IProtoReader<T> reader) =>
-        Deserialize(source.Span, reader);
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
     public static T Deserialize<T>(ReadOnlySequence<byte> source, IProtoReader<T> reader)
     {
         ReaderContext.Initialize(source, out var ctx);

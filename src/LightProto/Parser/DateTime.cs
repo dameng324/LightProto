@@ -28,8 +28,8 @@
 // }
 
 [ProtoContract]
-[ProtoProxyFor<DateTime>]
-public partial struct DateTimeProxy
+[ProtoSurrogateFor<DateTime>]
+public partial struct DateTimeProtoParser
 {
     [ProtoMember(1, DataFormat = DataFormat.ZigZag)]
     internal long Ticks { get; set; }
@@ -40,7 +40,7 @@ public partial struct DateTimeProxy
     [ProtoMember(3)]
     internal DateTimeKind Kind { get; set; }
 
-    public static implicit operator DateTime(DateTimeProxy proxy)
+    public static implicit operator DateTime(DateTimeProtoParser proxy)
     {
         long ticks;
         switch (proxy.Scale)
@@ -90,11 +90,11 @@ public partial struct DateTimeProxy
         new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Local).Ticks,
     ];
 
-    public static implicit operator DateTimeProxy(DateTime dt)
+    public static implicit operator DateTimeProtoParser(DateTime dt)
     {
         if (dt == DateTime.MinValue)
         {
-            return new DateTimeProxy
+            return new DateTimeProtoParser
             {
                 Ticks = -1,
                 Scale = TimeSpanScale.Minmax,
@@ -104,7 +104,7 @@ public partial struct DateTimeProxy
 
         if (dt == DateTime.MaxValue)
         {
-            return new DateTimeProxy
+            return new DateTimeProtoParser
             {
                 Ticks = 1,
                 Scale = TimeSpanScale.Minmax,
@@ -183,10 +183,4 @@ internal enum TimeSpanScale
     Milliseconds = 4,
     Ticks = 5,
     Minmax = 15,
-}
-
-public sealed class DateTimeProtoParser : IProtoParser<DateTime>
-{
-    public static IProtoReader<DateTime> Reader { get; } = LightProto.Parser.DateTimeProxy.Reader;
-    public static IProtoWriter<DateTime> Writer { get; } = LightProto.Parser.DateTimeProxy.Writer;
 }

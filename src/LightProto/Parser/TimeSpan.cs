@@ -15,9 +15,9 @@
 // }
 // }
 
-[ProtoProxyFor<TimeSpan>]
+[ProtoSurrogateFor<TimeSpan>]
 [ProtoContract]
-public partial struct TimeSpanProxy
+public partial struct TimeSpanProtoParser
 {
     [ProtoMember(1, DataFormat = DataFormat.ZigZag)]
     internal long Ticks { get; set; }
@@ -25,58 +25,58 @@ public partial struct TimeSpanProxy
     [ProtoMember(2)]
     internal TimeSpanScale Scale { get; set; }
 
-    public static implicit operator TimeSpan(TimeSpanProxy proxy)
+    public static implicit operator TimeSpan(TimeSpanProtoParser protoParser)
     {
         long ticks;
-        switch (proxy.Scale)
+        switch (protoParser.Scale)
         {
             case TimeSpanScale.Days:
-                ticks = proxy.Ticks * TimeSpan.TicksPerDay;
+                ticks = protoParser.Ticks * TimeSpan.TicksPerDay;
                 break;
             case TimeSpanScale.Hours:
-                ticks = proxy.Ticks * TimeSpan.TicksPerHour;
+                ticks = protoParser.Ticks * TimeSpan.TicksPerHour;
                 break;
             case TimeSpanScale.Minutes:
-                ticks = proxy.Ticks * TimeSpan.TicksPerMinute;
+                ticks = protoParser.Ticks * TimeSpan.TicksPerMinute;
                 break;
             case TimeSpanScale.Seconds:
-                ticks = proxy.Ticks * TimeSpan.TicksPerSecond;
+                ticks = protoParser.Ticks * TimeSpan.TicksPerSecond;
                 break;
             case TimeSpanScale.Milliseconds:
-                ticks = proxy.Ticks * TimeSpan.TicksPerMillisecond;
+                ticks = protoParser.Ticks * TimeSpan.TicksPerMillisecond;
                 break;
             case TimeSpanScale.Ticks:
-                ticks = proxy.Ticks;
+                ticks = protoParser.Ticks;
                 break;
             case TimeSpanScale.Minmax:
-                if (proxy.Ticks == -1)
+                if (protoParser.Ticks == -1)
                     return TimeSpan.MinValue;
-                else if (proxy.Ticks == 1)
+                else if (protoParser.Ticks == 1)
                     return TimeSpan.MaxValue;
                 else
                     throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Ticks),
-                        $"Invalid ticks for MINMAX scale: {proxy.Ticks}"
+                        nameof(protoParser.Ticks),
+                        $"Invalid ticks for MINMAX scale: {protoParser.Ticks}"
                     );
             default:
                 throw new ArgumentOutOfRangeException(
-                    nameof(proxy.Scale),
-                    $"Unknown scale: {proxy.Scale}"
+                    nameof(protoParser.Scale),
+                    $"Unknown scale: {protoParser.Scale}"
                 );
         }
         return new TimeSpan(ticks);
     }
 
-    public static implicit operator TimeSpanProxy(TimeSpan dt)
+    public static implicit operator TimeSpanProtoParser(TimeSpan dt)
     {
         if (dt == TimeSpan.MinValue)
         {
-            return new TimeSpanProxy { Ticks = -1, Scale = TimeSpanScale.Minmax };
+            return new TimeSpanProtoParser { Ticks = -1, Scale = TimeSpanScale.Minmax };
         }
 
         if (dt == TimeSpan.MaxValue)
         {
-            return new TimeSpanProxy { Ticks = 1, Scale = TimeSpanScale.Minmax };
+            return new TimeSpanProtoParser { Ticks = 1, Scale = TimeSpanScale.Minmax };
         }
 
         var ticks = dt.Ticks;
@@ -109,10 +109,4 @@ public partial struct TimeSpanProxy
 
         return new() { Ticks = ticks, Scale = TimeSpanScale.Ticks };
     }
-}
-
-public sealed class TimeSpanProtoParser : IProtoParser<TimeSpan>
-{
-    public static IProtoReader<TimeSpan> Reader { get; } = LightProto.Parser.TimeSpanProxy.Reader;
-    public static IProtoWriter<TimeSpan> Writer { get; } = LightProto.Parser.TimeSpanProxy.Writer;
 }

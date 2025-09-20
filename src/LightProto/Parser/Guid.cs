@@ -8,8 +8,8 @@ namespace LightProto.Parser;
 // }
 
 [ProtoContract]
-[ProtoProxyFor<Guid>]
-public partial struct GuidProxy
+[ProtoSurrogateFor<Guid>]
+public partial struct GuidProtoParser
 {
     [ProtoMember(1, DataFormat = DataFormat.FixedSize)]
     internal ulong Low { get; set; }
@@ -17,28 +17,22 @@ public partial struct GuidProxy
     [ProtoMember(2, DataFormat = DataFormat.FixedSize)]
     internal ulong High { get; set; }
 
-    public static implicit operator Guid(GuidProxy proxy)
+    public static implicit operator Guid(GuidProtoParser protoParser)
     {
         Span<byte> bytes = stackalloc byte[16];
-        BinaryPrimitives.WriteUInt64LittleEndian(bytes, proxy.Low);
-        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), proxy.High);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes, protoParser.Low);
+        BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), protoParser.High);
         return new Guid(bytes);
     }
 
-    public static implicit operator GuidProxy(Guid value)
+    public static implicit operator GuidProtoParser(Guid value)
     {
         Span<byte> bytes = stackalloc byte[16];
         value.TryWriteBytes(bytes);
-        return new GuidProxy()
+        return new GuidProtoParser()
         {
             Low = BinaryPrimitives.ReadUInt64LittleEndian(bytes),
             High = BinaryPrimitives.ReadUInt64LittleEndian(bytes.Slice(8)),
         };
     }
-}
-
-public sealed class GuidProtoParser : IProtoParser<Guid>
-{
-    public static IProtoReader<Guid> Reader { get; } = LightProto.Parser.GuidProxy.Reader;
-    public static IProtoWriter<Guid> Writer { get; } = LightProto.Parser.GuidProxy.Writer;
 }

@@ -10,8 +10,8 @@ namespace LightProto.Parser;
 // }
 
 [ProtoContract]
-[ProtoProxyFor<Decimal>]
-public partial struct DecimalProxy
+[ProtoSurrogateFor<Decimal>]
+public partial struct DecimalProtoParser
 {
     /// <summary>
     /// the first 64 bits of the underlying value
@@ -31,17 +31,17 @@ public partial struct DecimalProxy
     [ProtoMember(3)]
     internal uint SignScale { get; set; }
 
-    public static implicit operator Decimal(DecimalProxy proxy)
+    public static implicit operator Decimal(DecimalProtoParser protoParser)
     {
-        int lo = (int)(proxy.Low & 0xFFFFFFFFL),
-            mid = (int)((proxy.Low >> 32) & 0xFFFFFFFFL),
-            hi = (int)proxy.High;
-        bool isNeg = (proxy.SignScale & 0x0001) == 0x0001;
-        byte scale = (byte)((proxy.SignScale & 0x01FE) >> 1);
+        int lo = (int)(protoParser.Low & 0xFFFFFFFFL),
+            mid = (int)((protoParser.Low >> 32) & 0xFFFFFFFFL),
+            hi = (int)protoParser.High;
+        bool isNeg = (protoParser.SignScale & 0x0001) == 0x0001;
+        byte scale = (byte)((protoParser.SignScale & 0x01FE) >> 1);
         return new decimal(lo, mid, hi, isNeg, scale);
     }
 
-    public static implicit operator DecimalProxy(Decimal value)
+    public static implicit operator DecimalProtoParser(Decimal value)
     {
         var dec = new DecimalAccessor(value);
         ulong a = ((ulong)dec.Mid) << 32,
@@ -49,7 +49,7 @@ public partial struct DecimalProxy
         ulong low = a | b;
         uint high = (uint)dec.Hi;
         uint signScale = (uint)(((dec.Flags >> 15) & 0x01FE) | ((dec.Flags >> 31) & 0x0001));
-        return new DecimalProxy
+        return new DecimalProtoParser
         {
             Low = low,
             High = high,
@@ -85,10 +85,4 @@ public partial struct DecimalProxy
             Decimal = value;
         }
     }
-}
-
-public sealed class DecimalProtoParser : IProtoParser<Decimal>
-{
-    public static IProtoReader<Decimal> Reader { get; } = LightProto.Parser.DecimalProxy.Reader;
-    public static IProtoWriter<Decimal> Writer { get; } = LightProto.Parser.DecimalProxy.Writer;
 }
