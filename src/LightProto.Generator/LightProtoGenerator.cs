@@ -177,7 +177,7 @@ public class LightProtoGenerator : ISourceGenerator
                   {{showFiledNumber}}
                   /// </summary>
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoMessage<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
+                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
                       public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader => {{targetType.BaseType}}.{{className}}Reader;
                       public static new IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer => {{targetType.BaseType}}.Writer;
@@ -419,7 +419,7 @@ public class LightProtoGenerator : ISourceGenerator
                   {{showFiledNumber}}
                   /// </summary>
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoMessage<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
+                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
                       public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> Reader {get; } = new ProtoReader();
                       public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> Writer {get; } = new ProtoWriter();

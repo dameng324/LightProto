@@ -50,12 +50,6 @@ DefaultJob : .NET 9.0.9 (9.0.925.41916), X64 RyuJIT AVX2
 
 **This project is under active development and may introduce breaking changes. use it in production at your own risk.**
 
-Todo list:
-
-- [ ] Add more tests for other possible types supported by Protobuf-net
-- [ ] Add more benchmarks and performance tests
-- [ ] Improve documentation and examples
-
 ## Quick Start
 
 ```bash
@@ -123,11 +117,11 @@ Here are some known differences between LightProto and Protobuf-net. The goal is
 There is no need to mark your classes as `partial` in Protobuf-net, but LightProto requires it to generate the necessary
 serialization code at compile time.
 
-### Inheritance
+### Generic Serialize / Deserialize Methods
 
-Protobuf-net requires the use of the `[ProtoInclude]` attribute to handle inheritance, This a really complex and not common feature, so LightProto does not support it currently. 
+LightProto does not support `Serialize<int>`,`Deserialize<int>` generic methods. The type parameter must be IProto,
 
-If you need this feature, please let me known.
+```diff
 
 ### IExtensible
 

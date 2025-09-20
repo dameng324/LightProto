@@ -9,7 +9,7 @@ public abstract class BaseTests<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message,
     GoogleProtobufMessage
 > : BaseProtoBufTests<Message>
-    where Message : IProtoMessage<Message>
+    where Message : IProtoParser<Message>
     where GoogleProtobufMessage : IMessage<GoogleProtobufMessage>, new()
 {
     public abstract IEnumerable<GoogleProtobufMessage> GetGoogleMessages();
@@ -42,7 +42,7 @@ public abstract class BaseTests<
 public abstract class BaseProtoBufTests<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message
 >
-    where Message : IProtoMessage<Message>
+    where Message : IProtoParser<Message>
 {
     public abstract IEnumerable<Message> GetMessages();
 
@@ -103,7 +103,7 @@ public abstract class BaseEquivalentTypeTests<
     LightProtoMessage,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] ProtoNetMessage
 >
-    where LightProtoMessage : IProtoMessage<LightProtoMessage>
+    where LightProtoMessage : IProtoParser<LightProtoMessage>
 {
     public abstract IEnumerable<LightProtoMessage> GetLightProtoMessages();
     public abstract IEnumerable<ProtoNetMessage> GetProtoNetMessages();
