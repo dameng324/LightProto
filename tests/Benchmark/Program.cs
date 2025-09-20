@@ -1,19 +1,23 @@
 ﻿using Benchmark;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using LightProto;
 
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 return;
 
-// BenchmarkRunner.Run<Serialize>();
+
+// BenchmarkRunner.Run<SerializeAot>();
 // return;
 //
 // BenchmarkRunner.Run<Deserialize>();
 // return;
 
-// var serialize = new Serialize();
-// for (int i = 0; i < 5000; i++)
+// var serialize = new SerializeAot();
+// for (int i = 0; i < 1; i++)
 // {
 //     serialize.Serialize_LightProto();
 // }
