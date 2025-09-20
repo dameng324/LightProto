@@ -2,6 +2,7 @@
 option csharp_namespace = "TestPackage";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "protobuf-net/bcl.proto";
 
 enum TestEnum
 {
@@ -14,7 +15,7 @@ message TestMessage
 {
   string StringField = 1;
   int32 Int32Field = 2;
-  repeated int32 Int32ArrayField = 3 [packed=false];
+  repeated int32 Int32ArrayField = 3;
   repeated string StringArrayField = 4;
   bytes BytesField = 5;
   bool BoolField = 6;
@@ -38,7 +39,7 @@ message TestMessage
   google.protobuf.Duration DurationField = 28;
   map<string, string> MapField2 = 29;
   map<sfixed32, sint64> MapField4 = 50;
-  int64 DateTimeField = 51;
+  .bcl.DateTime DateTimeField = 51;
   int32 NullableIntField = 52;
   repeated int32 IntArrayFieldTest = 53;
   repeated string StringListFieldTest = 54;
@@ -53,18 +54,13 @@ message TestMessage
   repeated string StringStackFieldTest = 63;
   repeated string ConcurrentStringQueueFieldTest = 64;
   repeated string ConcurrentStringStackFieldTest = 65;
-  repeated int32  IntBag = 66;
+  repeated int32  IntList = 66;
   repeated string StringISet = 67;
-  int64 TimeSpanField = 68;
+  .bcl.TimeSpan TimeSpanField = 68;
   int32 DateOnlyField = 69;
-  bytes GuidField = 70;
+  .bcl.Guid GuidField = 70;
   int64 TimeOnlyField = 71 ;
   string  StringBuilderField = 72;
-  map<string,NestDictionary> NestDictionary = 73;
-}
-message NestDictionary
-{
-  map<string,int32> Dict = 1;
 }
 
 message TestType
