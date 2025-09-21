@@ -10,7 +10,7 @@ Third-Party Components
 This project incorporates small portions of code from the following third-party library:
 
 1. Protocol Buffers (Protobuf)
-   - Copyright (c) 2008-2025, Google Inc.
+   - Copyright 2008 Google Inc.
    - Licensed under the following license:
 
 ----------------------------------------------------------------------
