@@ -32,6 +32,6 @@ public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 
 public sealed class ByteArrayProtoParser : IProtoParser<byte[]>
 {
-    public static IProtoReader<byte[]> Reader { get; } = new ByteArrayProtoReader();
-    public static IProtoWriter<byte[]> Writer { get; } = new ByteArrayProtoWriter();
+    public static IProtoReader<byte[]> ProtoReader { get; } = new ByteArrayProtoReader();
+    public static IProtoWriter<byte[]> ProtoWriter { get; } = new ByteArrayProtoWriter();
 }

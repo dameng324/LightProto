@@ -36,6 +36,6 @@ public sealed class SInt64ProtoWriter : IProtoWriter<Int64>
 
 public sealed class SInt64ProtoParser : IProtoParser<Int64>
 {
-    public static IProtoReader<Int64> Reader { get; } = new SInt64ProtoReader();
-    public static IProtoWriter<Int64> Writer { get; } = new SInt64ProtoWriter();
+    public static IProtoReader<Int64> ProtoReader { get; } = new SInt64ProtoReader();
+    public static IProtoWriter<Int64> ProtoWriter { get; } = new SInt64ProtoWriter();
 }

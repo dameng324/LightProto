@@ -30,6 +30,6 @@ public sealed class DateOnlyProtoWriter : IProtoWriter<DateOnly>
 
 public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
 {
-    public static IProtoReader<DateOnly> Reader { get; } = new DateOnlyProtoReader();
-    public static IProtoWriter<DateOnly> Writer { get; } = new DateOnlyProtoWriter();
+    public static IProtoReader<DateOnly> ProtoReader { get; } = new DateOnlyProtoReader();
+    public static IProtoWriter<DateOnly> ProtoWriter { get; } = new DateOnlyProtoWriter();
 }
