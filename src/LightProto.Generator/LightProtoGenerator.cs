@@ -1157,6 +1157,11 @@ public class LightProtoGenerator : ISourceGenerator
 
     public static bool HasLengthProperty(ITypeSymbol type)
     {
+        if (type.TypeKind == TypeKind.Array)
+        {
+            return true;
+        }
+
         return HasProperty(type, "Length", SpecialType.System_Int32);
     }
 
