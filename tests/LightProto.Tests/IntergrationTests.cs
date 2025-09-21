@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
 using Google.Protobuf;
 using LightProto;
 using LightProto.Parser;
@@ -89,6 +90,7 @@ public class IntergrationTests
         };
 
     [Test]
+    [Repeat(100)]
     public async Task GoogleProtobuf_Should_Compatible()
     {
         await RunGoogleProtobuf<CsTestMessage, TestMessage>(
@@ -144,13 +146,20 @@ public class IntergrationTests
         var bytes = origin.ToByteArray();
         var parsed = parserFunc(bytes);
 
-        // Compare the binary serialization instead of JSON for now
         var originalBytes = Convert.ToHexString(origin.ToByteArray());
         var t2Array = t2ToByteArray(parsed);
         var parsedBytes = Convert.ToHexString(t2Array);
-        // For now, just check that parsing doesn't throw and produces a result
-        await Assert.That(originalBytes).IsEqualTo(parsedBytes);
-        await Assert.That(t2Array.Length).IsEqualTo(origin.CalculateSize());
+        try
+        {
+            await Assert.That(originalBytes).IsEqualTo(parsedBytes);
+            await Assert.That(t2Array.Length).IsEqualTo(origin.CalculateSize());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"original: {JsonSerializer.Serialize(origin)}");
+            Console.WriteLine($"parsed: {JsonSerializer.Serialize(parsed)}");
+            throw;
+        }
 
         var parseBack = T1.ProtoReader.ParseFrom(bytes);
         var bytes2 = parseBack.ToByteArray();
