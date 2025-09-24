@@ -154,7 +154,7 @@ public class IntergrationTests
             await Assert.That(originalBytes).IsEqualTo(parsedBytes);
             await Assert.That(t2Array.Length).IsEqualTo(origin.CalculateSize());
         }
-        catch (Exception e)
+        catch (Exception)
         {
             Console.WriteLine($"original: {JsonSerializer.Serialize(origin)}");
             Console.WriteLine($"parsed: {JsonSerializer.Serialize(parsed)}");
