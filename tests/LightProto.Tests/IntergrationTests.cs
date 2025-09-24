@@ -112,8 +112,38 @@ public class IntergrationTests
         [ProtoBuf.ProtoMember(1)]
         [ProtoBuf.CompatibilityLevel(ProtoBuf.CompatibilityLevel.Level300)]
         public Guid guid { get; set; }
-
         internal Guid guid2 { get; set; }
+    }
+
+    // [ProtoContract(SkipConstructor = true)]
+    // [ProtoInclude(3, typeof(Base2))]
+    [ProtoBuf.ProtoContract]
+    [ProtoBuf.ProtoInclude(3, typeof(Base2))]
+    public partial record Base
+    {
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
+        public string BaseValue { get; set; } = "";
+    }
+
+    // [ProtoContract(SkipConstructor = true)]
+    // [ProtoInclude(3, typeof(Base3))]
+    [ProtoBuf.ProtoContract()]
+    [ProtoBuf.ProtoInclude(3, typeof(Base3))]
+    public partial record Base2 : Base
+    {
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
+        public string BaseValue2 { get; set; } = "";
+    }
+
+    //[ProtoContract(SkipConstructor = true)]
+    [ProtoBuf.ProtoContract()]
+    public partial record Base3 : Base2
+    {
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
+        public string Value { get; set; } = "";
     }
 
     [Test]
@@ -132,7 +162,7 @@ public class IntergrationTests
         //     var bytes = ms.ToArray();
         // }
         //Console.WriteLine( ProtoBuf.Serializer.GetProto<CsTestMessage>());
-        Console.WriteLine(ProtoBuf.Serializer.GetProto<TestProtobufContract>());
+        Console.WriteLine(ProtoBuf.Serializer.GetProto<Base3>());
         //Console.WriteLine( ProtoBuf.Serializer.GetProto<InheritanceTests.Container>());
     }
 

@@ -1,12 +1,12 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Base>
+public partial class MultiInheritanceTests : BaseProtoBufTests<MultiInheritanceTests.Base>
 {
     [ProtoContract(SkipConstructor = true)]
-    [ProtoInclude(3, typeof(Message))]
-    [ProtoBuf.ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoInclude(3, typeof(Message))]
+    [ProtoInclude(3, typeof(Base2))]
+    [ProtoBuf.ProtoContract]
+    [ProtoBuf.ProtoInclude(3, typeof(Base2))]
     public partial record Base
     {
         [ProtoMember(1)]
@@ -15,8 +15,19 @@ public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Base>
     }
 
     [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract(SkipConstructor = true)]
-    public partial record Message : Base
+    [ProtoInclude(3, typeof(Message))]
+    [ProtoBuf.ProtoContract()]
+    [ProtoBuf.ProtoInclude(3, typeof(Message))]
+    public partial record Base2 : Base
+    {
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
+        public string BaseValue2 { get; set; } = "";
+    }
+
+    [ProtoContract(SkipConstructor = true)]
+    [ProtoBuf.ProtoContract()]
+    public partial record Message : Base2
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
@@ -25,7 +36,12 @@ public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Base>
 
     public override IEnumerable<Base> GetMessages()
     {
-        yield return new Message { BaseValue = "base", Value = "value" };
+        yield return new Message
+        {
+            BaseValue = "base",
+            BaseValue2 = "base2",
+            Value = "value",
+        };
     }
 
     public override async Task AssertResult(Base clone, Base message)
