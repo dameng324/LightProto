@@ -179,7 +179,7 @@ public class LightProtoGenerator : ISourceGenerator
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
                   {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
-                      public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader => {{targetType.BaseType}}.{{className}}ProtoReader;
+                      public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader => {{(FindProtoIncludeRoot(targetType) ?? targetType.BaseType).ToDisplayString()}}.{{className}}ProtoReader;
                       public static new IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter => {{targetType.BaseType}}.ProtoWriter;
                       public static IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
                       public static IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
@@ -1799,6 +1799,52 @@ public class LightProtoGenerator : ISourceGenerator
         return GetProxyType(type.GetAttributes());
     }
 
+    /// <summary>
+    /// Checks if derivedType inherits from baseType at any level in the inheritance hierarchy
+    /// </summary>
+    private bool IsInheritedFrom(INamedTypeSymbol derivedType, ITypeSymbol baseType)
+    {
+        var current = derivedType.BaseType;
+        while (current != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, baseType))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Find the root class in the inheritance hierarchy that contains the ProtoInclude attribute for the given derived type
+    /// </summary>
+    private INamedTypeSymbol? FindProtoIncludeRoot(INamedTypeSymbol derivedType)
+    {
+        var current = derivedType.BaseType;
+        while (current != null)
+        {
+            // Check if this base class has a ProtoInclude for the derivedType
+            var protoIncludeAttributes = current
+                .GetAttributes()
+                .Where(attr =>
+                    attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoIncludeAttribute"
+                )
+                .ToList();
+
+            foreach (var attribute in protoIncludeAttributes)
+            {
+                var includedType = attribute.ConstructorArguments[1].Value as INamedTypeSymbol;
+                if (includedType != null && SymbolEqualityComparer.Default.Equals(includedType, derivedType))
+                {
+                    return current;
+                }
+            }
+            current = current.BaseType;
+        }
+        return null;
+    }
+
     private class ProtoContract
     {
         public Compilation Compilation { get; set; } = null!;
@@ -1896,7 +1942,7 @@ public class LightProtoGenerator : ISourceGenerator
                 };
             }
 
-            if (SymbolEqualityComparer.Default.Equals(derivedType.BaseType, targetType) == false)
+            if (IsInheritedFrom(derivedType, targetType) == false)
             {
                 throw new LightProtoGeneratorException(
                     $"ProtoInclude attribute type {derivedType.ToDisplayString()} does not inherit from {targetType.ToDisplayString()}"
