@@ -15,42 +15,52 @@ public partial class MultiInheritanceTests : BaseProtoBufTests<MultiInheritanceT
     }
 
     [ProtoContract(SkipConstructor = true)]
-    [ProtoInclude(3, typeof(Message))]
+    [ProtoInclude(3, typeof(Base3))]
     [ProtoBuf.ProtoContract()]
-    [ProtoBuf.ProtoInclude(3, typeof(Message))]
+    [ProtoBuf.ProtoInclude(3, typeof(Base3))]
     public partial record Base2 : Base
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public string BaseValue2 { get; set; } = "";
+        public string Base2Value { get; set; } = "";
+    }
+
+    [ProtoContract(SkipConstructor = true)]
+    [ProtoInclude(3, typeof(Base4))]
+    [ProtoBuf.ProtoContract()]
+    [ProtoBuf.ProtoInclude(3, typeof(Base4))]
+    public partial record Base3 : Base2
+    {
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
+        public string Base3Value { get; set; } = "";
     }
 
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract()]
-    public partial record Message : Base2
+    public partial record Base4 : Base3
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public string Value { get; set; } = "";
+        public string Base4Value { get; set; } = "";
     }
 
     public override IEnumerable<Base> GetMessages()
     {
-        yield return new Message
+        yield return new Base4
         {
             BaseValue = "base",
-            BaseValue2 = "base2",
-            Value = "value",
+            Base2Value = "base2",
+            Base3Value = "base3",
+            Base4Value = "value",
         };
     }
 
     public override async Task AssertResult(Base clone, Base message)
     {
         await Assert.That(clone.BaseValue).IsEqualTo(message.BaseValue);
-
-        await Assert.That(clone is Message).IsTrue();
-        await Assert.That(message is Message).IsTrue();
-
-        await Assert.That((clone as Message)!.Value).IsEqualTo((message as Message)!.Value);
+        await Assert.That(clone is Base4).IsTrue();
+        await Assert.That(message is Base4).IsTrue();
+        await Assert.That((clone as Base4)!.Base4Value).IsEqualTo((message as Base4)!.Base4Value);
     }
 }
