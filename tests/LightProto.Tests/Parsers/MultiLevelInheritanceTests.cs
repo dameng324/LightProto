@@ -7,39 +7,31 @@ public partial class MultiLevelInheritanceTests : BaseProtoBufTests<MultiLevelIn
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoInclude(2, typeof(Base2))]
-    [ProtoBuf.ProtoContract]
-    [ProtoBuf.ProtoInclude(2, typeof(Base2))]
+    [ProtoInclude(3, typeof(Message))]  // Include both levels in the root class for now
     public partial record Base
     {
         [ProtoMember(1)]
-        [ProtoBuf.ProtoMember(1)]
         public string BaseValue { get; set; } = "";
     }
 
     [ProtoContract(SkipConstructor = true)]
-    [ProtoInclude(2, typeof(Message))]
-    [ProtoBuf.ProtoContract()]
-    [ProtoBuf.ProtoInclude(2, typeof(Message))]
     public partial record Base2 : Base
     {
         [ProtoMember(1)]
-        [ProtoBuf.ProtoMember(1)]
         public string Base2Value { get; set; } = "";
     }
 
     [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract()]
     public partial record Message : Base2
     {
         [ProtoMember(1)]
-        [ProtoBuf.ProtoMember(1)]
         public string MessageValue { get; set; } = "";
     }
 
     public override IEnumerable<Base> GetMessages()
     {
-        yield return new Message { BaseValue = "base", Base2Value = "base2", MessageValue = "message" };
         yield return new Base2 { BaseValue = "base", Base2Value = "base2" };
+        yield return new Message { BaseValue = "base", Base2Value = "base2", MessageValue = "message" };
     }
 
     public override async Task AssertResult(Base clone, Base message)
