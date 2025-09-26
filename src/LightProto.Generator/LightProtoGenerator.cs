@@ -1762,6 +1762,23 @@ public class LightProtoGenerator : ISourceGenerator
         return displayString == "System.Text.StringBuilder" || displayString == "StringBuilder";
     }
 
+    /// <summary>
+    /// Checks if derivedType inherits from targetType through the inheritance chain (multi-level inheritance support)
+    /// </summary>
+    static bool InheritsFromType(INamedTypeSymbol derivedType, INamedTypeSymbol targetType)
+    {
+        var current = derivedType.BaseType;
+        while (current is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, targetType))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+        return false;
+    }
+
     private ITypeSymbol? GetProxyType(IEnumerable<AttributeData> attributeDatas)
     {
         if (
@@ -1896,7 +1913,7 @@ public class LightProtoGenerator : ISourceGenerator
                 };
             }
 
-            if (SymbolEqualityComparer.Default.Equals(derivedType.BaseType, targetType) == false)
+            if (InheritsFromType(derivedType, targetType) == false)
             {
                 throw new LightProtoGeneratorException(
                     $"ProtoInclude attribute type {derivedType.ToDisplayString()} does not inherit from {targetType.ToDisplayString()}"
