@@ -179,7 +179,7 @@ public class LightProtoGenerator : ISourceGenerator
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
                   {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
-                      public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader => {{(FindProtoIncludeRoot(targetType) ?? targetType.BaseType).ToDisplayString()}}.{{className}}ProtoReader;
+                      public static new IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader => {{targetType.BaseType}}.{{className}}ProtoReader;
                       public static new IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter => {{targetType.BaseType}}.ProtoWriter;
                       public static IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
                       public static IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
