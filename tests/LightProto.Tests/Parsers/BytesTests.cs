@@ -4,7 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ByteArrayTests : BaseTests<ByteArrayTests.Message, ByteArrayTestsMessage>
+public partial class BytesTests : BaseTests<BytesTests.Message, ByteArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

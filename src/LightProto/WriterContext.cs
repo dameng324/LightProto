@@ -193,51 +193,6 @@ namespace LightProto
         /// <param name="tag">The encoded tag</param>
         public void WriteTag(uint tag) => WritingPrimitives.WriteTag(ref buffer, ref state, tag);
 
-        /// <summary>
-        /// Writes the given single-byte tag.
-        /// </summary>
-        /// <param name="b1">The encoded tag</param>
-        public void WriteRawTag(byte b1) =>
-            WritingPrimitives.WriteRawTag(ref buffer, ref state, b1);
-
-        /// <summary>
-        /// Writes the given two-byte tag.
-        /// </summary>
-        /// <param name="b1">The first byte of the encoded tag</param>
-        /// <param name="b2">The second byte of the encoded tag</param>
-        public void WriteRawTag(byte b1, byte b2) =>
-            WritingPrimitives.WriteRawTag(ref buffer, ref state, b1, b2);
-
-        /// <summary>
-        /// Writes the given three-byte tag.
-        /// </summary>
-        /// <param name="b1">The first byte of the encoded tag</param>
-        /// <param name="b2">The second byte of the encoded tag</param>
-        /// <param name="b3">The third byte of the encoded tag</param>
-        public void WriteRawTag(byte b1, byte b2, byte b3) =>
-            WritingPrimitives.WriteRawTag(ref buffer, ref state, b1, b2, b3);
-
-        /// <summary>
-        /// Writes the given four-byte tag.
-        /// </summary>
-        /// <param name="b1">The first byte of the encoded tag</param>
-        /// <param name="b2">The second byte of the encoded tag</param>
-        /// <param name="b3">The third byte of the encoded tag</param>
-        /// <param name="b4">The fourth byte of the encoded tag</param>
-        public void WriteRawTag(byte b1, byte b2, byte b3, byte b4) =>
-            WritingPrimitives.WriteRawTag(ref buffer, ref state, b1, b2, b3, b4);
-
-        /// <summary>
-        /// Writes the given five-byte tag.
-        /// </summary>
-        /// <param name="b1">The first byte of the encoded tag</param>
-        /// <param name="b2">The second byte of the encoded tag</param>
-        /// <param name="b3">The third byte of the encoded tag</param>
-        /// <param name="b4">The fourth byte of the encoded tag</param>
-        /// <param name="b5">The fifth byte of the encoded tag</param>
-        public void WriteRawTag(byte b1, byte b2, byte b3, byte b4, byte b5) =>
-            WritingPrimitives.WriteRawTag(ref buffer, ref state, b1, b2, b3, b4, b5);
-
         internal void Flush() => WriteBufferHelper.Flush(ref buffer, ref state);
 
         internal void CheckNoSpaceLeft() => WriteBufferHelper.CheckNoSpaceLeft(ref state);

@@ -40,7 +40,8 @@ public static partial class Serializer
 
     public static T ParseFrom<T>(this IProtoReader<T> reader, Stream stream)
     {
-        ReaderContext.Initialize(new CodedInputStream(stream), out var ctx);
+        using var codedStream = new CodedInputStream(stream, leaveOpen: true);
+        ReaderContext.Initialize(codedStream, out var ctx);
         return reader.ParseFrom(ref ctx);
     }
 
@@ -97,6 +98,7 @@ public static partial class Serializer
         using CodedOutputStream output = new CodedOutputStream(buffer);
         WriterContext.Initialize(output, out var ctx);
         writer.WriteTo(ref ctx, message);
+        ctx.Flush();
         return buffer;
     }
 

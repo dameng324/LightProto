@@ -759,48 +759,6 @@ namespace LightProto
         }
 
         /// <summary>
-        /// Reads a varint from the input one byte at a time, so that it does not
-        /// read any bytes after the end of the varint. If you simply wrapped the
-        /// stream in a CodedInputStream and used ReadRawVarint32(Stream)
-        /// then you would probably end up reading past the end of the varint since
-        /// CodedInputStream buffers its input.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static uint ReadRawVarint32(Stream input)
-        {
-            int result = 0;
-            int offset = 0;
-            for (; offset < 32; offset += 7)
-            {
-                int b = input.ReadByte();
-                if (b == -1)
-                {
-                    throw InvalidProtocolBufferException.TruncatedMessage();
-                }
-                result |= (b & 0x7f) << offset;
-                if ((b & 0x80) == 0)
-                {
-                    return (uint)result;
-                }
-            }
-            // Keep reading up to 64 bits.
-            for (; offset < 64; offset += 7)
-            {
-                int b = input.ReadByte();
-                if (b == -1)
-                {
-                    throw InvalidProtocolBufferException.TruncatedMessage();
-                }
-                if ((b & 0x80) == 0)
-                {
-                    return (uint)result;
-                }
-            }
-            throw InvalidProtocolBufferException.MalformedVarint();
-        }
-
-        /// <summary>
         /// Decode a 32-bit value with ZigZag encoding.
         /// </summary>
         /// <remarks>
@@ -888,16 +846,6 @@ namespace LightProto
                 remainingByteLength -= unreadSpan.Length;
                 state.bufferPos += unreadSpan.Length;
             }
-        }
-
-        public static bool IsPackedRepeated<TItem>()
-        {
-            return typeof(TItem) == typeof(int)
-                || typeof(TItem) == typeof(uint)
-                || typeof(TItem) == typeof(long)
-                || typeof(TItem) == typeof(ulong)
-                || typeof(TItem) == typeof(float)
-                || typeof(TItem) == typeof(double);
         }
     }
 }
