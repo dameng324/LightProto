@@ -5,7 +5,7 @@ public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Base>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoInclude(3, typeof(Message))]
-    [ProtoBuf.ProtoContract]
+    [ProtoBuf.ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoInclude(3, typeof(Message))]
     public partial record Base
     {
@@ -15,7 +15,7 @@ public partial class InheritanceTests : BaseProtoBufTests<InheritanceTests.Base>
     }
 
     [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract()]
+    [ProtoBuf.ProtoContract(SkipConstructor = true)]
     public partial record Message : Base
     {
         [ProtoMember(1)]
