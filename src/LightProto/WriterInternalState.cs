@@ -19,9 +19,5 @@ namespace LightProto
         internal int position; // position in the current buffer
 
         internal WriteBufferHelper writeBufferHelper;
-
-        // If non-null, the top level parse method was started with given coded output stream as an argument
-        // which also means we can potentially fallback to calling WriteTo(CodedOutputStream cos) if needed.
-        internal CodedOutputStream? CodedOutputStream => writeBufferHelper.CodedOutputStream;
     }
 }

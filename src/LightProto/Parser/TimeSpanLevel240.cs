@@ -33,23 +33,6 @@ public sealed partial class TimeSpan240ProtoParser
     internal const int MaxNanoseconds = NanosecondsPerSecond - 1;
     internal const int MinNanoseconds = -NanosecondsPerSecond + 1;
 
-    internal static bool IsNormalized(long seconds, int nanoseconds)
-    {
-        // Simple boundaries
-        if (
-            seconds < MinSeconds
-            || seconds > MaxSeconds
-            || nanoseconds < MinNanoseconds
-            || nanoseconds > MaxNanoseconds
-        )
-        {
-            return false;
-        }
-        // We only have a problem is one is strictly negative and the other is
-        // strictly positive.
-        return Math.Sign(seconds) * Math.Sign(nanoseconds) != -1;
-    }
-
     public static implicit operator TimeSpan(TimeSpan240ProtoParser protoParser)
     {
         checked

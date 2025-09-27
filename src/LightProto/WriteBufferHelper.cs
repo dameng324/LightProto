@@ -22,8 +22,6 @@ namespace LightProto
         private IBufferWriter<byte>? bufferWriter;
         private CodedOutputStream? codedOutputStream;
 
-        public CodedOutputStream? CodedOutputStream => codedOutputStream;
-
         /// <summary>
         /// Initialize an instance with a coded output stream.
         /// This approach is faster than using a constructor because the instance to initialize is passed by reference
@@ -66,41 +64,6 @@ namespace LightProto
         {
             instance.bufferWriter = null;
             instance.codedOutputStream = null;
-        }
-
-        /// <summary>
-        /// Verifies that SpaceLeft returns zero.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CheckNoSpaceLeft(ref WriterInternalState state)
-        {
-            if (GetSpaceLeft(ref state) != 0)
-            {
-                throw new InvalidOperationException("Did not write as much data as expected.");
-            }
-        }
-
-        /// <summary>
-        /// If writing to a flat array, returns the space left in the array. Otherwise,
-        /// throws an InvalidOperationException.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetSpaceLeft(ref WriterInternalState state)
-        {
-            if (
-                state.writeBufferHelper.codedOutputStream?.InternalOutputStream == null
-                && state.writeBufferHelper.bufferWriter == null
-            )
-            {
-                return state.limit - state.position;
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "SpaceLeft can only be called on CodedOutputStreams that are "
-                        + "writing to a flat array or when writing to a single span."
-                );
-            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

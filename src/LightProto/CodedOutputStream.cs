@@ -78,23 +78,6 @@ namespace LightProto
         }
 
         /// <summary>
-        /// Creates a new <see cref="CodedOutputStream" /> which write to the given stream, and disposes of that
-        /// stream when the returned <c>CodedOutputStream</c> is disposed.
-        /// </summary>
-        /// <param name="output">The stream to write to. It will be disposed when the returned <c>CodedOutputStream is disposed.</c></param>
-        public CodedOutputStream(Stream output)
-            : this(output, DefaultBufferSize, false) { }
-
-        /// <summary>
-        /// Creates a new CodedOutputStream which write to the given stream and uses
-        /// the specified buffer size.
-        /// </summary>
-        /// <param name="output">The stream to write to. It will be disposed when the returned <c>CodedOutputStream is disposed.</c></param>
-        /// <param name="bufferSize">The size of buffer to use internally.</param>
-        public CodedOutputStream(Stream output, int bufferSize)
-            : this(output, new byte[bufferSize], false) { }
-
-        /// <summary>
         /// Creates a new CodedOutputStream which write to the given stream.
         /// </summary>
         /// <param name="output">The stream to write to.</param>
@@ -114,48 +97,6 @@ namespace LightProto
         public CodedOutputStream(Stream output, int bufferSize, bool leaveOpen)
             : this(output, new byte[bufferSize], leaveOpen) { }
         #endregion
-
-        /// <summary>
-        /// Returns the current position in the stream, or the position in the output buffer
-        /// </summary>
-        public long Position
-        {
-            get
-            {
-                if (output != null)
-                {
-                    return output.Position + state.position;
-                }
-                return state.position;
-            }
-        }
-
-        /// <summary>
-        /// Configures whether or not serialization is deterministic.
-        /// </summary>
-        /// <remarks>
-        /// Deterministic serialization guarantees that for a given binary, equal messages (defined by the
-        /// equals methods in protos) will always be serialized to the same bytes. This implies:
-        /// <list type="bullet">
-        /// <item><description>Repeated serialization of a message will return the same bytes.</description></item>
-        /// <item><description>Different processes of the same binary (which may be executing on different machines)
-        /// will serialize equal messages to the same bytes.</description></item>
-        /// </list>
-        /// Note the deterministic serialization is NOT canonical across languages; it is also unstable
-        /// across different builds with schema changes due to unknown fields. Users who need canonical
-        /// serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
-        /// their own canonicalization specification and implement the serializer using reflection APIs
-        /// rather than relying on this API.
-        /// Once set, the serializer will: (Note this is an implementation detail and may subject to
-        /// change in the future)
-        /// <list type="bullet">
-        /// <item><description>Sort map entries by keys in lexicographical order or numerical order. Note: For string
-        /// keys, the order is based on comparing the UTF-16 code unit value of each character in the strings.
-        /// The order may be different from the deterministic serialization in other languages where
-        /// maps are sorted on the lexicographical order of the UTF8 encoded keys.</description></item>
-        /// </list>
-        /// </remarks>
-        public bool Deterministic { get; set; }
 
         /// <summary>
         /// Indicates that a CodedOutputStream wrapping a flat byte array
@@ -200,23 +141,6 @@ namespace LightProto
             var span = new Span<byte>(buffer);
             WriteBufferHelper.Flush(ref span, ref state);
         }
-
-        /// <summary>
-        /// Verifies that SpaceLeft returns zero. It's common to create a byte array
-        /// that is exactly big enough to hold a message, then write to it with
-        /// a CodedOutputStream. Calling CheckNoSpaceLeft after writing verifies that
-        /// the message was actually as big as expected, which can help finding bugs.
-        /// </summary>
-        public void CheckNoSpaceLeft()
-        {
-            WriteBufferHelper.CheckNoSpaceLeft(ref state);
-        }
-
-        /// <summary>
-        /// If writing to a flat array, returns the space left in the array. Otherwise,
-        /// throws an InvalidOperationException.
-        /// </summary>
-        public int SpaceLeft => WriteBufferHelper.GetSpaceLeft(ref state);
 
         internal byte[] InternalBuffer => buffer;
 
