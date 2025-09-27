@@ -638,20 +638,6 @@ namespace LightProto
         public static void WriteRawBytes(
             ref Span<byte> buffer,
             ref WriterInternalState state,
-            byte[] value,
-            int offset,
-            int length
-        )
-        {
-            WriteRawBytes(ref buffer, ref state, new ReadOnlySpan<byte>(value, offset, length));
-        }
-
-        /// <summary>
-        /// Writes out part of an array of bytes.
-        /// </summary>
-        public static void WriteRawBytes(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
             ReadOnlySpan<byte> value
         )
         {
@@ -690,19 +676,6 @@ namespace LightProto
         #endregion
 
         #region Raw tag writing
-        /// <summary>
-        /// Encodes and writes a tag.
-        /// </summary>
-        public static void WriteTag(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            int fieldNumber,
-            WireFormat.WireType type
-        )
-        {
-            WriteRawVarint32(ref buffer, ref state, WireFormat.MakeTag(fieldNumber, type));
-        }
-
         /// <summary>
         /// Writes an already-encoded tag.
         /// </summary>

@@ -91,8 +91,6 @@ namespace LightProto
 
         public int? TotalLength => totalLength;
 
-        public CodedInputStream? CodedInputStream => codedInputStream;
-
         /// <summary>
         /// Sets currentLimit to (current position) + byteLimit. This is called
         /// when descending into a length-delimited embedded message. The previous

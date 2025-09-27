@@ -37,4 +37,7 @@
       Visible="false"
     />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Parser\MessageWrapper.cs" />
+  </ItemGroup>
 </Project>

@@ -38,24 +38,14 @@ public static partial class Serializer
         writer.WriteTo(ref output, value);
     }
 
-    public static T ParseFrom<T>(this IProtoReader<T> reader, Stream stream)
-    {
-        using var codedStream = new CodedInputStream(stream, leaveOpen: true);
-        ReaderContext.Initialize(codedStream, out var ctx);
-        return reader.ParseFrom(ref ctx);
-    }
+    public static T ParseFrom<T>(this IProtoReader<T> reader, Stream stream) =>
+        Deserialize(stream, reader);
 
-    public static T ParseFrom<T>(this IProtoReader<T> reader, ReadOnlySequence<byte> bytes)
-    {
-        ReaderContext.Initialize(bytes, out var ctx);
-        return reader.ParseFrom(ref ctx);
-    }
+    public static T ParseFrom<T>(this IProtoReader<T> reader, ReadOnlySequence<byte> bytes) =>
+        Deserialize(bytes, reader);
 
-    public static T ParseFrom<T>(this IProtoReader<T> reader, ReadOnlySpan<byte> bytes)
-    {
-        ReaderContext.Initialize(bytes, out var ctx);
-        return reader.ParseFrom(ref ctx);
-    }
+    public static T ParseFrom<T>(this IProtoReader<T> reader, ReadOnlySpan<byte> bytes) =>
+        Deserialize(bytes, reader);
 
     public static T ParseMessageFrom<T>(this IProtoReader<T> reader, ref ReaderContext input)
     {
@@ -103,21 +93,13 @@ public static partial class Serializer
     }
 
     public static byte[] ToByteArray<T>(this T message)
-        where T : IProtoParser<T>
-    {
-        return ToByteArray(message, T.ProtoWriter);
-    }
+        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
 
-    public static byte[] ToByteArray<T>(this ICollection<T> message, IProtoWriter<T> writer)
-    {
-        return ToByteArray(message, writer.GetCollectionWriter());
-    }
+    public static byte[] ToByteArray<T>(this ICollection<T> message, IProtoWriter<T> writer) =>
+        ToByteArray(message, writer.GetCollectionWriter());
 
     public static byte[] ToByteArray<T>(this ICollection<T> message)
-        where T : IProtoParser<T>
-    {
-        return ToByteArray(message, T.ProtoWriter);
-    }
+        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
 
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.

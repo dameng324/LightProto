@@ -42,7 +42,7 @@ public static partial class Serializer
     {
         var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
         ReaderContext.Initialize(source, out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 
     /// <summary>
@@ -116,6 +116,6 @@ public static partial class Serializer
         var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
         using var codedStream = new CodedInputStream(source, leaveOpen: true);
         ReaderContext.Initialize(codedStream, out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 }

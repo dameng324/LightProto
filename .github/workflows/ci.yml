@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   linux-test:
@@ -27,8 +27,16 @@ jobs:
         run: dotnet tool restore && dotnet tool run csharpier check .
         
       - name: Run tests
-        run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false 
 
+      - name: Collect Code Coverage
+        run: dotnet run -f net9.0 -c Release --project tests/LightProto.Tests/ -p:PublishAot=false -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+        
+      - name: Upload coverage reports to Codecov        
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          
       - name: Run AOT tests
         run: |
           dotnet publish tests/LightProto.Tests/ -f net8.0 -r linux-x64 -c Release

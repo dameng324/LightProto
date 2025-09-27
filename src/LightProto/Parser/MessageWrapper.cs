@@ -16,7 +16,13 @@ struct MessageWrapper<T>
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         private IProtoWriter<T> ItemWriter;
 
-        public ProtoWriter(uint tag, IProtoWriter<T> itemWriter)
+        public static ProtoWriter From(IProtoWriter<T> itemWriter, int fieldNumber = 1)
+        {
+            uint tag = WireFormat.MakeTag(fieldNumber, itemWriter.WireType);
+            return new ProtoWriter(tag, itemWriter);
+        }
+
+        ProtoWriter(uint tag, IProtoWriter<T> itemWriter)
         {
             this.tag = tag;
             ItemWriter = itemWriter;
@@ -49,7 +55,13 @@ struct MessageWrapper<T>
         public uint Tag { get; }
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
 
-        public ProtoReader(uint tag, IProtoReader<T> itemReader)
+        public static ProtoReader From(IProtoReader<T> itemWriter, int fieldNumber = 1)
+        {
+            uint tag = WireFormat.MakeTag(fieldNumber, itemWriter.WireType);
+            return new ProtoReader(tag, itemWriter);
+        }
+
+        ProtoReader(uint tag, IProtoReader<T> itemReader)
         {
             Tag = tag;
             ItemReader = itemReader;
