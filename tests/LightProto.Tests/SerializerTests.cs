@@ -74,7 +74,7 @@ public partial class SerializerTests
         }
     }
 
-    ReadOnlySequence<byte> GetReadonlySequence(byte[][] bytesArray)
+    public static ReadOnlySequence<byte> GetReadonlySequence(byte[][] bytesArray)
     {
         var firstBufferSegment = new BufferSegment(bytesArray[0]);
         BufferSegment lastBufferSegment = firstBufferSegment;

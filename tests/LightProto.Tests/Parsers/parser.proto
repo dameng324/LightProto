@@ -58,6 +58,10 @@ message ListPackedTestsMessage
 {
   repeated int32 Property = 1;
 }
+message FixedSizeArrayTestsMessage
+{
+  repeated sfixed32 Property = 1;
+}
 message ListUnPackedTestsMessage
 {
   repeated int32 Property = 1 [packed = false];

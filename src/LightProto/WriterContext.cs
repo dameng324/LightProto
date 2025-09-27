@@ -194,17 +194,5 @@ namespace LightProto
         public void WriteTag(uint tag) => WritingPrimitives.WriteTag(ref buffer, ref state, tag);
 
         internal void Flush() => WriteBufferHelper.Flush(ref buffer, ref state);
-
-        internal void CheckNoSpaceLeft() => WriteBufferHelper.CheckNoSpaceLeft(ref state);
-
-        internal void CopyStateTo(CodedOutputStream output)
-        {
-            output.InternalState = state;
-        }
-
-        internal void LoadStateFrom(CodedOutputStream output)
-        {
-            state = output.InternalState;
-        }
     }
 }

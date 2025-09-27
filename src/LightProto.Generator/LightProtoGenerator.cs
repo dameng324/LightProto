@@ -577,50 +577,6 @@ public class LightProtoGenerator : ISourceGenerator
                   }
                   """
             );
-
-            string GenSkipConstructor()
-            {
-                return $$"""
-                     var parsed = ({{className}})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({{className}}));
-                     {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                         protoMembers.Select(member => {
-                             if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                             {
-                                 throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                             }
-                             else if (member.IsInitOnly)
-                             {
-                                 throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                             }
-                             else
-                             {
-                                 return $"parsed.{member.Name} = _{member.Name};";
-                             }
-                         }))
-                     }}
-                     """;
-            }
-
-            string GenGeneralConstructor()
-            {
-                return $$"""
-                 var parsed = new {{className}}()
-                 {
-                     {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                         protoMembers.Select(member => {
-                             if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                             {
-                                 return $"// {member.Name} is readonly";
-                             }
-                             else
-                             {
-                                 return $"{member.Name} = _{member.Name},";
-                             }
-                         }))
-                     }}
-                 };
-                 """;
-            }
         }
         else
         {

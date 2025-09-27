@@ -25,6 +25,7 @@
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <InternalsVisibleTo Include="LightProto.Tests" />
     <ProjectReference
       Include="..\LightProto.Generator\LightProto.Generator.csproj"
       OutputItemType="Analyzer"

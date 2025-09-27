@@ -291,16 +291,5 @@ namespace LightProto
             }
             return 10;
         }
-
-        /// <summary>
-        /// Computes the number of bytes that would be needed to encode a tag.
-        /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public static int ComputeTagSize(int fieldNumber)
-        {
-            return ComputeRawVarint32Size(WireFormat.MakeTag(fieldNumber, 0));
-        }
     }
 }

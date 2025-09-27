@@ -39,6 +39,42 @@ public abstract class BaseTests<
 }
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
+[InheritsTests]
+public abstract class BaseGoogleProtobufTests<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message,
+    GoogleProtobufMessage
+>
+    where Message : IProtoParser<Message>
+    where GoogleProtobufMessage : IMessage<GoogleProtobufMessage>, new()
+{
+    public abstract IEnumerable<GoogleProtobufMessage> GetGoogleMessages();
+
+    public abstract IEnumerable<Message> GetMessages();
+    public abstract Task AssertGoogleResult(GoogleProtobufMessage clone, Message message);
+
+    [Test]
+    [MethodDataSource(nameof(GetGoogleMessages))]
+    public async Task GoogleProto_Serialize_LightProto_Deserialize(GoogleProtobufMessage google)
+    {
+        var bytes = google.ToByteArray();
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
+        var clone = Serializer.Deserialize<Message>(bytes);
+        await AssertGoogleResult(google, clone);
+    }
+
+    [Test]
+    [MethodDataSource(nameof(GetMessages))]
+    public async Task LightProto_Serialize_GoogleProto_Deserialize(Message message)
+    {
+        byte[] bytes = message.ToByteArray();
+        TestContext.Current!.WriteLine($"bytes: {string.Join(",", bytes)}");
+        var googleClone = new GoogleProtobufMessage();
+        googleClone.MergeFrom(bytes);
+        await AssertGoogleResult(googleClone, message);
+    }
+}
+
+[SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
 public abstract class BaseProtoBufTests<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message
 >
