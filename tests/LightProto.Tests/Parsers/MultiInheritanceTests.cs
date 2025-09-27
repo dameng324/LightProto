@@ -47,6 +47,14 @@ public partial class MultiInheritanceTests : BaseProtoBufTests<MultiInheritanceT
 
     public override IEnumerable<Base> GetMessages()
     {
+        yield return new Base { BaseValue = "base" };
+        yield return new Base2 { BaseValue = "base", Base2Value = "base2" };
+        yield return new Base3
+        {
+            BaseValue = "base",
+            Base2Value = "base2",
+            Base3Value = "base3",
+        };
         yield return new Base4
         {
             BaseValue = "base",
@@ -59,8 +67,27 @@ public partial class MultiInheritanceTests : BaseProtoBufTests<MultiInheritanceT
     public override async Task AssertResult(Base clone, Base message)
     {
         await Assert.That(clone.BaseValue).IsEqualTo(message.BaseValue);
-        await Assert.That(clone is Base4).IsTrue();
-        await Assert.That(message is Base4).IsTrue();
-        await Assert.That((clone as Base4)!.Base4Value).IsEqualTo((message as Base4)!.Base4Value);
+        await Assert.That(clone.GetType() == message.GetType()).IsTrue();
+
+        if (clone is Base4)
+        {
+            await Assert
+                .That((clone as Base4)!.Base4Value)
+                .IsEqualTo((message as Base4)!.Base4Value);
+        }
+
+        if (clone is Base3)
+        {
+            await Assert
+                .That((clone as Base3)!.Base3Value)
+                .IsEqualTo((message as Base3)!.Base3Value);
+        }
+
+        if (clone is Base2)
+        {
+            await Assert
+                .That((clone as Base2)!.Base2Value)
+                .IsEqualTo((message as Base2)!.Base2Value);
+        }
     }
 }

@@ -197,36 +197,38 @@ public class LightProtoGenerator : ISourceGenerator
                   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
                   {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
                   {
-                      public static IProtoReader<{{proxyFor?.ToDisplayString() ?? className}}> ProtoReader {get;} = new LightProtoReader();
+                      public static new IProtoReader<{{proxyFor?.ToDisplayString() ?? className}}> ProtoReader {get;} = new LightProtoReader();
                       {{
                           Invoke(baseType is null, 
                               () => $"public static IProtoWriter<{proxyFor?.ToDisplayString() ?? className}> ProtoWriter {{get;}} = new LightProtoWriter();", 
-                              () => $"public static IProtoWriter<{proxyFor?.ToDisplayString()??className}> ProtoWriter => {targetType.BaseType}.ProtoWriter;")
+                              () => $"public static new IProtoWriter<{proxyFor?.ToDisplayString()??className}> ProtoWriter => {targetType.BaseType}.ProtoWriter;")
                       }}
-                      public static IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
-                      public static IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
+                      public static new IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
+                      public static new IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
                       
                       {{
                           Invoke(baseType is null, 
                               () => {
-                                  return string.Join(Environment.NewLine, Gen());
+                                  return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"public sealed class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}> {{";
-                                      yield return "public bool IsMessage => true;";
-                                      yield return "public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
-                                      yield return $"public {proxyFor?.ToDisplayString() ?? className} ParseFrom(ref ReaderContext input)=>MemberStructReader.ParseFrom(ref input).ToMessage();";
+                                      yield return $"public sealed class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return "{";
+                                      yield return "    public bool IsMessage => true;";
+                                      yield return "    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
+                                      yield return $"    public {proxyFor?.ToDisplayString() ?? className} ParseFrom(ref ReaderContext input)=>MemberStructReader.ParseFrom(ref input).ToMessage();";
                                       yield return "}";
                                   }
                               }, 
                               () => {
-                                  return string.Join(Environment.NewLine, Gen());
+                                  return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"public sealed class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}> {{";
-                                      yield return "public bool IsMessage => true;";
-                                      yield return "public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
-                                      yield return $"public {proxyFor?.ToDisplayString() ?? className} ParseFrom(ref ReaderContext input)=>({proxyFor?.ToDisplayString() ?? className}){baseType}.ProtoReader.ParseFrom(ref input);";
+                                      yield return $"public sealed new class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return "{";
+                                      yield return "    public bool IsMessage => true;";
+                                      yield return "    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
+                                      yield return $"    public {proxyFor?.ToDisplayString() ?? className} ParseFrom(ref ReaderContext input)=>({proxyFor?.ToDisplayString() ?? className}){baseType}.ProtoReader.ParseFrom(ref input);";
                                       yield return "}";
                                   }
                               })
@@ -235,7 +237,7 @@ public class LightProtoGenerator : ISourceGenerator
                       {{
                           Invoke(baseType is null, 
                               () => {
-                                  return string.Join(Environment.NewLine, Gen());
+                                  return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
                                       yield return $"public sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
@@ -252,7 +254,7 @@ public class LightProtoGenerator : ISourceGenerator
                               })
                       }}
                       
-                      public struct MemberStruct
+                      public new struct MemberStruct
                       {
                           {{string.Join(Environment.NewLine + GetIntendedSpace(1),
                               protoMembers.Select(member => $"public {member.Type} {member.Name};"))
@@ -278,39 +280,43 @@ public class LightProtoGenerator : ISourceGenerator
                           {{
                               Invoke(baseType is null,
                                   () => {
-                                      return $$"""
-                                             public {{className}} ToMessage()
-                                             {
-                                                 {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  derivedTypes.Select(member => $"if({member.Contract.Type.Name}_MemberStruct.HasValue) return {member.Contract.Type}.MemberStruct.ToMessage(this,{member.Contract.Type.Name}_MemberStruct.Value);"))
-                              }}
-                                             
-                                                 var parsed = new {{className}}
-                                                 {
-                                                     {{string.Join("," + Environment.NewLine + GetIntendedSpace(3),
-                                              protoMembers.Select(member => $"{member.Name}={member.Name}"))
-                                          }}
-                                                 };
-                                                 return parsed;
-                                             }
-                                             """;
+                                      return string.Join(Environment.NewLine+GetIntendedSpace(2), Gen());
+
+                                      IEnumerable<string> Gen()
+                                      {
+                                          yield return $"public {className} ToMessage()";
+                                            yield return "{";
+                                            foreach (var member in derivedTypes)
+                                            {
+                                                yield return $"    if({member.Contract.Type.Name}_MemberStruct.HasValue) return {member.Contract.Type}.MemberStruct.ToMessage(this,{member.Contract.Type.Name}_MemberStruct.Value);";
+                                            }
+                                            yield return $"    var parsed = new {className}()";
+                                            yield return "    {";
+                                            foreach (var member in protoMembers)
+                                            {
+                                                yield return $"        {member.Name}={member.Name},";
+                                            }
+                                            yield return "    };";
+                                            yield return "    return parsed;";
+                                            yield return "}";
+                                      }
                                   }, 
                                   () => {
-                                      return string.Join(Environment.NewLine, Gen());
+                                      return string.Join(Environment.NewLine+GetIntendedSpace(2), Gen());
                                       IEnumerable<string> Gen()
                                       {
                                           var rootBaseType = GetRootProtoBaseClass(baseType!);
-                                          yield return $"public static {className} ToMessage(in {rootBaseType}.MemberStruct rootMemberStruct,MemberStruct memberStruct)";
+                                          yield return $"public static {className} ToMessage(in {rootBaseType}.MemberStruct rootMemberStruct,in MemberStruct memberStruct)";
                                           yield return "{";
                                           foreach (var member in derivedTypes)
                                           {
-                                              yield return $"if(memberStruct.{member.Contract.Type.Name}_MemberStruct.HasValue) return {member.Contract.Type}.MemberStruct.ToMessage(rootMemberStruct,memberStruct.{member.Contract.Type.Name}_MemberStruct.Value);";
+                                              yield return $"    if(memberStruct.{member.Contract.Type.Name}_MemberStruct.HasValue) return {member.Contract.Type}.MemberStruct.ToMessage(rootMemberStruct,memberStruct.{member.Contract.Type.Name}_MemberStruct.Value);";
                                           }
-                                          yield return $"var parsed = new {className}()";
-                                          yield return "{";
+                                          yield return $"    var parsed = new {className}()";
+                                          yield return "    {";
                                           foreach(var member in protoMembers)
                                           {
-                                              yield return $"    {member.Name}=memberStruct.{member.Name},";
+                                              yield return $"        {member.Name}=memberStruct.{member.Name},";
                                           }
 
                                           var currentBaseType = baseType;
@@ -339,18 +345,18 @@ public class LightProtoGenerator : ISourceGenerator
                                               var baseProtoMembers = GetProtoContract(compilation, derivedType)!.Members;
                                               foreach(var member in baseProtoMembers)
                                               {
-                                                  yield return $"    {member.Name}={memberStructName}.{member.Name},";
+                                                  yield return $"        {member.Name}={memberStructName}.{member.Name},";
                                               }
                                           }
 
-                                          yield return "};";
-                                          yield return "return parsed;";
+                                          yield return "    };";
+                                          yield return "    return parsed;";
                                           yield return "}";
                                       }
                                   })
                           }}
                       }
-                      public sealed class MemberStructLightProtoWriter:IProtoWriter<MemberStruct>
+                      public sealed new class MemberStructLightProtoWriter:IProtoWriter<MemberStruct>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -444,7 +450,7 @@ public class LightProtoGenerator : ISourceGenerator
                           }
                       }
                       
-                      public sealed class MemberStructLightProtoReader:IProtoReader<MemberStruct>
+                      public sealed new class MemberStructLightProtoReader:IProtoReader<MemberStruct>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -532,7 +538,7 @@ public class LightProtoGenerator : ISourceGenerator
                                          }
                                      }))
                                  }}
-                                 {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                                 {{string.Join(Environment.NewLine + GetIntendedSpace(4),
                                      derivedTypes.Select(member => $"{member.Contract.Type.Name}_MemberStruct = _{member.Contract.Type.Name}_memberStruct,"))
                                  }}
                               };
@@ -585,233 +591,7 @@ public class LightProtoGenerator : ISourceGenerator
                   {
                       public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader {get; } = new LightProtoReader();
                       public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter {get; } = new LightProtoWriter();
-                      {{
-                          string.Join(Environment.NewLine+GetIntendedSpace(1),
-                              contract.DerivedTypeContracts.Select(t=>$$"""
-                              public static IProtoReader<{{t.Contract.Type.ToDisplayString()}}> {{t.Contract.Type.Name}}ProtoReader {get; } = new {{className}}_{{t.Contract.Type.Name}}LightProtoReader();
-                              public sealed class {{className}}_{{t.Contract.Type.Name}}LightProtoReader:IProtoReader<{{t.Contract.Type}}>
-                              {
-                                  public bool IsMessage => true;
-                                  public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-                                  {{string.Join(Environment.NewLine + GetIntendedSpace(2),
-                                      protoMembers.SelectMany(member => {
-                                          if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
-                                          {
-                                              return GetProtoParserMember(compilation, member, "Reader", targetType);
-                                          }
-                                          else
-                                          {
-                                              return [];
-                                          }
-                                      }))
-                                  }}
-                                  public {{t.Contract.Type}} ParseFrom(ref ReaderContext input)
-                                  {
-                                      {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                          protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
-                                      }}
-                                      {{t.Contract.Type}}.MemberStruct? _{{t.Contract.Type.Name}}_memberStruct = null;
-                                      uint tag;
-                                      while ((tag = input.ReadTag()) != 0) 
-                                      {
-                                          if ((tag & 7) == 4) {
-                                            break;
-                                          }
-                                          switch(tag) 
-                                          {
-                                              default:
-                                              break;
-                                              {{
-                                                  string.Join(Environment.NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
-                                                  {
-                                                      return Gen();
 
-                                                      IEnumerable<string> Gen()
-                                                      {
-                                                          yield return $"case {member.RawTag}:";
-                                                          if (IsCollectionType(compilation, member.Type))
-                                                          {
-                                                              var elementType = GetElementType(compilation, member.Type);
-                                                              var tag2 = ProtoMember.GetRawTag(member.FieldNumber, ProtoMember.GetPbWireType(compilation, elementType, member.DataFormat));
-                                                              if (tag2 != member.RawTag)
-                                                              {
-                                                                  yield return $"case {tag2}:";
-                                                              }
-                                                          }
-
-                                                          if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
-                                                          {
-                                                              yield return $"{{";
-                                                              yield return $"    _{member.Name} = input.Read{name}();";
-                                                              yield return $"    break;";
-                                                              yield return $"}}";
-                                                          }
-                                                          else if (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type))
-                                                          {
-                                                              yield return $"{{";
-                                                              yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
-                                                              yield return $"    break;";
-                                                              yield return $"}}";
-                                                          }
-                                                          else
-                                                          {
-                                                              yield return $"{{";
-                                                              yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
-                                                              yield return $"    break;";
-                                                              yield return $"}}";
-                                                          }
-                                                      }
-                                                  }))
-                                              }}
-                                              case {{t.RawTag}}:
-                                              {
-                                                  _{{t.Contract.Type.Name}}_memberStruct = {{t.Contract.Type}}.MemberStructReader.ParseMessageFrom(ref input);
-                                                  break;
-                                              }
-                                          }
-                                      }
-                                      {{
-                                          string.Join(Environment.NewLine+GetIntendedSpace(2), Enumerable.Repeat(1,1).SelectMany(_ => 
-                                          {
-                                              if (t.Contract.SkipConstructor)
-                                              {
-                                                  return Gen();
-
-                                                  IEnumerable<string> Gen()
-                                                  {
-                                                      yield return $"var parsed = ({t.Contract.Type})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({t.Contract.Type}));";
-                                                      foreach (var member in protoMembers)
-                                                      {
-                                                          if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                          {
-                                                              throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                          }
-                                                          else if (member.IsInitOnly)
-                                                          {
-                                                              throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                          }
-                                                          else
-                                                          {
-                                                             yield return  $"parsed.{member.Name} = _{member.Name};";
-                                                          }
-                                                      }
-                                                      foreach (var member in t.Contract.Members)
-                                                      {
-                                                          if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                          {
-                                                              throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                          }
-                                                          else if (member.IsInitOnly)
-                                                          {
-                                                              throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                          }
-                                                          else
-                                                          {
-                                                              yield return  $"parsed.{member.Name} = _{t.Contract.Type.Name}_memberStruct?.{member.Name};";
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                              else
-                                              {
-                                                  return Gen();
-
-                                                  IEnumerable<string> Gen()
-                                                  {
-                                                      yield return $"var parsed = new {t.Contract.Type}()";
-                                                      foreach (var member in protoMembers)
-                                                      {
-                                                          if (member.IsReadOnly && (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type)))
-                                                          {
-                                                              yield return $"        // {member.Name} is readonly";
-                                                          }
-                                                          else 
-                                                          {
-                                                              yield return $"        {member.Name} = _{member.Name},";
-                                                          }
-                                                      }
-                                                      foreach (var member in t.Contract.Members)
-                                                      {
-                                                          if (member.IsReadOnly && (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type)))
-                                                          {
-                                                              yield return $"        // {member.Name} is readonly";
-                                                          }
-                                                          else 
-                                                          {
-                                                              yield return $"        {member.Name} = _{member.Name},";
-                                                          }
-                                                      }
-                                                  }
-                                              }
-                                          }))
-                                      }}
-                                      
-                                      {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                                          protoMembers.SelectMany(member => {
-                                              return Gen();
-                                              IEnumerable<string> Gen()
-                                              {   
-                                                  if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                  {
-                                                      yield return $"if(parsed.{member.Name}!=null) {{";
-                                                      yield return $"    parsed.{member.Name}.Clear();";
-                                                      yield return $"    if(_{member.Name}!=null) {{";
-                                                      if(IsStackType(member.Type))
-                                                          yield return $"        foreach(var v in _{member.Name}.Reverse()) {{";
-                                                      else 
-                                                          yield return $"        foreach(var v in _{member.Name}) {{";
-                                                      if(IsStackType(member.Type))
-                                                          yield return $"            parsed.{member.Name}.Push(v);";
-                                                      else if(IsQueueType(member.Type))
-                                                          yield return $"            parsed.{member.Name}.Enqueue(v);";
-                                                      else if(IsDictionaryType(compilation, member.Type))
-                                                          yield return $"            parsed.{member.Name}[v.Key]=v.Value;";
-                                                      else 
-                                                          yield return $"            parsed.{member.Name}.Add(v);";
-                                                      yield return $"        }}";
-                                                      yield return $"    }}";
-                                                      yield return $"}}";
-                                                  }
-                                              }
-                                          }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
-                                      }}
-                                      
-                                      {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                                          t.Contract.Members.SelectMany(member => {
-                                              return Gen();
-                                              IEnumerable<string> Gen()
-                                              {   
-                                                  if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                  {
-                                                      yield return $"if(parsed.{member.Name}!=null) {{";
-                                                      yield return $"    parsed.{member.Name}.Clear();";
-                                                      yield return $"    if(_{t.Contract.Type.Name}_memberStruct.HasValue && _{t.Contract.Type.Name}_memberStruct.Value.{member.Name}!=null) {{";
-                                                      if(IsStackType(member.Type))
-                                                          yield return $"        foreach(var v in _{t.Contract.Type.Name}_memberStruct.Value.{member.Name}.Reverse()) {{";
-                                                      else 
-                                                          yield return $"        foreach(var v in _{t.Contract.Type.Name}_memberStruct.Value.{member.Name}) {{";
-                                                      if(IsStackType(member.Type))
-                                                          yield return $"            parsed.{member.Name}.Push(v);";
-                                                      else if(IsQueueType(member.Type))
-                                                          yield return $"            parsed.{member.Name}.Enqueue(v);";
-                                                      else if(IsDictionaryType(compilation, member.Type))
-                                                          yield return $"            parsed.{member.Name}[v.Key]=v.Value;";
-                                                      else 
-                                                          yield return $"            parsed.{member.Name}.Add(v);";
-                                                      yield return $"        }}";
-                                                      yield return $"    }}";
-                                                      yield return $"}}";
-                                                  }
-                                              }
-                                          }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
-                                      }}
-                                      return parsed;
-                                  }
-                              }
-                              """)
-                          )
-                      }}
-                      
                       public sealed class LightProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
                       {
                           public bool IsMessage => true;
@@ -866,24 +646,6 @@ public class LightProtoGenerator : ISourceGenerator
                                       }
                                   }))
                               }}
-                              {{
-                                  string.Join(Environment.NewLine+GetIntendedSpace(3),
-                                      contract.DerivedTypeContracts.SelectMany(t=> {
-                                          return Gen();
-
-                                          IEnumerable<string> Gen()
-                                          {
-                                              yield return $"if(message is {t.Contract.Type.ToDisplayString()} inherited_{t.Contract.Type.Name})";
-                                              yield return $"{{";
-                                              yield return $"    output.WriteTag({t.RawTag});";
-                                              yield return $"    var memberStruct = {t.Contract.Type}.MemberStruct.FromMessage(inherited_{t.Contract.Type.Name});";
-                                              yield return $"    {t.Contract.Type}.MemberStructWriter.WriteMessageTo(ref output, memberStruct);";
-                                              yield return $"}}";
-                                              
-                                          }
-                                      })
-                                  )
-                              }}
                           }
                           
                           public int CalculateSize({{proxyFor?.ToDisplayString()??className}} value) {
@@ -916,24 +678,6 @@ public class LightProtoGenerator : ISourceGenerator
                                       }
                                   }))
                               }}
-                              {{
-                                  string.Join(Environment.NewLine+GetIntendedSpace(3),
-                                      contract.DerivedTypeContracts.SelectMany(t=> {
-                                          return Gen();
-
-                                          IEnumerable<string> Gen()
-                                          {
-                                              var tagSize = ProtoMember.GetRawTagSize(t.RawTag);
-                                              yield return $"if(message is {t.Contract.Type.ToDisplayString()} inherited_{t.Contract.Type.Name})";
-                                              yield return $"{{";
-                                              yield return $"    var memberStruct = {t.Contract.Type}.MemberStruct.FromMessage(inherited_{t.Contract.Type.Name});";
-                                              yield return $"    size+= {tagSize} + {t.Contract.Type}.MemberStructWriter.CalculateMessageSize(memberStruct);";
-                                              yield return $"}}";
-                                              
-                                          }
-                                      })
-                                  )
-                              }}
                               return size;
                           }
                       }
@@ -958,18 +702,6 @@ public class LightProtoGenerator : ISourceGenerator
                           {
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                                   protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
-                              }}
-                              {{
-                                  string.Join(Environment.NewLine+GetIntendedSpace(1),
-                                      contract.DerivedTypeContracts.SelectMany(t=> {
-                                          return Gen();
-
-                                          IEnumerable<string> Gen()
-                                          {
-                                              yield return $"{t.Contract.Type}.MemberStruct? _{t.Contract.Type.Name}_memberStruct = null;";
-                                          }
-                                      })
-                                  )
                               }}
                               uint tag;
                               while ((tag = input.ReadTag()) != 0) 
@@ -1022,90 +754,8 @@ public class LightProtoGenerator : ISourceGenerator
                                               }
                                           }))
                                       }}
-                                      {{
-                                          string.Join(Environment.NewLine+GetIntendedSpace(5),
-                                              contract.DerivedTypeContracts.SelectMany(t=> {
-                                                  return Gen();
-
-                                                  IEnumerable<string> Gen()
-                                                  {
-                                                      yield return $"case {t.RawTag}:";
-                                                      yield return $"{{";
-                                                      yield return $"    _{t.Contract.Type.Name}_memberStruct = {t.Contract.Type}.MemberStructReader.ParseMessageFrom(ref input);";
-                                                      yield return $"    break;";
-                                                      yield return $"}}";
-                                                  }
-                                              })
-                                          )
-                                      }}
                                   }
                               }
-                              {{
-                                  string.Join(Environment.NewLine+GetIntendedSpace(3),
-                                      contract.DerivedTypeContracts.SelectMany(t=> {
-                                          return Gen();
-                                          IEnumerable<string> Gen()
-                                          {
-                                              yield return $"if (_{t.Contract.Type.Name}_memberStruct != null)";
-                                              yield return $"{{";
-                                              if (t.Contract.SkipConstructor)
-                                              {
-                                                  yield return $"    var parsed = ({t.Contract.Type})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({t.Contract.Type}));";
-                                                  foreach (var member in protoMembers)
-                                                  {
-                                                      if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                      {
-                                                          throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                      }
-                                                      else if (member.IsInitOnly)
-                                                      {
-                                                          throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                      }
-                                                      else
-                                                          yield return  $"    parsed.{member.Name} = _{member.Name};";
-                                                  }
-                                                  foreach (var member in t.Contract.Members)
-                                                  {
-                                                      if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                      {
-                                                          throw new LightProtoGeneratorException("Member should not be readonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_002", Title = $"{member.Name} is readonly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                      }
-                                                      else if (member.IsInitOnly)
-                                                      {
-                                                          throw new LightProtoGeneratorException("Member should not be initonly when SkipConstructor as we can't assign a value to it") { Id = "LIGHT_PROTO_001", Title = $"{member.Name} is InitOnly", Category = "Usage", Severity = DiagnosticSeverity.Error, Location = member.DeclarationSyntax.GetLocation() };
-                                                      }
-                                                      else
-                                                          yield return  $"    parsed.{member.Name} = _{t.Contract.Type.Name}_memberStruct.Value.{member.Name};";
-                                                  }
-
-                                                  yield return "    return parsed;";
-                                              }
-                                              else
-                                              {
-                                                  yield return $"    return new {t.Contract.Type}";
-                                                  yield return $"    {{";
-                                                  foreach (var member in protoMembers)
-                                                  {
-                                                      if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                          yield return  $"        // {member.Name} is readonly";
-                                                      else
-                                                          yield return  $"        {member.Name} = _{member.Name},";
-                                                  }
-                                                  foreach (var member in t.Contract.Members)
-                                                  {
-                                                      if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                                          yield return  $"        // {member.Name} is readonly";
-                                                      else
-                                                          yield return  $"        {member.Name} = _{t.Contract.Type.Name}_memberStruct.Value.{member.Name},";
-                                                  }
-                                                  yield return $"    }};";
-                                              }
-                                              yield return $"}}";
-                                              yield return $"else ";
-                                          }
-                                      })
-                                  )
-                              }}
                               {
                                   {{
                                       (skipConstructor
