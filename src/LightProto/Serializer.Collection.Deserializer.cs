@@ -42,7 +42,7 @@ public static partial class Serializer
     {
         var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
         ReaderContext.Initialize(source, out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public static partial class Serializer
                 return collectionReader.ParseFrom(ref ctx);
             }
         }
-        throw new InvalidDataException("No data found to deserialize the dictionary.");
+        throw new InvalidDataException("No data found to deserialize the collection.");
     }
 
     internal static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
@@ -114,7 +114,8 @@ public static partial class Serializer
         where TCollection : ICollection<TItem>, new()
     {
         var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
-        ReaderContext.Initialize(new CodedInputStream(source), out var ctx);
-        return collectionReader.ParseFrom(ref ctx);
+        using var codedStream = new CodedInputStream(source, leaveOpen: true);
+        ReaderContext.Initialize(codedStream, out var ctx);
+        return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 }

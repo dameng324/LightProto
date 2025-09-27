@@ -36,9 +36,10 @@ public static partial class Serializer
 
     public static void Serialize<T>(Stream destination, T instance, IProtoWriter<T> writer)
     {
-        using var codedOutputStream = new CodedOutputStream(destination);
+        using var codedOutputStream = new CodedOutputStream(destination, leaveOpen: true);
         WriterContext.Initialize(codedOutputStream, out var ctx);
         writer.WriteTo(ref ctx, instance);
+        ctx.Flush();
     }
 
     public static T DeepClone<T>(T message)
@@ -60,6 +61,7 @@ public static partial class Serializer
             }
             WriterContext.Initialize(ref buffer, out var ctx);
             T.ProtoWriter.WriteTo(ref ctx, message);
+            ctx.Flush();
             return Deserialize<T>(buffer);
         }
     }

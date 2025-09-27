@@ -89,7 +89,8 @@ public static partial class Serializer
             keyReader,
             valueReader
         );
-        ReaderContext.Initialize(new CodedInputStream(source), out var ctx);
+        using var codedStream = new CodedInputStream(source, leaveOpen: true);
+        ReaderContext.Initialize(codedStream, out var ctx);
         return ReadCollectionFromContext(ref ctx, collectionReader);
     }
 }

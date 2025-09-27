@@ -33,6 +33,7 @@ public static partial class Serializer
         var collectionWriter = GetCollectionWriter<T>(writer);
         WriterContext.Initialize(destination, out var ctx);
         collectionWriter.WriteTo(ref ctx, instance);
+        ctx.Flush();
     }
 
     internal static IProtoWriter<ICollection<T>> GetCollectionWriter<T>(
@@ -59,8 +60,9 @@ public static partial class Serializer
     )
     {
         var protoWriter = GetCollectionWriter<T>(writer);
-        using var codedOutputStream = new CodedOutputStream(destination);
+        using var codedOutputStream = new CodedOutputStream(destination, leaveOpen: true);
         WriterContext.Initialize(codedOutputStream, out var ctx);
         protoWriter.WriteTo(ref ctx, instance);
+        ctx.Flush();
     }
 }

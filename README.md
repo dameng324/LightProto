@@ -1,6 +1,7 @@
 # LightProto
 
 [![NuGet](https://img.shields.io/nuget/v/LightProto.svg)](https://www.nuget.org/packages/LightProto/)
+![Build](https://github.com/dameng324/LightProto/actions/workflows/ci.yml/badge.svg)
 [![License](https://img.shields.io/github/license/dameng324/LightProto.svg)](LICENSE)
 
 A high‑performance, Native AOT–friendly Protocol Buffers implementation for C#/.NET. LightProto focuses on protobuf-net compatibility, zero runtime reflection, and ahead-of-time compilation.

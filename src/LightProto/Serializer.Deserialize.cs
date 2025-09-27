@@ -48,7 +48,8 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(Stream source, IProtoReader<T> reader)
     {
-        ReaderContext.Initialize(new CodedInputStream(source), out var ctx);
+        using var codedStream = new CodedInputStream(source, leaveOpen: true);
+        ReaderContext.Initialize(codedStream, out var ctx);
         return reader.ParseFrom(ref ctx);
     }
 }

@@ -19,6 +19,7 @@ public static partial class Serializer
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
         WriterContext.Initialize(destination, out var ctx);
         collectionWriter.WriteTo(ref ctx, instance);
+        ctx.Flush();
     }
 
     public static void SerializeTo<TKey, TValue>(
@@ -52,10 +53,11 @@ public static partial class Serializer
     )
         where TKey : notnull
     {
-        using var output = new CodedOutputStream(destination);
+        using var output = new CodedOutputStream(destination, leaveOpen: true);
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
         WriterContext.Initialize(output, out var ctx);
         collectionWriter.WriteTo(ref ctx, instance);
+        ctx.Flush();
     }
 
     public static void SerializeTo<TKey, TValue>(

@@ -81,6 +81,10 @@ message MapTestsMessage
 {
   map<int32, string> Property = 1;
 }
+message ProtoMapAttributeTestsMessage
+{
+  map<sint32, sfixed64> Property = 1;
+}
 message Map2TestsMessage
 {
   repeated Int32NestMapMessage Property = 1;
@@ -121,4 +125,35 @@ message InheritanceTestsMessage
 message NullableIntTestsMessage
 {
   int32 Property = 1;
+}
+message PrimitiveTestMessage {
+  bool BooleanValue = 1;
+  double DoubleValue = 2;
+  int32 Int32Value = 3;
+  sfixed32 SFixed32Value = 4;
+  fixed32 Fixed32Value = 5;
+  sfixed64 SFixed64Value = 6;
+  fixed64 Fixed64Value = 7;
+  int64 Int64Value = 8;
+  sint64 SInt64Value = 9;
+  sint32 SInt32Value = 10;
+  float SingleValue = 11;
+  uint64 UInt64Value = 12;
+  uint32 UInt32Value = 13;
+}
+
+message PrimitiveArrayTestMessage {
+  repeated bool BooleanValues = 1 [packed=false];
+  repeated double DoubleValues = 2 [packed=false];
+  repeated int32 Int32Values = 3 [packed=false];
+  repeated sfixed32 SFixed32Values = 4 [packed=false];
+  repeated fixed32 Fixed32Values = 5 [packed=false];
+  repeated sfixed64 SFixed64Values = 6 [packed=false];
+  repeated fixed64 Fixed64Values = 7 [packed=false];
+  repeated int64 Int64Values = 8 [packed=false];
+  repeated sint64 SInt64Values = 9 [packed=false];
+  repeated sint32 SInt32Values = 10 [packed=false];
+  repeated float SingleValues = 11 [packed=false];
+  repeated uint64 UInt64Values = 12 [packed=false];
+  repeated uint32 UInt32Values = 13 [packed=false];
 }

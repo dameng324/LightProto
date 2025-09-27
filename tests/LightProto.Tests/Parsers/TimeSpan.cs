@@ -20,13 +20,35 @@ public partial class TimeSpanTests : BaseTests<TimeSpanTests.Message, TimeSpanTe
         yield return new() { Property = TimeSpan.MinValue };
         yield return new() { Property = TimeSpan.MaxValue };
         yield return new() { Property = DateTime.Now.TimeOfDay };
+        yield return new() { Property = TimeSpan.FromDays(1) };
+        yield return new() { Property = TimeSpan.FromDays(1).Add(TimeSpan.FromHours(1)) };
+        yield return new()
+        {
+            Property = TimeSpan.FromDays(1).Add(TimeSpan.FromHours(1)).Add(TimeSpan.FromMinutes(1)),
+        };
+        yield return new()
+        {
+            Property = TimeSpan
+                .FromDays(1)
+                .Add(TimeSpan.FromHours(1))
+                .Add(TimeSpan.FromMinutes(1))
+                .Add(TimeSpan.FromSeconds(1)),
+        };
+        yield return new()
+        {
+            Property = TimeSpan
+                .FromDays(1)
+                .Add(TimeSpan.FromHours(1))
+                .Add(TimeSpan.FromMinutes(1))
+                .Add(TimeSpan.FromSeconds(1))
+                .Add(TimeSpan.FromMilliseconds(1)),
+        };
     }
 
     public override IEnumerable<TimeSpanTestsMessage> GetGoogleMessages()
     {
-        yield return new() { Property = TimeSpan.MinValue.ToProtobuf() };
-        yield return new() { Property = TimeSpan.MaxValue.ToProtobuf() };
-        yield return new() { Property = DateTime.Now.TimeOfDay.ToProtobuf() };
+        return GetMessages()
+            .Select(o => new TimeSpanTestsMessage() { Property = o.Property.ToProtobuf() });
     }
 
     public override async Task AssertResult(Message clone, Message message)

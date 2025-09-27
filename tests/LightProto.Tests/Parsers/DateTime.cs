@@ -20,6 +20,14 @@ public partial class DateTimeTests : BaseTests<DateTimeTests.Message, DateTimeTe
         yield return new() { Property = DateTime.MaxValue };
         yield return new() { Property = DateTime.UtcNow };
         yield return new() { Property = DateTime.Now };
+        yield return new() { Property = DateTime.Today };
+        yield return new() { Property = DateTime.Today.AddHours(1) };
+        yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1) };
+        yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1) };
+        yield return new()
+        {
+            Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1).AddMilliseconds(1),
+        };
     }
 
     public override IEnumerable<DateTimeTestsMessage> GetGoogleMessages()

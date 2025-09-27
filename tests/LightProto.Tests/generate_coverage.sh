@@ -1,0 +1,2 @@
+﻿#!/usr/bin/env bash
+dotnet run --coverage -f net9.0 --coverage-output-format cobertura --coverage-output ./coverage.cobertura.xml && reportgenerator.exe -reports:bin/Debug/net9.0/TestResults/coverage.cobertura.xml -targetdir:./coverage
