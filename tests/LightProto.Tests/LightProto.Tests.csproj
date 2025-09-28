@@ -7,7 +7,8 @@
     <PublishAot Condition="$(Configuration)=='Release'">true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.30.2" /> <!-- above 3.31 cause aot issue see: https://github.com/protocolbuffers/protobuf/issues/21824 -->
+    <PackageReference Include="Google.Protobuf" Version="3.30.2" />
+    <!-- above 3.31 cause aot issue see: https://github.com/protocolbuffers/protobuf/issues/21824 -->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
     <PackageReference Include="protobuf-net" Version="3.2.56" />
     <PackageReference Include="TUnit" Version="0.61.2" />

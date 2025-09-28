@@ -8,4 +8,5 @@ repos:
         language: system
         types:
           - c#
+          - csproj
         description: CSharpier is an opinionated C# formatter inspired by Prettier.
