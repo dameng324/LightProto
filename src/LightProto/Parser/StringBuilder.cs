@@ -4,7 +4,7 @@ namespace LightProto.Parser;
 
 public sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     public StringBuilder ParseFrom(ref ReaderContext input)
     {
@@ -14,7 +14,7 @@ public sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
 
 public sealed class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     public int CalculateSize(StringBuilder value)
     {

@@ -4,7 +4,7 @@ public class KeyValuePairProtoReader<TKey, TValue> : IProtoReader<KeyValuePair<T
     where TKey : notnull
 {
     public bool IsMessage => true;
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     private readonly IProtoReader<TKey> _keyReader;
     private readonly IProtoReader<TValue> _valueReader;
@@ -72,7 +72,7 @@ public class KeyValuePairProtoWriter<TKey, TValue> : IProtoWriter<KeyValuePair<T
     where TKey : notnull
 {
     public bool IsMessage => true;
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     public int CalculateSize(KeyValuePair<TKey, TValue> value)
     {

@@ -2,7 +2,7 @@
 
 public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     public byte[] ParseFrom(ref ReaderContext input)
     {
@@ -13,7 +13,7 @@ public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 
 public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

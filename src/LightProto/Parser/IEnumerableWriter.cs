@@ -14,7 +14,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
     public bool IsPacked { get; }
     public uint Tag2 { get; }
 
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     public IEnumerableProtoWriter(
         IProtoWriter<TItem> itemWriter,

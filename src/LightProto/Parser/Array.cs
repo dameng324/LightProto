@@ -27,7 +27,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
     public int ItemFixedSize { get; }
     public bool IsPacked { get; }
 
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     public ArrayProtoReader(
         IProtoReader<TItem> itemReader,

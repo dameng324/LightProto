@@ -2,7 +2,7 @@
 
 public sealed class StringProtoReader : IProtoReader<string>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
@@ -15,7 +15,7 @@ public sealed class StringProtoReader : IProtoReader<string>
 
 public sealed class StringProtoWriter : IProtoWriter<string>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    
 
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

@@ -114,7 +114,7 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task CollectionTest()
+    public async Task Int32CollectionTest()
     {
         using var ms = new MemoryStream();
         var original = new List<int>() { 1, 2, 3 };
@@ -123,9 +123,8 @@ public partial class SerializerTests
         var parsed = Serializer.Deserialize<List<int>, int>(ms, Int32ProtoParser.ProtoReader);
         await Assert.That(parsed).IsEquivalentTo(original);
     }
-
     [Test]
-    public async Task CollectionTest2()
+    public async Task MessageCollectionTest()
     {
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];

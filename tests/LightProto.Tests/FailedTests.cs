@@ -176,6 +176,58 @@ public partial class FailedTests
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
     }
+
+    [Test]
+    public async Task Invalid_ticks_for_MINMAX_scale_WhenDeserializingDateTime()
+    {
+        //var bytes =DateTime.MaxValue.ToByteArray(DateTimeProtoParser.ProtoWriter);//8,2,16,15
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+        {
+            var bytes = new byte[] { 8, 3, 16, 15 };
+            Serializer.Deserialize<DateTime>(bytes, DateTimeProtoParser.ProtoReader);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("Invalid ticks for MINMAX scale");
+    }
+
+    [Test]
+    public async Task Unknown_scale_WhenDeserializingDateTime()
+    {
+        //var bytes =DateTime.MaxValue.ToByteArray(DateTimeProtoParser.ProtoWriter);//8,2,16,15
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+        {
+            var bytes = new byte[] { 8, 2, 16, 14 };
+            Serializer.Deserialize<DateTime>(bytes, DateTimeProtoParser.ProtoReader);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("Unknown scale");
+    }
+
+    [Test]
+    public async Task Invalid_ticks_for_MINMAX_scale_WhenDeserializingTimeSpan()
+    {
+        //var bytes =TimeSpan.MaxValue.ToByteArray(TimeSpanProtoParser.ProtoWriter);//8,2,16,15
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+        {
+            var bytes = new byte[] { 8, 3, 16, 15 };
+            Serializer.Deserialize<TimeSpan>(bytes, TimeSpanProtoParser.ProtoReader);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("Invalid ticks for MINMAX scale");
+    }
+
+    [Test]
+    public async Task Unknown_scale_WhenDeserializingTimeSpan()
+    {
+        //var bytes =TimeSpan.MaxValue.ToByteArray(TimeSpanProtoParser.ProtoWriter);//8,2,16,15
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+        {
+            var bytes = new byte[] { 8, 2, 16, 14 };
+            Serializer.Deserialize<TimeSpan>(bytes, TimeSpanProtoParser.ProtoReader);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("Unknown scale");
+    }
     // [Test]
     // public async Task MoreDataAvailable_WhenDeserializing()
     // {
