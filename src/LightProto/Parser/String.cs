@@ -2,8 +2,6 @@
 
 public sealed class StringProtoReader : IProtoReader<string>
 {
-    
-
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
     )]
@@ -15,8 +13,6 @@ public sealed class StringProtoReader : IProtoReader<string>
 
 public sealed class StringProtoWriter : IProtoWriter<string>
 {
-    
-
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
     )]

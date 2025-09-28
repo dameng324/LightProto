@@ -4,8 +4,6 @@ namespace LightProto.Parser;
 
 public sealed class ByteListProtoReader : IProtoReader<List<byte>>
 {
-    
-
     public List<byte> ParseFrom(ref ReaderContext input)
     {
         var length = input.ReadLength();
@@ -15,8 +13,6 @@ public sealed class ByteListProtoReader : IProtoReader<List<byte>>
 
 public sealed class ByteListProtoWriter : IProtoWriter<List<byte>>
 {
-    
-
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
     )]

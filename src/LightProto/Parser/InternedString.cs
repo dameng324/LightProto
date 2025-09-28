@@ -2,8 +2,6 @@
 
 public sealed class InternedStringProtoReader : IProtoReader<string>
 {
-    
-
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
     )]

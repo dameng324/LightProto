@@ -12,7 +12,6 @@ public class IEnumerableProtoReader<TCollection, TItem>
         ICollectionReader
     where TCollection : IEnumerable<TItem>
 {
-    
     public uint Tag { get; }
     public uint Tag2 { get; }
     private readonly Func<TCollection, TCollection>? _completeAction;

@@ -27,8 +27,6 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
     public int ItemFixedSize { get; }
     public bool IsPacked { get; }
 
-    
-
     public ArrayProtoReader(
         IProtoReader<TItem> itemReader,
         uint tag,

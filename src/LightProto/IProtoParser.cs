@@ -8,7 +8,7 @@ public interface IProtoParser<T>
 
 public interface IProtoReader<out T>
 {
-    public WireFormat.WireType WireType  => WireFormat.WireType.LengthDelimited;
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
     public T ParseFrom(ref ReaderContext input);
 }

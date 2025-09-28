@@ -6,7 +6,4 @@ repos:
         entry: dotnet 
         args: [tool, run, csharpier, format]
         language: system
-        types:
-          - c#
-          - csproj
         description: CSharpier is an opinionated C# formatter inspired by Prettier.

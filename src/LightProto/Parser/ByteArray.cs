@@ -2,8 +2,6 @@
 
 public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 {
-    
-
     public byte[] ParseFrom(ref ReaderContext input)
     {
         var length = input.ReadLength();
@@ -13,8 +11,6 @@ public sealed class ByteArrayProtoReader : IProtoReader<byte[]>
 
 public sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
 {
-    
-
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
     )]

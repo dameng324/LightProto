@@ -4,8 +4,6 @@ namespace LightProto.Parser;
 
 public sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
 {
-    
-
     public StringBuilder ParseFrom(ref ReaderContext input)
     {
         return new StringBuilder(input.ReadString());
@@ -14,8 +12,6 @@ public sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
 
 public sealed class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
 {
-    
-
     public int CalculateSize(StringBuilder value)
     {
         int size = 0;

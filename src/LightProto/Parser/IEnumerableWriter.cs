@@ -14,8 +14,6 @@ public class IEnumerableProtoWriter<TCollection, TItem>
     public bool IsPacked { get; }
     public uint Tag2 { get; }
 
-    
-
     public IEnumerableProtoWriter(
         IProtoWriter<TItem> itemWriter,
         uint tag,
