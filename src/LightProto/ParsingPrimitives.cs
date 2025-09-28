@@ -9,6 +9,7 @@
 
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -20,6 +21,7 @@ namespace LightProto
     /// Primitives for parsing protobuf wire format.
     /// </summary>
     [SecuritySafeCritical]
+    [ExcludeFromCodeCoverage]
     internal static class ParsingPrimitives
     {
         internal static readonly Encoding Utf8Encoding = new UTF8Encoding(

@@ -211,3 +211,33 @@ public class TimeSpan240CollectionTest
         yield return new TimeSpan[] { TimeSpan.MinValue, DateTime.Now.TimeOfDay };
     }
 }
+
+[InheritsTests]
+public class StringCollectionTest : BaseCollectionTestWithParser<StringProtoParser, string>
+{
+    public override IEnumerable<string[]> GetCollection()
+    {
+        yield return new string[] { string.Empty, "123" };
+    }
+}
+
+[InheritsTests]
+public partial class ContractCollectionTest
+    : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
+{
+    [ProtoContract]
+    public partial class Message
+    {
+        [ProtoMember(1)]
+        public string Value { get; set; } = string.Empty;
+    }
+
+    public override IEnumerable<Message[]> GetCollection()
+    {
+        yield return new Message[]
+        {
+            new Message() { Value = "" },
+            new Message() { Value = "123" },
+        };
+    }
+}

@@ -8,6 +8,7 @@
 #endregion
 
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -22,6 +23,7 @@ namespace LightProto
     /// Primitives for encoding protobuf wire format.
     /// </summary>
     [SecuritySafeCritical]
+    [ExcludeFromCodeCoverage]
     internal static class WritingPrimitives
     {
         // Ideally we would use the same UTF8Encoding as parse, but we should be able to serialize

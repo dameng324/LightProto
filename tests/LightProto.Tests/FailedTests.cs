@@ -1,4 +1,6 @@
 ﻿using System.Buffers;
+using System.IO.Compression;
+using System.Runtime.Intrinsics.X86;
 using LightProto.Parser;
 
 namespace LightProto.Tests;
@@ -170,8 +172,87 @@ public partial class FailedTests
                 0xFF,
                 0xFF,
                 0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
             };
             var strings = Serializer.Deserialize<MalformedVarint>(bytes);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("malformed varint");
+    }
+
+    [ProtoContract]
+    public partial class MalformedVarint64
+    {
+        [ProtoMember(1)]
+        public long Value { get; set; }
+    }
+
+    [Test]
+    public async Task MalformedVarint64_WhenDeserializing()
+    {
+        var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+        {
+            var bytes = new byte[]
+            {
+                0x08,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+            };
+            var strings = Serializer.Deserialize<MalformedVarint64>(bytes);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("malformed varint");
+    }
+
+    [ProtoContract]
+    public partial class MalformedVarUint64
+    {
+        [ProtoMember(1)]
+        public ulong Value { get; set; }
+    }
+
+    [Test]
+    public async Task MalformedVarUint64_WhenDeserializing()
+    {
+        var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+        {
+            var bytes = new byte[]
+            {
+                0x08,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+            };
+            var strings = Serializer.Deserialize<MalformedVarUint64>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
@@ -228,6 +309,7 @@ public partial class FailedTests
         });
         await Assert.That(ex!.Message).Contains("Unknown scale");
     }
+
     // [Test]
     // public async Task MoreDataAvailable_WhenDeserializing()
     // {
@@ -241,4 +323,19 @@ public partial class FailedTests
     //     });
     //     await Assert.That(ex!.Message).Contains("more data");
     // }
+
+    [Test]
+    public async Task Test_TriggersLargeSizeSlowPath()
+    {
+        var original = Enumerable.Range(0, 1000000).Select(i => (byte)i).ToArray();
+
+        using var ms = new MemoryStream();
+        using (var gzip = new GZipStream(ms, mode: CompressionMode.Compress, leaveOpen: true))
+            original.SerializeTo(gzip, ByteArrayProtoParser.ProtoWriter);
+
+        ms.Position = 0;
+        using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
+        var parsed = Serializer.Deserialize<byte[]>(deZip, ByteArrayProtoParser.ProtoReader);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
 }

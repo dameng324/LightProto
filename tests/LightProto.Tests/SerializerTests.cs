@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.IO.Compression;
 using LightProto.Parser;
 
 namespace LightProto.Tests;
@@ -11,13 +12,13 @@ public partial class SerializerTests
         [ProtoMember(1)]
         public string Name { get; set; } = string.Empty;
 
-        [ProtoMember(2)]
+        [ProtoMember(22)]
         public byte[] Bytes { get; set; } = [];
 
-        [ProtoMember(3)]
+        [ProtoMember(333)]
         public double[] Doubles { get; set; } = [];
 
-        [ProtoMember(4)]
+        [ProtoMember(444444444)]
         public float[] Floats { get; set; } = [];
     }
 
@@ -114,6 +115,17 @@ public partial class SerializerTests
     }
 
     [Test]
+    public async Task TestReadRawBytesSlow()
+    {
+        var obj = Enumerable.Range(0, 1000).Select(o => (byte)o).ToList();
+        var bytes = obj.ToByteArray(ByteListProtoParser.ProtoWriter);
+        byte[][] bytesArray = bytes.Chunk(1).ToArray();
+        var sequence = GetReadonlySequence(bytesArray);
+        var parsed = Serializer.Deserialize<List<byte>>(sequence, ByteListProtoParser.ProtoReader);
+        await Assert.That(parsed).IsEquivalentTo(obj);
+    }
+
+    [Test]
     public async Task Int32CollectionTest()
     {
         using var ms = new MemoryStream();
@@ -169,6 +181,70 @@ public partial class SerializerTests
     }
 
     [Test]
+    public async Task CollectionTest5()
+    {
+        string[] original = ["", "123"];
+        var bytes = original.ToByteArray(StringProtoParser.ProtoWriter);
+
+        var parsed = Serializer.Deserialize<List<string>, string>(
+            bytes,
+            StringProtoParser.ProtoReader
+        );
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task CollectionTest6()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        string[] original = ["", "123"];
+        original.SerializeTo(bufferWriter, StringProtoParser.ProtoWriter);
+
+        var parsed = Serializer.Deserialize<List<string>, string>(
+            bufferWriter.WrittenSpan,
+            StringProtoParser.ProtoReader
+        );
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task CollectionTest8()
+    {
+        using var ms = new MemoryStream();
+        string[] original = ["", "123"];
+        original.SerializeTo(ms, StringProtoParser.ProtoWriter);
+        ms.Position = 0;
+
+        var parsed = Serializer.Deserialize<List<string>, string>(
+            ms,
+            StringProtoParser.ProtoReader
+        );
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task CollectionTest7()
+    {
+        TestContract[] original = [CreateTestContract(), CreateTestContract()];
+        var bytes = original.ToByteArray();
+
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(bytes);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task CollectionTest9()
+    {
+        using var ms = new MemoryStream();
+        TestContract[] original = [CreateTestContract(), CreateTestContract()];
+        original.SerializeTo(ms);
+        ms.Position = 0;
+
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
     public async Task DictionaryTest()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
@@ -202,6 +278,39 @@ public partial class SerializerTests
             Int32ProtoParser.ProtoReader,
             TestContract.ProtoReader
         );
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task LargeObjectTest()
+    {
+        using var ms = new FileStream(
+            "test.bin",
+            new FileStreamOptions()
+            {
+                Access = FileAccess.Read,
+                BufferSize = 10,
+                Mode = FileMode.Open,
+            }
+        );
+        var db = Serializer.Deserialize<LightProto.Database>(ms);
+        await Assert.That(db.Orders.Count).IsGreaterThan(0);
+        var bytes = db.ToByteArray();
+        await Assert.That(bytes.Length).IsGreaterThan(0);
+    }
+
+    [Test]
+    public async Task Test_TriggersLargeSizeSlowPath()
+    {
+        var original = Enumerable.Range(0, 1000000).Select(i => (byte)i).ToArray();
+
+        using var ms = new MemoryStream();
+        using (var gzip = new GZipStream(ms, mode: CompressionMode.Compress, leaveOpen: true))
+            original.SerializeTo(gzip, ByteArrayProtoParser.ProtoWriter);
+
+        ms.Position = 0;
+        using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
+        var parsed = Serializer.Deserialize<byte[]>(deZip, ByteArrayProtoParser.ProtoReader);
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 }

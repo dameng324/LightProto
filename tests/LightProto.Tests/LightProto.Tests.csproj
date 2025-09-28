@@ -39,4 +39,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Benchmark\test.bin" Link="test.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="..\Benchmark\Contracts\LightProto.cs" Link="LightProtoContract.cs" />
+  </ItemGroup>
 </Project>
