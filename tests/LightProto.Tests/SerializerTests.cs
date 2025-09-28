@@ -123,6 +123,7 @@ public partial class SerializerTests
         var parsed = Serializer.Deserialize<List<int>, int>(ms, Int32ProtoParser.ProtoReader);
         await Assert.That(parsed).IsEquivalentTo(original);
     }
+
     [Test]
     public async Task MessageCollectionTest()
     {

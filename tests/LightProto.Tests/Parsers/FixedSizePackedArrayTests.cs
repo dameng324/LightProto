@@ -25,7 +25,7 @@ public partial class FixedSizePackedArrayTests
         yield return new() { Property = new int[] { 1, 2, 3, 4, 5 } };
         yield return new() { Property = new int[] { -1, -2, -3, -4, -5 } };
         yield return new() { Property = new int[] { 0, 0, 0, 0, 0 } };
-        //yield return new() { Property = new int[] { 0 } };
+        //yield return new() { Property = new int[] { 0 } }; // protobuf-net is wrong here
         yield return new() { Property = [] };
     }
 
