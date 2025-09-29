@@ -70,7 +70,7 @@ public partial class Map2Tests : BaseTests<Map2Tests.Message, Map2TestsMessage>
                 foreach (var kv in o.Property)
                 {
                     map2TestsMessage.Property.Add(
-                        new Int32NestMapMessage() { Key = kv.Key, Value = { kv.Value } }
+                        new Map2NestMessage() { Key = kv.Key, Value = { kv.Value } }
                     );
                 }
 

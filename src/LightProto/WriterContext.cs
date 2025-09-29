@@ -25,17 +25,6 @@ namespace LightProto
         internal Span<byte> buffer;
         internal WriterInternalState state;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            out WriterContext ctx
-        )
-        {
-            ctx.buffer = buffer;
-            ctx.state = state;
-        }
-
         /// <summary>
         /// Creates a WriteContext instance from CodedOutputStream.
         /// WARNING: internally this copies the CodedOutputStream's state, so after done with the WriteContext,

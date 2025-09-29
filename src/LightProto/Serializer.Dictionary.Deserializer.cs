@@ -54,23 +54,15 @@ public static partial class Serializer
         where TDictionary : IDictionary<TKey, TValue>, new()
         where TKey : notnull
     {
-        uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
-        uint tag2 = tag;
-        uint keyTag = WireFormat.MakeTag(1, keyReader.WireType);
-        uint valueTag = WireFormat.MakeTag(2, valueReader.WireType);
         return new IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>(
             keyReader,
             valueReader,
-            tag,
-            keyTag,
-            valueTag,
             static capacity => new(),
             static (dic, pair) =>
             {
                 dic[pair.Key] = pair.Value;
                 return dic;
-            },
-            tag2
+            }
         );
     }
 

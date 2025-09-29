@@ -1,6 +1,6 @@
 namespace LightProto.Parser;
 
-public interface ICollectionWriter;
+public interface ICollectionWriter { }
 
 public class IEnumerableProtoWriter<TCollection, TItem>
     : IProtoWriter<TCollection>,
@@ -8,27 +8,21 @@ public class IEnumerableProtoWriter<TCollection, TItem>
     where TCollection : IEnumerable<TItem>
 {
     public IProtoWriter<TItem> ItemWriter { get; }
-    public uint Tag { get; }
+    public uint Tag { get; set; }
     public Func<TCollection, int> GetCount { get; }
     public int ItemFixedSize { get; }
-    public bool IsPacked { get; }
-    public uint Tag2 { get; }
 
     public IEnumerableProtoWriter(
         IProtoWriter<TItem> itemWriter,
         uint tag,
         Func<TCollection, int> getCount,
-        int itemFixedSize,
-        bool isPacked,
-        uint tag2
+        int itemFixedSize
     )
     {
         ItemWriter = itemWriter;
         Tag = tag;
         GetCount = getCount;
         ItemFixedSize = itemFixedSize;
-        IsPacked = isPacked;
-        Tag2 = tag2;
     }
 
     private int CalculatePackedDataSize(TCollection collection, int count)
@@ -91,6 +85,8 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         }
     }
 
+    public bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
+
     public void WriteTo(ref WriterContext output, TCollection collection)
     {
         if (collection == null)
@@ -123,12 +119,6 @@ public class IEnumerableProtoWriter<TCollection, TItem>
             {
                 foreach (var item in collection)
                 {
-                    var current = item;
-                    if (current is null)
-                    {
-                        throw new Exception("Sequence contained null element");
-                    }
-
                     ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
@@ -145,7 +135,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                         throw new Exception("Sequence contained null element");
                     }
 
-                    output.WriteTag(Tag2);
+                    output.WriteTag(Tag);
                     ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
@@ -159,7 +149,7 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                         throw new Exception("Sequence contained null element");
                     }
 
-                    output.WriteTag(Tag2);
+                    output.WriteTag(Tag);
                     ItemWriter.WriteMessageTo(ref output, item);
                 }
             }

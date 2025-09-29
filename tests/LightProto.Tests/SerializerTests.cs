@@ -168,12 +168,26 @@ public partial class SerializerTests
     }
 
     [Test]
+    public async Task SmallDeepCloneTest()
+    {
+        using var ms = new MemoryStream();
+        var original = new TestContract()
+        {
+            Name = Guid.NewGuid().ToString(),
+            Bytes = Enumerable.Range(0, 10).Select(i => (byte)(i % 256)).ToArray(),
+            Doubles = Enumerable.Range(0, 10).Select(i => (double)(i % 256)).ToArray(),
+            Floats = Enumerable.Range(0, 10).Select(i => (float)(i % 256)).ToArray(),
+        };
+        var parsed = Serializer.DeepClone(original);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
     public async Task CollectionTest4()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
         original.SerializeTo(bufferWriter);
-
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
             GetReadonlySequence(bufferWriter.WrittenSpan.ToArray().Chunk(2).ToArray())
         );
@@ -245,6 +259,63 @@ public partial class SerializerTests
     }
 
     [Test]
+    public async Task CollectionTest10()
+    {
+        TestContract[] original = [];
+        var bytes = original.ToByteArray();
+        await Assert.That(bytes.Length).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task CollectionTest11()
+    {
+        TestContract[] original = null!;
+        var bytes = original.ToByteArray();
+        await Assert.That(bytes.Length).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task CollectionTest12()
+    {
+        byte[] bytes = [];
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(bytes);
+        await Assert.That(bytes.Length).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task SerializeTest13()
+    {
+        byte[] Serialize()
+        {
+            using var ms = new MemoryStream();
+            var original = CreateTestContract();
+            using var codedOutputStream = new CodedOutputStream(ms, leaveOpen: false);
+            WriterContext.Initialize(codedOutputStream, out var ctx);
+            TestContract.ProtoWriter.WriteTo(ref ctx, original);
+            ctx.Flush();
+            return ms.ToArray();
+        }
+        var bytes = Serialize();
+        await Assert.That(bytes.Length).IsGreaterThan(0);
+    }
+
+    [Test]
+    public async Task DeserializeTest()
+    {
+        var original = CreateTestContract();
+        TestContract Deserialize()
+        {
+            var bytes = original.ToByteArray();
+            var stream = new MemoryStream(bytes);
+            using var codedStream = new CodedInputStream(stream, leaveOpen: false);
+            ReaderContext.Initialize(codedStream, out var ctx);
+            return TestContract.ProtoReader.ParseFrom(ref ctx);
+        }
+        var parsed = Deserialize();
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
     public async Task DictionaryTest()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
@@ -282,6 +353,40 @@ public partial class SerializerTests
     }
 
     [Test]
+    public async Task DictionaryTest3()
+    {
+        using var ms = new MemoryStream();
+        Dictionary<List<int>, TestContract> original = new()
+        {
+            [[1, 3]] = CreateTestContract(),
+            [[2, 3]] = CreateTestContract(),
+        };
+        original.SerializeTo(
+            ms,
+            Int32ProtoParser.ProtoWriter.GetCollectionWriter(),
+            TestContract.ProtoWriter
+        );
+        ms.Position = 0;
+
+        var parsed = Serializer.Deserialize<
+            Dictionary<List<int>, TestContract>,
+            List<int>,
+            TestContract
+        >(
+            ms,
+            Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>(),
+            TestContract.ProtoReader
+        );
+        await Assert.That(parsed.Count).IsEquivalentTo(original.Count);
+        foreach (var kv in original)
+        {
+            await Assert
+                .That(parsed.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value)
+                .IsEquivalentTo(kv.Value);
+        }
+    }
+
+    [Test]
     public async Task LargeObjectTest()
     {
         using var ms = new FileStream(
@@ -312,5 +417,16 @@ public partial class SerializerTests
         using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
         var parsed = Serializer.Deserialize<byte[]>(deZip, ByteArrayProtoParser.ProtoReader);
         await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task ExtensibleShouldBeNull()
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        IExtension extension = null!;
+        await Assert.That(Extensible.GetExtensionObject(ref extension, true)).IsNull();
+        var obj = new Extensible();
+        await Assert.That(obj.GetExtensionObject(true)).IsNull();
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

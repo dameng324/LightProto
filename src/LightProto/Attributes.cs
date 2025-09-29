@@ -107,11 +107,5 @@ public sealed class StringInternAttribute : Attribute;
 public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
 {
     public uint Tag { get; } = tag;
-    public Type KnownType => knownType;
-
-    /// <summary>
-    /// Specifies whether the inherited type's sub-message should be
-    /// written with a length-prefix (default), or with group markers.
-    /// </summary>
-    public DataFormat DataFormat { get; set; } = DataFormat.Default;
+    public Type KnownType { get; } = knownType;
 }

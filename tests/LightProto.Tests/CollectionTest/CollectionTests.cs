@@ -222,6 +222,20 @@ public class StringCollectionTest : BaseCollectionTestWithParser<StringProtoPars
 }
 
 [InheritsTests]
+public class NullableCollectionTest : BaseCollectionTest<int?>
+{
+    public override IProtoWriter<int?> ProtoWriter { get; } =
+        new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter);
+    public override IProtoReader<int?> ProtoReader { get; } =
+        new NullableProtoReader<int>(Int32ProtoParser.ProtoReader);
+
+    public override IEnumerable<int?[]> GetCollection()
+    {
+        yield return [-1, 0, 1, 2];
+    }
+}
+
+[InheritsTests]
 public partial class ContractCollectionTest
     : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
 {

@@ -1097,10 +1097,15 @@ public class LightProtoGenerator : ISourceGenerator
             {
                 return $"ByteArrayProtoParser.Proto{readerOrWriter}";
             }
-            var tag2 = ProtoMember.GetRawTag(
-                fieldNumber,
-                ProtoMember.GetPbWireType(compilation, elementType, format)
-            );
+
+            if (isPacked == false)
+            {
+                rawTag = ProtoMember.GetRawTag(
+                    fieldNumber,
+                    ProtoMember.GetPbWireType(compilation, elementType, format)
+                );
+            }
+
             var elementWriter = GetProtoParser(
                 compilation,
                 elementType,
@@ -1116,7 +1121,7 @@ public class LightProtoGenerator : ISourceGenerator
                 member
             );
             var fixedSize = GetFixedSize(elementType, format);
-            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
+            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
         }
 
         if (memberType is INamedTypeSymbol namedType)
@@ -1171,74 +1176,99 @@ public class LightProtoGenerator : ISourceGenerator
 
             if (typeArguments.Length == 1)
             {
-                if (rawTag == 0)
+                if (namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
                 {
-                    throw new Exception("rawTag==0");
+                    var elementType = typeArguments[0];
+                    var elementParser = GetProtoParser(
+                        compilation,
+                        elementType,
+                        format,
+                        mapFormat,
+                        readerOrWriter,
+                        rawTag,
+                        targetType,
+                        isPacked,
+                        depth,
+                        compatibilityLevel,
+                        stringIntern,
+                        member
+                    );
+                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
                 }
-
-                var elementType = typeArguments[0];
-                if (elementType.SpecialType == SpecialType.System_Byte)
+                else
                 {
-                    return $"ByteListProtoParser.Proto{readerOrWriter}";
-                }
-                var elementParser = GetProtoParser(
-                    compilation,
-                    elementType,
-                    format,
-                    mapFormat,
-                    readerOrWriter,
-                    0,
-                    targetType,
-                    isPacked,
-                    depth,
-                    compatibilityLevel,
-                    stringIntern,
-                    member
-                );
-                var fixedSize = GetFixedSize(elementType, format);
-                var tag2 = ProtoMember.GetRawTag(
-                    fieldNumber,
-                    ProtoMember.GetPbWireType(compilation, elementType, format)
-                );
-                if (namedType.TypeKind == TypeKind.Interface)
-                {
-                    if (readerOrWriter == "Reader")
+                    if (rawTag == 0)
                     {
-                        if (IsListType(compilation, namedType))
-                        {
-                            return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
-                        }
+                        throw new Exception("does not support collection of collection.");
+                    }
 
-                        if (IsSetType(compilation, namedType))
+                    var elementType = typeArguments[0];
+                    if (elementType.SpecialType == SpecialType.System_Byte)
+                    {
+                        return $"ByteListProtoParser.Proto{readerOrWriter}";
+                    }
+                    var elementParser = GetProtoParser(
+                        compilation,
+                        elementType,
+                        format,
+                        mapFormat,
+                        readerOrWriter,
+                        0,
+                        targetType,
+                        isPacked,
+                        depth,
+                        compatibilityLevel,
+                        stringIntern,
+                        member
+                    );
+                    var fixedSize = GetFixedSize(elementType, format);
+
+                    if (isPacked == false)
+                    {
+                        rawTag = ProtoMember.GetRawTag(
+                            fieldNumber,
+                            ProtoMember.GetPbWireType(compilation, elementType, format)
+                        );
+                    }
+                    if (namedType.TypeKind == TypeKind.Interface)
+                    {
+                        if (readerOrWriter == "Reader")
                         {
-                            return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
+                            if (IsListType(compilation, namedType))
+                            {
+                                return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                            }
+
+                            if (IsSetType(compilation, namedType))
+                            {
+                                return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                            }
+                        }
+                        else if (readerOrWriter == "Writer")
+                        {
+                            if (IsCollectionType(compilation, elementType, namedType))
+                            {
+                                var count = "Count()";
+                                if (HasCountProperty(memberType))
+                                {
+                                    count = "Count";
+                                }
+                                if (HasLengthProperty(memberType))
+                                {
+                                    count = "Length";
+                                }
+                                return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
+                            }
                         }
                     }
-                    else if (readerOrWriter == "Writer")
-                    {
-                        if (IsCollectionType(compilation, elementType, namedType))
-                        {
-                            var count = "Count()";
-                            if (HasCountProperty(memberType))
-                            {
-                                count = "Count";
-                            }
-                            if (HasLengthProperty(memberType))
-                            {
-                                count = "Length";
-                            }
-                            return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
-                        }
-                    }
-                }
 
-                if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
-                {
-                    if (namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                    if (
+                        namedType.TypeKind == TypeKind.Class
+                        || namedType.TypeKind == TypeKind.Struct
+                    )
                     {
                         return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                     }
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize},{(isPacked ? "true" : "false")},{tag2})";
                 }
             }
 
@@ -1301,7 +1331,7 @@ public class LightProtoGenerator : ISourceGenerator
                         var conversion = compilation.ClassifyConversion(mapType, namedType);
                         if (conversion.IsImplicit)
                         {
-                            return $"new DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},{tag2})";
+                            return $"new DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                         }
                     }
                     else if (readerOrWriter == "Writer")
@@ -1314,14 +1344,14 @@ public class LightProtoGenerator : ISourceGenerator
                             {
                                 count = "Count";
                             }
-                            return $"new IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},static (d)=>d.{count},{tag2})";
+                            return $"new IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},static (d)=>d.{count})";
                         }
                     }
                 }
 
                 if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
                 {
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},{keyTag},{valueTag},{tag2})";
+                    return $"new {memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                 }
             }
         }

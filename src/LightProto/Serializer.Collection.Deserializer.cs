@@ -65,6 +65,9 @@ public static partial class Serializer
     )
         where TCollection : ICollection<TItem>, new()
     {
+        var packedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+        var unPackedTag = WireFormat.MakeTag(1, collectionReader.ItemReader.WireType);
+
         uint tag;
         while ((tag = ctx.ReadTag()) != 0)
         {
@@ -73,34 +76,29 @@ public static partial class Serializer
                 break;
             }
 
-            if (tag == collectionReader.Tag || tag == collectionReader.Tag2)
+            if (tag == packedTag || tag == unPackedTag)
             {
-                return collectionReader.ParseFrom(ref ctx);
+                return collectionReader.ParseMessageFrom(ref ctx);
             }
         }
-        throw new InvalidDataException("No data found to deserialize the collection.");
+        return new TCollection();
     }
 
     internal static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
         TCollection,
         TItem
-    >(IProtoReader<TItem> reader)
+    >(this IProtoReader<TItem> reader)
         where TCollection : ICollection<TItem>, new()
     {
-        uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
-        uint tag2 = WireFormat.MakeTag(1, reader.WireType);
         return new IEnumerableProtoReader<TCollection, TItem>(
             reader,
-            tag,
             (collection) => new TCollection(),
             addItem: (collection, item) =>
             {
                 collection.Add(item);
                 return collection;
             },
-            itemFixedSize: 0,
-            isPacked: false,
-            tag2
+            itemFixedSize: 0
         );
     }
 

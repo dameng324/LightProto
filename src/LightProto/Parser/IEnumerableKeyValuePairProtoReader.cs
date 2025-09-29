@@ -8,21 +8,14 @@ public class IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>
     public IEnumerableKeyValuePairProtoReader(
         IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader,
-        uint tag,
-        uint keyTag,
-        uint valueTag,
         Func<int, TDictionary> factory,
-        Func<TDictionary, KeyValuePair<TKey, TValue>, TDictionary> addItem,
-        uint tag2
+        Func<TDictionary, KeyValuePair<TKey, TValue>, TDictionary> addItem
     )
         : base(
-            new KeyValuePairProtoReader<TKey, TValue>(keyReader, valueReader, keyTag, valueTag),
-            tag,
+            new KeyValuePairProtoReader<TKey, TValue>(keyReader, valueReader),
             factory,
             addItem,
             itemFixedSize: 0,
-            isPacked: false,
-            tag2,
             completeAction: null
         ) { }
 }

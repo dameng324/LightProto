@@ -2,50 +2,27 @@
 
 public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[], T>
 {
-    public ArrayProtoWriter(
-        IProtoWriter<T> itemWriter,
-        uint tag,
-        int itemFixedSize,
-        bool isPacked,
-        uint tag2
-    )
-        : base(
-            itemWriter,
-            tag,
-            static collection => collection.Length,
-            itemFixedSize,
-            isPacked,
-            tag2
-        ) { }
+    public ArrayProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
+        : base(itemWriter, tag, static collection => collection.Length, itemFixedSize) { }
 }
 
 public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
 {
-    private readonly uint _tag;
-    private readonly uint _tag2;
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
-    public bool IsPacked { get; }
 
-    public ArrayProtoReader(
-        IProtoReader<TItem> itemReader,
-        uint tag,
-        int itemFixedSize,
-        bool isPacked,
-        uint tag2
-    )
+    public ArrayProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
     {
-        _tag = tag;
-        _tag2 = tag2;
         ItemReader = itemReader;
         ItemFixedSize = itemFixedSize;
-        IsPacked = isPacked;
     }
 
     public TItem[] ParseFrom(ref ReaderContext ctx)
     {
+        var tag = ctx.state.lastTag;
+
         var fixedSize = ItemFixedSize;
-        if (IsPacked)
+        if (WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
         {
             int length = ctx.ReadLength();
             if (length <= 0)
@@ -125,10 +102,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
             do
             {
                 collection.Add(ItemReader.ParseFrom(ref ctx));
-            } while (
-                ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag)
-                || ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, _tag2)
-            );
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
             return collection.ToArray();
         }
     }

@@ -6,8 +6,20 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using LightProto;
 
-BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+var ms = new MemoryStream();
+ProtoBuf.Serializer.Serialize<Message>(ms, new Message() { Property = [1, 2, null, 4] });
+var bytes = ms.ToArray();
+Console.WriteLine(string.Join(",", bytes));
+
+//BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 return;
+
+[ProtoBuf.ProtoContract]
+public partial record Message
+{
+    [ProtoBuf.ProtoMember(1)]
+    public List<int?> Property { get; set; }
+}
 
 
 // BenchmarkRunner.Run<SerializeAot>();

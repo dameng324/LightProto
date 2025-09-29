@@ -41,6 +41,8 @@ public partial class SkipConstructorTests
 
     public override async Task AssertGoogleResult(StructTestsMessage clone, Message message)
     {
-        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property);
+        await Assert
+            .That(clone.Property ?? string.Empty)
+            .IsEquivalentTo(message.Property ?? string.Empty);
     }
 }

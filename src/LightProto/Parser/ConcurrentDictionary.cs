@@ -10,24 +10,17 @@ public sealed class ConcurrentDictionaryProtoReader<TKey, TValue>
     public ConcurrentDictionaryProtoReader(
         IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader,
-        uint tag,
-        uint keyTag,
-        uint valueTag,
-        uint tag2
+        uint tag
     )
         : base(
             keyReader,
             valueReader,
-            tag,
-            keyTag,
-            valueTag,
             static (_) => new(),
             static (dic, pair) =>
             {
                 dic[pair.Key] = pair.Value;
                 return dic;
-            },
-            tag2
+            }
         ) { }
 }
 
@@ -38,10 +31,7 @@ public sealed class ConcurrentDictionaryProtoWriter<TKey, TValue>
     public ConcurrentDictionaryProtoWriter(
         IProtoWriter<TKey> keyWriter,
         IProtoWriter<TValue> valueWriter,
-        uint tag,
-        uint keyTag,
-        uint valueTag,
-        uint tag2
+        uint tag
     )
-        : base(keyWriter, valueWriter, tag, keyTag, valueTag, (dic) => dic.Count, tag2) { }
+        : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
 }

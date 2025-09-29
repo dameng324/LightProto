@@ -1,10 +1,10 @@
 ﻿using LightProto;
-using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class DateTimeTests : BaseTests<DateTimeTests.Message, DateTimeTestsMessage>
+public partial class NullableListTests
+    : BaseTests<NullableListTests.Message, NullableListTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -12,51 +12,56 @@ public partial class DateTimeTests : BaseTests<DateTimeTests.Message, DateTimeTe
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public DateTime Property { get; set; }
+        public List<int?> Property { get; set; } = [];
+    }
+
+    [Test]
+    [Explicit]
+    public void GetProto()
+    {
+        var proto = ProtoBuf.Serializer.GetProto<Message>();
+        Console.WriteLine(proto);
     }
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new() { Property = DateTime.MinValue };
-        yield return new() { Property = DateTime.MaxValue };
-        yield return new() { Property = DateTime.UtcNow };
-        yield return new() { Property = DateTime.Now };
-        yield return new() { Property = DateTime.Today };
-        yield return new() { Property = DateTime.Today.AddHours(1) };
-        yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1) };
-        yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1) };
-        yield return new()
-        {
-            Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1).AddMilliseconds(1),
-        };
+        yield return new() { Property = [] };
+        yield return new() { Property = [0] };
+        yield return new() { Property = [1, 2, 3] };
+        yield return new() { Property = [-1, 0, 1] };
     }
 
-    public override IEnumerable<DateTimeTestsMessage> GetGoogleMessages()
+    public override IEnumerable<NullableListTestsMessage> GetGoogleMessages()
     {
         return GetMessages()
-            .Select(o => new DateTimeTestsMessage() { Property = o.Property.ToProtobuf() });
+            .Select(o => new NullableListTestsMessage()
+            {
+                Property = { o.Property.Select(p => p ?? 0).ToArray() },
+            });
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property.Ticks).IsEquivalentTo(message.Property.Ticks);
-        //await Assert.That(clone.Property.Kind).IsEquivalentTo(message.Property.Kind); // Kind is not include by default in protobuf-net
-    }
-
-    public override async Task AssertGoogleResult(DateTimeTestsMessage clone, Message message)
-    {
-        await Assert.That(clone.Property.ToDateTime()).IsEquivalentTo(message.Property);
-    }
-
-    [Test]
-    public async Task IsNormalizedTest()
-    {
-        DateTime240ProtoParser parser = new() { Nanos = -1 };
-        var ex = Assert.Throws<InvalidOperationException>(() =>
+        await Assert.That(clone.Property.Count).IsEquivalentTo(message.Property.Count);
+        for (var i = 0; i < clone.Property.Count; i++)
         {
-            DateTime dateTime = parser;
-        });
-        await Assert.That(ex.Message).Contains("contains invalid values");
+            var cloneItem = clone.Property[i];
+            var messageItem = message.Property[i];
+            await Assert.That(cloneItem.HasValue).IsEquivalentTo(messageItem.HasValue);
+            if (cloneItem.HasValue && messageItem.HasValue)
+                await Assert.That(cloneItem.Value).IsEquivalentTo(messageItem.Value);
+        }
+    }
+
+    public override async Task AssertGoogleResult(NullableListTestsMessage clone, Message message)
+    {
+        await Assert.That(clone.Property.Count).IsEquivalentTo(message.Property.Count);
+        for (var i = 0; i < clone.Property.Count; i++)
+        {
+            var cloneItem = clone.Property[i];
+            var messageItem = message.Property[i];
+            await Assert.That(messageItem ?? 0).IsEquivalentTo(cloneItem);
+        }
     }
 }
 

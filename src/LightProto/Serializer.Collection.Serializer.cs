@@ -36,10 +36,7 @@ public static partial class Serializer
         ctx.Flush();
     }
 
-    internal static IProtoWriter<ICollection<T>> GetCollectionWriter<T>(
-        this IProtoWriter<T> writer,
-        int fieldNumber = 1
-    )
+    internal static IProtoWriter<ICollection<T>> GetCollectionWriter<T>(this IProtoWriter<T> writer)
     {
         uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
         uint tag2 = WireFormat.MakeTag(1, writer.WireType);
@@ -47,9 +44,7 @@ public static partial class Serializer
             writer,
             tag,
             (collection) => collection.Count,
-            itemFixedSize: 0,
-            isPacked: false,
-            tag2
+            itemFixedSize: 0
         );
     }
 

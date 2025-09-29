@@ -30,7 +30,8 @@ public abstract class BaseCollectionTest<T>
 
     [Test]
     [MethodDataSource(nameof(GetArguments))]
-    public async Task ByteListCollectionTest(ICollection<T> original)
+    [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
+    public async Task CollectionSerializeAndDeserialize(ICollection<T> original)
     {
         using var ms = new MemoryStream();
         Serializer.Serialize(ms, original, ProtoWriter);

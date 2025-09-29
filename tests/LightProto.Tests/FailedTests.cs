@@ -32,6 +32,32 @@ public partial class FailedTests
     }
 
     [Test]
+    public async Task Sequence_contained_null_element_WhenSerializing3()
+    {
+        List<string> strings = new() { "one", null!, "three" };
+        var ex = await Assert.ThrowsAsync<Exception>(async () =>
+        {
+            using var ms = new MemoryStream();
+            strings.SerializeTo(ms, StringProtoParser.ProtoWriter);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
+    }
+
+    [Test]
+    public async Task Sequence_contained_null_element_WhenSerializing4()
+    {
+        HashSet<string> strings = new() { "one", null!, "three" };
+        var ex = await Assert.ThrowsAsync<Exception>(async () =>
+        {
+            using var ms = new MemoryStream();
+            strings.SerializeTo(ms, StringProtoParser.ProtoWriter);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
+    }
+
+    [Test]
     public async Task InvalidTag_WhenDeserializing()
     {
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
@@ -337,5 +363,21 @@ public partial class FailedTests
         using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
         var parsed = Serializer.Deserialize<byte[]>(deZip, ByteArrayProtoParser.ProtoReader);
         await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task OutOfSpaceExceptionTest()
+    {
+        var ex = Assert.Throws<CodedOutputStream.OutOfSpaceException>(() =>
+        {
+            var message = "1234567";
+            var writer = StringProtoParser.ProtoWriter;
+            var buffer = new byte[writer.CalculateSize(message) - 1];
+            using CodedOutputStream output = new CodedOutputStream(buffer);
+            WriterContext.Initialize(output, out var ctx);
+            writer.WriteTo(ref ctx, message);
+            ctx.Flush();
+        });
+        await Assert.That(ex!.Message).Contains("ran out of space");
     }
 }
