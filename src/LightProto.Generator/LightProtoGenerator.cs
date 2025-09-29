@@ -9,112 +9,91 @@ using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
 namespace LightProto.Generator;
 
 [Generator]
-public class LightProtoGenerator : ISourceGenerator
+public class LightProtoGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
-
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var processedTypes = new HashSet<string>();
+        var namedTypeSymbols = context.SyntaxProvider.CreateSyntaxProvider(
+            predicate: (node, _) =>
+                node
+                    is ClassDeclarationSyntax
+                        or StructDeclarationSyntax
+                        or InterfaceDeclarationSyntax
+                        or RecordDeclarationSyntax,
+            transform: (ctx, _) => ctx.SemanticModel.GetDeclaredSymbol(ctx.Node)
+        );
 
-        foreach (var syntaxTree in context.Compilation.SyntaxTrees)
-        {
-            var semanticModel = context.Compilation.GetSemanticModel(syntaxTree);
-
-            foreach (var node in syntaxTree.GetRoot().DescendantNodesAndSelf())
+        var protoContracts = namedTypeSymbols.Where(
+            (symbol) =>
             {
-                INamedTypeSymbol? targetType;
-
-                // Support class, record, record struct, and struct declarations
-                if (node is ClassDeclarationSyntax classDeclaration)
-                {
-                    targetType =
-                        ModelExtensions.GetDeclaredSymbol(semanticModel, classDeclaration)
-                        as INamedTypeSymbol;
-                }
-                else if (node is StructDeclarationSyntax structDeclaration)
-                {
-                    targetType =
-                        ModelExtensions.GetDeclaredSymbol(semanticModel, structDeclaration)
-                        as INamedTypeSymbol;
-                }
-                else if (node is RecordDeclarationSyntax recordDeclaration)
-                {
-                    targetType =
-                        ModelExtensions.GetDeclaredSymbol(semanticModel, recordDeclaration)
-                        as INamedTypeSymbol;
-                }
-                else
-                {
-                    // // Handle records using reflection for compatibility
-                    // var nodeTypeName = node.GetType().Name;
-                    // if (nodeTypeName.Contains("RecordDeclaration"))
-                    // {
-                    //     var symbolInfo = semanticModel.GetDeclaredSymbol(node);
-                    //     targetType = symbolInfo as INamedTypeSymbol;
-                    // }
-                    // else
-                    {
-                        continue;
-                    }
-                }
-
-                if (targetType is null)
-                    continue;
-
-                // Prevent duplicate processing
-                var typeKey =
-                    $"{targetType}@{targetType.Locations.FirstOrDefault()?.SourceTree?.FilePath}";
-                if (!processedTypes.Add(typeKey))
-                    continue;
-
-                try
-                {
-                    var contract = GetProtoContract(context.Compilation, targetType);
-                    if (contract is null)
-                    {
-                        continue;
-                    }
-
-                    // Generate the basic IMessage implementation
-                    var sourceCode = GenerateBasicProtobufMessage(contract);
-                    var fileName = $"{targetType}.g.cs";
-                    context.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
-                }
-                catch (LightProtoGeneratorException e)
-                {
-                    context.ReportDiagnostic(
-                        Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                e.Id,
-                                e.Title,
-                                e.Message,
-                                e.Category,
-                                e.Severity,
-                                isEnabledByDefault: true
-                            ),
-                            e.Location ?? Location.None
-                        )
+                if (symbol is null)
+                    return false;
+                if (symbol is not INamedTypeSymbol)
+                    return false;
+                return symbol
+                    .GetAttributes()
+                    .Any(attr =>
+                        attr.AttributeClass?.ToDisplayString()
+                        == "LightProto.ProtoContractAttribute"
                     );
-                }
-                catch (Exception e)
+            }
+        );
+        var compilationAndTypes = context.CompilationProvider.Combine(protoContracts.Collect());
+        context.RegisterSourceOutput(
+            compilationAndTypes,
+            (spc, pair) =>
+            {
+                var (compilation, types) = pair;
+                foreach (var type in types.OfType<INamedTypeSymbol>())
                 {
-                    context.ReportDiagnostic(
-                        Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "LightProto",
-                                "Unknown Exception",
-                                e.ToString(),
-                                "Unknown",
-                                DiagnosticSeverity.Error,
-                                isEnabledByDefault: true
-                            ),
-                            Location.None
-                        )
-                    );
+                    try
+                    {
+                        var contract = GetProtoContract(compilation, type);
+                        if (contract is null)
+                        {
+                            continue;
+                        }
+
+                        // Generate the basic IMessage implementation
+                        var sourceCode = GenerateBasicProtobufMessage(contract);
+                        var fileName = $"{type}.g.cs";
+                        spc.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
+                    }
+                    catch (LightProtoGeneratorException e)
+                    {
+                        spc.ReportDiagnostic(
+                            Diagnostic.Create(
+                                new DiagnosticDescriptor(
+                                    e.Id,
+                                    e.Title,
+                                    e.Message,
+                                    e.Category,
+                                    e.Severity,
+                                    isEnabledByDefault: true
+                                ),
+                                e.Location ?? Location.None
+                            )
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        spc.ReportDiagnostic(
+                            Diagnostic.Create(
+                                new DiagnosticDescriptor(
+                                    "LightProto",
+                                    "Unknown Exception",
+                                    e.ToString(),
+                                    "Unknown",
+                                    DiagnosticSeverity.Error,
+                                    isEnabledByDefault: true
+                                ),
+                                Location.None
+                            )
+                        );
+                    }
                 }
             }
-        }
+        );
     }
 
     public string Invoke(bool prediction, Func<string> ifTrue, Func<string> ifFalse)
