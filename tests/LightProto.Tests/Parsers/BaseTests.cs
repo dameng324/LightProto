@@ -45,6 +45,7 @@ public abstract class BaseTests<
     }
 
     [Test]
+    [SkipAot]
     [MethodDataSource(nameof(GetMessages))]
     public async Task ProtoBuf_net_Serialize_GoogleProto_Deserialize(Message message)
     {
@@ -60,6 +61,7 @@ public abstract class BaseTests<
     }
 
     [Test]
+    [SkipAot]
     [MethodDataSource(nameof(GetGoogleMessages))]
     public async Task GoogleProto_Serialize_ProtoBuf_net_Deserialize(GoogleProtobufMessage google)
     {
