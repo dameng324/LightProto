@@ -26,8 +26,6 @@ public class LightProtoGenerator : IIncrementalGenerator
         var protoContracts = namedTypeSymbols.Where(
             (symbol) =>
             {
-                if (symbol is null)
-                    return false;
                 if (symbol is not INamedTypeSymbol)
                     return false;
                 return symbol
