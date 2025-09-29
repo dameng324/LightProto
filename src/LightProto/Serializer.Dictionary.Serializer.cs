@@ -75,17 +75,13 @@ public static partial class Serializer
         where TKey : notnull
     {
         uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
-        uint tag2 = tag;
         uint keyTag = WireFormat.MakeTag(1, keyWriter.WireType);
         uint valueTag = WireFormat.MakeTag(2, valueWriter.WireType);
         return new IEnumerableKeyValuePairProtoWriter<IDictionary<TKey, TValue>, TKey, TValue>(
             keyWriter,
             valueWriter,
             tag,
-            keyTag,
-            valueTag,
-            (dic) => dic.Count,
-            tag2
+            (dic) => dic.Count
         );
     }
 }

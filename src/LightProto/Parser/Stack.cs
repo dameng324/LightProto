@@ -7,35 +7,15 @@ namespace LightProto.Parser;
 
 public sealed class StackProtoWriter<T> : IEnumerableProtoWriter<Stack<T>, T>
 {
-    public StackProtoWriter(
-        IProtoWriter<T> itemWriter,
-        uint tag,
-        int itemFixedSize,
-        bool isPacked,
-        uint tag2
-    )
-        : base(
-            itemWriter,
-            tag,
-            static collection => collection.Count,
-            itemFixedSize,
-            isPacked,
-            tag2
-        ) { }
+    public StackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
+        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
 }
 
 public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
 {
-    public StackProtoReader(
-        IProtoReader<T> itemReader,
-        uint tag,
-        int itemFixedSize,
-        bool isPacked,
-        uint tag2
-    )
+    public StackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
         : base(
             itemReader,
-            tag,
             static (size) => new Stack<T>(size),
             static (collection, item) =>
             {
@@ -43,8 +23,6 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
                 return collection;
             },
             itemFixedSize,
-            isPacked,
-            tag2,
             ReverseStack
         ) { }
 

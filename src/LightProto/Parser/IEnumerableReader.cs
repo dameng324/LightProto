@@ -2,9 +2,7 @@
 
 public interface ICollectionReader
 {
-    public uint Tag { get; }
-    public uint Tag2 { get; }
-    public int ItemFixedSize { get; }
+    public WireFormat.WireType ItemWireType { get; }
 }
 
 public class IEnumerableProtoReader<TCollection, TItem>
@@ -12,41 +10,36 @@ public class IEnumerableProtoReader<TCollection, TItem>
         ICollectionReader
     where TCollection : IEnumerable<TItem>
 {
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-    public uint Tag { get; }
-    public uint Tag2 { get; }
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
     public Func<TCollection, TItem, TCollection> AddItem { get; }
     public int ItemFixedSize { get; }
-    public bool IsPacked { get; }
+    public WireFormat.WireType ItemWireType => ItemReader.WireType;
 
     public IEnumerableProtoReader(
         IProtoReader<TItem> itemReader,
-        uint tag,
         Func<int, TCollection> createWithCapacity,
         Func<TCollection, TItem, TCollection> addItem,
         int itemFixedSize,
-        bool isPacked,
-        uint tag2,
         Func<TCollection, TCollection>? completeAction = null
     )
     {
-        Tag = tag;
-        Tag2 = tag2;
         _completeAction = completeAction;
         ItemReader = itemReader;
         CreateWithCapacity = createWithCapacity;
         AddItem = addItem;
         ItemFixedSize = itemFixedSize;
-        IsPacked = isPacked;
     }
 
     public TCollection ParseFrom(ref ReaderContext ctx)
     {
+        var tag = ctx.state.lastTag;
         var fixedSize = ItemFixedSize;
-        if (IsPacked && PackedRepeated.Support<TItem>())
+        if (
+            WireFormat.GetTagWireType(tag) is WireFormat.WireType.LengthDelimited
+            && PackedRepeated.Support<TItem>()
+        )
         {
             int length = ctx.ReadLength();
             if (length <= 0)
@@ -126,10 +119,7 @@ public class IEnumerableProtoReader<TCollection, TItem>
             do
             {
                 collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-            } while (
-                ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag)
-                || ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, Tag2)
-            );
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
 
             return _completeAction is null ? collection : _completeAction.Invoke(collection);
         }

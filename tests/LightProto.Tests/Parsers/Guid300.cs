@@ -29,7 +29,9 @@ public partial class Guid300Tests : BaseTests<Guid300Tests.Message, Guid300Tests
 
     public override async Task AssertGoogleResult(Guid300TestsMessage clone, Message message)
     {
-        await Assert.That(Guid.Parse(clone.Property)).IsEquivalentTo(message.Property);
+        await Assert
+            .That(Guid.TryParse(clone.Property, out var guid) ? guid : Guid.Empty)
+            .IsEquivalentTo(message.Property);
     }
 
     public override IEnumerable<Message> GetMessages()

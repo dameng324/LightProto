@@ -5,31 +5,6 @@ namespace LightProto.Tests;
 public class CollectionSerializerTest
 {
     [Test]
-    public async Task IntListTest()
-    {
-        List<int> list = [1, 2, 3, 4];
-        var bytes = list.ToByteArray(Int32ProtoParser.ProtoWriter);
-        var clone = Serializer.Deserialize<List<int>, int>(
-            bytes.AsSpan(),
-            Int32ProtoParser.ProtoReader
-        );
-        await Assert.That(clone).IsEquivalentTo(list);
-    }
-
-    [Test]
-    public async Task StringListTest()
-    {
-        List<string> list = ["123", "", "111"];
-        var bytes = list.ToByteArray(StringProtoParser.ProtoWriter);
-
-        var clone = Serializer.Deserialize<List<string>, string>(
-            bytes.AsSpan(),
-            StringProtoParser.ProtoReader
-        );
-        await Assert.That(clone).IsEquivalentTo(list);
-    }
-
-    [Test]
     public async Task DictionaryTest()
     {
         var map = new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 };

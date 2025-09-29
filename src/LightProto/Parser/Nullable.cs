@@ -6,7 +6,7 @@ public sealed class NullableProtoReader<T> : IProtoReader<Nullable<T>>
     public IProtoReader<T> ValueReader { get; }
     public WireFormat.WireType WireType => ValueReader.WireType;
 
-    public NullableProtoReader(IProtoReader<T> valueReader, uint tag, int fixedSize)
+    public NullableProtoReader(IProtoReader<T> valueReader)
     {
         ValueReader = valueReader;
     }
@@ -26,7 +26,7 @@ public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     public IProtoWriter<T> ValueWriter { get; }
     public WireFormat.WireType WireType => ValueWriter.WireType;
 
-    public NullableProtoWriter(IProtoWriter<T> valueWriter, uint tag, int fixedSize)
+    public NullableProtoWriter(IProtoWriter<T> valueWriter)
     {
         ValueWriter = valueWriter;
     }

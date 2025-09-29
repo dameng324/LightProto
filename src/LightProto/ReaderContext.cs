@@ -46,21 +46,6 @@ namespace LightProto
         }
 
         /// <summary>
-        /// Initialize a <see cref="ReaderContext"/> using existing <see cref="ParserInternalState"/>, e.g. from <see cref="CodedInputStream"/>.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(
-            ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            out ReaderContext ctx
-        )
-        {
-            // Note: if this code ever changes, also change the initialization above.
-            ctx.buffer = buffer;
-            ctx.state = state;
-        }
-
-        /// <summary>
         /// Creates a ParseContext instance from CodedInputStream.
         /// WARNING: internally this copies the CodedInputStream's state, so after done with the ParseContext,
         /// the CodedInputStream's state needs to be updated.
@@ -104,21 +89,6 @@ namespace LightProto
             ctx.state.bufferSize = ctx.buffer.Length;
 
             ctx.state.DiscardUnknownFields = false;
-        }
-
-        /// <summary>
-        /// Returns the last tag read, or 0 if no tags have been read or we've read beyond
-        /// the end of the input.
-        /// </summary>
-        internal uint LastTag => state.lastTag;
-
-        /// <summary>
-        /// Internal-only property; when set to true, unknown fields will be discarded while parsing.
-        /// </summary>
-        internal bool DiscardUnknownFields
-        {
-            get => state.DiscardUnknownFields;
-            set => state.DiscardUnknownFields = value;
         }
 
         /// <summary>
@@ -246,15 +216,5 @@ namespace LightProto
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadLength() => (int)ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
-
-        internal void CopyStateTo(CodedInputStream input)
-        {
-            input.InternalState = state;
-        }
-
-        internal void LoadStateFrom(CodedInputStream input)
-        {
-            state = input.InternalState;
-        }
     }
 }

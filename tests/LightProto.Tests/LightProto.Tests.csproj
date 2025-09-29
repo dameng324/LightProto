@@ -7,10 +7,11 @@
     <PublishAot Condition="$(Configuration)=='Release'">true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.32.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.30.2" />
+    <!-- above 3.31 cause aot issue see: https://github.com/protocolbuffers/protobuf/issues/21824 -->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
     <PackageReference Include="protobuf-net" Version="3.2.56" />
-    <PackageReference Include="TUnit" Version="0.61.2" />
+    <PackageReference Include="TUnit" Version="0.61.39" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LightProto\LightProto.csproj" />
@@ -37,5 +38,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Benchmark\test.bin" Link="test.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="..\Benchmark\Contracts\LightProto.cs" Link="LightProtoContract.cs" />
   </ItemGroup>
 </Project>

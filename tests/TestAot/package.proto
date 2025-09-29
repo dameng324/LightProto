@@ -1,0 +1,7 @@
+﻿syntax = "proto3";
+option csharp_namespace = "TestPackage";
+
+message TestArrayMessage
+{
+  repeated double Items = 1;
+}

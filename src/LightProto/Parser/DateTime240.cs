@@ -5,10 +5,10 @@
 public partial struct DateTime240ProtoParser
 {
     [ProtoMember(1)]
-    private long Seconds { get; set; }
+    internal long Seconds { get; set; }
 
     [ProtoMember(2)]
-    private int Nanos { get; set; }
+    internal int Nanos { get; set; }
 
     private static readonly DateTime UnixEpoch = new DateTime(
         1970,

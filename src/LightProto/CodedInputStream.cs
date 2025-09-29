@@ -43,7 +43,7 @@ namespace LightProto
         /// The stream to read further input from, or null if the byte array buffer was provided
         /// directly on construction, with no further data available.
         /// </summary>
-        private readonly Stream? input;
+        private readonly Stream input;
 
         /// <summary>
         /// The parser state is kept separately so that other parse implementations can reuse the same
@@ -56,14 +56,6 @@ namespace LightProto
         internal const int BufferSize = 4096;
 
         #region Construction
-
-        /// <summary>
-        /// Creates a new <see cref="CodedInputStream"/> reading data from the given stream, which will be disposed
-        /// when the returned object is disposed.
-        /// </summary>
-        /// <param name="input">The stream to read from.</param>
-        public CodedInputStream(Stream input)
-            : this(input, false) { }
 
         /// <summary>
         /// Creates a new <see cref="CodedInputStream"/> reading data from the given stream.
@@ -86,7 +78,7 @@ namespace LightProto
         /// stream and buffer, using the default limits.
         /// </summary>
         internal CodedInputStream(
-            Stream? input,
+            Stream input,
             byte[] buffer,
             int bufferPos,
             int bufferSize,
@@ -109,7 +101,7 @@ namespace LightProto
 
         internal byte[] InternalBuffer => buffer;
 
-        internal Stream? InternalInputStream => input;
+        internal Stream InternalInputStream => input;
 
         internal ref ParserInternalState InternalState => ref state;
 
@@ -125,7 +117,7 @@ namespace LightProto
         {
             if (!leaveOpen)
             {
-                input?.Dispose();
+                input.Dispose();
             }
         }
     }

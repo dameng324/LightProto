@@ -25,17 +25,6 @@ namespace LightProto
         internal Span<byte> buffer;
         internal WriterInternalState state;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            out WriterContext ctx
-        )
-        {
-            ctx.buffer = buffer;
-            ctx.state = state;
-        }
-
         /// <summary>
         /// Creates a WriteContext instance from CodedOutputStream.
         /// WARNING: internally this copies the CodedOutputStream's state, so after done with the WriteContext,
@@ -194,17 +183,5 @@ namespace LightProto
         public void WriteTag(uint tag) => WritingPrimitives.WriteTag(ref buffer, ref state, tag);
 
         internal void Flush() => WriteBufferHelper.Flush(ref buffer, ref state);
-
-        internal void CheckNoSpaceLeft() => WriteBufferHelper.CheckNoSpaceLeft(ref state);
-
-        internal void CopyStateTo(CodedOutputStream output)
-        {
-            output.InternalState = state;
-        }
-
-        internal void LoadStateFrom(CodedOutputStream output)
-        {
-            state = output.InternalState;
-        }
     }
 }

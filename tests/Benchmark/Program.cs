@@ -9,7 +9,6 @@ using LightProto;
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 return;
 
-
 // BenchmarkRunner.Run<SerializeAot>();
 // return;
 //

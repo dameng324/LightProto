@@ -8,24 +8,17 @@ public sealed class DictionaryProtoReader<TKey, TValue>
     public DictionaryProtoReader(
         IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader,
-        uint tag,
-        uint keyTag,
-        uint valueTag,
-        uint tag2
+        uint tag
     )
         : base(
             keyReader,
             valueReader,
-            tag,
-            keyTag,
-            valueTag,
             static capacity => new(capacity),
             static (dic, pair) =>
             {
                 dic[pair.Key] = pair.Value;
                 return dic;
-            },
-            tag2
+            }
         ) { }
 }
 
@@ -36,10 +29,7 @@ public sealed class DictionaryProtoWriter<TKey, TValue>
     public DictionaryProtoWriter(
         IProtoWriter<TKey> keyWriter,
         IProtoWriter<TValue> valueWriter,
-        uint tag,
-        uint keyTag,
-        uint valueTag,
-        uint tag2
+        uint tag
     )
-        : base(keyWriter, valueWriter, tag, keyTag, valueTag, (dic) => dic.Count, tag2) { }
+        : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
 }

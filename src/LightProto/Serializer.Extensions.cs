@@ -38,15 +38,6 @@ public static partial class Serializer
         writer.WriteTo(ref output, value);
     }
 
-    public static T ParseFrom<T>(this IProtoReader<T> reader, Stream stream) =>
-        Deserialize(stream, reader);
-
-    public static T ParseFrom<T>(this IProtoReader<T> reader, ReadOnlySequence<byte> bytes) =>
-        Deserialize(bytes, reader);
-
-    public static T ParseFrom<T>(this IProtoReader<T> reader, ReadOnlySpan<byte> bytes) =>
-        Deserialize(bytes, reader);
-
     public static T ParseMessageFrom<T>(this IProtoReader<T> reader, ref ReaderContext input)
     {
         if (reader.IsMessage)
@@ -128,6 +119,12 @@ public static partial class Serializer
 
     public static void SerializeTo<T>(
         this ICollection<T> instance,
+        Stream destination,
+        IProtoWriter<T> writer
+    ) => Serialize(destination, instance, writer);
+
+    public static void SerializeTo<T>(
+        this T instance,
         Stream destination,
         IProtoWriter<T> writer
     ) => Serialize(destination, instance, writer);

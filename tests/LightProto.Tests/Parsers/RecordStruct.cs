@@ -34,6 +34,8 @@ public partial class RecordStructTests
 
     public override async Task AssertGoogleResult(RecordStructTestsMessage clone, Message message)
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
+        await Assert
+            .That(clone.Property ?? string.Empty)
+            .IsEquivalentTo(message.Property ?? string.Empty);
     }
 }

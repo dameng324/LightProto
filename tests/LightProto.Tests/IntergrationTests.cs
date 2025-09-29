@@ -191,7 +191,7 @@ public class IntergrationTests
             throw;
         }
 
-        var parseBack = T1.ProtoReader.ParseFrom(bytes);
+        var parseBack = LightProto.Serializer.Deserialize<T1>(bytes);
         var bytes2 = parseBack.ToByteArray();
 
         var parseBackBytes = Convert.ToHexString(bytes2);
@@ -216,7 +216,7 @@ public class IntergrationTests
         await Assert.That(obj.ConcurrentStringQueueFieldTests).IsNotNull();
         await Assert.That(obj.ConcurrentStringStackFieldTests).IsNotNull();
         var bytes = obj.ToByteArray();
-        var parsed = CsTestMessage.ProtoReader.ParseFrom(bytes);
+        var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(bytes);
         await Assert.That(parsed.Int32ArrayFields).IsNotNull();
         await Assert.That(parsed.StringArrayFields).IsNotNull();
         await Assert.That(parsed.IntListFieldTests).IsNotNull();

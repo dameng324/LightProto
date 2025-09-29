@@ -1,4 +1,5 @@
 ﻿using LightProto;
+using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
 
@@ -45,6 +46,17 @@ public partial class DateTimeTests : BaseTests<DateTimeTests.Message, DateTimeTe
     public override async Task AssertGoogleResult(DateTimeTestsMessage clone, Message message)
     {
         await Assert.That(clone.Property.ToDateTime()).IsEquivalentTo(message.Property);
+    }
+
+    [Test]
+    public async Task IsNormalizedTest()
+    {
+        DateTime240ProtoParser parser = new() { Nanos = -1 };
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            DateTime dateTime = parser;
+        });
+        await Assert.That(ex.Message).Contains("contains invalid values");
     }
 }
 

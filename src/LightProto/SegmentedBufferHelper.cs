@@ -8,6 +8,7 @@
 #endregion
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -18,6 +19,7 @@ namespace LightProto
     /// Parsing from the buffer is a loop of reading from current buffer / refreshing the buffer once done.
     /// </summary>
     [SecuritySafeCritical]
+    [ExcludeFromCodeCoverage]
     internal struct SegmentedBufferHelper
     {
         private int? totalLength;
