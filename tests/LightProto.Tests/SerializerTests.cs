@@ -429,4 +429,35 @@ public partial class SerializerTests
         await Assert.That(obj.GetExtensionObject(true)).IsNull();
 #pragma warning restore CS0618 // Type or member is obsolete
     }
+
+    [Test]
+    public async Task GetArrayReaderTest()
+    {
+        var original = Enumerable.Range(0, 100).Select(i => i).ToList();
+
+        using var ms = new MemoryStream();
+        original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
+
+        ms.Position = 0;
+        var parsed = Serializer.Deserialize<List<int>, int>(ms, Int32ProtoParser.ProtoReader);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task GetArrayReaderWithGzipTest()
+    {
+        var original = Enumerable.Range(0, 100).Select(i => i).ToArray();
+
+        using var ms = new MemoryStream();
+        using (var gzip = new GZipStream(ms, mode: CompressionMode.Compress, leaveOpen: true))
+            original.SerializeTo(gzip, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
+
+        ms.Position = 0;
+        using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
+        var parsed = Serializer.Deserialize<int[]>(
+            deZip,
+            Int32ProtoParser.ProtoReader.GetArrayReader<int>()
+        );
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
 }

@@ -11,11 +11,14 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
 
-    public ArrayProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
+    public ArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
     {
         ItemReader = itemReader;
         ItemFixedSize = itemFixedSize;
     }
+
+    public ArrayProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
+        : this(itemReader, itemFixedSize) { }
 
     public TItem[] ParseFrom(ref ReaderContext ctx)
     {

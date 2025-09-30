@@ -14,15 +14,11 @@ public static partial class Serializer
         IProtoReader<TValue> valueReader
     )
         where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull
-    {
-        var collectionReader = GetDictionaryReader<TDictionary, TKey, TValue>(
-            keyReader,
-            valueReader
+        where TKey : notnull =>
+        Deserialize(
+            source,
+            GetDictionaryMessageReader<TDictionary, TKey, TValue>(keyReader, valueReader)
         );
-        ReaderContext.Initialize(source, out var ctx);
-        return ReadCollectionFromContext(ref ctx, collectionReader);
-    }
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
@@ -33,24 +29,17 @@ public static partial class Serializer
         IProtoReader<TValue> valueReader
     )
         where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull
-    {
-        var collectionReader = GetDictionaryReader<TDictionary, TKey, TValue>(
-            keyReader,
-            valueReader
+        where TKey : notnull =>
+        Deserialize(
+            source,
+            GetDictionaryMessageReader<TDictionary, TKey, TValue>(keyReader, valueReader)
         );
-        ReaderContext.Initialize(source, out var ctx);
-        return ReadCollectionFromContext(ref ctx, collectionReader);
-    }
 
-    internal static IEnumerableKeyValuePairProtoReader<
+    public static IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue> GetDictionaryReader<
         TDictionary,
         TKey,
         TValue
-    > GetDictionaryReader<TDictionary, TKey, TValue>(
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader
-    )
+    >(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
         where TDictionary : IDictionary<TKey, TValue>, new()
         where TKey : notnull
     {
@@ -66,6 +55,18 @@ public static partial class Serializer
         );
     }
 
+    public static IProtoReader<TDictionary> GetDictionaryMessageReader<TDictionary, TKey, TValue>(
+        IProtoReader<TKey> keyReader,
+        IProtoReader<TValue> valueReader
+    )
+        where TDictionary : IDictionary<TKey, TValue>, new()
+        where TKey : notnull
+    {
+        return new CollectionMessageReader<TDictionary, KeyValuePair<TKey, TValue>>(
+            GetDictionaryReader<TDictionary, TKey, TValue>(keyReader, valueReader)
+        );
+    }
+
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
@@ -75,14 +76,9 @@ public static partial class Serializer
         IProtoReader<TValue> valueReader
     )
         where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull
-    {
-        var collectionReader = GetDictionaryReader<TDictionary, TKey, TValue>(
-            keyReader,
-            valueReader
+        where TKey : notnull =>
+        Deserialize(
+            source,
+            GetDictionaryMessageReader<TDictionary, TKey, TValue>(keyReader, valueReader)
         );
-        using var codedStream = new CodedInputStream(source, leaveOpen: true);
-        ReaderContext.Initialize(codedStream, out var ctx);
-        return ReadCollectionFromContext(ref ctx, collectionReader);
-    }
 }
