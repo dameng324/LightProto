@@ -36,59 +36,57 @@ public class LightProtoGenerator : IIncrementalGenerator
                     );
             }
         );
-        var compilationAndTypes = context.CompilationProvider.Combine(protoContracts.Collect());
+        var typesAndCompilation = protoContracts.Combine(context.CompilationProvider);
+
         context.RegisterSourceOutput(
-            compilationAndTypes,
+            typesAndCompilation,
             (spc, pair) =>
             {
-                var (compilation, types) = pair;
-                foreach (var type in types.OfType<INamedTypeSymbol>())
+                var (type, compilation) = pair;
+                try
                 {
-                    try
+                    var contract = GetProtoContract(compilation, type);
+                    if (contract is null)
                     {
-                        var contract = GetProtoContract(compilation, type);
-                        if (contract is null)
-                        {
-                            continue;
-                        }
+                        return;
+                    }
 
-                        // Generate the basic IMessage implementation
-                        var sourceCode = GenerateBasicProtobufMessage(contract);
-                        var fileName = $"{type}.g.cs";
-                        spc.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
-                    }
-                    catch (LightProtoGeneratorException e)
-                    {
-                        spc.ReportDiagnostic(
-                            Diagnostic.Create(
-                                new DiagnosticDescriptor(
-                                    e.Id,
-                                    e.Title,
-                                    e.Message,
-                                    e.Category,
-                                    e.Severity,
-                                    isEnabledByDefault: true
-                                ),
-                                e.Location ?? Location.None
-                            )
-                        );
-                    }
-                    catch (Exception e)
-                    {
-                        spc.ReportDiagnostic(
-                            Diagnostic.Create(
-                                new DiagnosticDescriptor(
-                                    "LightProto",
-                                    "Unknown Exception",
-                                    e.ToString(),
-                                    "Unknown",
-                                    DiagnosticSeverity.Error,
-                                    isEnabledByDefault: true
-                                ),
-                                Location.None
-                            )
-                        );
-                    }
+                    // Generate the basic IMessage implementation
+                    var sourceCode = GenerateBasicProtobufMessage(contract);
+                    var fileName = $"{type}.g.cs";
+                    spc.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
+                }
+                catch (LightProtoGeneratorException e)
+                {
+                    spc.ReportDiagnostic(
+                        Diagnostic.Create(
+                            new DiagnosticDescriptor(
+                                e.Id,
+                                e.Title,
+                                e.Message,
+                                e.Category,
+                                e.Severity,
+                                isEnabledByDefault: true
+                            ),
+                            e.Location ?? Location.None
+                        )
+                    );
+                }
+                catch (Exception e)
+                {
+                    spc.ReportDiagnostic(
+                        Diagnostic.Create(
+                            new DiagnosticDescriptor(
+                                "LightProto",
+                                "Unknown Exception",
+                                e.ToString(),
+                                "Unknown",
+                                DiagnosticSeverity.Error,
+                                isEnabledByDefault: true
+                            ),
+                            Location.None
+                        )
+                    );
                 }
             }
         );
@@ -1294,10 +1292,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                     stringIntern,
                     member
                 );
-                var tag2 = ProtoMember.GetRawTag(
-                    fieldNumber,
-                    ProtoMember.PbWireType.LengthDelimited
-                );
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
                     if (readerOrWriter == "Reader")
@@ -1644,7 +1638,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             new();
     }
 
-    private ProtoContract? GetProtoContract(Compilation compilation, ITypeSymbol? type)
+    private ProtoContract? GetProtoContract(Compilation compilation, ISymbol? type)
     {
         if (type is not INamedTypeSymbol targetType)
         {
