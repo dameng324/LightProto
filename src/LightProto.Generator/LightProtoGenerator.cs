@@ -9,81 +9,56 @@ using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
 namespace LightProto.Generator;
 
 [Generator]
-public class LightProtoGenerator : ISourceGenerator
+public class LightProtoGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
-
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var processedTypes = new HashSet<string>();
+        var namedTypeSymbols = context.SyntaxProvider.CreateSyntaxProvider(
+            predicate: (node, _) =>
+                node
+                    is ClassDeclarationSyntax
+                        or StructDeclarationSyntax
+                        or InterfaceDeclarationSyntax
+                        or RecordDeclarationSyntax,
+            transform: (ctx, _) => ctx.SemanticModel.GetDeclaredSymbol(ctx.Node)
+        );
 
-        foreach (var syntaxTree in context.Compilation.SyntaxTrees)
-        {
-            var semanticModel = context.Compilation.GetSemanticModel(syntaxTree);
-
-            foreach (var node in syntaxTree.GetRoot().DescendantNodesAndSelf())
+        var protoContracts = namedTypeSymbols.Where(
+            (symbol) =>
             {
-                INamedTypeSymbol? targetType;
+                if (symbol is not INamedTypeSymbol)
+                    return false;
+                return symbol
+                    .GetAttributes()
+                    .Any(attr =>
+                        attr.AttributeClass?.ToDisplayString()
+                        == "LightProto.ProtoContractAttribute"
+                    );
+            }
+        );
+        var typesAndCompilation = protoContracts.Combine(context.CompilationProvider);
 
-                // Support class, record, record struct, and struct declarations
-                if (node is ClassDeclarationSyntax classDeclaration)
-                {
-                    targetType =
-                        ModelExtensions.GetDeclaredSymbol(semanticModel, classDeclaration)
-                        as INamedTypeSymbol;
-                }
-                else if (node is StructDeclarationSyntax structDeclaration)
-                {
-                    targetType =
-                        ModelExtensions.GetDeclaredSymbol(semanticModel, structDeclaration)
-                        as INamedTypeSymbol;
-                }
-                else if (node is RecordDeclarationSyntax recordDeclaration)
-                {
-                    targetType =
-                        ModelExtensions.GetDeclaredSymbol(semanticModel, recordDeclaration)
-                        as INamedTypeSymbol;
-                }
-                else
-                {
-                    // // Handle records using reflection for compatibility
-                    // var nodeTypeName = node.GetType().Name;
-                    // if (nodeTypeName.Contains("RecordDeclaration"))
-                    // {
-                    //     var symbolInfo = semanticModel.GetDeclaredSymbol(node);
-                    //     targetType = symbolInfo as INamedTypeSymbol;
-                    // }
-                    // else
-                    {
-                        continue;
-                    }
-                }
-
-                if (targetType is null)
-                    continue;
-
-                // Prevent duplicate processing
-                var typeKey =
-                    $"{targetType}@{targetType.Locations.FirstOrDefault()?.SourceTree?.FilePath}";
-                if (!processedTypes.Add(typeKey))
-                    continue;
-
+        context.RegisterSourceOutput(
+            typesAndCompilation,
+            (spc, pair) =>
+            {
+                var (type, compilation) = pair;
                 try
                 {
-                    var contract = GetProtoContract(context.Compilation, targetType);
+                    var contract = GetProtoContract(compilation, type);
                     if (contract is null)
                     {
-                        continue;
+                        return;
                     }
 
                     // Generate the basic IMessage implementation
                     var sourceCode = GenerateBasicProtobufMessage(contract);
-                    var fileName = $"{targetType}.g.cs";
-                    context.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
+                    var fileName = $"{type}.g.cs";
+                    spc.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
                 }
                 catch (LightProtoGeneratorException e)
                 {
-                    context.ReportDiagnostic(
+                    spc.ReportDiagnostic(
                         Diagnostic.Create(
                             new DiagnosticDescriptor(
                                 e.Id,
@@ -99,7 +74,7 @@ public class LightProtoGenerator : ISourceGenerator
                 }
                 catch (Exception e)
                 {
-                    context.ReportDiagnostic(
+                    spc.ReportDiagnostic(
                         Diagnostic.Create(
                             new DiagnosticDescriptor(
                                 "LightProto",
@@ -114,7 +89,7 @@ public class LightProtoGenerator : ISourceGenerator
                     );
                 }
             }
-        }
+        );
     }
 
     public string Invoke(bool prediction, Func<string> ifTrue, Func<string> ifFalse)
@@ -1317,10 +1292,6 @@ public class LightProtoGenerator : ISourceGenerator
                     stringIntern,
                     member
                 );
-                var tag2 = ProtoMember.GetRawTag(
-                    fieldNumber,
-                    ProtoMember.PbWireType.LengthDelimited
-                );
                 if (namedType.TypeKind == TypeKind.Interface)
                 {
                     if (readerOrWriter == "Reader")
@@ -1667,7 +1638,7 @@ public class LightProtoGenerator : ISourceGenerator
             new();
     }
 
-    private ProtoContract? GetProtoContract(Compilation compilation, ITypeSymbol? type)
+    private ProtoContract? GetProtoContract(Compilation compilation, ISymbol? type)
     {
         if (type is not INamedTypeSymbol targetType)
         {
