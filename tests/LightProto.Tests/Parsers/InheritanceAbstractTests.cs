@@ -1,19 +1,19 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class InterfaceInheritanceTests : BaseProtoBufTests<InterfaceInheritanceTests.Base>
+public partial class InheritanceAbstractTests : BaseProtoBufTests<InheritanceAbstractTests.Base>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
     [ProtoInclude(3, typeof(Message))]
     [ProtoBuf.ProtoInclude(3, typeof(Message))]
-    [ProtoInclude(4, typeof(Message))]
-    [ProtoBuf.ProtoInclude(4, typeof(Message))]
-    public partial interface Base { }
+    [ProtoInclude(4, typeof(Message2))]
+    [ProtoBuf.ProtoInclude(4, typeof(Message2))]
+    public abstract partial class Base { }
 
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
-    public partial record Message : Base
+    public partial class Message : Base
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
@@ -22,17 +22,16 @@ public partial class InterfaceInheritanceTests : BaseProtoBufTests<InterfaceInhe
 
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
-    public partial struct StructMessage : Base
+    public partial class Message2 : Base
     {
-        [ProtoMember(2)]
-        [ProtoBuf.ProtoMember(2)]
-        public string Value { get; set; }
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1)]
+        public string Value { get; set; } = "";
     }
 
     public override IEnumerable<Base> GetMessages()
     {
         yield return new Message { Value = "value" };
-        yield return new StructMessage { Value = "value" };
     }
 
     public override async Task AssertResult(Base clone, Base message)

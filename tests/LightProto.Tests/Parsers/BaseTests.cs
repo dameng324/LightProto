@@ -112,10 +112,18 @@ public abstract class BaseGoogleProtobufTests<
 }
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
+[InheritsTests]
 public abstract class BaseProtoBufTests<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message
+> : BaseProtoBufTestsWithParser<Message, Message>
+    where Message : IProtoParser<Message> { }
+
+[SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
+public abstract class BaseProtoBufTestsWithParser<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message,
+    Parser
 >
-    where Message : IProtoParser<Message>
+    where Parser : IProtoParser<Message>
 {
     public abstract IEnumerable<Message> GetMessages();
 
@@ -125,45 +133,59 @@ public abstract class BaseProtoBufTests<
     [MethodDataSource(nameof(GetMessages))]
     public async Task LightProto_Serialize_Deserialize(Message message)
     {
-        byte[] bytes = message.ToByteArray();
+        byte[] bytes = message.ToByteArray(Parser.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
-        var clone = Serializer.Deserialize<Message>(bytes);
+        var clone = Serializer.Deserialize<Message>(bytes, Parser.ProtoReader);
         await AssertResult(clone, message);
     }
+
+    protected virtual bool ProtoBuf_net_Serialize_LightProto_Deserialize_Disabled => false;
 
     [Test]
     [MethodDataSource(nameof(GetMessages))]
     [SkipAot]
     public async Task ProtoBuf_net_Serialize_LightProto_Deserialize(Message message)
     {
+        if (ProtoBuf_net_Serialize_LightProto_Deserialize_Disabled)
+        {
+            return;
+        }
         var ms = new MemoryStream();
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
         var bytes = ms.ToArray();
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"ProtoBuf_net_Serialize bytes: {string.Join(",", bytes)}");
-        var clone = Serializer.Deserialize<Message>(bytes);
+        var clone = Serializer.Deserialize<Message>(bytes, Parser.ProtoReader);
         await AssertResult(clone, message);
     }
+
+    protected virtual bool LightProto_Serialize_ProtoBuf_net_Deserialize_Disabled => false;
 
     [Test]
     [MethodDataSource(nameof(GetMessages))]
     [SkipAot]
     public async Task LightProto_Serialize_ProtoBuf_net_Deserialize(Message message)
     {
-        byte[] bytes = message.ToByteArray();
+        if (LightProto_Serialize_ProtoBuf_net_Deserialize_Disabled)
+            return;
+        byte[] bytes = message.ToByteArray(Parser.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
         var clone = ProtoBuf.Serializer.Deserialize<Message>(bytes.AsSpan());
         await AssertResult(clone, message);
     }
 
+    protected virtual bool ProtoBuf_net_Serialize_Deserialize_Disabled => false;
+
     [Test]
     [MethodDataSource(nameof(GetMessages))]
     [SkipAot]
     public async Task ProtoBuf_net_Serialize_Deserialize(Message message)
     {
+        if (ProtoBuf_net_Serialize_Deserialize_Disabled)
+            return;
         var ms = new MemoryStream();
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
