@@ -195,7 +195,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                   {
                       public static new IProtoReader<{{proxyFor?.ToDisplayString() ?? className}}> ProtoReader {get;} = new LightProtoReader();
                       {{
-                          Invoke(baseType is null||targetType.TypeKind is TypeKind.Struct,//struct 不支持逆变/协变 不可以使用基类/interface的Writer,因此需要单独实现 
+                          Invoke(baseType is null||targetType.TypeKind is TypeKind.Struct, // Structs do not support contravariance/covariance and cannot use the base class/interface's Writer, so a separate implementation is required
                               () => $"public static IProtoWriter<{proxyFor?.ToDisplayString() ?? className}> ProtoWriter {{get;}} = new LightProtoWriter();", 
                               () => $"public static new IProtoWriter<{proxyFor?.ToDisplayString()??className}> ProtoWriter => {baseParserTypeName}.ProtoWriter;")
                       }}
