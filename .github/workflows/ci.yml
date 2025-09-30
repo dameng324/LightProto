@@ -66,6 +66,8 @@ jobs:
   
   windows-test:
     runs-on: windows-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
