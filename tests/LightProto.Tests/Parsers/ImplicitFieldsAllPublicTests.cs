@@ -67,7 +67,8 @@ public partial class ImplicitFieldsAllPublicTests
         public int Property2;
         public int Property3 { get; set; }
         private int Property4 { get; set; }
-        public int Property5 => Property4;
+
+        public int GetProperty5() => Property4;
 
         public static IEnumerable<ProtoBufMessage> GetMessages()
         {
@@ -123,7 +124,7 @@ public partial class ImplicitFieldsAllPublicTests
         await Assert.That(lightProto.Property3).IsEqualTo(protobuf.Property3);
         if (lightProtoToProtoBuf)
         {
-            await Assert.That(protobuf.Property5).IsEqualTo(0);
+            await Assert.That(protobuf.GetProperty5()).IsEqualTo(0);
         }
         else
         {
