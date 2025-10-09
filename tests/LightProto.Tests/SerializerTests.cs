@@ -433,7 +433,7 @@ public partial class SerializerTests
     [Test]
     public async Task GetArrayReaderTest()
     {
-        var original = Enumerable.Range(0, 100).Select(i => i).ToList();
+        var original = Enumerable.Range(0, 100).ToList();
 
         using var ms = new MemoryStream();
         original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
@@ -446,7 +446,7 @@ public partial class SerializerTests
     [Test]
     public async Task GetArrayReader2Test()
     {
-        var original = Enumerable.Range(0, 100).Select(i => i).ToArray();
+        var original = Enumerable.Range(0, 100).ToArray();
 
         using var ms = new MemoryStream();
         original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
@@ -462,7 +462,7 @@ public partial class SerializerTests
     [Test]
     public async Task GetArrayReaderWithGzipTest()
     {
-        var original = Enumerable.Range(0, 100).Select(i => i).ToArray();
+        var original = Enumerable.Range(0, 100).ToArray();
 
         using var ms = new MemoryStream();
         using (var gzip = new GZipStream(ms, mode: CompressionMode.Compress, leaveOpen: true))
