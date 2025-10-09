@@ -1958,6 +1958,15 @@ public class LightProtoGenerator : IIncrementalGenerator
                     continue;
                 }
 
+                if (member is IPropertySymbol { IsReadOnly: true })
+                {
+                    continue;
+                }
+
+                if (member is IFieldSymbol { IsReadOnly: true } or IFieldSymbol { IsConst: true })
+                {
+                    continue;
+                }
                 if (
                     member
                         .GetAttributes()
