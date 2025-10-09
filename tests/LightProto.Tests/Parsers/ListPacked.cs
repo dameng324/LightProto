@@ -25,8 +25,7 @@ public partial class ListPackedTests : BaseTests<ListPackedTests.Message, ListPa
         yield return new() { Property = [1, 2, 3, 4, 5] };
         yield return new() { Property = [-1, -2, -3, -4, -5] };
         yield return new() { Property = [0, 0, 0, 0, 0] };
-        // TODO protobuf is wrong here: https://github.com/protobuf-net/protobuf-net/issues/1221
-        // yield return new () { Property = [0] };
+        yield return new() { Property = [0] };
         yield return new() { Property = [] };
     }
 

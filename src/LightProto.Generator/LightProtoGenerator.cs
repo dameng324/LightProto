@@ -259,10 +259,11 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           yield return $"    public int CalculateSize({className} message) => MemberStructWriter.CalculateSize(MemberStruct.FromMessage(message));";
                                           yield return "}";
                                       }
-                                       }
-                                  else {
-                                  return string.Empty;
-                                       }
+                                  }
+                                  else
+                                  {
+                                      return string.Empty;
+                                  }
                               })
                       }}
                       
@@ -736,8 +737,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                                   protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
                               }}
+                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                                  protoMembers.Where(member=>member.CheckNullWhenDeserializing)
+                                      .Select(member => $"bool _{member.Name}HasValue = false;"))
+                              }}
                               uint tag;
-                              while ((tag = input.ReadTag()) != 0) 
+                              while ((tag = input.ReadTag()) != 0)
                               {
                                   if ((tag & 7) == 4) {
                                     break;
@@ -766,6 +771,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                                   {
                                                       yield return $"{{";
+                                                      if(member.CheckNullWhenDeserializing)
+                                                          yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = input.Read{name}();";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -773,6 +780,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else if (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type))
                                                   {
                                                       yield return $"{{";
+                                                      if(member.CheckNullWhenDeserializing)
+                                                          yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -780,6 +789,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else
                                                   {
                                                       yield return $"{{";
+                                                      if(member.CheckNullWhenDeserializing)
+                                                          yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -789,90 +800,113 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       }}
                                   }
                               }
-                              {
-                                  {{
-                                      (skipConstructor
-                                          ?GenSkipConstructor()
-                                          :GenGeneralConstructor())
-                                  }}
-                                  {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                                      protoMembers.SelectMany(member => {
-                                          return Gen();
-                                          IEnumerable<string> Gen()
-                                          {   
-                                              if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                                              {
-                                                  yield return $"if(parsed.{member.Name}!=null) {{";
-                                                  yield return $"    parsed.{member.Name}.Clear();";
-                                                  yield return $"    if(_{member.Name}!=null) {{";
-                                                  if(IsStackType(member.Type))
-                                                      yield return $"        foreach(var v in _{member.Name}.Reverse()) {{";
-                                                  else 
-                                                      yield return $"        foreach(var v in _{member.Name}) {{";
-                                                  if(IsStackType(member.Type))
-                                                      yield return $"            parsed.{member.Name}.Push(v);";
-                                                  else if(IsQueueType(member.Type))
-                                                      yield return $"            parsed.{member.Name}.Enqueue(v);";
-                                                  else if(IsDictionaryType(compilation, member.Type))
-                                                      yield return $"            parsed.{member.Name}[v.Key]=v.Value;";
-                                                  else 
-                                                      yield return $"            parsed.{member.Name}.Add(v);";
-                                                  yield return $"        }}";
-                                                  yield return $"    }}";
-                                                  yield return $"}}";
-                                              }
+                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                                  protoMembers.Where(member=>member.CheckNullWhenDeserializing)
+                                      .SelectMany(member => {
+                                      return Gen();
+                                      IEnumerable<string> Gen()
+                                      {
+                                          yield return $"if(_{member.Name}HasValue==false)";
+                                          yield return $"    throw new InvalidProtocolBufferException(\"ProtoMember:{contract.Type}.{member.Name} is required but not found when deserialization.\");";
+                                      }
+                                  }))
+                              }}
+                              {{
+                                  string.Join(Environment.NewLine + GetIntendedSpace(3),skipConstructor
+                                      ?GenSkipConstructor()
+                                      :GenGeneralConstructor())
+                              }}
+                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                                  protoMembers.SelectMany(member => {
+                                      return Gen();
+                                      IEnumerable<string> Gen()
+                                      {
+                                          if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
+                                          {
+                                              yield return $"if(parsed.{member.Name}!=null) {{";
+                                              yield return $"    parsed.{member.Name}.Clear();";
+                                              yield return $"    if(_{member.Name}!=null) {{";
+                                              if(IsStackType(member.Type))
+                                                  yield return $"        foreach(var v in _{member.Name}.Reverse()) {{";
+                                              else 
+                                                  yield return $"        foreach(var v in _{member.Name}) {{";
+                                              if(IsStackType(member.Type))
+                                                  yield return $"            parsed.{member.Name}.Push(v);";
+                                              else if(IsQueueType(member.Type))
+                                                  yield return $"            parsed.{member.Name}.Enqueue(v);";
+                                              else if(IsDictionaryType(compilation, member.Type))
+                                                  yield return $"            parsed.{member.Name}[v.Key]=v.Value;";
+                                              else 
+                                                  yield return $"            parsed.{member.Name}.Add(v);";
+                                              yield return $"        }}";
+                                              yield return $"    }}";
+                                              yield return $"}}";
                                           }
-                                      }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
-                                  }}
-                                  return parsed;
-                              }
+                                      }
+                                  }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
+                              }}
+                              return parsed;
                           }
                       }
                   }
                   """
             );
-            string GenSkipConstructor()
+            IEnumerable<string> GenSkipConstructor()
             {
-                return $$"""
-                     var parsed = ({{className}})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({{className}}));
-                     {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                         protoMembers.Select(member => {
-                             if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                             {
-                                 throw LightProtoGeneratorException.ReadOnlyWhenSkipConstructor(member.Name, member.DeclarationSyntax.GetLocation());
-                             }
-                             else if (member.IsInitOnly)
-                             {
-                                 throw LightProtoGeneratorException.InitOnlyWhenSkipConstructor(member.Name, member.DeclarationSyntax.GetLocation());
-                             }
-                             else
-                             {
-                                 return $"parsed.{member.Name} = _{member.Name};";
-                             }
-                         }))
-                     }}
-                     """;
+                yield return $"var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                foreach (var member in protoMembers)
+                {
+                    if (
+                        member.IsReadOnly
+                        && (
+                            IsCollectionType(compilation, member.Type)
+                            || IsDictionaryType(compilation, member.Type)
+                        )
+                    )
+                    {
+                        throw LightProtoGeneratorException.ReadOnlyWhenSkipConstructor(
+                            member.Name,
+                            member.DeclarationSyntax.GetLocation()
+                        );
+                    }
+                    else if (member.IsInitOnly)
+                    {
+                        throw LightProtoGeneratorException.InitOnlyWhenSkipConstructor(
+                            member.Name,
+                            member.DeclarationSyntax.GetLocation()
+                        );
+                    }
+                    else
+                    {
+                        yield return $"parsed.{member.Name} = _{member.Name};";
+                    }
+                }
             }
 
-            string GenGeneralConstructor()
+            IEnumerable<string> GenGeneralConstructor()
             {
-                return $$"""
-                 var parsed = new {{className}}()
-                 {
-                     {{string.Join(Environment.NewLine + GetIntendedSpace(4),
-                         protoMembers.Select(member => {
-                             if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
-                             {
-                                 return $"// {member.Name} is readonly";
-                             }
-                             else
-                             {
-                                 return $"{member.Name} = _{member.Name},";
-                             }
-                         }))
-                     }}
-                 };
-                 """;
+                yield return $"var parsed = new {className}()";
+                yield return $"{{";
+
+                foreach (var member in protoMembers)
+                {
+                    if (
+                        member.IsReadOnly
+                        && (
+                            IsCollectionType(compilation, member.Type)
+                            || IsDictionaryType(compilation, member.Type)
+                        )
+                    )
+                    {
+                        yield return $"    // {member.Name} is readonly";
+                    }
+                    else
+                    {
+                        yield return $"    {member.Name} = _{member.Name},";
+                    }
+                }
+
+                yield return $"}};";
             }
         }
         var nestedClassStructure = GenerateNestedClassStructure(targetType, classBody);
@@ -2029,14 +2063,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        initializer = HasParameterlessConstructor(memberType)
-                            ? $"new ()"
-                            : "default";
+                        initializer = "default";
                     }
                 }
                 else
                 {
-                    initializer = HasParameterlessConstructor(memberType) ? $"new ()" : "default";
+                    initializer = "default";
                 }
             }
 
@@ -2046,16 +2078,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     .OfType<IFieldSymbol>()
                     .Any(o => o.IsStatic && o.Name == "Empty");
             }
-            bool HasParameterlessConstructor(ITypeSymbol type)
-            {
-                if (type is INamedTypeSymbol namedType)
-                {
-                    return namedType.InstanceConstructors.Any(c =>
-                        c.Parameters.Length == 0 && c.DeclaredAccessibility == Accessibility.Public
-                    );
-                }
-                return false;
-            }
+
             ITypeSymbol? ProxyType =
                 GetProxyType(member.GetAttributes()) ?? GetProxyType(memberType);
 
@@ -2180,6 +2203,19 @@ public class LightProtoGenerator : IIncrementalGenerator
         public (DataFormat keyFormat, DataFormat valueFormat) MapFormat { get; set; }
         public uint FieldNumber { get; set; }
         public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// When deserializing, if the field is required and the type is a reference type or nullable value type,
+        /// we need to check if the value is null and throw an exception if it is.
+        /// This is to prevent null reference exceptions when accessing the field later.
+        /// </summary>
+        public bool CheckNullWhenDeserializing =>
+            IsRequired
+            && IsCollectionType(Compilation, Type) == false
+            && (
+                Type.IsReferenceType
+                || Type.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T
+            );
         public bool IsInitOnly { get; set; }
         public string Initializer { get; set; } = "default";
         public bool StringIntern { get; set; }

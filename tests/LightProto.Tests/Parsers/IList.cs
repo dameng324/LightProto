@@ -24,7 +24,7 @@ public partial class IListPackedTests : BaseTests<IListPackedTests.Message, ILis
         yield return new() { Property = [1, 2, 3, 4, 5] };
         yield return new() { Property = [-1, -2, -3, -4, -5] };
         yield return new() { Property = [0, 0, 0, 0, 0] };
-        // TODO:protobuf-net is wrong here  yield return new () { Property = [0] };
+        yield return new() { Property = [0] };
         yield return new() { Property = [] };
     }
 
