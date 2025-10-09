@@ -69,6 +69,8 @@ public abstract class BaseCollectionTest<T>
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetConcurrentBagReader());
+            // ConcurrentBag<T> enumerates items in reverse order of insertion,
+            // so we reverse the result to match the original collection's order for comparison.
             await Assert.That(parsed.Reverse()).IsEquivalentTo(original);
         }
     }
