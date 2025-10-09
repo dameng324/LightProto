@@ -446,7 +446,7 @@ public partial class SerializerTests
     [Test]
     public async Task GetArrayReader2Test()
     {
-        var original = Enumerable.Range(0, 100).Select(i => i).ToArray();
+        var original = Enumerable.Range(0, 100).ToArray();
 
         using var ms = new MemoryStream();
         original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
