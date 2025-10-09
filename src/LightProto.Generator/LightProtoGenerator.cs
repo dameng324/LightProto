@@ -132,7 +132,7 @@ public class LightProtoGenerator : IIncrementalGenerator
               )}} at {{DateTime.Now:yyyy-MM-dd HH:mm:ss}}
               // </auto-generated>
 
-              #pragma warning disable 1591, 0612, 3021, 8981, CS9035, CS0109,CS8669
+              #pragma warning disable 1591, 0612, 3021, 8981, CS9035, CS0109, CS8669, CS1570
               using System;
               using System.Linq;
               using LightProto;

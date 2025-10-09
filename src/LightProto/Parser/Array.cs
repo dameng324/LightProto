@@ -6,23 +6,31 @@ public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[], T>
         : base(itemWriter, tag, static collection => collection.Length, itemFixedSize) { }
 }
 
-public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
+public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
 {
+    public WireFormat.WireType ItemWireType => ItemReader.WireType;
     public IProtoReader<TItem> ItemReader { get; }
+    public Func<int, TItem[]> CreateWithCapacity { get; } = (capacity) => new TItem[capacity];
     public int ItemFixedSize { get; }
 
-    public ArrayProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
+    public ArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
     {
         ItemReader = itemReader;
         ItemFixedSize = itemFixedSize;
     }
+
+    public ArrayProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
+        : this(itemReader, itemFixedSize) { }
 
     public TItem[] ParseFrom(ref ReaderContext ctx)
     {
         var tag = ctx.state.lastTag;
 
         var fixedSize = ItemFixedSize;
-        if (WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+        if (
+            WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited
+            && PackedRepeated.Support<TItem>()
+        )
         {
             int length = ctx.ReadLength();
             if (length <= 0)
@@ -73,7 +81,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
                             // Only FieldCodecs with a fixed size can reach here, and they are all known
                             // types that don't allow the user to specify a custom reader action.
                             // reader action will never return null.
-                            collection[i++] = ItemReader.ParseFrom(ref ctx);
+                            collection[i++] = ItemReader.ParseMessageFrom(ref ctx);
                         }
                     }
 
@@ -85,7 +93,7 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
                     // Content is variable size so add until we reach the limit.
                     while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                     {
-                        collection.Add(ItemReader.ParseFrom(ref ctx));
+                        collection.Add(ItemReader.ParseMessageFrom(ref ctx));
                     }
                     return collection.ToArray();
                 }
@@ -98,10 +106,10 @@ public sealed class ArrayProtoReader<TItem> : IProtoReader<TItem[]>
         else
         {
             // Not packed... (possibly not packable)
-            var collection = new List<TItem>(4);
+            var collection = new List<TItem>();
             do
             {
-                collection.Add(ItemReader.ParseFrom(ref ctx));
+                collection.Add(ItemReader.ParseMessageFrom(ref ctx));
             } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
             return collection.ToArray();
         }

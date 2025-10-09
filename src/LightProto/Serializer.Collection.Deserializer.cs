@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Collections.Concurrent;
 using LightProto.Parser;
 
 namespace LightProto;
@@ -38,12 +39,8 @@ public static partial class Serializer
         ReadOnlySequence<byte> source,
         IProtoReader<TItem> reader
     )
-        where TCollection : ICollection<TItem>, new()
-    {
-        var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
-        ReaderContext.Initialize(source, out var ctx);
-        return ReadCollectionFromContext(ref ctx, collectionReader);
-    }
+        where TCollection : ICollection<TItem>, new() =>
+        Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
@@ -52,22 +49,150 @@ public static partial class Serializer
         ReadOnlySpan<byte> source,
         IProtoReader<TItem> reader
     )
-        where TCollection : ICollection<TItem>, new()
+        where TCollection : ICollection<TItem>, new() =>
+        Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
+
+    internal static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
+        TCollection,
+        TItem
+    >(this IProtoReader<TItem> reader)
+        where TCollection : ICollection<TItem>, new() =>
+        new(
+            reader,
+            (capacity) => new TCollection(),
+            addItem: (collection, item) =>
+            {
+                collection.Add(item);
+                return collection;
+            },
+            itemFixedSize: 0
+        );
+
+    public static IProtoReader<TCollection> GetCollectionMessageReader<TCollection, TItem>(
+        this IProtoReader<TItem> reader
+    )
+        where TCollection : ICollection<TItem>, new() =>
+        new CollectionMessageReader<TCollection, TItem>(
+            GetCollectionReader<TCollection, TItem>(reader)
+        );
+
+    public static IProtoReader<TItem[]> GetArrayMessageReader<TItem>(
+        this IProtoReader<TItem> reader
+    ) => new CollectionMessageReader<TItem[], TItem>(GetArrayReader(reader));
+
+    internal static IProtoReader<TCollection> GetCollectionMessageReader<TCollection, TItem>(
+        this IProtoReader<TItem> reader,
+        Func<int, TCollection> capacityFactory
+    )
+        where TCollection : ICollection<TItem>
     {
-        var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
-        ReaderContext.Initialize(source, out var ctx);
-        return ReadCollectionFromContext(ref ctx, collectionReader);
+        return GetEnumerableMessageReader(
+            reader,
+            capacityFactory,
+            addItem: (collection, item) =>
+            {
+                collection.Add(item);
+                return collection;
+            }
+        );
     }
 
-    private static TCollection ReadCollectionFromContext<TCollection, TItem>(
-        ref ReaderContext ctx,
-        IEnumerableProtoReader<TCollection, TItem> collectionReader
+    public static IProtoReader<TCollection> GetEnumerableMessageReader<TCollection, TItem>(
+        this IProtoReader<TItem> reader,
+        Func<int, TCollection> capacityFactory,
+        Func<TCollection, TItem, TCollection> addItem
     )
-        where TCollection : ICollection<TItem>, new()
+        where TCollection : IEnumerable<TItem>
     {
-        var packedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
-        var unPackedTag = WireFormat.MakeTag(1, collectionReader.ItemReader.WireType);
+        var collectionReader = new IEnumerableProtoReader<TCollection, TItem>(
+            reader,
+            capacityFactory,
+            addItem,
+            itemFixedSize: 0
+        );
+        return new CollectionMessageReader<TCollection, TItem>(collectionReader);
+    }
 
+    public static ArrayProtoReader<TItem> GetArrayReader<TItem>(this IProtoReader<TItem> reader)
+    {
+        return new ArrayProtoReader<TItem>(reader, itemFixedSize: 0);
+    }
+
+    public static IProtoReader<List<TItem>> GetListReader<TItem>(this IProtoReader<TItem> reader)
+    {
+        return reader.GetCollectionMessageReader<List<TItem>, TItem>(
+            static capacity => new List<TItem>(capacity)
+        );
+    }
+
+    public static IProtoReader<HashSet<TItem>> GetHashSetReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetCollectionMessageReader<HashSet<TItem>, TItem>(
+            static capacity => new HashSet<TItem>(capacity)
+        );
+    }
+
+    public static IProtoReader<ConcurrentBag<TItem>> GetConcurrentBagReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetEnumerableMessageReader<ConcurrentBag<TItem>, TItem>(
+            capacityFactory: static capacity => new ConcurrentBag<TItem>(),
+            addItem: (
+                (bag, item) =>
+                {
+                    bag.Add(item);
+                    return bag;
+                }
+            )
+        );
+    }
+
+    public static IProtoReader<ConcurrentQueue<TItem>> GetConcurrentQueueReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetEnumerableMessageReader<ConcurrentQueue<TItem>, TItem>(
+            capacityFactory: static capacity => new ConcurrentQueue<TItem>(),
+            addItem: (
+                (bag, item) =>
+                {
+                    bag.Enqueue(item);
+                    return bag;
+                }
+            )
+        );
+    }
+
+    /// <summary>
+    /// Creates a new instance from a protocol-buffer stream
+    /// </summary>
+    public static TCollection Deserialize<TCollection, TItem>(
+        Stream source,
+        IProtoReader<TItem> reader
+    )
+        where TCollection : ICollection<TItem>, new() =>
+        Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
+}
+
+public readonly struct CollectionMessageReader<TCollection, T> : IProtoReader<TCollection>
+    where TCollection : IEnumerable<T>
+{
+    private readonly ICollectionReader<TCollection, T> collectionReader;
+    private readonly uint packedTag;
+    private readonly uint unPackedTag;
+
+    public CollectionMessageReader(ICollectionReader<TCollection, T> collectionReader)
+    {
+        this.collectionReader = collectionReader;
+        packedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+        unPackedTag = WireFormat.MakeTag(1, collectionReader.ItemReader.WireType);
+    }
+
+    public TCollection ParseFrom(ref ReaderContext ctx)
+    {
         uint tag;
         while ((tag = ctx.ReadTag()) != 0)
         {
@@ -81,39 +206,6 @@ public static partial class Serializer
                 return collectionReader.ParseMessageFrom(ref ctx);
             }
         }
-        return new TCollection();
-    }
-
-    internal static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
-        TCollection,
-        TItem
-    >(this IProtoReader<TItem> reader)
-        where TCollection : ICollection<TItem>, new()
-    {
-        return new IEnumerableProtoReader<TCollection, TItem>(
-            reader,
-            (collection) => new TCollection(),
-            addItem: (collection, item) =>
-            {
-                collection.Add(item);
-                return collection;
-            },
-            itemFixedSize: 0
-        );
-    }
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TCollection Deserialize<TCollection, TItem>(
-        Stream source,
-        IProtoReader<TItem> reader
-    )
-        where TCollection : ICollection<TItem>, new()
-    {
-        var collectionReader = GetCollectionReader<TCollection, TItem>(reader);
-        using var codedStream = new CodedInputStream(source, leaveOpen: true);
-        ReaderContext.Initialize(codedStream, out var ctx);
-        return ReadCollectionFromContext(ref ctx, collectionReader);
+        return collectionReader.CreateWithCapacity(0);
     }
 }
