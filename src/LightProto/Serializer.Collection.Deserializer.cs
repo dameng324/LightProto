@@ -52,7 +52,7 @@ public static partial class Serializer
         where TCollection : ICollection<TItem>, new() =>
         Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
 
-    internal static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
+    public static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
         TCollection,
         TItem
     >(this IProtoReader<TItem> reader)
