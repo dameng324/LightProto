@@ -738,7 +738,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
                               }}
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.Where(member=>member.IsRequired).Select(member => $"bool _{member.Name}HasValue = false;"))
+                                  protoMembers.Where(member=>member.CheckNullWhenDeserializing)
+                                      .Select(member => $"bool _{member.Name}HasValue = false;"))
                               }}
                               uint tag;
                               while ((tag = input.ReadTag()) != 0)
@@ -794,7 +795,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }
                               }
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.Where(member=>member.IsRequired).SelectMany(member => {
+                                  protoMembers.Where(member=>member.CheckNullWhenDeserializing)
+                                      .SelectMany(member => {
                                       return Gen();
                                       IEnumerable<string> Gen()
                                       {
@@ -812,7 +814,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   protoMembers.SelectMany(member => {
                                       return Gen();
                                       IEnumerable<string> Gen()
-                                      {   
+                                      {
                                           if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
                                           {
                                               yield return $"if(parsed.{member.Name}!=null) {{";
@@ -2186,6 +2188,18 @@ public class LightProtoGenerator : IIncrementalGenerator
         public (DataFormat keyFormat, DataFormat valueFormat) MapFormat { get; set; }
         public uint FieldNumber { get; set; }
         public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// When deserializing, if the field is required and the type is a reference type or nullable value type,
+        /// we need to check if the value is null and throw an exception if it is.
+        /// This is to prevent null reference exceptions when accessing the field later.
+        /// </summary>
+        public bool CheckNullWhenDeserializing =>
+            IsRequired
+            && (
+                Type.IsReferenceType
+                || Type.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T
+            );
         public bool IsInitOnly { get; set; }
         public string Initializer { get; set; } = "default";
         public bool StringIntern { get; set; }
