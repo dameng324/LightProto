@@ -771,6 +771,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                                   {
                                                       yield return $"{{";
+                                                      if(member.CheckNullWhenDeserializing)
+                                                          yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = input.Read{name}();";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -778,6 +780,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else if (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type))
                                                   {
                                                       yield return $"{{";
+                                                      if(member.CheckNullWhenDeserializing)
+                                                          yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -785,6 +789,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else
                                                   {
                                                       yield return $"{{";
+                                                      if(member.CheckNullWhenDeserializing)
+                                                          yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -2196,6 +2202,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         /// </summary>
         public bool CheckNullWhenDeserializing =>
             IsRequired
+            && IsCollectionType(Compilation, Type) == false
             && (
                 Type.IsReferenceType
                 || Type.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T

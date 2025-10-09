@@ -29,7 +29,7 @@ public partial class ISetPackedTests : BaseTests<ISetPackedTests.Message, ISetPa
         {
             Property = new HashSet<int>() { -1, -2, -3, -4, -5 },
         };
-        // TODO:protobuf-net is wrong here  yield return new () { Property = new HashSet<int>(){0} };
+        yield return new() { Property = new HashSet<int>() { 0 } };
         yield return new() { Property = new HashSet<int>() { } };
     }
 
