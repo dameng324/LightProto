@@ -240,10 +240,19 @@ public partial class ContractCollectionTest
     : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
 {
     [ProtoContract]
-    public partial class Message
+    public partial class Message : IComparable<Message>
     {
         [ProtoMember(1)]
         public string Value { get; set; } = string.Empty;
+
+        public int CompareTo(Message? other)
+        {
+            if (ReferenceEquals(this, other))
+                return 0;
+            if (other is null)
+                return 1;
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+        }
     }
 
     public override IEnumerable<Message[]> GetCollection()

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LightProto.Tests.CollectionTest;
 
@@ -35,8 +36,40 @@ public abstract class BaseCollectionTest<T>
     {
         using var ms = new MemoryStream();
         Serializer.Serialize(ms, original, ProtoWriter);
-        ms.Position = 0;
-        var parsed = Serializer.Deserialize<List<T>, T>(ms, ProtoReader);
-        await Assert.That(parsed).IsEquivalentTo(original);
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize<List<T>, T>(ms, ProtoReader);
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize<HashSet<T>, T>(ms, ProtoReader);
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize<T[]>(ms, ProtoReader.GetArrayMessageReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetConcurrentQueueReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetConcurrentBagReader());
+            await Assert.That(parsed.Reverse()).IsEquivalentTo(original);
+        }
     }
 }

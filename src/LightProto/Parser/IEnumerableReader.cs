@@ -5,9 +5,15 @@ public interface ICollectionReader
     public WireFormat.WireType ItemWireType { get; }
 }
 
-public class IEnumerableProtoReader<TCollection, TItem>
+public interface ICollectionReader<TCollection, TItem>
     : IProtoReader<TCollection>,
         ICollectionReader
+{
+    public IProtoReader<TItem> ItemReader { get; }
+    public Func<int, TCollection> CreateWithCapacity { get; }
+}
+
+public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCollection, TItem>
     where TCollection : IEnumerable<TItem>
 {
     private readonly Func<TCollection, TCollection>? _completeAction;

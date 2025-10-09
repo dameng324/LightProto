@@ -444,6 +444,22 @@ public partial class SerializerTests
     }
 
     [Test]
+    public async Task GetArrayReader2Test()
+    {
+        var original = Enumerable.Range(0, 100).Select(i => i).ToArray();
+
+        using var ms = new MemoryStream();
+        original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
+
+        ms.Position = 0;
+        var parsed = Serializer.Deserialize<int[]>(
+            ms,
+            Int32ProtoParser.ProtoReader.GetArrayMessageReader()
+        );
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
     public async Task GetArrayReaderWithGzipTest()
     {
         var original = Enumerable.Range(0, 100).Select(i => i).ToArray();
@@ -456,7 +472,7 @@ public partial class SerializerTests
         using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
         var parsed = Serializer.Deserialize<int[]>(
             deZip,
-            Int32ProtoParser.ProtoReader.GetArrayReader<int>()
+            Int32ProtoParser.ProtoReader.GetArrayMessageReader<int>()
         );
         await Assert.That(parsed).IsEquivalentTo(original);
     }
