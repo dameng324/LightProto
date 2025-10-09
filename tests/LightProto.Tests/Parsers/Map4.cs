@@ -4,7 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class Map3Tests : BaseTests<Map3Tests.Message, Map3TestsMessage>
+public partial class Map4Tests : BaseTests<Map4Tests.Message, Map3TestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -12,7 +12,7 @@ public partial class Map3Tests : BaseTests<Map3Tests.Message, Map3TestsMessage>
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public Dictionary<List<int>, List<long>> Property { get; set; } = [];
+        public Dictionary<int[], long[]> Property { get; set; } = [];
 
         public override string ToString()
         {

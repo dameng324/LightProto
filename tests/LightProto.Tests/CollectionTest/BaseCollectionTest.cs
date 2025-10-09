@@ -59,6 +59,11 @@ public abstract class BaseCollectionTest<T>
             var parsed = Serializer.Deserialize<T[]>(ms, ProtoReader.GetArrayMessageReader());
             await Assert.That(parsed).IsEquivalentTo(original);
         }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetHashSetReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
 
         {
             ms.Position = 0;
