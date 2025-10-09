@@ -799,7 +799,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       IEnumerable<string> Gen()
                                       {
                                           yield return $"if(_{member.Name}HasValue==false)";
-                                          yield return $"    throw new InvalidProtocolBufferException(\"ProtoMember:{contract.Type}.{member.Name} is required but not found when deserialize.\");";
+                                          yield return $"    throw new InvalidProtocolBufferException(\"ProtoMember:{contract.Type}.{member.Name} is required but not found when deserialization.\");";
                                       }
                                   }))
                               }}
