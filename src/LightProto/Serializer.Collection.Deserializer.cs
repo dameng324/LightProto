@@ -15,7 +15,10 @@ public static partial class Serializer
     public static TCollection Deserialize<TCollection, TItem>(Stream source)
         where TCollection : ICollection<TItem>, new()
         where TItem : IProtoParser<TItem> =>
-        Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
+        Deserialize<TCollection>(
+            source,
+            GetCollectionMessageReader<TCollection, TItem>(TItem.ProtoReader)
+        );
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
@@ -23,7 +26,10 @@ public static partial class Serializer
     public static TCollection Deserialize<TCollection, TItem>(ReadOnlySequence<byte> source)
         where TCollection : ICollection<TItem>, new()
         where TItem : IProtoParser<TItem> =>
-        Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
+        Deserialize<TCollection>(
+            source,
+            GetCollectionMessageReader<TCollection, TItem>(TItem.ProtoReader)
+        );
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
@@ -31,28 +37,11 @@ public static partial class Serializer
     public static TCollection Deserialize<TCollection, TItem>(ReadOnlySpan<byte> source)
         where TCollection : ICollection<TItem>, new()
         where TItem : IProtoParser<TItem> =>
-        Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
+        Deserialize<TCollection>(
+            source,
+            GetCollectionMessageReader<TCollection, TItem>(TItem.ProtoReader)
+        );
 #endif
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TCollection Deserialize<TCollection, TItem>(
-        ReadOnlySequence<byte> source,
-        IProtoReader<TItem> reader
-    )
-        where TCollection : ICollection<TItem>, new() =>
-        Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TCollection Deserialize<TCollection, TItem>(
-        ReadOnlySpan<byte> source,
-        IProtoReader<TItem> reader
-    )
-        where TCollection : ICollection<TItem>, new() =>
-        Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
 
     public static IEnumerableProtoReader<TCollection, TItem> GetCollectionReader<
         TCollection,
@@ -171,16 +160,6 @@ public static partial class Serializer
             )
         );
     }
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TCollection Deserialize<TCollection, TItem>(
-        Stream source,
-        IProtoReader<TItem> reader
-    )
-        where TCollection : ICollection<TItem>, new() =>
-        Deserialize(source, GetCollectionMessageReader<TCollection, TItem>(reader));
 }
 
 public readonly struct CollectionMessageReader<TCollection, T> : IProtoReader<TCollection>

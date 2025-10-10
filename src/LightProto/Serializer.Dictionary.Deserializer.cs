@@ -5,45 +5,14 @@ namespace LightProto;
 
 public static partial class Serializer
 {
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TDictionary Deserialize<TDictionary, TKey, TValue>(
-        ReadOnlySequence<byte> source,
-        IProtoReader<TKey> keyReader,
+    public static IProtoReader<TDictionary> GetDictionaryMessageReader<TDictionary, TKey, TValue>(
+        this IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader
     )
-        where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull =>
-        Deserialize(
-            source,
-            GetDictionaryMessageReader<TDictionary, TKey, TValue>(keyReader, valueReader)
-        );
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TDictionary Deserialize<TDictionary, TKey, TValue>(
-        ReadOnlySpan<byte> source,
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader
-    )
-        where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull =>
-        Deserialize(
-            source,
-            GetDictionaryMessageReader<TDictionary, TKey, TValue>(keyReader, valueReader)
-        );
-
-    public static IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue> GetDictionaryReader<
-        TDictionary,
-        TKey,
-        TValue
-    >(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
         where TDictionary : IDictionary<TKey, TValue>, new()
         where TKey : notnull
     {
-        return new IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>(
+        var reader = new IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>(
             keyReader,
             valueReader,
             static capacity => new(),
@@ -53,32 +22,21 @@ public static partial class Serializer
                 return dic;
             }
         );
+        return new CollectionMessageReader<TDictionary, KeyValuePair<TKey, TValue>>(reader);
     }
 
-    public static IProtoReader<TDictionary> GetDictionaryMessageReader<TDictionary, TKey, TValue>(
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader
+    public static IProtoWriter<IDictionary<TKey, TValue>> GetDictionaryWriter<TKey, TValue>(
+        this IProtoWriter<TKey> keyWriter,
+        IProtoWriter<TValue> valueWriter
     )
-        where TDictionary : IDictionary<TKey, TValue>, new()
         where TKey : notnull
     {
-        return new CollectionMessageReader<TDictionary, KeyValuePair<TKey, TValue>>(
-            GetDictionaryReader<TDictionary, TKey, TValue>(keyReader, valueReader)
+        uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+        return new IEnumerableKeyValuePairProtoWriter<IDictionary<TKey, TValue>, TKey, TValue>(
+            keyWriter,
+            valueWriter,
+            tag,
+            (dic) => dic.Count
         );
     }
-
-    /// <summary>
-    /// Creates a new instance from a protocol-buffer stream
-    /// </summary>
-    public static TDictionary Deserialize<TDictionary, TKey, TValue>(
-        Stream source,
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader
-    )
-        where TDictionary : IDictionary<TKey, TValue>, new()
-        where TKey : notnull =>
-        Deserialize(
-            source,
-            GetDictionaryMessageReader<TDictionary, TKey, TValue>(keyReader, valueReader)
-        );
 }

@@ -17,7 +17,7 @@ public static partial class Serializer
         where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
 
     public static byte[] ToByteArray<T>(this ICollection<T> message)
-        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
+        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter.GetCollectionWriter());
 
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.
@@ -108,27 +108,15 @@ public static partial class Serializer
         return buffer;
     }
 
-    public static byte[] ToByteArray<T>(this ICollection<T> message, IProtoWriter<T> writer) =>
-        ToByteArray(message, writer.GetCollectionWriter());
-
-    /// <summary>
-    /// Writes a protocol-buffer representation of the given instance to the supplied writer.
-    /// </summary>
     public static void SerializeTo<T>(
-        this ICollection<T> instance,
-        IBufferWriter<byte> destination,
-        IProtoWriter<T> writer
-    ) => Serialize(destination, instance, writer);
-
-    public static void SerializeTo<T>(
-        this ICollection<T> instance,
+        this T instance,
         Stream destination,
         IProtoWriter<T> writer
     ) => Serialize(destination, instance, writer);
 
     public static void SerializeTo<T>(
         this T instance,
-        Stream destination,
+        IBufferWriter<byte> destination,
         IProtoWriter<T> writer
     ) => Serialize(destination, instance, writer);
 }
