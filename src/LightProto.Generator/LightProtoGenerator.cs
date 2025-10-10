@@ -726,7 +726,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
                               }}
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.Where(member=>member.CheckNullWhenDeserializing)
+                                  protoMembers.Where(member=>member.IsProtoMemberRequired)
                                       .Select(member => $"bool _{member.Name}HasValue = false;"))
                               }}
                               uint tag;
@@ -759,7 +759,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                                   {
                                                       yield return $"{{";
-                                                      if(member.CheckNullWhenDeserializing)
+                                                      if(member.IsProtoMemberRequired)
                                                           yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = input.Read{name}();";
                                                       yield return $"    break;";
@@ -768,7 +768,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else if (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type))
                                                   {
                                                       yield return $"{{";
-                                                      if(member.CheckNullWhenDeserializing)
+                                                      if(member.IsProtoMemberRequired)
                                                           yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
                                                       yield return $"    break;";
@@ -777,7 +777,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else
                                                   {
                                                       yield return $"{{";
-                                                      if(member.CheckNullWhenDeserializing)
+                                                      if(member.IsProtoMemberRequired)
                                                           yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
                                                       yield return $"    break;";
@@ -789,7 +789,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }
                               }
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.Where(member=>member.CheckNullWhenDeserializing)
+                                  protoMembers.Where(member=>member.IsProtoMemberRequired)
                                       .SelectMany(member => {
                                       return Gen();
                                       IEnumerable<string> Gen()
@@ -995,7 +995,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
     private string GetCheckIfNotEmpty(ProtoMember member, string messageName)
     {
-        if (member.IsRequired)
+        if (member.IsProtoMemberRequired)
             return "true";
 
         if (member.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
@@ -1903,6 +1903,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             uint tag;
             DataFormat dataFormat;
             bool isPacked;
+            bool isProtoMemberRequired;
             AttributeData? protoMemberAttr = member
                 .GetAttributes()
                 .FirstOrDefault(attr =>
@@ -1928,6 +1929,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                             .Value.Value?.ToString(),
                         out var _isPacked
                     ) && _isPacked;
+
+                isProtoMemberRequired =
+                    bool.TryParse(
+                        protoMemberAttr
+                            .NamedArguments.FirstOrDefault(kv => kv.Key == "IsRequired")
+                            .Value.Value?.ToString(),
+                        out var _isProtoMemberRequired
+                    ) && _isProtoMemberRequired;
             }
             else
             {
@@ -1973,6 +1982,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                 firstImplicitTag++;
                 dataFormat = DataFormat.Default;
                 isPacked = false;
+                isProtoMemberRequired = false;
             }
 
             string memberName;
@@ -2157,6 +2167,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     FieldNumber = tag,
                     Compilation = compilation,
                     IsRequired = isRequired,
+                    IsProtoMemberRequired = isProtoMemberRequired,
                     IsInitOnly = isInitOnly,
                     AttributeData = member.GetAttributes(),
                     DataFormat = dataFormat,
@@ -2200,25 +2211,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         /// we need to check if the value is null and throw an exception if it is.
         /// This is to prevent null reference exceptions when accessing the field later.
         /// </summary>
-        public bool CheckNullWhenDeserializing
-        {
-            get
-            {
-                if (IsRequired == false)
-                    return false;
-                if (IsCollectionType(Compilation, Type))
-                    return false;
-                if (IsDictionaryType(Compilation, Type))
-                    return false;
-                if (Type.NullableAnnotation == NullableAnnotation.Annotated)
-                    return false;
-                if (Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-                    return false;
-                if (Type.IsValueType)
-                    return false;
-                return true;
-            }
-        }
+        public bool IsProtoMemberRequired { get; set; }
 
         public bool IsInitOnly { get; set; }
         public string Initializer { get; set; } = "default";
