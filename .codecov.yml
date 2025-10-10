@@ -1,0 +1,10 @@
+﻿coverage:
+  status:
+    project:
+      default:
+        target: 95%          # 目标覆盖率（低于此则失败）
+        threshold: 1%        # 比 main 少超过 1% 才失败（允许小波动）
+    patch:
+      default:
+        target: 95%          # 对单个 PR patch 的最低要求
+        threshold: 1%        # 允许比 base branch 低 1%
