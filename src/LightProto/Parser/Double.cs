@@ -9,6 +9,8 @@ public sealed class DoubleProtoParser : IProtoParser<Double>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
 
+        public bool IsMessage => false;
+
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
@@ -21,6 +23,8 @@ public sealed class DoubleProtoParser : IProtoParser<Double>
     sealed class DoubleProtoWriter : IProtoWriter<Double>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
+
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

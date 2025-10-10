@@ -162,15 +162,20 @@ namespace LightProto.Tests
 
         [global::LightProto.ProtoMember(68)]
         public global::System.TimeSpan? TimeSpanField { get; set; }
-
+#if NET6_0_OR_GREATER
         [global::LightProto.ProtoMember(69)]
         public DateOnly DateOnlyField { get; set; }
 
-        [global::LightProto.ProtoMember(70)]
-        public Guid GuidField { get; set; }
-
         [global::LightProto.ProtoMember(71)]
         public TimeOnly TimeOnlyField { get; set; }
+#else
+        [global::LightProto.ProtoMember(69)]
+        public int DateOnlyField { get; set; }
+        [global::LightProto.ProtoMember(71)]
+        public long TimeOnlyField { get; set; }
+#endif
+        [global::LightProto.ProtoMember(70)]
+        public Guid GuidField { get; set; }
 
         [global::LightProto.ProtoMember(72)]
         [global::System.ComponentModel.DefaultValue("")]

@@ -156,6 +156,7 @@ public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayPro
     }
 }
 
+#if NET6_OR_GREATER
 [InheritsTests]
 public class TimeOnlyCollectionTest : BaseCollectionTestWithParser<TimeOnlyProtoParser, TimeOnly>
 {
@@ -173,6 +174,7 @@ public class DateOnlyCollectionTest : BaseCollectionTestWithParser<DateOnlyProto
         yield return new DateOnly[] { DateOnly.MinValue, DateOnly.FromDateTime(DateTime.Now) };
     }
 }
+#endif
 
 [InheritsTests]
 public class DateTimeCollectionTest : BaseCollectionTestWithParser<DateTimeProtoParser, DateTime>

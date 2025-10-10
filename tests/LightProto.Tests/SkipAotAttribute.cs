@@ -10,6 +10,7 @@ public class SkipAotAttribute : SkipAttribute
 
     public override Task<bool> ShouldSkip(TestRegisteredContext context)
     {
+#if NET8_0_OR_GREATER
         if (RuntimeFeature.IsDynamicCodeSupported) // It is false when nativeAOT
         {
             return Task.FromResult(false);
@@ -18,5 +19,8 @@ public class SkipAotAttribute : SkipAttribute
         {
             return Task.FromResult(true);
         }
+#else
+        return Task.FromResult(false);
+#endif
     }
 }

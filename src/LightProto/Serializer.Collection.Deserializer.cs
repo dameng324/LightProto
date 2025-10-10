@@ -6,6 +6,7 @@ namespace LightProto;
 
 public static partial class Serializer
 {
+#if NET7_0_OR_GREATER
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
@@ -31,6 +32,7 @@ public static partial class Serializer
         where TCollection : ICollection<TItem>, new()
         where TItem : IProtoParser<TItem> =>
         Deserialize<TCollection, TItem>(source, TItem.ProtoReader);
+#endif
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
@@ -130,7 +132,11 @@ public static partial class Serializer
     )
     {
         return reader.GetCollectionMessageReader<HashSet<TItem>, TItem>(
+#if NET7_0_OR_GREATER
             static capacity => new HashSet<TItem>(capacity)
+#else
+            static capacity => new HashSet<TItem>()
+#endif
         );
     }
 
@@ -190,6 +196,9 @@ public readonly struct CollectionMessageReader<TCollection, T> : IProtoReader<TC
         packedTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
         unPackedTag = WireFormat.MakeTag(1, collectionReader.ItemReader.WireType);
     }
+
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    public bool IsMessage => false;
 
     public TCollection ParseFrom(ref ReaderContext ctx)
     {

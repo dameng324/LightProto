@@ -8,6 +8,7 @@ public sealed class BooleanProtoParser : IProtoParser<bool>
     sealed class BooleanProtoReader : IProtoReader<bool>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         public bool ParseFrom(ref ReaderContext input)
         {
@@ -18,6 +19,7 @@ public sealed class BooleanProtoParser : IProtoParser<bool>
     sealed class BooleanProtoWriter : IProtoWriter<bool>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         public int CalculateSize(bool value)
         {

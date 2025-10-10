@@ -9,6 +9,9 @@ public sealed class ByteListProtoParser : IProtoParser<List<byte>>
 
     sealed class ByteListProtoReader : IProtoReader<List<byte>>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         public List<byte> ParseFrom(ref ReaderContext input)
         {
             var length = input.ReadLength();
@@ -18,6 +21,9 @@ public sealed class ByteListProtoParser : IProtoParser<List<byte>>
 
     sealed class ByteListProtoWriter : IProtoWriter<List<byte>>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
@@ -32,7 +38,11 @@ public sealed class ByteListProtoParser : IProtoParser<List<byte>>
             WritingPrimitives.WriteRawBytes(
                 ref output.buffer,
                 ref output.state,
+#if NET5_0_OR_GREATER
                 CollectionsMarshal.AsSpan(value)
+#else
+                value.ToArray()
+#endif
             );
         }
     }

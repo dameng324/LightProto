@@ -4,6 +4,7 @@ namespace LightProto;
 
 public static partial class Serializer
 {
+#if NET7_0_OR_GREATER
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
@@ -24,6 +25,7 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(ReadOnlySpan<byte> source)
         where T : IProtoParser<T> => Deserialize(source, T.ProtoReader);
+#endif
 
     /// <summary>
     /// Creates a new instance from a protocol-buffer stream

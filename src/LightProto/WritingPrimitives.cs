@@ -11,11 +11,13 @@ using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security;
+using System.Text;
+#if NET5_0_OR_GREATER
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
-using System.Security;
-using System.Text;
+#endif
 
 namespace LightProto
 {
@@ -302,6 +304,7 @@ namespace LightProto
             ulong value
         )
         {
+#if NET5_0_OR_GREATER
             if (Sse2.X64.IsSupported)
             {
                 // Narrows a vector of words [ w0 w1 w2 w3 ] to a vector of bytes
@@ -321,6 +324,7 @@ namespace LightProto
                 Unsafe.WriteUnaligned<uint>(ref outputBuffer, lower.AsUInt32().ToScalar());
             }
             else
+#endif
             {
                 // Fallback to non-SIMD approach when SIMD is not available.
                 // This could happen either because the APIs are not available, or hardware doesn't support it.

@@ -8,6 +8,7 @@ public sealed class SInt32ProtoParser : IProtoParser<Int32>
     sealed class SInt32ProtoReader : IProtoReader<Int32>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
@@ -21,6 +22,7 @@ public sealed class SInt32ProtoParser : IProtoParser<Int32>
     sealed class SInt32ProtoWriter : IProtoWriter<Int32>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

@@ -7,6 +7,9 @@ public sealed class StringProtoParser : IProtoParser<string>
 
     sealed class StringProtoReader : IProtoReader<string>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
@@ -18,6 +21,9 @@ public sealed class StringProtoParser : IProtoParser<string>
 
     sealed class StringProtoWriter : IProtoWriter<string>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]

@@ -8,6 +8,7 @@ public sealed class Int64ProtoParser : IProtoParser<Int64>
     sealed class Int64ProtoReader : IProtoReader<Int64>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
@@ -21,6 +22,7 @@ public sealed class Int64ProtoParser : IProtoParser<Int64>
     sealed class Int64ProtoWriter : IProtoWriter<Int64>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

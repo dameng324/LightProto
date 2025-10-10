@@ -2,6 +2,7 @@
 
 namespace LightProto.Tests.Parsers;
 
+#if NET6_0_OR_GREATER
 [InheritsTests]
 public partial class DateOnlyTests : BaseTests<DateOnlyTests.Message, DateOnlyTestsMessage>
 {
@@ -37,3 +38,4 @@ public partial class DateOnlyTests : BaseTests<DateOnlyTests.Message, DateOnlyTe
         await Assert.That(clone.Property).IsEquivalentTo(message.Property.DayNumber);
     }
 }
+#endif

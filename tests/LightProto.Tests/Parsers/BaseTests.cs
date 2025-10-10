@@ -28,7 +28,7 @@ public abstract class BaseTests<
         var bytes = google.ToByteArray();
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"GoogleProto_Serialize bytes: {string.Join(",", bytes)}");
-        var clone = Serializer.Deserialize<Message>(bytes);
+        var clone = Serializer.Deserialize<Message>(bytes, ProtoParser<Message>.ProtoReader);
         await AssertGoogleResult(google, clone);
     }
 
@@ -36,7 +36,7 @@ public abstract class BaseTests<
     [MethodDataSource(nameof(GetMessages))]
     public async Task LightProto_Serialize_GoogleProto_Deserialize(Message message)
     {
-        byte[] bytes = message.ToByteArray();
+        byte[] bytes = message.ToByteArray(ProtoParser<Message>.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
         var googleClone = new GoogleProtobufMessage();
@@ -94,7 +94,7 @@ public abstract class BaseGoogleProtobufTests<
         var bytes = google.ToByteArray();
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"bytes: {string.Join(",", bytes)}");
-        var clone = Serializer.Deserialize<Message>(bytes);
+        var clone = Serializer.Deserialize<Message>(bytes, ProtoParser<Message>.ProtoReader);
         await AssertGoogleResult(google, clone);
     }
 
@@ -102,7 +102,7 @@ public abstract class BaseGoogleProtobufTests<
     [MethodDataSource(nameof(GetMessages))]
     public async Task LightProto_Serialize_GoogleProto_Deserialize(Message message)
     {
-        byte[] bytes = message.ToByteArray();
+        byte[] bytes = message.ToByteArray(ProtoParser<Message>.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"bytes: {string.Join(",", bytes)}");
         var googleClone = new GoogleProtobufMessage();
@@ -133,10 +133,13 @@ public abstract class BaseProtoBufTestsWithParser<
     [MethodDataSource(nameof(GetMessages))]
     public async Task LightProto_Serialize_Deserialize(Message message)
     {
-        byte[] bytes = message.ToByteArray(Parser.ProtoWriter);
+        byte[] bytes = message.ToByteArray(ProtoParser<Message, Parser>.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
-        var clone = Serializer.Deserialize<Message>(bytes, Parser.ProtoReader);
+        var clone = Serializer.Deserialize<Message>(
+            bytes,
+            ProtoParser<Message, Parser>.ProtoReader
+        );
         await AssertResult(clone, message);
     }
 
@@ -157,7 +160,10 @@ public abstract class BaseProtoBufTestsWithParser<
         var bytes = ms.ToArray();
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"ProtoBuf_net_Serialize bytes: {string.Join(",", bytes)}");
-        var clone = Serializer.Deserialize<Message>(bytes, Parser.ProtoReader);
+        var clone = Serializer.Deserialize<Message>(
+            bytes,
+            ProtoParser<Message, Parser>.ProtoReader
+        );
         await AssertResult(clone, message);
     }
 
@@ -170,7 +176,7 @@ public abstract class BaseProtoBufTestsWithParser<
     {
         if (LightProto_Serialize_ProtoBuf_net_Deserialize_Disabled)
             return;
-        byte[] bytes = message.ToByteArray(Parser.ProtoWriter);
+        byte[] bytes = message.ToByteArray(ProtoParser<Message, Parser>.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
         var clone = ProtoBuf.Serializer.Deserialize<Message>(bytes.AsSpan());
@@ -221,7 +227,10 @@ public abstract class BaseEquivalentTypeTests<
         var ms = new MemoryStream();
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
-        var clone = Serializer.Deserialize<LightProtoMessage>(ms.ToArray());
+        var clone = Serializer.Deserialize<LightProtoMessage>(
+            ms.ToArray(),
+            ProtoParser<LightProtoMessage>.ProtoReader
+        );
         await AssertResult(clone, message, false);
     }
 
@@ -230,8 +239,36 @@ public abstract class BaseEquivalentTypeTests<
     [SkipAot]
     public async Task LightProto_Serialize_ProtoBuf_net_Deserialize(LightProtoMessage message)
     {
-        byte[] data = message.ToByteArray();
+        byte[] data = message.ToByteArray(ProtoParser<LightProtoMessage>.ProtoWriter);
         var clone = ProtoBuf.Serializer.Deserialize<ProtoNetMessage>(data.AsSpan());
         await AssertResult(message, clone, true);
     }
+}
+
+public static class ProtoParser<Message>
+    where Message : IProtoParser<Message>
+{
+#if NET7_0_OR_GREATER
+    public static IProtoReader<Message> ProtoReader => Message.ProtoReader;
+    public static IProtoWriter<Message> ProtoWriter => Message.ProtoWriter;
+#else
+    public static IProtoReader<Message> ProtoReader =>
+        (typeof(Message).GetProperty("ProtoReader")!.GetValue(null) as IProtoReader<Message>)!;
+    public static IProtoWriter<Message> ProtoWriter =>
+        (typeof(Message).GetProperty("ProtoWriter")!.GetValue(null) as IProtoWriter<Message>)!;
+#endif
+}
+
+public static class ProtoParser<Message, Parser>
+    where Parser : IProtoParser<Message>
+{
+#if NET7_0_OR_GREATER
+    public static IProtoReader<Message> ProtoReader => Parser.ProtoReader;
+    public static IProtoWriter<Message> ProtoWriter => Parser.ProtoWriter;
+#else
+    public static IProtoReader<Message> ProtoReader =>
+        (typeof(Parser).GetProperty("ProtoReader")!.GetValue(null) as IProtoReader<Message>)!;
+    public static IProtoWriter<Message> ProtoWriter =>
+        (typeof(Parser).GetProperty("ProtoWriter")!.GetValue(null) as IProtoWriter<Message>)!;
+#endif
 }

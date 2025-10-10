@@ -22,13 +22,22 @@ public partial struct GuidProtoParser
         Span<byte> bytes = stackalloc byte[16];
         BinaryPrimitives.WriteUInt64LittleEndian(bytes, protoParser.Low);
         BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), protoParser.High);
+
+#if NET7_0_OR_GREATER
         return new Guid(bytes);
+#else
+        return new Guid(bytes.ToArray());
+#endif
     }
 
     public static implicit operator GuidProtoParser(Guid value)
     {
         Span<byte> bytes = stackalloc byte[16];
+#if NET7_0_OR_GREATER
         value.TryWriteBytes(bytes);
+#else
+        value.ToByteArray().AsSpan().CopyTo(bytes);
+#endif
         return new GuidProtoParser()
         {
             Low = BinaryPrimitives.ReadUInt64LittleEndian(bytes),

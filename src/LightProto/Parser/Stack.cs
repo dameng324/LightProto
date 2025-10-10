@@ -40,7 +40,7 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
         Array.Reverse(arr, 0, size);
         return stack;
     }
-#else
+#elif NET7_0_OR_GREATER
     private static readonly Func<Stack<T>, T[]> _getArray;
     private static readonly Func<Stack<T>, int> _getSize;
 
@@ -79,6 +79,11 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
         var size = _getSize(stack);
         Array.Reverse(arr, 0, size);
         return stack;
+    }
+#else
+    static Stack<T> ReverseStack(Stack<T> stack)
+    {
+        return new Stack<T>(stack);
     }
 #endif
 }

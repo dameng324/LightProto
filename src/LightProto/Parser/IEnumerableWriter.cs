@@ -7,6 +7,8 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         ICollectionWriter
     where TCollection : IEnumerable<TItem>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    public bool IsMessage => false;
     public IProtoWriter<TItem> ItemWriter { get; }
     public uint Tag { get; set; }
     public Func<TCollection, int> GetCount { get; }

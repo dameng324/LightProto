@@ -8,6 +8,7 @@ public sealed class UInt64ProtoParser : IProtoParser<UInt64>
     sealed class UInt64ProtoReader : IProtoReader<UInt64>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         public UInt64 ParseFrom(ref ReaderContext input)
         {
@@ -18,6 +19,7 @@ public sealed class UInt64ProtoParser : IProtoParser<UInt64>
     sealed class UInt64ProtoWriter : IProtoWriter<UInt64>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         public int CalculateSize(UInt64 value)
         {

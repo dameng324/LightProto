@@ -1,5 +1,6 @@
 ﻿namespace LightProto.Parser;
 
+#if NET6_0_OR_GREATER
 public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
 {
     public static IProtoReader<DateOnly> ProtoReader { get; } = new DateOnlyProtoReader();
@@ -8,6 +9,7 @@ public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
     sealed class DateOnlyProtoReader : IProtoReader<DateOnly>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         public DateOnly ParseFrom(ref ReaderContext input)
         {
@@ -18,6 +20,7 @@ public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
     sealed class DateOnlyProtoWriter : IProtoWriter<DateOnly>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
@@ -33,3 +36,4 @@ public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
         }
     }
 }
+#endif
