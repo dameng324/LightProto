@@ -100,6 +100,10 @@ public static partial class Serializer
 
     public static byte[] ToByteArray<T>(this T message, IProtoWriter<T> writer)
     {
+        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        {
+            writer = MessageWrapper<T>.ProtoWriter.From(writer);
+        }
         var buffer = new byte[writer.CalculateSize(message)];
         using CodedOutputStream output = new CodedOutputStream(buffer);
         WriterContext.Initialize(output, out var ctx);

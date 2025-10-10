@@ -45,10 +45,7 @@ public abstract class BaseCollectionTest<T>
         Serializer.Serialize(ms, original, ProtoWriter.GetCollectionWriter());
         {
             ms.Position = 0;
-            var parsed = Serializer.Deserialize(
-                ms,
-                ProtoReader.GetCollectionMessageReader<List<T>, T>()
-            );
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetCollectionReader<List<T>, T>());
             await Assert.That(parsed).IsEquivalentTo(original);
         }
 
@@ -66,7 +63,7 @@ public abstract class BaseCollectionTest<T>
 
         {
             ms.Position = 0;
-            var parsed = Serializer.Deserialize(ms, ProtoReader.GetArrayMessageReader());
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetArrayReader());
             await Assert.That(parsed).IsEquivalentTo(original);
         }
 

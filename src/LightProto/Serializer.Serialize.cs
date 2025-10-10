@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using LightProto.Parser;
 
 namespace LightProto;
 
@@ -13,6 +14,10 @@ public static partial class Serializer
         IProtoWriter<T> writer
     )
     {
+        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        {
+            writer = MessageWrapper<T>.ProtoWriter.From(writer);
+        }
         WriterContext.Initialize(destination, out var ctx);
         writer.WriteTo(ref ctx, instance);
         ctx.Flush();
@@ -20,6 +25,10 @@ public static partial class Serializer
 
     public static void Serialize<T>(Stream destination, T instance, IProtoWriter<T> writer)
     {
+        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        {
+            writer = MessageWrapper<T>.ProtoWriter.From(writer);
+        }
         using var codedOutputStream = new CodedOutputStream(destination, leaveOpen: true);
         WriterContext.Initialize(codedOutputStream, out var ctx);
         writer.WriteTo(ref ctx, instance);

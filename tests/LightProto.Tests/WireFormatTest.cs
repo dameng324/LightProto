@@ -57,7 +57,7 @@ public class WireFormatTest
     [Test]
     public async Task CollectionMessageParserShouldNotBeMessage()
     {
-        var reader = Int32ProtoParser.ProtoReader.GetCollectionMessageReader<List<int>, int>();
+        var reader = Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>();
         await Assert.That(reader.IsMessage).IsFalse();
         await Assert.That(reader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
     }
