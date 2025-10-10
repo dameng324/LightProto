@@ -34,8 +34,10 @@ public class ProtoMemberAttribute(uint tag) : Attribute
     public uint Tag { get; } = tag;
     public DataFormat DataFormat { get; set; } = DataFormat.Default;
 
-    // [Obsolete("compatibility protobuf-net only, no effect")]
-    // public bool IsRequired { get; set; } = false;
+    /// <summary>
+    /// If true, the member must be present when deserializing; if it is not, an exception will be thrown.
+    /// </summary>
+    public bool IsRequired { get; set; } = false;
     public bool IsPacked { get; set; } = false;
 
     // [Obsolete("compatibility protobuf-net only, no effect")]
