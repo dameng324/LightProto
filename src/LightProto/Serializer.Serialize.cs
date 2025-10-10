@@ -27,26 +27,23 @@ public static partial class Serializer
     }
 
     public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
-        where T : IProtoParser<T>
     {
         unsafe
         {
             var size = writer.CalculateSize(message);
-            Span<byte> buffer;
-            if (size < 256)
+            var array = ArrayPool<byte>.Shared.Rent(size);
+            try
             {
-#pragma warning disable CS9081 // A result of a stackalloc expression of this type in this context may be exposed outside of the containing method
-                buffer = stackalloc byte[size];
-#pragma warning restore CS9081 // A result of a stackalloc expression of this type in this context may be exposed outside of the containing method
+                var buffer = array.AsSpan(0, size);
+                WriterContext.Initialize(ref buffer, out var ctx);
+                writer.WriteTo(ref ctx, message);
+                ctx.Flush();
+                return Deserialize(buffer, reader);
             }
-            else
+            finally
             {
-                buffer = new byte[size];
+                ArrayPool<byte>.Shared.Return(array);
             }
-            WriterContext.Initialize(ref buffer, out var ctx);
-            writer.WriteTo(ref ctx, message);
-            ctx.Flush();
-            return Deserialize(buffer, reader);
         }
     }
 
