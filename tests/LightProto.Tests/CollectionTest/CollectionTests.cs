@@ -188,7 +188,7 @@ public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProto
     }
 }
 
-#if NET6_OR_GREATER
+#if NET6_0_OR_GREATER
 [InheritsTests]
 public class TimeOnlyCollectionTest : BaseCollectionTestWithParser<TimeOnlyProtoParser, TimeOnly>
 {
