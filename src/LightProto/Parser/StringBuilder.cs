@@ -9,6 +9,9 @@ public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
 
     sealed class StringBuilderProtoReader : IProtoReader<StringBuilder>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         public StringBuilder ParseFrom(ref ReaderContext input)
         {
             return new StringBuilder(input.ReadString());
@@ -17,8 +20,12 @@ public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
 
     sealed class StringBuilderProtoWriter : IProtoWriter<StringBuilder>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         public int CalculateSize(StringBuilder value)
         {
+#if NET5_0_OR_GREATER
             int size = 0;
             foreach (var readOnlyMemory in value.GetChunks())
             {
@@ -28,6 +35,10 @@ public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
                 size += CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
             }
             return size;
+#else
+            int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(value.ToString());
+            return CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
+#endif
         }
 
         public void WriteTo(ref WriterContext output, StringBuilder value)

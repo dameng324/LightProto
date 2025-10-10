@@ -16,6 +16,8 @@ public interface ICollectionReader<TCollection, TItem>
 public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCollection, TItem>
     where TCollection : IEnumerable<TItem>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    public bool IsMessage => false;
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }

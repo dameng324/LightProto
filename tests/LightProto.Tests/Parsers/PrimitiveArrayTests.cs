@@ -76,59 +76,60 @@ public partial class PrimitiveArrayTests
     {
         foreach (var i in Enumerable.Range(0, 100))
         {
+            var random = new Random();
             yield return new()
             {
                 BooleanValues = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.Next() % 2 == 0)
+                    .Select(_ => random.Next() % 2 == 0)
                     .ToArray(),
                 DoubleValues = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.NextDouble() * 1000 - 500)
+                    .Select(_ => random.NextDouble() * 1000 - 500)
                     .ToArray(),
                 Int32Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.Next(int.MinValue, int.MaxValue))
+                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 SFixed32Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.Next(int.MinValue, int.MaxValue))
+                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 Fixed32Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => (uint)Random.Shared.Next(int.MinValue, int.MaxValue))
+                    .Select(_ => (uint)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 SFixed64Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.NextInt64(long.MinValue, long.MaxValue))
+                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 Fixed64Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => (ulong)Random.Shared.NextInt64(long.MinValue, long.MaxValue))
+                    .Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 Int64Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.NextInt64(long.MinValue, long.MaxValue))
+                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 SInt64Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.NextInt64(long.MinValue, long.MaxValue))
+                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 SInt32Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => Random.Shared.Next(int.MinValue, int.MaxValue))
+                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 SingleValues = Enumerable
                     .Range(0, 100)
-                    .Select(_ => (float)(Random.Shared.NextDouble() * 1000 - 500))
+                    .Select(_ => (float)(random.NextDouble() * 1000 - 500))
                     .ToArray(),
                 UInt64Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => (ulong)Random.Shared.NextInt64(long.MinValue, long.MaxValue))
+                    .Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
                 UInt32Values = Enumerable
                     .Range(0, 100)
-                    .Select(_ => (uint)Random.Shared.Next(int.MinValue, int.MaxValue))
+                    .Select(_ => (uint)random.Next(int.MinValue, int.MaxValue))
                     .ToArray(),
             };
         }

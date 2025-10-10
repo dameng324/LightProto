@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿#if NET6_0_OR_GREATER
+using System.Buffers;
 using System.IO.Compression;
 using System.Runtime.Intrinsics.X86;
 using LightProto.Parser;
@@ -381,3 +382,4 @@ public partial class FailedTests
         await Assert.That(ex!.Message).Contains("ran out of space");
     }
 }
+#endif

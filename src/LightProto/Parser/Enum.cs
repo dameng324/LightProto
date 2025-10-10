@@ -11,6 +11,7 @@ public sealed class EnumProtoParser<T> : IProtoParser<T>
     sealed class EnumProtoReader : IProtoReader<T>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T ParseFrom(ref ReaderContext input)
@@ -23,6 +24,7 @@ public sealed class EnumProtoParser<T> : IProtoParser<T>
     sealed class EnumProtoWriter : IProtoWriter<T>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+        public bool IsMessage => false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(T value)

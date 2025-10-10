@@ -2,6 +2,7 @@
 
 namespace LightProto.Tests.Parsers;
 
+#if NET6_0_OR_GREATER
 [InheritsTests]
 public partial class TimeOnlyTests : BaseTests<TimeOnlyTests.Message, TimeOnlyTestsMessage>
 {
@@ -37,3 +38,4 @@ public partial class TimeOnlyTests : BaseTests<TimeOnlyTests.Message, TimeOnlyTe
         await Assert.That(clone.Property).IsEquivalentTo(message.Property.Ticks);
     }
 }
+#endif

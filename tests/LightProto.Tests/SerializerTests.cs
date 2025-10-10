@@ -38,10 +38,15 @@ public partial class SerializerTests
     {
         ArrayBufferWriter<byte> bufferWriter = new();
         var obj = CreateTestContract();
+#if NET6_0_OR_GREATER
         Serializer.Serialize(bufferWriter, obj);
         var data = bufferWriter.WrittenSpan.ToArray();
-
         var parsed = Serializer.Deserialize<TestContract>(data);
+#else
+        Serializer.Serialize(bufferWriter, obj, TestContract.ProtoWriter);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.Deserialize<TestContract>(data, TestContract.ProtoReader);
+#endif
         await Assert.That(parsed.Name).IsEquivalentTo(obj.Name);
     }
 
@@ -50,10 +55,19 @@ public partial class SerializerTests
     {
         using var ms = new MemoryStream();
         var obj = CreateTestContract();
+
+#if NET6_0_OR_GREATER
         Serializer.Serialize(ms, obj);
+#else
+        Serializer.Serialize(ms, obj, TestContract.ProtoWriter);
+#endif
 
         using var ms2 = new MemoryStream(ms.ToArray());
+#if NET6_0_OR_GREATER
         var parsed = Serializer.Deserialize<TestContract>(ms2);
+#else
+        var parsed = Serializer.Deserialize<TestContract>(ms2, TestContract.ProtoReader);
+#endif
         await Assert.That(parsed.Name).IsEquivalentTo(obj.Name);
     }
 
@@ -95,11 +109,19 @@ public partial class SerializerTests
     public async Task TestReadOnlySequence()
     {
         var obj = CreateTestContract();
+#if NET6_0_OR_GREATER
         var bytes = obj.ToByteArray();
+#else
+        var bytes = obj.ToByteArray(TestContract.ProtoWriter);
+#endif
         var bytesArray = bytes.Chunk(1).ToArray();
         await Assert.That(bytesArray.Length).IsGreaterThan(1);
         var sequence = GetReadonlySequence(bytesArray);
+#if NET6_0_OR_GREATER
         var parsed = Serializer.Deserialize<TestContract>(sequence);
+#else
+        var parsed = Serializer.Deserialize<TestContract>(sequence, TestContract.ProtoReader);
+#endif
         await Assert.That(parsed.Name).IsEquivalentTo(obj.Name);
     }
 
@@ -107,10 +129,19 @@ public partial class SerializerTests
     public async Task TestReadOnlySequence2()
     {
         var obj = CreateTestContract();
+#if NET6_0_OR_GREATER
         var bytes = obj.ToByteArray();
+#else
+        var bytes = obj.ToByteArray(TestContract.ProtoWriter);
+#endif
         byte[][] bytesArray = [bytes];
         var sequence = GetReadonlySequence(bytesArray);
+
+#if NET6_0_OR_GREATER
         var parsed = Serializer.Deserialize<TestContract>(sequence);
+#else
+        var parsed = Serializer.Deserialize<TestContract>(sequence, TestContract.ProtoReader);
+#endif
         await Assert.That(parsed.Name).IsEquivalentTo(obj.Name);
     }
 
@@ -141,9 +172,19 @@ public partial class SerializerTests
     {
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
+
+#if NET6_0_OR_GREATER
         Serializer.Serialize(ms, original);
         ms.Position = 0;
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms);
+#else
+        Serializer.Serialize(ms, original, TestContract.ProtoWriter);
+        ms.Position = 0;
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            ms,
+            TestContract.ProtoReader
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -152,9 +193,17 @@ public partial class SerializerTests
     {
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
-        Serializer.Serialize(ms, original);
 
+#if NET6_0_OR_GREATER
+        Serializer.Serialize(ms, original);
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms.ToArray());
+#else
+        Serializer.Serialize(ms, original, TestContract.ProtoWriter);
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            ms.ToArray(),
+            TestContract.ProtoReader
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -163,7 +212,15 @@ public partial class SerializerTests
     {
         using var ms = new MemoryStream();
         var original = CreateTestContract();
+#if NET6_0_OR_GREATER
         var parsed = Serializer.DeepClone(original);
+#else
+        var parsed = Serializer.DeepClone(
+            original,
+            TestContract.ProtoReader,
+            TestContract.ProtoWriter
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -178,7 +235,15 @@ public partial class SerializerTests
             Doubles = Enumerable.Range(0, 10).Select(i => (double)(i % 256)).ToArray(),
             Floats = Enumerable.Range(0, 10).Select(i => (float)(i % 256)).ToArray(),
         };
+#if NET6_0_OR_GREATER
         var parsed = Serializer.DeepClone(original);
+#else
+        var parsed = Serializer.DeepClone(
+            original,
+            TestContract.ProtoReader,
+            TestContract.ProtoWriter
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -187,10 +252,18 @@ public partial class SerializerTests
     {
         ArrayBufferWriter<byte> bufferWriter = new();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
+#if NET6_0_OR_GREATER
         original.SerializeTo(bufferWriter);
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
             GetReadonlySequence(bufferWriter.WrittenSpan.ToArray().Chunk(2).ToArray())
         );
+#else
+        original.SerializeTo(bufferWriter, TestContract.ProtoWriter);
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            GetReadonlySequence(bufferWriter.WrittenMemory.ToArray().Chunk(2).ToArray()),
+            TestContract.ProtoReader
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -215,7 +288,7 @@ public partial class SerializerTests
         original.SerializeTo(bufferWriter, StringProtoParser.ProtoWriter);
 
         var parsed = Serializer.Deserialize<List<string>, string>(
-            bufferWriter.WrittenSpan,
+            bufferWriter.WrittenMemory.Span,
             StringProtoParser.ProtoReader
         );
         await Assert.That(parsed).IsEquivalentTo(original);
@@ -240,9 +313,17 @@ public partial class SerializerTests
     public async Task CollectionTest7()
     {
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
-        var bytes = original.ToByteArray();
 
+#if NET6_0_OR_GREATER
+        var bytes = original.ToByteArray();
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(bytes);
+#else
+        var bytes = original.ToByteArray(TestContract.ProtoWriter);
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            bytes,
+            TestContract.ProtoReader
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -251,10 +332,19 @@ public partial class SerializerTests
     {
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
+#if NET6_0_OR_GREATER
         original.SerializeTo(ms);
         ms.Position = 0;
 
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms);
+#else
+        original.SerializeTo(ms, TestContract.ProtoWriter);
+        ms.Position = 0;
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            ms,
+            TestContract.ProtoReader
+        );
+#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -262,7 +352,11 @@ public partial class SerializerTests
     public async Task CollectionTest10()
     {
         TestContract[] original = [];
+#if NET6_0_OR_GREATER
         var bytes = original.ToByteArray();
+#else
+        var bytes = original.ToByteArray(TestContract.ProtoWriter);
+#endif
         await Assert.That(bytes.Length).IsEqualTo(0);
     }
 
@@ -270,7 +364,11 @@ public partial class SerializerTests
     public async Task CollectionTest11()
     {
         TestContract[] original = null!;
+#if NET6_0_OR_GREATER
         var bytes = original.ToByteArray();
+#else
+        var bytes = original.ToByteArray(TestContract.ProtoWriter);
+#endif
         await Assert.That(bytes.Length).IsEqualTo(0);
     }
 
@@ -278,7 +376,14 @@ public partial class SerializerTests
     public async Task CollectionTest12()
     {
         byte[] bytes = [];
+#if NET6_0_OR_GREATER
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(bytes);
+#else
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            bytes,
+            TestContract.ProtoReader
+        );
+#endif
         await Assert.That(bytes.Length).IsEqualTo(0);
     }
 
@@ -305,7 +410,11 @@ public partial class SerializerTests
         var original = CreateTestContract();
         TestContract Deserialize()
         {
+#if NET6_0_OR_GREATER
             var bytes = original.ToByteArray();
+#else
+            var bytes = original.ToByteArray(TestContract.ProtoWriter);
+#endif
             var stream = new MemoryStream(bytes);
             using var codedStream = new CodedInputStream(stream, leaveOpen: false);
             ReaderContext.Initialize(codedStream, out var ctx);
@@ -326,7 +435,7 @@ public partial class SerializerTests
         };
         original.SerializeTo(bufferWriter, Int32ProtoParser.ProtoWriter, TestContract.ProtoWriter);
         var parsed = Serializer.Deserialize<Dictionary<int, TestContract>, int, TestContract>(
-            GetReadonlySequence(bufferWriter.WrittenSpan.ToArray().Chunk(2).ToArray()),
+            GetReadonlySequence(bufferWriter.WrittenMemory.ToArray().Chunk(2).ToArray()),
             Int32ProtoParser.ProtoReader,
             TestContract.ProtoReader
         );
@@ -386,6 +495,7 @@ public partial class SerializerTests
         }
     }
 
+#if NET6_0_OR_GREATER
     [Test]
     public async Task LargeObjectTest()
     {
@@ -403,6 +513,7 @@ public partial class SerializerTests
         var bytes = db.ToByteArray();
         await Assert.That(bytes.Length).IsGreaterThan(0);
     }
+#endif
 
     [Test]
     public async Task Test_TriggersLargeSizeSlowPath()

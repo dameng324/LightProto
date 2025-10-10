@@ -40,7 +40,7 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
         Array.Reverse(arr, 0, size);
         return stack;
     }
-#else
+#elif NET7_0_OR_GREATER
     private static readonly Func<Stack<T>, T[]> _getArray;
     private static readonly Func<Stack<T>, int> _getSize;
 
@@ -49,27 +49,21 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
     static StackProtoReader()
     {
         var stackType = typeof(Stack<T>);
-        // 获取 _array 字段
+
         var arrayField = stackType.GetField(
             "_array",
             BindingFlags.NonPublic | BindingFlags.Instance
         );
         var sizeField = stackType.GetField("_size", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        if (arrayField == null || sizeField == null)
-            throw new MissingFieldException("Stack<T> 内部结构可能变更，找不到 _array 或 _size");
-
-        // 参数
         var param = Expression.Parameter(stackType, "stack");
 
-        // _getArray 委托
         _getArray = Expression
-            .Lambda<Func<Stack<T>, T[]>>(Expression.Field(param, arrayField), param)
+            .Lambda<Func<Stack<T>, T[]>>(Expression.Field(param, arrayField!), param)
             .Compile();
 
-        // _getSize 委托
         _getSize = Expression
-            .Lambda<Func<Stack<T>, int>>(Expression.Field(param, sizeField), param)
+            .Lambda<Func<Stack<T>, int>>(Expression.Field(param, sizeField!), param)
             .Compile();
     }
 
@@ -79,6 +73,11 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
         var size = _getSize(stack);
         Array.Reverse(arr, 0, size);
         return stack;
+    }
+#else
+    static Stack<T> ReverseStack(Stack<T> stack)
+    {
+        return new Stack<T>(stack);
     }
 #endif
 }

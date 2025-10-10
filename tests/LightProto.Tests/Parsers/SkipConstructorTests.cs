@@ -1,5 +1,6 @@
 ﻿namespace LightProto.Tests.Parsers;
 
+#if NET7_0_OR_GREATER
 [InheritsTests]
 public partial class SkipConstructorTests
     : BaseTests<SkipConstructorTests.Message, StructTestsMessage>
@@ -46,3 +47,4 @@ public partial class SkipConstructorTests
             .IsEquivalentTo(message.Property ?? string.Empty);
     }
 }
+#endif

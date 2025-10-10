@@ -1,4 +1,5 @@
-﻿using LightProto.Parser;
+﻿using System.Text;
+using LightProto.Parser;
 
 namespace LightProto.Tests.CollectionTest;
 
@@ -120,7 +121,25 @@ public class DecimalCollectionTest : BaseCollectionTestWithParser<DecimalProtoPa
 }
 
 [InheritsTests]
+public class Decimal300CollectionTest : BaseCollectionTestWithParser<Decimal300ProtoParser, Decimal>
+{
+    public override IEnumerable<Decimal[]> GetCollection()
+    {
+        yield return new Decimal[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
 public class GuidCollectionTest : BaseCollectionTestWithParser<GuidProtoParser, Guid>
+{
+    public override IEnumerable<Guid[]> GetCollection()
+    {
+        yield return new Guid[] { Guid.Empty, Guid.NewGuid() };
+    }
+}
+
+[InheritsTests]
+public class Guid300CollectionTest : BaseCollectionTestWithParser<Guid300ProtoParser, Guid>
 {
     public override IEnumerable<Guid[]> GetCollection()
     {
@@ -157,6 +176,20 @@ public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayPro
 }
 
 [InheritsTests]
+public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProtoParser, List<byte>>
+{
+    public override IEnumerable<List<byte>[]> GetCollection()
+    {
+        yield return new List<byte>[]
+        {
+            new List<byte> { 1, 2, 3 },
+            new List<byte> { 4, 5, 6 },
+        };
+    }
+}
+
+#if NET6_0_OR_GREATER
+[InheritsTests]
 public class TimeOnlyCollectionTest : BaseCollectionTestWithParser<TimeOnlyProtoParser, TimeOnly>
 {
     public override IEnumerable<TimeOnly[]> GetCollection()
@@ -173,6 +206,7 @@ public class DateOnlyCollectionTest : BaseCollectionTestWithParser<DateOnlyProto
         yield return new DateOnly[] { DateOnly.MinValue, DateOnly.FromDateTime(DateTime.Now) };
     }
 }
+#endif
 
 [InheritsTests]
 public class DateTimeCollectionTest : BaseCollectionTestWithParser<DateTimeProtoParser, DateTime>
@@ -218,6 +252,26 @@ public class StringCollectionTest : BaseCollectionTestWithParser<StringProtoPars
     public override IEnumerable<string[]> GetCollection()
     {
         yield return new string[] { string.Empty, "123" };
+    }
+}
+
+[InheritsTests]
+public class InternedStringCollectionTest
+    : BaseCollectionTestWithParser<InternedStringProtoParser, string>
+{
+    public override IEnumerable<string[]> GetCollection()
+    {
+        yield return new string[] { string.Empty, "123" };
+    }
+}
+
+[InheritsTests]
+public class StringBuilderCollectionTest
+    : BaseCollectionTestWithParser<StringBuilderProtoParser, StringBuilder>
+{
+    public override IEnumerable<StringBuilder[]> GetCollection()
+    {
+        yield return new StringBuilder[] { new StringBuilder(), new StringBuilder("123") };
     }
 }
 

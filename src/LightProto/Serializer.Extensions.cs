@@ -1,15 +1,40 @@
 ﻿using System.Buffers;
+using System.Collections.Concurrent;
 using LightProto.Parser;
 
 namespace LightProto;
 
 public static partial class Serializer
 {
-    public static int CalculateSize<T>(this T message)
+#if NET7_0_OR_GREATER
+    public static int CalculateSize<T>(T message)
         where T : IProtoParser<T>
     {
         return T.ProtoWriter.CalculateSize(message);
     }
+
+    public static byte[] ToByteArray<T>(this T message)
+        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
+
+    public static byte[] ToByteArray<T>(this ICollection<T> message)
+        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
+
+    /// <summary>
+    /// Writes a protocol-buffer representation of the given instance to the supplied stream.
+    /// </summary>
+    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
+    /// <param name="destination">The destination stream to write to.</param>
+    public static void SerializeTo<T>(this ICollection<T> instance, Stream destination)
+        where T : IProtoParser<T> => Serialize(destination, instance);
+
+    /// <summary>
+    /// Writes a protocol-buffer representation of the given instance to the supplied writer.
+    /// </summary>
+    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
+    /// <param name="destination">The destination stream to write to.</param>
+    public static void SerializeTo<T>(this ICollection<T> instance, IBufferWriter<byte> destination)
+        where T : IProtoParser<T> => Serialize(destination, instance);
+#endif
 
     public static int CalculateMessageSize<T>(this IProtoWriter<T> writer, T value)
     {
@@ -83,30 +108,8 @@ public static partial class Serializer
         return buffer;
     }
 
-    public static byte[] ToByteArray<T>(this T message)
-        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
-
     public static byte[] ToByteArray<T>(this ICollection<T> message, IProtoWriter<T> writer) =>
         ToByteArray(message, writer.GetCollectionWriter());
-
-    public static byte[] ToByteArray<T>(this ICollection<T> message)
-        where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
-
-    /// <summary>
-    /// Writes a protocol-buffer representation of the given instance to the supplied stream.
-    /// </summary>
-    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
-    public static void SerializeTo<T>(this ICollection<T> instance, Stream destination)
-        where T : IProtoParser<T> => Serialize(destination, instance);
-
-    /// <summary>
-    /// Writes a protocol-buffer representation of the given instance to the supplied writer.
-    /// </summary>
-    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
-    public static void SerializeTo<T>(this ICollection<T> instance, IBufferWriter<byte> destination)
-        where T : IProtoParser<T> => Serialize(destination, instance);
 
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.

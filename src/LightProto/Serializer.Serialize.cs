@@ -5,22 +5,6 @@ namespace LightProto;
 public static partial class Serializer
 {
     /// <summary>
-    /// Writes a protocol-buffer representation of the given instance to the supplied stream.
-    /// </summary>
-    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
-    public static void Serialize<T>(Stream destination, T instance)
-        where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
-
-    /// <summary>
-    /// Writes a protocol-buffer representation of the given instance to the supplied writer.
-    /// </summary>
-    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
-    public static void Serialize<T>(IBufferWriter<byte> destination, T instance)
-        where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
-
-    /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
     /// </summary>
     public static void Serialize<T>(
@@ -42,12 +26,12 @@ public static partial class Serializer
         ctx.Flush();
     }
 
-    public static T DeepClone<T>(T message)
+    public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
         where T : IProtoParser<T>
     {
         unsafe
         {
-            var size = T.ProtoWriter.CalculateSize(message);
+            var size = writer.CalculateSize(message);
             Span<byte> buffer;
             if (size < 256)
             {
@@ -60,9 +44,33 @@ public static partial class Serializer
                 buffer = new byte[size];
             }
             WriterContext.Initialize(ref buffer, out var ctx);
-            T.ProtoWriter.WriteTo(ref ctx, message);
+            writer.WriteTo(ref ctx, message);
             ctx.Flush();
-            return Deserialize<T>(buffer);
+            return Deserialize(buffer, reader);
         }
     }
+
+#if NET7_0_OR_GREATER
+    public static T DeepClone<T>(T message)
+        where T : IProtoParser<T>
+    {
+        return DeepClone(message, T.ProtoReader, T.ProtoWriter);
+    }
+
+    /// <summary>
+    /// Writes a protocol-buffer representation of the given instance to the supplied stream.
+    /// </summary>
+    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
+    /// <param name="destination">The destination stream to write to.</param>
+    public static void Serialize<T>(Stream destination, T instance)
+        where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
+
+    /// <summary>
+    /// Writes a protocol-buffer representation of the given instance to the supplied writer.
+    /// </summary>
+    /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
+    /// <param name="destination">The destination stream to write to.</param>
+    public static void Serialize<T>(IBufferWriter<byte> destination, T instance)
+        where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
+#endif
 }

@@ -45,7 +45,11 @@ file static class BclExtension
     public static ProtoBuf.Bcl.Guid ToProtobuf(this Guid value)
     {
         Span<byte> bytes = stackalloc byte[16];
+#if NET7_0_OR_GREATER
         value.TryWriteBytes(bytes);
+#else
+        value.ToByteArray().AsSpan().CopyTo(bytes);
+#endif
         return new ProtoBuf.Bcl.Guid()
         {
             Lo = BinaryPrimitives.ReadUInt64LittleEndian(bytes),
@@ -62,6 +66,11 @@ file static class BclExtension
         Span<byte> bytes = stackalloc byte[16];
         BinaryPrimitives.WriteUInt64LittleEndian(bytes, proxy.Lo);
         BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), proxy.Hi);
+
+#if NET7_0_OR_GREATER
         return new Guid(bytes);
+#else
+        return new Guid(bytes.ToArray());
+#endif
     }
 }

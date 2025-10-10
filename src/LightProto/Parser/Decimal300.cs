@@ -10,6 +10,9 @@ public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
 
     sealed class Decimal300ProtoReader : IProtoReader<Decimal>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         public Decimal ParseFrom(ref ReaderContext input)
         {
             var str = input.ReadString();
@@ -19,6 +22,9 @@ public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
 
     sealed class Decimal300ProtoWriter : IProtoWriter<Decimal>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         public int CalculateSize(Decimal value)
         {
             return CodedOutputStream.ComputeStringSize(value.ToString("G"));

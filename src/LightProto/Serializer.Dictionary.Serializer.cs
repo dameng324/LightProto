@@ -38,11 +38,7 @@ public static partial class Serializer
         where TKey : notnull
     {
         var collectionWriter = GetDictionaryWriter(keyWriter, valueWriter);
-        var buffer = new ArrayBufferWriter<byte>();
-        WriterContext.Initialize(buffer, out var ctx);
-        collectionWriter.WriteTo(ref ctx, instance);
-        ctx.Flush();
-        return buffer.WrittenSpan.ToArray();
+        return ToByteArray(instance, collectionWriter);
     }
 
     public static void Serialize<TKey, TValue>(

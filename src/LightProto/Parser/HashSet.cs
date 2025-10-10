@@ -11,7 +11,11 @@ public sealed class HashSetProtoReader<T> : IEnumerableProtoReader<HashSet<T>, T
     public HashSetProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
         : base(
             itemReader,
+#if NET7_0_OR_GREATER
             static (size) => new HashSet<T>(size),
+#else
+            static (size) => new HashSet<T>(),
+#endif
             static (collection, item) =>
             {
                 collection.Add(item);

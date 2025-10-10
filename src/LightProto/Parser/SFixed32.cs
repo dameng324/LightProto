@@ -8,6 +8,7 @@ public sealed class SFixed32ProtoParser : IProtoParser<int>
     sealed class SFixed32ProtoReader : IProtoReader<int>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
@@ -21,6 +22,7 @@ public sealed class SFixed32ProtoParser : IProtoParser<int>
     sealed class SFixed32ProtoWriter : IProtoWriter<int>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

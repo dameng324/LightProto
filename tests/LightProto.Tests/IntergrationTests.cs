@@ -17,7 +17,7 @@ namespace LightProto.Tests;
 
 public class IntergrationTests
 {
-    private Random random = Random.Shared; // new Random(31);
+    private Random random = new Random(31);
 
     private CsTestMessage NewCsMessage() =>
         new CsTestMessage
@@ -68,9 +68,14 @@ public class IntergrationTests
             IntLists = [20, 20],
             StringISets = { "hello", "hello2" },
             TimeSpanField = DateTime.Now.TimeOfDay,
+#if NET6_0_OR_GREATER
             DateOnlyField = DateOnly.FromDateTime(DateTime.Now.Date),
-            GuidField = Guid.NewGuid(),
             TimeOnlyField = TimeOnly.FromDateTime(DateTime.Now),
+#else
+            DateOnlyField = (int)((ulong)DateTime.Now.Date.Ticks / 864000000000UL),
+            TimeOnlyField = DateTime.Now.TimeOfDay.Ticks,
+#endif
+            GuidField = Guid.NewGuid(),
             StringBuilderField = new StringBuilder("hello"),
             DateTimeField = DateTime.UtcNow,
             MapField4s = { [20] = 20 },
@@ -173,16 +178,22 @@ public class IntergrationTests
     )
         where T1 : IProtoParser<T1>
     {
-        var bytes = origin.ToByteArray();
+        var bytes = origin.ToByteArray(ProtoParser<T1>.ProtoWriter);
         var parsed = parserFunc(bytes);
 
-        var originalBytes = Convert.ToHexString(origin.ToByteArray());
+        var originalBytes = Convert.ToBase64String(origin.ToByteArray(ProtoParser<T1>.ProtoWriter));
         var t2Array = t2ToByteArray(parsed);
-        var parsedBytes = Convert.ToHexString(t2Array);
+        var parsedBytes = Convert.ToBase64String(t2Array);
         try
         {
             await Assert.That(originalBytes).IsEqualTo(parsedBytes);
-            await Assert.That(t2Array.Length).IsEqualTo(origin.CalculateSize());
+            await Assert.That(t2Array.Length).IsEqualTo(
+#if NET6_0_OR_GREATER
+                Serializer.CalculateSize(origin)
+#else
+                    ProtoParser<T1>.ProtoWriter.CalculateSize(origin)
+#endif
+            );
         }
         catch (Exception)
         {
@@ -191,13 +202,21 @@ public class IntergrationTests
             throw;
         }
 
-        var parseBack = LightProto.Serializer.Deserialize<T1>(bytes);
-        var bytes2 = parseBack.ToByteArray();
+        var parseBack = LightProto.Serializer.Deserialize<T1>(bytes, ProtoParser<T1>.ProtoReader);
+        var bytes2 = parseBack.ToByteArray(ProtoParser<T1>.ProtoWriter);
 
-        var parseBackBytes = Convert.ToHexString(bytes2);
+        var parseBackBytes = Convert.ToBase64String(bytes2);
         await Assert.That(parseBackBytes).IsEqualTo(originalBytes);
-        await Assert.That(parseBack.CalculateSize()).IsEqualTo(origin.CalculateSize());
+#if NET6_0_OR_GREATER
+        await Assert
+            .That(Serializer.CalculateSize(parseBack))
+            .IsEqualTo(Serializer.CalculateSize(origin));
+#else
+        await Assert
+            .That(ProtoParser<T1>.ProtoWriter.CalculateSize(parseBack))
+            .IsEqualTo(ProtoParser<T1>.ProtoWriter.CalculateSize(origin));
 
+#endif
         return parsed;
     }
 
@@ -215,8 +234,16 @@ public class IntergrationTests
         await Assert.That(obj.StringStackFieldTests).IsNotNull();
         await Assert.That(obj.ConcurrentStringQueueFieldTests).IsNotNull();
         await Assert.That(obj.ConcurrentStringStackFieldTests).IsNotNull();
+#if NET6_0_OR_GREATER
         var bytes = obj.ToByteArray();
         var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(bytes);
+#else
+        var bytes = obj.ToByteArray(ProtoParser<CsTestMessage>.ProtoWriter);
+        var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(
+            bytes,
+            ProtoParser<CsTestMessage>.ProtoReader
+        );
+#endif
         await Assert.That(parsed.Int32ArrayFields).IsNotNull();
         await Assert.That(parsed.StringArrayFields).IsNotNull();
         await Assert.That(parsed.IntListFieldTests).IsNotNull();

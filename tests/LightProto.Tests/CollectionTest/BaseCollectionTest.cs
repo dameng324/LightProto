@@ -7,8 +7,15 @@ namespace LightProto.Tests.CollectionTest;
 public abstract class BaseCollectionTestWithParser<TParser, T> : BaseCollectionTest<T>
     where TParser : IProtoParser<T>
 {
-    public override IProtoWriter<T> ProtoWriter => TParser.ProtoWriter;
+#if NET7_0_OR_GREATER
     public override IProtoReader<T> ProtoReader => TParser.ProtoReader;
+    public override IProtoWriter<T> ProtoWriter => TParser.ProtoWriter;
+#else
+    public override IProtoReader<T> ProtoReader =>
+        (typeof(TParser).GetProperty("ProtoReader")!.GetValue(null) as IProtoReader<T>)!;
+    public override IProtoWriter<T> ProtoWriter =>
+        (typeof(TParser).GetProperty("ProtoWriter")!.GetValue(null) as IProtoWriter<T>)!;
+#endif
 }
 
 public abstract class BaseCollectionTest<T>

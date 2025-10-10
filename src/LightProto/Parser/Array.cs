@@ -8,6 +8,8 @@ public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[], T>
 
 public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
 {
+    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+    public bool IsMessage => false;
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TItem[]> CreateWithCapacity { get; } = (capacity) => new TItem[capacity];

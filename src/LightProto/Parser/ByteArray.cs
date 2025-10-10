@@ -7,6 +7,9 @@ public sealed class ByteArrayProtoParser : IProtoParser<byte[]>
 
     sealed class ByteArrayProtoReader : IProtoReader<byte[]>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         public byte[] ParseFrom(ref ReaderContext input)
         {
             var length = input.ReadLength();
@@ -16,6 +19,9 @@ public sealed class ByteArrayProtoParser : IProtoParser<byte[]>
 
     sealed class ByteArrayProtoWriter : IProtoWriter<byte[]>
     {
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
+
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]

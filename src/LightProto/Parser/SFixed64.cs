@@ -8,6 +8,7 @@ public sealed class SFixed64ProtoParser : IProtoParser<Int64>
     sealed class SFixed64ProtoReader : IProtoReader<Int64>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
@@ -21,6 +22,7 @@ public sealed class SFixed64ProtoParser : IProtoParser<Int64>
     sealed class SFixed64ProtoWriter : IProtoWriter<Int64>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
+        public bool IsMessage => false;
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

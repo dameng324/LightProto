@@ -5,6 +5,7 @@ namespace LightProto;
 
 public static partial class Serializer
 {
+#if NET7_0_OR_GREATER
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.
     /// </summary>
@@ -20,6 +21,7 @@ public static partial class Serializer
     /// <param name="destination">The destination stream to write to.</param>
     public static void Serialize<T>(IBufferWriter<byte> destination, ICollection<T> instance)
         where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
+#endif
 
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
