@@ -1,4 +1,5 @@
-﻿using LightProto.Parser;
+﻿using System.Text;
+using LightProto.Parser;
 
 namespace LightProto.Tests.CollectionTest;
 
@@ -120,7 +121,25 @@ public class DecimalCollectionTest : BaseCollectionTestWithParser<DecimalProtoPa
 }
 
 [InheritsTests]
+public class Decimal300CollectionTest : BaseCollectionTestWithParser<Decimal300ProtoParser, Decimal>
+{
+    public override IEnumerable<Decimal[]> GetCollection()
+    {
+        yield return new Decimal[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
 public class GuidCollectionTest : BaseCollectionTestWithParser<GuidProtoParser, Guid>
+{
+    public override IEnumerable<Guid[]> GetCollection()
+    {
+        yield return new Guid[] { Guid.Empty, Guid.NewGuid() };
+    }
+}
+
+[InheritsTests]
+public class Guid300CollectionTest : BaseCollectionTestWithParser<Guid300ProtoParser, Guid>
 {
     public override IEnumerable<Guid[]> GetCollection()
     {
@@ -153,6 +172,19 @@ public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayPro
     public override IEnumerable<byte[][]> GetCollection()
     {
         yield return new byte[][] { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
+    }
+}
+
+[InheritsTests]
+public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProtoParser, List<byte>>
+{
+    public override IEnumerable<List<byte>[]> GetCollection()
+    {
+        yield return new List<byte>[]
+        {
+            new List<byte> { 1, 2, 3 },
+            new List<byte> { 4, 5, 6 },
+        };
     }
 }
 
@@ -220,6 +252,26 @@ public class StringCollectionTest : BaseCollectionTestWithParser<StringProtoPars
     public override IEnumerable<string[]> GetCollection()
     {
         yield return new string[] { string.Empty, "123" };
+    }
+}
+
+[InheritsTests]
+public class InternedStringCollectionTest
+    : BaseCollectionTestWithParser<InternedStringProtoParser, string>
+{
+    public override IEnumerable<string[]> GetCollection()
+    {
+        yield return new string[] { string.Empty, "123" };
+    }
+}
+
+[InheritsTests]
+public class StringBuilderCollectionTest
+    : BaseCollectionTestWithParser<StringBuilderProtoParser, StringBuilder>
+{
+    public override IEnumerable<StringBuilder[]> GetCollection()
+    {
+        yield return new StringBuilder[] { new StringBuilder(), new StringBuilder("123") };
     }
 }
 
