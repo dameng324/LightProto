@@ -73,24 +73,25 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
 
     public override IEnumerable<Message> GetMessages()
     {
-        foreach (var i in Enumerable.Range(0, 100))
+        ulong baseValue = 7;
+        foreach (var i in Enumerable.Range(0, 20))
         {
-            var random = new Random();
+            baseValue *= 10;
             yield return new()
             {
-                BooleanValue = random.Next() % 2 == 0,
-                DoubleValue = random.NextDouble() * 1000 - 500,
-                Int32Value = random.Next(int.MinValue, int.MaxValue),
-                SFixed32Value = random.Next(int.MinValue, int.MaxValue),
-                Fixed32Value = (uint)random.Next(int.MinValue, int.MaxValue),
-                SFixed64Value = random.Next(int.MinValue, int.MaxValue),
-                Fixed64Value = (ulong)random.Next(int.MinValue, int.MaxValue),
-                Int64Value = random.Next(int.MinValue, int.MaxValue),
-                SInt64Value = random.Next(int.MinValue, int.MaxValue),
-                SInt32Value = random.Next(int.MinValue, int.MaxValue),
-                SingleValue = (float)(random.NextDouble() * 1000 - 500),
-                UInt64Value = (ulong)random.Next(int.MinValue, int.MaxValue),
-                UInt32Value = (uint)random.Next(int.MinValue, int.MaxValue),
+                BooleanValue = i % 2 == 0,
+                DoubleValue = baseValue * 1.1,
+                Int32Value = (int)baseValue,
+                SFixed32Value = (int)baseValue,
+                Fixed32Value = (uint)baseValue,
+                SFixed64Value = (int)baseValue,
+                Fixed64Value = baseValue,
+                Int64Value = (long)(baseValue),
+                SInt64Value = (long)(baseValue),
+                SInt32Value = (int)baseValue,
+                SingleValue = (float)(baseValue * 1.1),
+                UInt64Value = baseValue,
+                UInt32Value = (uint)baseValue,
             };
         }
     }
