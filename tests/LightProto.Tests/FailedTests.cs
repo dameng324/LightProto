@@ -14,7 +14,7 @@ public partial class FailedTests
         List<string> strings = new() { "one", null!, "three" };
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
-            var bytes = strings.ToByteArray(StringProtoParser.ProtoWriter);
+            var bytes = strings.ToByteArray(StringProtoParser.ProtoWriter.GetCollectionWriter());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -26,7 +26,7 @@ public partial class FailedTests
         HashSet<string> strings = new() { "one", null!, "three" };
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
-            var bytes = strings.ToByteArray(StringProtoParser.ProtoWriter);
+            var bytes = strings.ToByteArray(StringProtoParser.ProtoWriter.GetCollectionWriter());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -39,7 +39,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
             using var ms = new MemoryStream();
-            strings.SerializeTo(ms, StringProtoParser.ProtoWriter);
+            strings.SerializeTo(ms, StringProtoParser.ProtoWriter.GetCollectionWriter());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -52,7 +52,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
             using var ms = new MemoryStream();
-            strings.SerializeTo(ms, StringProtoParser.ProtoWriter);
+            strings.SerializeTo(ms, StringProtoParser.ProtoWriter.GetCollectionWriter());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -64,9 +64,9 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 0, 1, 0 };
-            var strings = Serializer.Deserialize<List<int>, int>(
+            var strings = Serializer.Deserialize(
                 bytes,
-                Int32ProtoParser.ProtoReader
+                Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
             );
             await Task.CompletedTask;
         });
@@ -101,9 +101,9 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 8, 1, 8 };
-            var strings = Serializer.Deserialize<List<int>, int>(
+            var strings = Serializer.Deserialize(
                 bytes,
-                Int32ProtoParser.ProtoReader
+                Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
             );
             await Task.CompletedTask;
         });
@@ -117,9 +117,9 @@ public partial class FailedTests
         {
             // normal bytes is new byte[] { 10,3,111,110,111,10,5,116,104,114,101,101 };
             var bytes = new byte[] { 10, 3, 0xE0, 0x80, 0x80, 10, 5, 116, 104, 114, 101, 101 };
-            var strings = Serializer.Deserialize<List<string>, string>(
+            var strings = Serializer.Deserialize(
                 bytes,
-                StringProtoParser.ProtoReader
+                StringProtoParser.ProtoReader.GetCollectionReader<List<string>, string>()
             );
             await Task.CompletedTask;
         });

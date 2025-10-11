@@ -42,10 +42,10 @@ public abstract class BaseCollectionTest<T>
     public async Task CollectionSerializeAndDeserialize(ICollection<T> original)
     {
         using var ms = new MemoryStream();
-        Serializer.Serialize(ms, original, ProtoWriter);
+        Serializer.Serialize(ms, original, ProtoWriter.GetCollectionWriter());
         {
             ms.Position = 0;
-            var parsed = Serializer.Deserialize<List<T>, T>(ms, ProtoReader);
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetCollectionReader<List<T>, T>());
             await Assert.That(parsed).IsEquivalentTo(original);
         }
 
@@ -57,18 +57,13 @@ public abstract class BaseCollectionTest<T>
 
         {
             ms.Position = 0;
-            var parsed = Serializer.Deserialize<HashSet<T>, T>(ms, ProtoReader);
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetHashSetReader());
             await Assert.That(parsed).IsEquivalentTo(original);
         }
 
         {
             ms.Position = 0;
-            var parsed = Serializer.Deserialize<T[]>(ms, ProtoReader.GetArrayMessageReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
-        }
-        {
-            ms.Position = 0;
-            var parsed = Serializer.Deserialize(ms, ProtoReader.GetHashSetReader());
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetArrayReader());
             await Assert.That(parsed).IsEquivalentTo(original);
         }
 

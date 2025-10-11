@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using LightProto.Parser;
 
 namespace LightProto;
 
@@ -13,6 +14,10 @@ public static partial class Serializer
         IProtoWriter<T> writer
     )
     {
+        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        {
+            writer = MessageWrapper<T>.ProtoWriter.From(writer);
+        }
         WriterContext.Initialize(destination, out var ctx);
         writer.WriteTo(ref ctx, instance);
         ctx.Flush();
@@ -20,6 +25,10 @@ public static partial class Serializer
 
     public static void Serialize<T>(Stream destination, T instance, IProtoWriter<T> writer)
     {
+        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        {
+            writer = MessageWrapper<T>.ProtoWriter.From(writer);
+        }
         using var codedOutputStream = new CodedOutputStream(destination, leaveOpen: true);
         WriterContext.Initialize(codedOutputStream, out var ctx);
         writer.WriteTo(ref ctx, instance);
@@ -27,26 +36,23 @@ public static partial class Serializer
     }
 
     public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
-        where T : IProtoParser<T>
     {
         unsafe
         {
             var size = writer.CalculateSize(message);
-            Span<byte> buffer;
-            if (size < 256)
+            var array = ArrayPool<byte>.Shared.Rent(size);
+            try
             {
-#pragma warning disable CS9081 // A result of a stackalloc expression of this type in this context may be exposed outside of the containing method
-                buffer = stackalloc byte[size];
-#pragma warning restore CS9081 // A result of a stackalloc expression of this type in this context may be exposed outside of the containing method
+                var buffer = array.AsSpan(0, size);
+                WriterContext.Initialize(ref buffer, out var ctx);
+                writer.WriteTo(ref ctx, message);
+                ctx.Flush();
+                return Deserialize(buffer, reader);
             }
-            else
+            finally
             {
-                buffer = new byte[size];
+                ArrayPool<byte>.Shared.Return(array);
             }
-            WriterContext.Initialize(ref buffer, out var ctx);
-            writer.WriteTo(ref ctx, message);
-            ctx.Flush();
-            return Deserialize(buffer, reader);
         }
     }
 

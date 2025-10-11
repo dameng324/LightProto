@@ -97,7 +97,7 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
         ClearHelper();
         ArrayPool<T>.Shared.Return(_rentedBuffer);
-        _rentedBuffer = null;
+        _rentedBuffer = null!;
     }
 
     private void CheckIfDisposed()
@@ -147,7 +147,7 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
             sizeHint = MinimumBufferSize;
         }
 
-        int availableSpace = _rentedBuffer.Length - _index;
+        int availableSpace = _rentedBuffer!.Length - _index;
 
         if (sizeHint > availableSpace)
         {

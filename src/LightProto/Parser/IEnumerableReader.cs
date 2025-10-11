@@ -5,13 +5,20 @@ public interface ICollectionReader
     public WireFormat.WireType ItemWireType { get; }
 }
 
-public interface ICollectionReader<TCollection, TItem>
-    : IProtoReader<TCollection>,
-        ICollectionReader
+public interface ICollectionReader<out TCollection> : ICollectionReader
 {
-    public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
 }
+
+public interface ICollectionItemReader<out TItem> : ICollectionReader
+{
+    public IProtoReader<TItem> ItemReader { get; }
+}
+
+public interface ICollectionReader<out TCollection, out TItem>
+    : IProtoReader<TCollection>,
+        ICollectionReader<TCollection>,
+        ICollectionItemReader<TItem> { }
 
 public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCollection, TItem>
     where TCollection : IEnumerable<TItem>

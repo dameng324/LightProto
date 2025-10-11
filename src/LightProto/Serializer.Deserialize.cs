@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using LightProto.Parser;
 
 namespace LightProto;
 
@@ -32,6 +33,11 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(ReadOnlySequence<byte> source, IProtoReader<T> reader)
     {
+        if (reader.IsMessage == false)
+        {
+            reader = MessageWrapper<T>.ProtoReader.From(reader);
+        }
+
         ReaderContext.Initialize(source, out var ctx);
         return reader.ParseFrom(ref ctx);
     }
@@ -41,6 +47,10 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(ReadOnlySpan<byte> source, IProtoReader<T> reader)
     {
+        if (reader.IsMessage == false)
+        {
+            reader = MessageWrapper<T>.ProtoReader.From(reader);
+        }
         ReaderContext.Initialize(source, out var ctx);
         return reader.ParseFrom(ref ctx);
     }
@@ -50,6 +60,10 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(Stream source, IProtoReader<T> reader)
     {
+        if (reader.IsMessage == false)
+        {
+            reader = MessageWrapper<T>.ProtoReader.From(reader);
+        }
         using var codedStream = new CodedInputStream(source, leaveOpen: true);
         ReaderContext.Initialize(codedStream, out var ctx);
         return reader.ParseFrom(ref ctx);
