@@ -39,11 +39,8 @@ public class ProtoMemberAttribute(uint tag) : Attribute
     /// </summary>
     public bool IsRequired { get; set; } = false;
     public bool IsPacked { get; set; } = false;
-
-    // [Obsolete("compatibility protobuf-net only, no effect")]
-    // public bool OverwriteList { get; set; } = false;
-
     public string Name { get; set; } = string.Empty;
+    public Type? ParserType { get; set; } = null;
 }
 
 public class ProtoMapAttribute : Attribute
@@ -110,4 +107,31 @@ public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
 {
     public uint Tag { get; } = tag;
     public Type KnownType { get; } = knownType;
+}
+
+/// <summary>
+/// Specifies an ProtoParserType to use for serializing/deserializing
+/// <param name="parserType">The additional type to serialize/deserialize.</param>
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
+{
+    public Type ParserType { get; } = parserType;
+}
+
+/// <summary>
+/// Specifies an ProtoParserType of messageType to use for serializing/deserializing
+/// <param name="parserType">The additional type to serialize/deserialize.</param>
+/// </summary>
+[AttributeUsage(
+    AttributeTargets.Assembly
+        | AttributeTargets.Module
+        | AttributeTargets.Class
+        | AttributeTargets.Struct,
+    AllowMultiple = true
+)]
+public sealed class ProtoParserTypeMapAttribute(Type messageType, Type parserType) : Attribute
+{
+    public Type MessageType { get; } = messageType;
+    public Type ParserType { get; } = parserType;
 }
