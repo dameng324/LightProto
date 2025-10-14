@@ -120,8 +120,9 @@ public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
 }
 
 /// <summary>
-/// Specifies an ProtoParserType of messageType to use for serializing/deserializing
-/// <param name="parserType">The additional type to serialize/deserialize.</param>
+/// Specifies a ProtoParserType for a given messageType to use for serialization/deserialization.
+/// <param name="messageType">The message type to be serialized/deserialized.</param>
+/// <param name="parserType">The parser type for serialization/deserialization.</param>
 /// </summary>
 [AttributeUsage(
     AttributeTargets.Assembly
