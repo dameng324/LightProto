@@ -110,8 +110,8 @@ public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
 }
 
 /// <summary>
-/// Specifies an ProtoParserType to use for serializing/deserializing
-/// <param name="parserType">The additional type to serialize/deserialize.</param>
+/// Specifies a parser type to use for serializing/deserializing the target type.
+/// <param name="parserType">The type that implements the parser logic for serialization/deserialization.</param>
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
