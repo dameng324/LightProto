@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{98F65089
 		.gitignore = .gitignore
 		global.json = global.json
 		README.md = README.md
+		.codecov.yml = .codecov.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "tests\Benchmark\Benchmark.csproj", "{D2749BC6-4CAC-4591-A343-B7CBE0550593}"
