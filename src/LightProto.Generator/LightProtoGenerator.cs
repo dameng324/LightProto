@@ -1244,7 +1244,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 o.AttributeClass?.ToDisplayString()
                                 == "LightProto.ProtoParserTypeAttribute"
                             )
-                            ?.ConstructorArguments[0].Value as INamedTypeSymbol;
+                            ?.ConstructorArguments[0]
+                            .Value as INamedTypeSymbol;
                 }
 
                 if (parserType is null)
