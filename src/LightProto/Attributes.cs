@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LightProto;
 
+[ExcludeFromCodeCoverage]
 public class ProtoContractAttribute : Attribute
 {
     /// <summary>
@@ -29,6 +31,7 @@ public class ProtoContractAttribute : Attribute
     public uint ImplicitFirstTag { get; set; } = 1;
 }
 
+[ExcludeFromCodeCoverage]
 public class ProtoMemberAttribute(uint tag) : Attribute
 {
     public uint Tag { get; } = tag;
@@ -43,14 +46,17 @@ public class ProtoMemberAttribute(uint tag) : Attribute
     public Type? ParserType { get; set; } = null;
 }
 
+[ExcludeFromCodeCoverage]
 public class ProtoMapAttribute : Attribute
 {
     public DataFormat KeyFormat { get; set; } = DataFormat.Default;
     public DataFormat ValueFormat { get; set; } = DataFormat.Default;
 }
 
+[ExcludeFromCodeCoverage]
 public class ProtoIgnoreAttribute : Attribute;
 
+[ExcludeFromCodeCoverage]
 public class ProtoSurrogateForAttribute<T> : Attribute;
 
 // donot support ProtoInclude for now
@@ -72,6 +78,7 @@ public class ProtoSurrogateForAttribute<T> : Attribute;
         | AttributeTargets.Field
         | AttributeTargets.Property
 )]
+[ExcludeFromCodeCoverage]
 public sealed class CompatibilityLevelAttribute(CompatibilityLevel level) : Attribute
 {
     /// <summary>
@@ -88,6 +95,7 @@ public sealed class CompatibilityLevelAttribute(CompatibilityLevel level) : Attr
         | AttributeTargets.Field
         | AttributeTargets.Property
 )]
+[ExcludeFromCodeCoverage]
 public sealed class StringInternAttribute : Attribute;
 
 /// <summary>
@@ -103,6 +111,7 @@ public sealed class StringInternAttribute : Attribute;
     AllowMultiple = true,
     Inherited = false
 )]
+[ExcludeFromCodeCoverage]
 public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
 {
     public uint Tag { get; } = tag;
@@ -113,6 +122,7 @@ public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
 /// Specifies a parser type to use for serializing/deserializing the target type.
 /// <param name="parserType">The type that implements the parser logic for serialization/deserialization.</param>
 /// </summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
 {
@@ -124,6 +134,7 @@ public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
 /// <param name="messageType">The message type to be serialized/deserialized.</param>
 /// <param name="parserType">The parser type for serialization/deserialization.</param>
 /// </summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(
     AttributeTargets.Assembly
         | AttributeTargets.Module
