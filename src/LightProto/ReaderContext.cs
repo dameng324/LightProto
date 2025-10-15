@@ -216,5 +216,11 @@ namespace LightProto
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadLength() => (int)ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
+
+        /// <summary>
+        /// Skips a field with the last tag.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SkipLastField() => ParsingPrimitives.SkipLastField(ref buffer, ref state);
     }
 }
