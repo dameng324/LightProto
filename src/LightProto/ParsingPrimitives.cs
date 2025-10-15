@@ -849,5 +849,34 @@ namespace LightProto
                 state.bufferPos += unreadSpan.Length;
             }
         }
+
+        public static void SkipLastField(
+            ref ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state
+        )
+        {
+            if (state.lastTag == 0)
+            {
+                throw new InvalidOperationException(
+                    "SkipLastField cannot be called at the end of a stream"
+                );
+            }
+            switch (WireFormat.GetTagWireType(state.lastTag))
+            {
+                case WireFormat.WireType.Fixed32:
+                    ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
+                    break;
+                case WireFormat.WireType.Fixed64:
+                    ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
+                    break;
+                case WireFormat.WireType.LengthDelimited:
+                    var length = ParsingPrimitives.ParseLength(ref buffer, ref state);
+                    ParsingPrimitives.SkipRawBytes(ref buffer, ref state, length);
+                    break;
+                case WireFormat.WireType.Varint:
+                    ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
+                    break;
+            }
+        }
     }
 }

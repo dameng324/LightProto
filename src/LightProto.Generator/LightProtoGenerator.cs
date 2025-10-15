@@ -502,8 +502,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }
                                   switch(tag) 
                                   {
-                                      default:
-                                      break;
+                                      default: 
+                                          input.SkipLastField();
+                                          break;
                                       {{string.Join(Environment.NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
                                           {
                                               return Gen();
@@ -737,7 +738,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   switch(tag) 
                                   {
                                       default:
-                                      break;
+                                          input.SkipLastField();
+                                          break;
                                       {{string.Join(Environment.NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
                                           {
                                               return Gen();
