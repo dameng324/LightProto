@@ -130,7 +130,7 @@ public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
 }
 
 /// <summary>
-/// Specifies a ProtoParserType for a given messageType to use for serialization/deserialization.
+/// Specifies a ProtoParser type for a given message type to use for serialization/deserialization.
 /// <param name="messageType">The message type to be serialized/deserialized.</param>
 /// <param name="parserType">The parser type for serialization/deserialization.</param>
 /// </summary>

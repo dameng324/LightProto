@@ -68,7 +68,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 e.Severity,
                                 isEnabledByDefault: true
                             ),
-                            e.Location ?? Location.None
+                            e.Location ?? Location.None,
+                            additionalLocations: e.AdditionalLocations
                         )
                     );
                 }
@@ -1236,9 +1237,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                         {
                             throw LightProtoGeneratorException.Duplicate_ProtoParserTypeMapAttribute(
                                 member.Type.ToDisplayString(),
-                                mapAttributes[0]
-                                    .ApplicationSyntaxReference?.GetSyntax()
-                                    .GetLocation()
+                                mapAttributes
+                                    .Select(x =>
+                                        x.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                                    )
+                                    .Where(o => o is not null)
+                                    .ToArray()!
                             );
                         }
 
@@ -2492,6 +2496,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         public string Category { get; set; } = string.Empty;
         public DiagnosticSeverity Severity { get; set; }
         public Location? Location { get; set; }
+        public IEnumerable<Location>? AdditionalLocations { get; set; }
 
         public static LightProtoGeneratorException InitOnlyWhenSkipConstructor(
             string memberName,
@@ -2678,7 +2683,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
         public static Exception Duplicate_ProtoParserTypeMapAttribute(
             string typeString,
-            Location? getLocation
+            Location[] locations
         )
         {
             return new LightProtoGeneratorException(
@@ -2689,7 +2694,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Title = $"Duplicate ProtoParserTypeMapAttribute",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
-                Location = getLocation,
+                Location = locations[0],
+                AdditionalLocations = locations.Skip(1),
             };
         }
 
@@ -2706,24 +2712,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Id = "LIGHT_PROTO_014",
                 Title =
                     $"Proto parser type must contain static ProtoReader or ProtoWriter Property",
-                Category = "Usage",
-                Severity = DiagnosticSeverity.Error,
-                Location = getLocation,
-            };
-        }
-
-        public static Exception ProtoParserTypeAndTargetTypeCannotInSameAssembly(
-            string messageType,
-            string parserType,
-            Location? getLocation
-        )
-        {
-            return new LightProtoGeneratorException(
-                $"Proto parser type({parserType}) cannot be in the same assembly as the message type: {messageType}"
-            )
-            {
-                Id = "LIGHT_PROTO_015",
-                Title = $"Proto parser type cannot be in the same assembly as the message type",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = getLocation,
