@@ -1241,8 +1241,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                     .Select(x =>
                                         x.ApplicationSyntaxReference?.GetSyntax().GetLocation()
                                     )
-                                    .Where(o => o is not null)
-                                    .ToArray()!
+                                    .OfType<Location>()
+                                    .ToArray()
                             );
                         }
 
