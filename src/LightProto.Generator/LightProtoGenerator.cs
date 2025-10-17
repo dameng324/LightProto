@@ -77,9 +77,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                     spc.ReportDiagnostic(
                         Diagnostic.Create(
                             new DiagnosticDescriptor(
-                                "LightProto",
+                                "LIGHT_PROTO_000",
                                 "Unknown Exception",
-                                e.ToString(),
+                                e.ToString().Replace(Environment.NewLine, " "),
                                 "Unknown",
                                 DiagnosticSeverity.Error,
                                 isEnabledByDefault: true
