@@ -1222,17 +1222,94 @@ public class LightProtoGenerator : IIncrementalGenerator
                         ImmutableArray<AttributeData> attributes
                     )
                     {
-                        return attributes
-                                .FirstOrDefault(o =>
-                                    o.AttributeClass?.ToDisplayString()
-                                        == "LightProto.ProtoParserTypeMapAttribute"
-                                    && SymbolEqualityComparer.Default.Equals(
-                                        o.ConstructorArguments[0].Value as INamedTypeSymbol,
-                                        member.Type
-                                    )
+                        var mapAttributes = attributes
+                            .Where(o =>
+                                o.AttributeClass?.ToDisplayString()
+                                    == "LightProto.ProtoParserTypeMapAttribute"
+                                && SymbolEqualityComparer.Default.Equals(
+                                    o.ConstructorArguments[0].Value as INamedTypeSymbol,
+                                    member.Type
                                 )
-                                ?.ConstructorArguments[1]
-                                .Value as INamedTypeSymbol;
+                            )
+                            .ToArray();
+                        if (mapAttributes.Length > 1)
+                        {
+                            throw LightProtoGeneratorException.Duplicate_ProtoParserTypeMapAttribute(
+                                member.Type.ToDisplayString(),
+                                mapAttributes[0]
+                                    .ApplicationSyntaxReference?.GetSyntax()
+                                    .GetLocation()
+                            );
+                        }
+
+                        var attribute = mapAttributes.FirstOrDefault();
+                        if (attribute is null)
+                            return null;
+
+                        var parser = (attribute.ConstructorArguments[1].Value as INamedTypeSymbol)!;
+
+                        var isProtoContract = parser
+                            .GetAttributes()
+                            .Any(o =>
+                                o.AttributeClass?.ToDisplayString()
+                                == "LightProto.ProtoContractAttribute"
+                            );
+
+                        var memberTypeDisplayString = member
+                            .Type.WithNullableAnnotation(NullableAnnotation.None)
+                            .ToDisplayString();
+                        // if parser does contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
+                        var hasProtoReader = parser
+                            .GetMembers()
+                            .OfType<IPropertySymbol>()
+                            .Any(o =>
+                                o.IsStatic
+                                && o.Name == "ProtoReader"
+                                && o.Type is INamedTypeSymbol returnType
+                                && (
+                                    returnType.AllInterfaces.Any(i =>
+                                        i.ToDisplayString()
+                                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
+                                    )
+                                    || returnType.ToDisplayString()
+                                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
+                                )
+                            );
+                        if (isProtoContract == false && hasProtoReader == false)
+                        {
+                            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
+                                parser.ToDisplayString(),
+                                memberTypeDisplayString,
+                                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                            );
+                        }
+                        var hasProtoWriter = parser
+                            .GetMembers()
+                            .OfType<IPropertySymbol>()
+                            .Any(o =>
+                                o.IsStatic
+                                && o.Name == "ProtoWriter"
+                                && o.Type is INamedTypeSymbol returnType
+                                && (
+                                    returnType.AllInterfaces.Any(i =>
+                                        i.ToDisplayString()
+                                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
+                                    )
+                                    || returnType.ToDisplayString()
+                                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
+                                )
+                            );
+
+                        if (isProtoContract == false && hasProtoWriter is false)
+                        {
+                            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
+                                parser.ToDisplayString(),
+                                memberTypeDisplayString,
+                                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                            );
+                        }
+
+                        return parser;
                     }
                 }
 
@@ -2596,6 +2673,60 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = location,
+            };
+        }
+
+        public static Exception Duplicate_ProtoParserTypeMapAttribute(
+            string typeString,
+            Location? getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Duplicate ProtoParserTypeMapAttribute for type {typeString}"
+            )
+            {
+                Id = "LIGHT_PROTO_013",
+                Title = $"Duplicate ProtoParserTypeMapAttribute",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
+            };
+        }
+
+        public static Exception ProtoParserTypeMustContainProtoReaderWriter(
+            string parserType,
+            string messageType,
+            Location? getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Proto parser type {parserType} must contain static IProtoReader<{messageType}> ProtoReader Property and static IProtoWriter<{messageType}> ProtoWriter Property"
+            )
+            {
+                Id = "LIGHT_PROTO_014",
+                Title =
+                    $"Proto parser type must contain static ProtoReader or ProtoWriter Property",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
+            };
+        }
+
+        public static Exception ProtoParserTypeAndTargetTypeCannotInSameAssembly(
+            string messageType,
+            string parserType,
+            Location? getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Proto parser type({parserType}) cannot be in the same assembly as the message type: {messageType}"
+            )
+            {
+                Id = "LIGHT_PROTO_015",
+                Title = $"Proto parser type cannot be in the same assembly as the message type",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
             };
         }
     }

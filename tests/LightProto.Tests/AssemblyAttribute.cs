@@ -2,7 +2,7 @@
 using LightProto.Tests;
 using LightProto.Tests.CustomParser;
 
-[module: ProtoParserTypeMap(
+[assembly: ProtoParserTypeMap(
     typeof(CustomPriorityTests.Person),
     typeof(AssemblyLevelPersonProtoParser)
 )]
