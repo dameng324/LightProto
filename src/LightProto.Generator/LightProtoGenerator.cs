@@ -68,7 +68,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 e.Severity,
                                 isEnabledByDefault: true
                             ),
-                            e.Location ?? Location.None
+                            e.Location ?? Location.None,
+                            additionalLocations: e.AdditionalLocations
                         )
                     );
                 }
@@ -77,9 +78,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                     spc.ReportDiagnostic(
                         Diagnostic.Create(
                             new DiagnosticDescriptor(
-                                "LightProto",
+                                "LIGHT_PROTO_000",
                                 "Unknown Exception",
-                                e.ToString(),
+                                e.ToString().Replace(Environment.NewLine, " "),
                                 "Unknown",
                                 DiagnosticSeverity.Error,
                                 isEnabledByDefault: true
@@ -136,7 +137,6 @@ public class LightProtoGenerator : IIncrementalGenerator
               using System;
               using System.Linq;
               using LightProto;
-              using LightProto.Parser;
               namespace {{namespaceName}};
               """
         );
@@ -1103,7 +1103,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         var memberType = member.Type.WithNullableAnnotation(NullableAnnotation.None);
 
         yield return $"private IProto{readOrWriter}<{memberType}> _{member.Name}_Proto{readOrWriter};";
-        yield return $"private IProto{readOrWriter}<{memberType}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
+        yield return $"internal IProto{readOrWriter}<{memberType}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
     }
 
     public uint GetFieldNumber(uint rawTag)
@@ -1166,7 +1166,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             var elementType = arrayType.ElementType;
             if (elementType.SpecialType == SpecialType.System_Byte)
             {
-                return $"ByteArrayProtoParser.Proto{readerOrWriter}";
+                return $"LightProto.Parser.ByteArrayProtoParser.Proto{readerOrWriter}";
             }
 
             if (isPacked == false)
@@ -1192,7 +1192,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                 member
             );
             var fixedSize = GetFixedSize(elementType, format);
-            return $"new ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
+            return $"new LightProto.Parser.ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
         }
 
         if (memberType is INamedTypeSymbol namedType)
@@ -1201,9 +1201,157 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             if (typeArguments.Length == 0)
             {
+                // member level specified parser type
+                INamedTypeSymbol? parserType =
+                    member
+                        .AttributeData.FirstOrDefault(o =>
+                            o.AttributeClass?.ToDisplayString() == "LightProto.ProtoMemberAttribute"
+                        )
+                        ?.NamedArguments.FirstOrDefault(o => o.Key == "ParserType")
+                        .Value.Value as INamedTypeSymbol;
+                if (parserType is null)
+                {
+                    // target type / assembly level specified parser type
+                    parserType =
+                        GetParserTypeFromAttribute(targetType.GetAttributes())
+                        ?? GetParserTypeFromAttribute(targetType.ContainingModule.GetAttributes())
+                        ?? GetParserTypeFromAttribute(
+                            memberType.ContainingAssembly.GetAttributes()
+                        );
+
+                    INamedTypeSymbol? GetParserTypeFromAttribute(
+                        ImmutableArray<AttributeData> attributes
+                    )
+                    {
+                        var mapAttributes = attributes
+                            .Where(o =>
+                                o.AttributeClass?.ToDisplayString()
+                                    == "LightProto.ProtoParserTypeMapAttribute"
+                                && SymbolEqualityComparer.Default.Equals(
+                                    o.ConstructorArguments[0].Value as INamedTypeSymbol,
+                                    member.Type
+                                )
+                            )
+                            .ToArray();
+                        if (mapAttributes.Length > 1)
+                        {
+                            throw LightProtoGeneratorException.Duplicate_ProtoParserTypeMapAttribute(
+                                member.Type.ToDisplayString(),
+                                mapAttributes
+                                    .Select(x =>
+                                        x.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                                    )
+                                    .OfType<Location>()
+                                    .ToArray()
+                            );
+                        }
+
+                        var attribute = mapAttributes.FirstOrDefault();
+                        if (attribute is null)
+                            return null;
+
+                        var parser = (attribute.ConstructorArguments[1].Value as INamedTypeSymbol)!;
+
+                        var isProtoContract = parser
+                            .GetAttributes()
+                            .Any(o =>
+                                o.AttributeClass?.ToDisplayString()
+                                == "LightProto.ProtoContractAttribute"
+                            );
+
+                        var memberTypeDisplayString = member
+                            .Type.WithNullableAnnotation(NullableAnnotation.None)
+                            .ToDisplayString();
+                        // if parser does contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
+                        var hasProtoReader = parser
+                            .GetMembers()
+                            .OfType<IPropertySymbol>()
+                            .Any(o =>
+                                o.IsStatic
+                                && o.Name == "ProtoReader"
+                                && o.Type is INamedTypeSymbol returnType
+                                && (
+                                    returnType.AllInterfaces.Any(i =>
+                                        i.ToDisplayString()
+                                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
+                                    )
+                                    || returnType.ToDisplayString()
+                                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
+                                )
+                            );
+                        if (isProtoContract == false && hasProtoReader == false)
+                        {
+                            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
+                                parser.ToDisplayString(),
+                                memberTypeDisplayString,
+                                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                            );
+                        }
+                        var hasProtoWriter = parser
+                            .GetMembers()
+                            .OfType<IPropertySymbol>()
+                            .Any(o =>
+                                o.IsStatic
+                                && o.Name == "ProtoWriter"
+                                && o.Type is INamedTypeSymbol returnType
+                                && (
+                                    returnType.AllInterfaces.Any(i =>
+                                        i.ToDisplayString()
+                                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
+                                    )
+                                    || returnType.ToDisplayString()
+                                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
+                                )
+                            );
+
+                        if (isProtoContract == false && hasProtoWriter is false)
+                        {
+                            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
+                                parser.ToDisplayString(),
+                                memberTypeDisplayString,
+                                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                            );
+                        }
+
+                        return parser;
+                    }
+                }
+
+                if (parserType is null)
+                {
+                    // type level specified parser type
+                    parserType =
+                        namedType
+                            .GetAttributes()
+                            .FirstOrDefault(o =>
+                                o.AttributeClass?.ToDisplayString()
+                                == "LightProto.ProtoParserTypeAttribute"
+                            )
+                            ?.ConstructorArguments[0]
+                            .Value as INamedTypeSymbol;
+                }
+
+                if (parserType is null)
+                {
+                    // use self implemented parser type
+                    if (
+                        namedType.AllInterfaces.Any(o =>
+                            o.ToDisplayString() == $"LightProto.IProtoParser<{namedType}>"
+                        )
+                    )
+                    {
+                        parserType = namedType;
+                    }
+                }
+
+                if (parserType is not null)
+                {
+                    return $"{parserType}.Proto{readerOrWriter}";
+                }
+
                 if (namedType.TypeKind == TypeKind.Enum)
                 {
-                    return $"EnumProtoParser<{namedType}>.Proto{readerOrWriter}";
+                    return $"LightProto.Parser.EnumProtoParser<{namedType}>.Proto{readerOrWriter}";
                 }
 
                 var name = namedType.SpecialType switch
@@ -1242,7 +1390,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     name = "InternedString";
                 }
 
-                return $"{name}ProtoParser.Proto{readerOrWriter}";
+                return $"LightProto.Parser.{name}ProtoParser.Proto{readerOrWriter}";
             }
 
             if (typeArguments.Length == 1)
@@ -1264,7 +1412,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         stringIntern,
                         member
                     );
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
+                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
                 }
                 else
                 {
@@ -1276,7 +1424,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     var elementType = typeArguments[0];
                     if (elementType.SpecialType == SpecialType.System_Byte)
                     {
-                        return $"ByteListProtoParser.Proto{readerOrWriter}";
+                        return $"LightProto.Parser.ByteListProtoParser.Proto{readerOrWriter}";
                     }
                     var elementParser = GetProtoParser(
                         compilation,
@@ -1307,12 +1455,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                         {
                             if (IsListType(compilation, namedType))
                             {
-                                return $"new ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                                return $"new LightProto.Parser.ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                             }
 
                             if (IsSetType(compilation, namedType))
                             {
-                                return $"new HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                                return $"new LightProto.Parser.HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                             }
                         }
                         else if (readerOrWriter == "Writer")
@@ -1328,7 +1476,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 {
                                     count = "Length";
                                 }
-                                return $"new IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
+                                return $"new LightProto.Parser.IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
                             }
                         }
                     }
@@ -1338,7 +1486,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         || namedType.TypeKind == TypeKind.Struct
                     )
                     {
-                        return $"new {memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                        return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                     }
                 }
             }
@@ -1398,7 +1546,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         var conversion = compilation.ClassifyConversion(mapType, namedType);
                         if (conversion.IsImplicit)
                         {
-                            return $"new DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
+                            return $"new LightProto.Parser.DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                         }
                     }
                     else if (readerOrWriter == "Writer")
@@ -1411,14 +1559,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                             {
                                 count = "Count";
                             }
-                            return $"new IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},static (d)=>d.{count})";
+                            return $"new LightProto.Parser.IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},static (d)=>d.{count})";
                         }
                     }
                 }
 
                 if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
                 {
-                    return $"new {memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
+                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                 }
             }
         }
@@ -2348,6 +2496,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         public string Category { get; set; } = string.Empty;
         public DiagnosticSeverity Severity { get; set; }
         public Location? Location { get; set; }
+        public IEnumerable<Location>? AdditionalLocations { get; set; }
 
         public static LightProtoGeneratorException InitOnlyWhenSkipConstructor(
             string memberName,
@@ -2529,6 +2678,43 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = location,
+            };
+        }
+
+        public static Exception Duplicate_ProtoParserTypeMapAttribute(
+            string typeString,
+            Location[] locations
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Duplicate ProtoParserTypeMapAttribute for type {typeString}"
+            )
+            {
+                Id = "LIGHT_PROTO_013",
+                Title = $"Duplicate ProtoParserTypeMapAttribute",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = locations[0],
+                AdditionalLocations = locations.Skip(1),
+            };
+        }
+
+        public static Exception ProtoParserTypeMustContainProtoReaderWriter(
+            string parserType,
+            string messageType,
+            Location? getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Proto parser type {parserType} must contain static IProtoReader<{messageType}> ProtoReader Property and static IProtoWriter<{messageType}> ProtoWriter Property"
+            )
+            {
+                Id = "LIGHT_PROTO_014",
+                Title =
+                    $"Proto parser type must contain static ProtoReader or ProtoWriter Property",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
             };
         }
     }

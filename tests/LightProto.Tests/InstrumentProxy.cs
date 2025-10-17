@@ -1,6 +1,7 @@
-﻿global using InstrumentProtoParser = LightProto.Tests.InstrumentProtoParser;
+﻿using LightProto;
+using LightProto.Tests;
 
-namespace LightProto.Tests;
+namespace LightProto.Parser;
 
 [ProtoContract]
 [ProtoSurrogateFor<Instrument>()]
