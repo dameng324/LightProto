@@ -47,10 +47,10 @@ jobs:
         run: dotnet tool restore && dotnet tool run csharpier check .
         
       - name: Restore dependencies
-        run: dotnet restore  tests/LightProto.Tests/
+        run: dotnet restore
 
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore tests/LightProto.Tests/
+        run: dotnet build --configuration Release --no-restore
 
       - name: Run tests
         run: dotnet test --configuration Release --no-build --verbosity normal -p:PublishAot=false
