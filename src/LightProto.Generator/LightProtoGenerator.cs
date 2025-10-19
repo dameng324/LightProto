@@ -1213,14 +1213,19 @@ public class LightProtoGenerator : IIncrementalGenerator
                 {
                     // target type / assembly level specified parser type
                     parserType =
-                        GetParserTypeFromAttribute(targetType.GetAttributes())
-                        ?? GetParserTypeFromAttribute(targetType.ContainingModule.GetAttributes())
+                        GetParserTypeFromAttribute(targetType.GetAttributes(), false)
                         ?? GetParserTypeFromAttribute(
-                            memberType.ContainingAssembly.GetAttributes()
+                            targetType.ContainingModule.GetAttributes(),
+                            false
+                        )
+                        ?? GetParserTypeFromAttribute(
+                            targetType.ContainingAssembly.GetAttributes(),
+                            true
                         );
 
                     INamedTypeSymbol? GetParserTypeFromAttribute(
-                        ImmutableArray<AttributeData> attributes
+                        ImmutableArray<AttributeData> attributes,
+                        bool isAssembly
                     )
                     {
                         var mapAttributes = attributes
@@ -1311,6 +1316,23 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 memberTypeDisplayString,
                                 attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
                             );
+                        }
+
+                        if (isAssembly)
+                        {
+                            if (
+                                SymbolEqualityComparer.Default.Equals(
+                                    memberType.ContainingAssembly,
+                                    parser.ContainingAssembly
+                                )
+                            )
+                            {
+                                throw LightProtoGeneratorException.MessageTypeAndParserTypeCannotInSameAssemblyWhenUsingAssemblyLevelProtoParserMapAttribute(
+                                    memberType.ToDisplayString(),
+                                    parser.ToDisplayString(),
+                                    attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                                );
+                            }
                         }
 
                         return parser;
@@ -2715,6 +2737,25 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = getLocation,
+            };
+        }
+
+        public static Exception MessageTypeAndParserTypeCannotInSameAssemblyWhenUsingAssemblyLevelProtoParserMapAttribute(
+            string messageType,
+            string parserType,
+            Location? location
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"message type({messageType}) and parser type({parserType}) can not in same assembly when using assembly level ProtoParserMapAttribute. Consider using LightProto.ProtoParserType(Type parserType) on message type instead."
+            )
+            {
+                Id = "LIGHT_PROTO_015",
+                Title =
+                    $"message type({messageType}) and parser type({parserType}) can not in same assembly when using assembly level ProtoParserMapAttribute.",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = location,
             };
         }
     }
