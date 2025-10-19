@@ -1241,7 +1241,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         if (mapAttributes.Length > 1)
                         {
                             throw LightProtoGeneratorException.Duplicate_ProtoParserTypeMapAttribute(
-                                member.Type.ToDisplayString(),
+                                memberType.ToDisplayString(),
                                 mapAttributes
                                     .Select(x =>
                                         x.ApplicationSyntaxReference?.GetSyntax().GetLocation()
