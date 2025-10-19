@@ -1229,7 +1229,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                     == "LightProto.ProtoParserTypeMapAttribute"
                                 && SymbolEqualityComparer.Default.Equals(
                                     o.ConstructorArguments[0].Value as INamedTypeSymbol,
-                                    member.Type
+                                    memberType
                                 )
                             )
                             .ToArray();
@@ -1259,8 +1259,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 == "LightProto.ProtoContractAttribute"
                             );
 
-                        var memberTypeDisplayString = member
-                            .Type.WithNullableAnnotation(NullableAnnotation.None)
+                        var memberTypeDisplayString = memberType
+                            .WithNullableAnnotation(NullableAnnotation.None)
                             .ToDisplayString();
                         // if parser does contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
                         var hasProtoReader = parser
