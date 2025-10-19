@@ -160,3 +160,39 @@ public partial class StructCustomPriorityTests
         await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 }
+public partial class StructCustomPriorityTests
+{
+    // Member-level vs Class-level vs Type-level precedence for struct Person:
+    // Person already has [ProtoParserType(typeof(TypeLevelPersonProtoParser))] at type level.
+    // Here we add a contract with a class-level map AND a member-level ParserType to ensure:
+    // Member-level wins over Class-level and Type-level.
+    [ProtoContract]
+    [ProtoParserTypeMap(typeof(Person), typeof(ClassLevelPersonProtoParser))]
+    public partial class StructMemberOverridesClassParserContract
+    {
+        [ProtoMember(1, ParserType = typeof(MemberLevelPersonProtoParser))]
+        public Person? Person { get; set; }
+    }
+
+    [Test]
+    public async Task Struct_MemberLevel_Overrides_ClassLevel_And_TypeLevel()
+    {
+        var message = new StructMemberOverridesClassParserContract
+        {
+            Person = new Person { Id = 77 }
+        };
+#if NET5_0_OR_GREATER
+        var cloned = Serializer.DeepClone(message);
+#else
+        var cloned = Serializer.DeepClone(
+            message,
+            StructMemberOverridesClassParserContract.ProtoReader,
+            StructMemberOverridesClassParserContract.ProtoWriter
+        );
+#endif
+        await Assert
+            .That(cloned.Person!.Value.ParserType)
+            .IsEqualTo(typeof(MemberLevelPersonProtoParser.LightProtoReader));
+        await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person!.Value.Id);
+    }
+}

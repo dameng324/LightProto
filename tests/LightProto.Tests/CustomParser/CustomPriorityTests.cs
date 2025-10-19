@@ -162,3 +162,92 @@ public partial class CustomPriorityTests
         await Assert.That(cloned.Person!.Id).IsEqualTo(message.Person.Id);
     }
 }
+public partial class CustomPriorityTests
+{
+    // Member-level vs Class-level vs Type-level precedence:
+    // Person already has [ProtoParserType(typeof(TypeLevelPersonProtoParser))] at type level.
+    // Here we add a contract with a class-level map AND a member-level ParserType to ensure:
+    // Member-level wins over Class-level and Type-level.
+    [ProtoContract]
+    [ProtoParserTypeMap(typeof(Person), typeof(ClassLevelPersonProtoParser))]
+    public partial class MemberOverridesClassParserContract
+    {
+        [ProtoMember(1, ParserType = typeof(MemberLevelPersonProtoParser))]
+        public Person? Person { get; set; }
+    }
+
+    [Test]
+    public async Task MemberLevel_Overrides_ClassLevel_And_TypeLevel()
+    {
+        var message = new MemberOverridesClassParserContract { Person = new Person { Id = 99 } };
+#if NET5_0_OR_GREATER
+        var cloned = Serializer.DeepClone(message);
+#else
+        var cloned = Serializer.DeepClone(
+            message,
+            MemberOverridesClassParserContract.ProtoReader,
+            MemberOverridesClassParserContract.ProtoWriter
+        );
+#endif
+        await Assert
+            .That(cloned.Person!.ParserType)
+            .IsEqualTo(typeof(MemberLevelPersonProtoParser.LightProtoReader));
+        await Assert.That(cloned.Person!.Id).IsEqualTo(message.Person!.Id);
+    }
+
+    // Self-implemented parser fallback:
+    // If a type implements IProtoParser<T> and no mapping is provided,
+    // the generator should select that type's parser.
+    public class SelfParserModel : IProtoParser<SelfParserModel>
+    {
+        public int Id { get; set; }
+        public Type? ParserType { get; set; }
+
+        public static IProtoReader<SelfParserModel> ProtoReader { get; } = new Reader();
+        public static IProtoWriter<SelfParserModel> ProtoWriter { get; } = new Writer();
+
+        public class Reader : IProtoReader<SelfParserModel>
+        {
+            public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+            public bool IsMessage => false;
+            public SelfParserModel ParseFrom(ref ReaderContext input)
+                => new SelfParserModel { Id = input.ReadInt32(), ParserType = GetType() };
+        }
+
+        public class Writer : IProtoWriter<SelfParserModel>
+        {
+            public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+            public bool IsMessage => false;
+            public int CalculateSize(SelfParserModel value)
+                => CodedOutputStream.ComputeInt32Size(value.Id);
+            public void WriteTo(ref WriterContext output, SelfParserModel value)
+                => output.WriteInt32(value.Id);
+        }
+    }
+
+    [ProtoContract]
+    public partial class SelfParserContract
+    {
+        [ProtoMember(1)]
+        public SelfParserModel? Value { get; set; }
+    }
+
+    [Test]
+    public async Task SelfImplementedParser_Is_Selected_When_No_Mapping()
+    {
+        var message = new SelfParserContract { Value = new SelfParserModel { Id = 123 } };
+#if NET5_0_OR_GREATER
+        var cloned = Serializer.DeepClone(message);
+#else
+        var cloned = Serializer.DeepClone(
+            message,
+            SelfParserContract.ProtoReader,
+            SelfParserContract.ProtoWriter
+        );
+#endif
+        await Assert
+            .That(cloned.Value!.ParserType)
+            .IsEqualTo(typeof(SelfParserModel.Reader));
+        await Assert.That(cloned.Value!.Id).IsEqualTo(message.Value!.Id);
+    }
+}
