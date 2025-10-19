@@ -2747,12 +2747,12 @@ public class LightProtoGenerator : IIncrementalGenerator
         )
         {
             return new LightProtoGeneratorException(
-                $"message type({messageType}) and parser type({parserType}) can not in same assembly when using assembly level ProtoParserMapAttribute. Consider using LightProto.ProtoParserType(Type parserType) on message type instead."
+                $"message type({messageType}) and parser type({parserType}) cannot be in the same assembly when using assembly level ProtoParserMapAttribute. Consider using LightProto.ProtoParserType(Type parserType) on message type instead."
             )
             {
                 Id = "LIGHT_PROTO_015",
                 Title =
-                    $"message type({messageType}) and parser type({parserType}) can not in same assembly when using assembly level ProtoParserMapAttribute.",
+                    $"message type({messageType}) and parser type({parserType}) cannot be in the same assembly when using assembly level ProtoParserMapAttribute.",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = location,
