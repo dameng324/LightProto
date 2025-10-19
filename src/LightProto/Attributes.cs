@@ -4,6 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 namespace LightProto;
 
 [ExcludeFromCodeCoverage]
+[AttributeUsage(
+    AttributeTargets.Class
+        | AttributeTargets.Struct
+        | AttributeTargets.Interface
+        | AttributeTargets.Enum
+)]
 public class ProtoContractAttribute : Attribute
 {
     /// <summary>
@@ -31,6 +37,7 @@ public class ProtoContractAttribute : Attribute
     public uint ImplicitFirstTag { get; set; } = 1;
 }
 
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 [ExcludeFromCodeCoverage]
 public class ProtoMemberAttribute(uint tag) : Attribute
 {
@@ -47,6 +54,7 @@ public class ProtoMemberAttribute(uint tag) : Attribute
 }
 
 [ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class ProtoMapAttribute : Attribute
 {
     public DataFormat KeyFormat { get; set; } = DataFormat.Default;
@@ -54,9 +62,11 @@ public class ProtoMapAttribute : Attribute
 }
 
 [ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class ProtoIgnoreAttribute : Attribute;
 
 [ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 public class ProtoSurrogateForAttribute<T> : Attribute;
 
 // donot support ProtoInclude for now
