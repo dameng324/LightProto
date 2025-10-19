@@ -53,7 +53,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore tests/LightProto.Tests/
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal tests/LightProto.Tests/ -p:PublishAot=false
+        run: dotnet test --configuration Release --no-build --verbosity normal -p:PublishAot=false
 
       - name: Run AOT tests
         run: |
