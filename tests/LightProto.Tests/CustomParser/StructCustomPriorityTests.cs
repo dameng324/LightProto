@@ -1,13 +1,11 @@
 ﻿using System.Reflection;
 
-// this is not allowed as message type and parser type are in same assembly.
-// [assembly:LightProto.ProtoParserTypeMap(typeof(LightProto.Tests.CustomParser.CustomPriorityTests.Person),typeof(LightProto.Tests.CustomParser.CustomPriorityTests.MemberLevelPersonProtoParser))]
 namespace LightProto.Tests.CustomParser;
 
-public partial class CustomPriorityTests
+public partial class StructCustomPriorityTests
 {
     [ProtoParserType(typeof(TypeLevelPersonProtoParser))]
-    public class Person
+    public struct Person
     {
         public int Id { get; set; }
         public Type? ParserType { get; set; }
@@ -103,7 +101,7 @@ public partial class CustomPriorityTests
     }
 
     [Test]
-    public async Task MemberLevelParserTest()
+    public async Task MemberParserTest()
     {
         var message = new MemberParserPersonContract() { Person = new Person() { Id = 37 } };
 #if NET5_0_OR_GREATER
@@ -117,13 +115,13 @@ public partial class CustomPriorityTests
 #endif
 
         await Assert
-            .That(cloned.Person!.ParserType)
+            .That(cloned.Person!.Value.ParserType)
             .IsEqualTo(typeof(MemberLevelPersonProtoParser.LightProtoReader));
-        await Assert.That(cloned.Person!.Id).IsEqualTo(message.Person.Id);
+        await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 
     [Test]
-    public async Task ClassLevelParserTest()
+    public async Task ClassParserTest()
     {
         var message = new ClassParserPersonContract() { Person = new Person() { Id = 37 } };
 #if NET5_0_OR_GREATER
@@ -137,9 +135,9 @@ public partial class CustomPriorityTests
 #endif
 
         await Assert
-            .That(cloned.Person!.ParserType)
+            .That(cloned.Person!.Value.ParserType)
             .IsEqualTo(typeof(ClassLevelPersonProtoParser.LightProtoReader));
-        await Assert.That(cloned.Person!.Id).IsEqualTo(message.Person.Id);
+        await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 
     [Test]
@@ -157,8 +155,8 @@ public partial class CustomPriorityTests
 #endif
 
         await Assert
-            .That(cloned.Person!.ParserType)
+            .That(cloned.Person!.Value.ParserType)
             .IsEqualTo(typeof(TypeLevelPersonProtoParser.LightProtoReader));
-        await Assert.That(cloned.Person!.Id).IsEqualTo(message.Person.Id);
+        await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 }
