@@ -1267,7 +1267,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         var memberTypeDisplayString = memberType
                             .WithNullableAnnotation(NullableAnnotation.None)
                             .ToDisplayString();
-                        // if parser does contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
+                        // if parser does not contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
                         var hasProtoReader = parser
                             .GetMembers()
                             .OfType<IPropertySymbol>()
