@@ -27,7 +27,7 @@ jobs:
         run: dotnet tool restore && dotnet tool run csharpier check .
         
       - name: Run tests
-        run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false 
+        run: dotnet test --configuration Release -p:PublishAot=false 
           
       - name: Run AOT tests
         run: |

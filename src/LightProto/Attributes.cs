@@ -1,7 +1,15 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LightProto;
 
+[ExcludeFromCodeCoverage]
+[AttributeUsage(
+    AttributeTargets.Class
+        | AttributeTargets.Struct
+        | AttributeTargets.Interface
+        | AttributeTargets.Enum
+)]
 public class ProtoContractAttribute : Attribute
 {
     /// <summary>
@@ -29,6 +37,8 @@ public class ProtoContractAttribute : Attribute
     public uint ImplicitFirstTag { get; set; } = 1;
 }
 
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+[ExcludeFromCodeCoverage]
 public class ProtoMemberAttribute(uint tag) : Attribute
 {
     public uint Tag { get; } = tag;
@@ -39,21 +49,24 @@ public class ProtoMemberAttribute(uint tag) : Attribute
     /// </summary>
     public bool IsRequired { get; set; } = false;
     public bool IsPacked { get; set; } = false;
-
-    // [Obsolete("compatibility protobuf-net only, no effect")]
-    // public bool OverwriteList { get; set; } = false;
-
     public string Name { get; set; } = string.Empty;
+    public Type? ParserType { get; set; } = null;
 }
 
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class ProtoMapAttribute : Attribute
 {
     public DataFormat KeyFormat { get; set; } = DataFormat.Default;
     public DataFormat ValueFormat { get; set; } = DataFormat.Default;
 }
 
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class ProtoIgnoreAttribute : Attribute;
 
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 public class ProtoSurrogateForAttribute<T> : Attribute;
 
 // donot support ProtoInclude for now
@@ -75,6 +88,7 @@ public class ProtoSurrogateForAttribute<T> : Attribute;
         | AttributeTargets.Field
         | AttributeTargets.Property
 )]
+[ExcludeFromCodeCoverage]
 public sealed class CompatibilityLevelAttribute(CompatibilityLevel level) : Attribute
 {
     /// <summary>
@@ -91,6 +105,7 @@ public sealed class CompatibilityLevelAttribute(CompatibilityLevel level) : Attr
         | AttributeTargets.Field
         | AttributeTargets.Property
 )]
+[ExcludeFromCodeCoverage]
 public sealed class StringInternAttribute : Attribute;
 
 /// <summary>
@@ -106,8 +121,39 @@ public sealed class StringInternAttribute : Attribute;
     AllowMultiple = true,
     Inherited = false
 )]
+[ExcludeFromCodeCoverage]
 public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
 {
     public uint Tag { get; } = tag;
     public Type KnownType { get; } = knownType;
+}
+
+/// <summary>
+/// Specifies a parser type to use for serializing/deserializing the target type.
+/// <param name="parserType">The type that implements the parser logic for serialization/deserialization.</param>
+/// </summary>
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+public sealed class ProtoParserTypeAttribute(Type parserType) : Attribute
+{
+    public Type ParserType { get; } = parserType;
+}
+
+/// <summary>
+/// Specifies the ProtoParser type to use for a given message type for serialization/deserialization.
+/// <param name="messageType">The message type to be serialized/deserialized.</param>
+/// <param name="parserType">The parser type for serialization/deserialization.</param>
+/// </summary>
+[ExcludeFromCodeCoverage]
+[AttributeUsage(
+    AttributeTargets.Assembly
+        | AttributeTargets.Module
+        | AttributeTargets.Class
+        | AttributeTargets.Struct,
+    AllowMultiple = true
+)]
+public sealed class ProtoParserTypeMapAttribute(Type messageType, Type parserType) : Attribute
+{
+    public Type MessageType { get; } = messageType;
+    public Type ParserType { get; } = parserType;
 }
