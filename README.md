@@ -12,6 +12,10 @@
 
 A high‑performance, Native AOT–friendly Protocol Buffers implementation for C#/.NET. 
 
+## Warnings
+
+This project is under active development and may introduce breaking changes. Use in production at your own risk.
+
 ## Why LightProto?
 
 [protobuf-net](https://github.com/protobuf-net/protobuf-net) is a popular Protocol Buffers implementation in .NET, but some scenarios (especially Native AOT) can be challenging due to runtime reflection and dynamic generation. LightProto addresses this with compile-time code generation and a protobuf-net–style API.
@@ -118,10 +122,6 @@ Person fromStream = Serializer.Deserialize<Person>(input);
 // Person fromStream = Serializer.Deserialize<Person>(input,Person.ProtoReader); // use this overload when .netstandard2.0
 ```
 
-## Warnings
-
-This project is under active development and may introduce breaking changes. Use in production at your own risk.
-
 ## Migration from protobuf-net
 
 Most code migrates by swapping the namespace and marking your types partial.
@@ -163,81 +163,112 @@ Common replacements:
 - RuntimeTypeModel and runtime surrogates → use compile-time attributes (see Surrogates below).
 - Non-partial types → mark as partial to enable generator output.
 
-
 ## Need to know
 
 LightProto aims to minimize differences from protobuf-net; notable ones include:
 
-- Partial classes required
-  - protobuf-net: partial not required
-  - LightProto: mark [ProtoContract] types as partial so the generator can emit code
+### Partial classes required
 
-- Generic Serialize/Deserialize type constraint
-  - protobuf-net: Serializer.Serialize<int>(...) and Serializer.Deserialize<int>(...)
-  - LightProto: T must implement IProtoParser<T> (i.e., a generated message type); primitives are not supported directly. Use another method which pass `IProtoReader/Writer` explicitly.
-    ```csharp
-    int a=10;
-    ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
-    LightProto.Serializer.Serialize<int>(writer, a,Int32ProtoParser.Writer); // must pass writer
-    var bytes = a.ToByteArray(Int32ProtoParser.Writer); // extension method
-    int result = LightProto.Serializer.Deserialize<int>(bytes,Int32ProtoParser.Reader); // must pass reader
-    ```
-    ```cs
-    List<int> list=[1,2,3];
-    var bytes = list.ToByteArray(Int32ProtoParser.Writer);// extension method
-    ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
-    LightProto.Serializer.Serialize(writer, list,Int32ProtoParser.Writer);// must pass element writer
-    List<int> arr2=LightProto.Serializer.Deserialize<List<int>,int>(bytes,Int32ProtoParser.Reader); // must pass element reader
-    ```
+protobuf-net: partial not required
 
-- IExtensible
-  - protobuf-net: supports IExtensible for dynamic extensions
-  - LightProto: IExtensible is defined for compatibility only and has no effect
+LightProto: mark [ProtoContract] types as partial so the generator can emit code. 
 
-- Surrogates
-  - protobuf-net: can register surrogates via RuntimeTypeModel at runtime
-  - LightProto: define at compile time via attributes
-  
-    Example for Guid:
-      ```csharp
-      namespace LightProto.Parser; //must defined in this namespace
-      [ProtoContract]
-      [ProtoSurrogateFor<Guid>]
-      public partial struct GuidProtoParser // name must be <OriginalTypeName>ProtoParser
-      {
-          [ProtoMember(1, DataFormat = DataFormat.FixedSize)]
-          internal ulong Low { get; set; }
-        
-          [ProtoMember(2, DataFormat = DataFormat.FixedSize)]
-          internal ulong High { get; set; }
-    
-          public static implicit operator Guid(GuidProtoParser protoParser) //must define implicit conversions
-          {
-              Span<byte> bytes = stackalloc byte[16];
-              BinaryPrimitives.WriteUInt64LittleEndian(bytes, protoParser.Low);
-              BinaryPrimitives.WriteUInt64LittleEndian(bytes.Slice(8), protoParser.High);
-              return new Guid(bytes);
-          }
-    
-          public static implicit operator GuidProtoParser(Guid value) //must define implicit conversions
-          {
-              Span<byte> bytes = stackalloc byte[16];
-              value.TryWriteBytes(bytes);
-              return new GuidProtoParser()
-              {
-                  Low = BinaryPrimitives.ReadUInt64LittleEndian(bytes),
-                  High = BinaryPrimitives.ReadUInt64LittleEndian(bytes.Slice(8)),
-              };
-          }
-      }
-      ```
+### Generic Serialize/Deserialize type constraint
 
-- StringIntern
-    - protobuf-net: Use `RuntimeTypeModel.Default.StringInterning = true;` to enable string interning globally
-    - LightProto: [StringIntern] attribute can apply to individual string members/class/module/assembly
+protobuf-net: Serializer.Serialize<int>(...) and Serializer.Deserialize<int>(...)
 
-- RuntimeTypeModel
-  - Not supported; all configuration is static via attributes and generated code
+LightProto: T must implement IProtoParser<T> (i.e., a generated message type); primitives are not supported directly. Use another method which pass `IProtoReader/Writer` explicitly.
+```csharp
+int a=10;
+ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
+LightProto.Serializer.Serialize<int>(writer, a,Int32ProtoParser.Writer); // must pass writer
+var bytes = a.ToByteArray(Int32ProtoParser.Writer); // extension method
+int result = LightProto.Serializer.Deserialize<int>(bytes,Int32ProtoParser.Reader); // must pass reader
+```
+```cs
+List<int> list=[1,2,3];
+var bytes = list.ToByteArray(Int32ProtoParser.Writer);// extension method
+ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
+LightProto.Serializer.Serialize(writer, list,Int32ProtoParser.Writer);// must pass element writer
+List<int> arr2=LightProto.Serializer.Deserialize<List<int>,int>(bytes,Int32ProtoParser.Reader); // must pass element reader
+```
+### .netstandard
+
+In .netstandard targeting platform such as .NET framework, we can't use [static virtual members in interface](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members) to find ProtoReader/Writer.
+
+So LightProto requires user to specify a ProtoWriter when serializing and a ProtoReader when deserializing.
+
+For `[ProtoContract]` marked MessageType the ProtoReader/Writer is generated by LightProto, just use MessageType.ProtoReader/Writer.
+
+For primitive types, LightProto has predefined in `LightProto.Parser` namespace, such as `LightProto.Parser.DateTimeParser`. 
+
+### IExtensible
+
+protobuf-net: supports IExtensible for dynamic extensions
+
+LightProto: IExtensible is defined for compatibility only and has no effect
+
+### Surrogates
+
+protobuf-net: can register surrogates via RuntimeTypeModel at runtime
+
+LightProto: You can specify a custom ProtoParserType for MessageType.
+For example, MessageType is `Person`, custom ProtoParserType is `PersonProtoParser`, you can use following attribute to specify a custom ProtoParserType, list as precedence order:
+
+1. member level: `[ProtoMember(1,ParserType=typeof(PersonProtoParser))]`
+2. class level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`
+3. module/assembly level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]` (messageType and parserType should not be in same assembly, If so, type level attribute is suggested.)
+4. type level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`
+5. default: `LightProto.Parser.PersonProtoParser`
+
+The ProtoParserType must implement `IProtoParser<MessageType>`. The easiest way is defining a SurrogateType with `[ProtoContract]` and mark `[ProtoSurrogateFor<MessageType>]`.     
+Example for Person(can be any type):
+
+```csharp
+[ProtoParserType(typeof(PersonProtoParser))] // type level ProtoParser
+public class Person
+{
+ public string Name {get; set;}
+ Person(){}
+ public static Person FromName(string name) => new Person() { Name = name };
+}
+
+[ProtoContract]
+[ProtoSurrogateFor<Person>] // mark this to tell source generator generate IProtoParser<Person> instead of `IProtoParser<PersonProtoParser>`
+public partial struct PersonProtoParser
+{
+  [ProtoMember(1)]
+  internal string Name { get; set; }    
+  public static implicit operator Person(PersonProtoParser parser) //must define implicit conversions for surrogate type
+  {
+      return Person.FromName(parser.Name)
+  }    
+  public static implicit operator PersonProtoParser(Person value) //must define implicit conversions for surrogate type
+  {
+      return new PersonProtoParser() { Name = value.Name };
+  }
+}
+[assembly: ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))] // assembly level ProtoParser
+
+[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))] // class level ProtoParser
+public class MessageContract
+{
+  [ProtoMember(1,ParserType=typeof(PersonProtoParser))] //member level ProtoParser
+  public Person Person {get; set;}      
+}
+```
+
+You can also read/write raw binary data, for example see:[DateOnlyProtoParser](https://github.com/dameng324/LightProto/blob/main/src/LightProto/Parser/DateOnly.cs) 
+
+### StringIntern
+
+protobuf-net: Use `RuntimeTypeModel.Default.StringInterning = true;` to enable string interning globally
+
+LightProto: [StringIntern] attribute can apply to individual string members/class/module/assembly. 
+
+### RuntimeTypeModel
+
+Not supported; all configuration is static via attributes and generated code
 
 If you encounter different behavior versus protobuf-net, please open an issue.
 
