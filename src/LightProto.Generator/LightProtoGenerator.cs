@@ -1213,130 +1213,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                 {
                     // target type / assembly level specified parser type
                     parserType =
-                        GetParserTypeFromAttribute(targetType.GetAttributes(), false)
-                        ?? GetParserTypeFromAttribute(
+                        ResolveParserTypeFromAttribute(namedType, targetType.GetAttributes(), false)
+                        ?? ResolveParserTypeFromAttribute(
+                            namedType,
                             targetType.ContainingModule.GetAttributes(),
                             false
                         )
-                        ?? GetParserTypeFromAttribute(
+                        ?? ResolveParserTypeFromAttribute(
+                            namedType,
                             targetType.ContainingAssembly.GetAttributes(),
                             true
                         );
-
-                    INamedTypeSymbol? GetParserTypeFromAttribute(
-                        ImmutableArray<AttributeData> attributes,
-                        bool isAssembly
-                    )
-                    {
-                        var mapAttributes = attributes
-                            .Where(o =>
-                                o.AttributeClass?.ToDisplayString()
-                                    == "LightProto.ProtoParserTypeMapAttribute"
-                                && SymbolEqualityComparer.Default.Equals(
-                                    o.ConstructorArguments[0].Value as INamedTypeSymbol,
-                                    memberType
-                                )
-                            )
-                            .ToArray();
-                        if (mapAttributes.Length > 1)
-                        {
-                            throw LightProtoGeneratorException.Duplicate_ProtoParserTypeMapAttribute(
-                                memberType.ToDisplayString(),
-                                mapAttributes
-                                    .Select(x =>
-                                        x.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                                    )
-                                    .OfType<Location>()
-                                    .ToArray()
-                            );
-                        }
-
-                        var attribute = mapAttributes.FirstOrDefault();
-                        if (attribute is null)
-                            return null;
-
-                        var parser = (attribute.ConstructorArguments[1].Value as INamedTypeSymbol)!;
-
-                        var isProtoContract = parser
-                            .GetAttributes()
-                            .Any(o =>
-                                o.AttributeClass?.ToDisplayString()
-                                == "LightProto.ProtoContractAttribute"
-                            );
-
-                        var memberTypeDisplayString = memberType
-                            .WithNullableAnnotation(NullableAnnotation.None)
-                            .ToDisplayString();
-                        // if parser does not contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
-                        var hasProtoReader = parser
-                            .GetMembers()
-                            .OfType<IPropertySymbol>()
-                            .Any(o =>
-                                o.IsStatic
-                                && o.Name == "ProtoReader"
-                                && o.Type is INamedTypeSymbol returnType
-                                && (
-                                    returnType.AllInterfaces.Any(i =>
-                                        i.ToDisplayString()
-                                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
-                                    )
-                                    || returnType.ToDisplayString()
-                                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
-                                )
-                            );
-                        if (isProtoContract == false && hasProtoReader == false)
-                        {
-                            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
-                                parser.ToDisplayString(),
-                                memberTypeDisplayString,
-                                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                            );
-                        }
-                        var hasProtoWriter = parser
-                            .GetMembers()
-                            .OfType<IPropertySymbol>()
-                            .Any(o =>
-                                o.IsStatic
-                                && o.Name == "ProtoWriter"
-                                && o.Type is INamedTypeSymbol returnType
-                                && (
-                                    returnType.AllInterfaces.Any(i =>
-                                        i.ToDisplayString()
-                                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
-                                    )
-                                    || returnType.ToDisplayString()
-                                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
-                                )
-                            );
-
-                        if (isProtoContract == false && hasProtoWriter is false)
-                        {
-                            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
-                                parser.ToDisplayString(),
-                                memberTypeDisplayString,
-                                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                            );
-                        }
-
-                        if (isAssembly)
-                        {
-                            if (
-                                SymbolEqualityComparer.Default.Equals(
-                                    memberType.ContainingAssembly,
-                                    parser.ContainingAssembly
-                                )
-                            )
-                            {
-                                throw LightProtoGeneratorException.MessageTypeAndParserTypeCannotInSameAssemblyWhenUsingAssemblyLevelProtoParserMapAttribute(
-                                    memberType.ToDisplayString(),
-                                    parser.ToDisplayString(),
-                                    attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                                );
-                            }
-                        }
-
-                        return parser;
-                    }
                 }
 
                 if (parserType is null)
@@ -1594,6 +1481,114 @@ public class LightProtoGenerator : IIncrementalGenerator
         }
 
         throw LightProtoGeneratorException.Member_Type_Not_Supported(member);
+    }
+
+    INamedTypeSymbol? ResolveParserTypeFromAttribute(
+        INamedTypeSymbol memberType,
+        ImmutableArray<AttributeData> attributes,
+        bool isAssembly
+    )
+    {
+        var mapAttributes = attributes
+            .Where(o =>
+                o.AttributeClass?.ToDisplayString() == "LightProto.ProtoParserTypeMapAttribute"
+                && SymbolEqualityComparer.Default.Equals(
+                    o.ConstructorArguments[0].Value as INamedTypeSymbol,
+                    memberType
+                )
+            )
+            .ToArray();
+        if (mapAttributes.Length > 1)
+        {
+            throw LightProtoGeneratorException.Duplicate_ProtoParserTypeMapAttribute(
+                memberType.ToDisplayString(),
+                mapAttributes
+                    .Select(x => x.ApplicationSyntaxReference?.GetSyntax().GetLocation())
+                    .OfType<Location>()
+                    .ToArray()
+            );
+        }
+
+        var attribute = mapAttributes.FirstOrDefault();
+        if (attribute is null)
+            return null;
+
+        var parser = (attribute.ConstructorArguments[1].Value as INamedTypeSymbol)!;
+
+        var isProtoContract = parser
+            .GetAttributes()
+            .Any(o => o.AttributeClass?.ToDisplayString() == "LightProto.ProtoContractAttribute");
+
+        var memberTypeDisplayString = memberType
+            .WithNullableAnnotation(NullableAnnotation.None)
+            .ToDisplayString();
+        // if parser does not contain static member named ProtoReader and is IProtoReader<T> or ProtoWriter and is IProtoWriter<T>, then error
+        var hasProtoReader = parser
+            .GetMembers()
+            .OfType<IPropertySymbol>()
+            .Any(o =>
+                o.IsStatic
+                && o.Name == "ProtoReader"
+                && o.Type is INamedTypeSymbol returnType
+                && (
+                    returnType.AllInterfaces.Any(i =>
+                        i.ToDisplayString() == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
+                    )
+                    || returnType.ToDisplayString()
+                        == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
+                )
+            );
+        if (isProtoContract == false && hasProtoReader == false)
+        {
+            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
+                parser.ToDisplayString(),
+                memberTypeDisplayString,
+                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+            );
+        }
+        var hasProtoWriter = parser
+            .GetMembers()
+            .OfType<IPropertySymbol>()
+            .Any(o =>
+                o.IsStatic
+                && o.Name == "ProtoWriter"
+                && o.Type is INamedTypeSymbol returnType
+                && (
+                    returnType.AllInterfaces.Any(i =>
+                        i.ToDisplayString() == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
+                    )
+                    || returnType.ToDisplayString()
+                        == $"LightProto.IProtoWriter<{memberTypeDisplayString}>"
+                )
+            );
+
+        if (isProtoContract == false && hasProtoWriter is false)
+        {
+            throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
+                parser.ToDisplayString(),
+                memberTypeDisplayString,
+                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+            );
+        }
+
+        if (isAssembly)
+        {
+            if (
+                SymbolEqualityComparer.Default.Equals(
+                    memberType.ContainingAssembly,
+                    parser.ContainingAssembly
+                )
+            )
+            {
+                throw LightProtoGeneratorException.MessageTypeAndParserTypeCannotInSameAssemblyWhenUsingAssemblyLevelProtoParserMapAttribute(
+                    memberType.ToDisplayString(),
+                    parser.ToDisplayString(),
+                    attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                );
+            }
+        }
+
+        return parser;
     }
 
     private static bool IsCollectionType(Compilation compilation, ITypeSymbol type)
