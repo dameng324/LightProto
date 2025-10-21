@@ -1,6 +1,7 @@
 # LightProto
 
 ![.NET](https://img.shields.io/badge/netstandard2.0|net8.0|net9.0-5C2D91?logo=.NET&labelColor=gray)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/05f2a11f569d4f51bfd31d937b7fd319)](https://app.codacy.com/gh/dameng324/LightProto?utm_source=github.com&utm_medium=referral&utm_content=dameng324/LightProto&utm_campaign=Badge_Grade)
 [![NuGet](https://img.shields.io/nuget/v/LightProto.svg)](https://www.nuget.org/packages/LightProto/)
 [![downloads](https://img.shields.io/nuget/dt/LightProto)](https://www.nuget.org/packages/LightProto)
 ![Build](https://github.com/dameng324/LightProto/actions/workflows/ci.yml/badge.svg)
