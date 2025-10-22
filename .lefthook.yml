@@ -1,5 +1,5 @@
 ﻿pre-commit:
-  parallel: true  # 并行执行 hooks（可选）
+  parallel: true  # Execute hooks in parallel (optional)
   commands:
     csharpier:
       name: Run CSharpier on C# files
