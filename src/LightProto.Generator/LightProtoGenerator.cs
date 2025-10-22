@@ -107,7 +107,9 @@ public class LightProtoGenerator : IIncrementalGenerator
     {
         var targetType = contract.Type;
         var compilation = contract.Compilation;
-        var namespaceName = targetType.ContainingNamespace.ToDisplayString();
+        var namespaceDeclare = targetType.ContainingNamespace.IsGlobalNamespace
+            ? ""
+            : $"namespace {targetType.ContainingNamespace.ToDisplayString()};";
         var className = targetType.Name;
 
         var typeDeclarationString = targetType.IsValueType
@@ -137,7 +139,7 @@ public class LightProtoGenerator : IIncrementalGenerator
               using System;
               using System.Linq;
               using LightProto;
-              namespace {{namespaceName}};
+              {{namespaceDeclare}}
               """
         );
 

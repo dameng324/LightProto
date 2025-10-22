@@ -1,0 +1,8 @@
+﻿pre-commit:
+  parallel: true  # Execute hooks in parallel (optional)
+  commands:
+    csharpier:
+      name: Run CSharpier on C# files
+      glob: "*.{cs,csproj}"      
+      run: dotnet tool run csharpier format {staged_files}
+      stage_fixed: true   # Automatically re-stage files modified by formatting
