@@ -27,14 +27,6 @@ public sealed class SingleProtoParser : IProtoParser<Single>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(Single value)
-        {
-            return CodedOutputStream.ComputeFloatSize(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, Single value)
         {
             output.WriteFloat(value);

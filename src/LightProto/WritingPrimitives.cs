@@ -197,19 +197,23 @@ namespace LightProto
             // Also there is enough space to write length + bytes to buffer.
             // Write string directly to the buffer, and then write length.
             // This saves calling GetByteCount on the string. We get the string length from GetBytes.
-            if (
-                value.Length <= MaxSmallStringLength
-                && buffer.Length - state.position - 1 >= value.Length * MaxBytesPerChar
-            )
-            {
-                int indexOfLengthDelimiter = state.position++;
-                buffer[indexOfLengthDelimiter] = (byte)WriteStringToBuffer(
-                    buffer,
-                    ref state,
-                    value
-                );
-                return;
-            }
+            // if (
+            //     value.Length <= MaxSmallStringLength
+            //     && buffer.Length - state.position - 5 >= value.Length * MaxBytesPerChar
+            // )
+            // {
+            //     int indexOfLengthDelimiter = state.position;
+            //     state.position += 5;
+            //     var written=WriteStringToBuffer(
+            //         buffer,
+            //         ref state,
+            //         value
+            //     );
+            //     state.position = indexOfLengthDelimiter;
+            //     WriteLength(ref buffer,ref state, written);
+            //     state.position += written+5;
+            //     return;
+            // }
 
             int length = Utf8Encoding.GetByteCount(value);
             WriteLength(ref buffer, ref state, length);
@@ -461,7 +465,7 @@ namespace LightProto
             int length
         )
         {
-            WriteRawVarint32(ref buffer, ref state, (uint)length);
+            WriteFixedVarint32(ref buffer, ref state, (uint)length);
         }
 
         #endregion
@@ -507,6 +511,33 @@ namespace LightProto
             }
 
             WriteRawByte(ref buffer, ref state, (byte)value);
+        }
+
+        /// <summary>
+        /// Writes a 32 bit value as a varint. The fast route is taken when
+        /// there's enough buffer space left to whizz through without checking
+        /// for each byte; otherwise, we resort to calling WriteRawByte each time.
+        /// </summary>
+        public static void WriteFixedVarint32(
+            ref Span<byte> buffer,
+            ref WriterInternalState state,
+            uint value
+        )
+        {
+            Span<byte> tempBuffer = stackalloc byte[5];
+            for (int i = 0; i < 5; i++)
+            {
+                if (i == 4)
+                {
+                    tempBuffer[i] = (byte)((value & 0x7F) | 0x00);
+                }
+                else
+                {
+                    tempBuffer[i] = (byte)((value & 0x7F) | 0x80);
+                }
+                value >>= 7;
+            }
+            WriteRawBytes(ref buffer, ref state, tempBuffer);
         }
 
         public static void WriteRawVarint64(
@@ -644,7 +675,7 @@ namespace LightProto
         public static void WriteRawBytes(
             ref Span<byte> buffer,
             ref WriterInternalState state,
-            ReadOnlySpan<byte> value
+            scoped ReadOnlySpan<byte> value
         )
         {
             if (buffer.Length - state.position >= value.Length)

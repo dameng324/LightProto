@@ -25,11 +25,6 @@ public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
-        public int CalculateSize(Decimal value)
-        {
-            return CodedOutputStream.ComputeStringSize(value.ToString("G"));
-        }
-
         public void WriteTo(ref WriterContext output, Decimal value)
         {
             output.WriteString(value.ToString("G"));

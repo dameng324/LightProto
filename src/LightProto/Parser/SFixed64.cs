@@ -27,14 +27,6 @@ public sealed class SFixed64ProtoParser : IProtoParser<Int64>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(Int64 value)
-        {
-            return CodedOutputStream.ComputeSFixed64Size(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, Int64 value)
         {
             output.WriteSFixed64(value);

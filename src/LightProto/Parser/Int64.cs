@@ -27,14 +27,6 @@ public sealed class Int64ProtoParser : IProtoParser<Int64>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(Int64 value)
-        {
-            return CodedOutputStream.ComputeInt64Size(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, Int64 value)
         {
             output.WriteInt64(value);

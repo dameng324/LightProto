@@ -92,32 +92,6 @@ public class KeyValuePairProtoWriter<TKey, TValue> : IProtoWriter<KeyValuePair<T
     public bool IsMessage => true;
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
 
-    public int CalculateSize(KeyValuePair<TKey, TValue> value)
-    {
-        int size = 0;
-        if (_keyWriter is ICollectionWriter)
-        {
-            size += _keyWriter.CalculateSize(value.Key);
-        }
-        else
-        {
-            size += CodedOutputStream.ComputeRawVarint32Size(_keyTag);
-            size += _keyWriter.CalculateMessageSize(value.Key);
-        }
-
-        if (_valueWriter is ICollectionWriter)
-        {
-            size += _valueWriter.CalculateSize(value.Value);
-        }
-        else
-        {
-            size += CodedOutputStream.ComputeRawVarint32Size(_valueTag);
-            size += _valueWriter.CalculateMessageSize(value.Value);
-        }
-
-        return size;
-    }
-
     public void WriteTo(ref WriterContext output, KeyValuePair<TKey, TValue> pair)
     {
         if (_keyWriter is ICollectionWriter)

@@ -27,14 +27,6 @@ public sealed class Fixed32ProtoParser : IProtoParser<UInt32>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(UInt32 value)
-        {
-            return CodedOutputStream.ComputeFixed32Size(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, UInt32 value)
         {
             output.WriteFixed32(value);

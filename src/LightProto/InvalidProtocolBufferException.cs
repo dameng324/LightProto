@@ -83,5 +83,10 @@ namespace LightProto
                     + "Use CodedInputStream.SetSizeLimit() to increase the size limit."
             );
         }
+
+        internal static InvalidProtocolBufferException StringWriteFailed(string reason)
+        {
+            return new InvalidProtocolBufferException($"String write failed: {reason}");
+        }
     }
 }

@@ -27,14 +27,6 @@ public sealed class SInt32ProtoParser : IProtoParser<Int32>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(Int32 value)
-        {
-            return CodedOutputStream.ComputeSInt32Size(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, Int32 value)
         {
             output.WriteSInt32(value);

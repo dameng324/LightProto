@@ -243,7 +243,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       yield return $"    public bool IsMessage => true;";
                                       yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
                                       yield return $"    public void WriteTo(ref WriterContext output, {className} message) => MemberStructWriter.WriteTo(ref output, MemberStruct.FromMessage(message));";
-                                      yield return $"    public int CalculateSize({className} message) => MemberStructWriter.CalculateSize(MemberStruct.FromMessage(message));";
                                       yield return "}";
                                   }
                               }, 
@@ -258,7 +257,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           yield return $"    public bool IsMessage => true;";
                                           yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
                                           yield return $"    public void WriteTo(ref WriterContext output, {className} message) => MemberStructWriter.WriteTo(ref output, MemberStruct.FromMessage(message));";
-                                          yield return $"    public int CalculateSize({className} message) => MemberStructWriter.CalculateSize(MemberStruct.FromMessage(message));";
                                           yield return "}";
                                       }
                                   }
@@ -434,42 +432,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                               {{string.Join(Environment.NewLine + GetIntendedSpace(3),
                                   derivedTypes.Select(member => $"if(message.{member.Contract.Type.Name}_MemberStruct.HasValue) {{ output.WriteTag({member.RawTag}); {member.Contract.Type}.MemberStructWriter.WriteMessageTo(ref output, message.{member.Contract.Type.Name}_MemberStruct.Value); }}"))
                               }}
-                          }
-                          
-                          public int CalculateSize(MemberStruct message) {
-                              int size=0;
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.SelectMany(member => {
-                                      return Gen();
-
-                                      IEnumerable<string> Gen()
-                                      {
-                                          var tagSize = member.RawTagSize;
-                                          var checkIfNotEmpty = GetCheckIfNotEmpty(member,"message");
-
-                                          if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
-                                          {
-                                              yield return $"if(message.{member.Name}!=null)";
-                                              yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
-                                          }
-                                          else if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
-                                          {
-                                              yield return $"if({checkIfNotEmpty})";
-                                              yield return $"    size += {tagSize} + CodedOutputStream.Compute{name}Size(message.{member.Name});";
-                                          }
-                                          else
-                                          {
-                                              yield return $"if({checkIfNotEmpty})";
-                                              yield return $"    size += {tagSize} + {member.Name}_ProtoWriter.CalculateMessageSize(message.{member.Name});";
-                                          }
-                                      }
-                                  }))
-                              }}
-                              
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  derivedTypes.Select(member => $"if(message.{member.Contract.Type.Name}_MemberStruct.HasValue) {{ size+={ProtoMember.GetRawTagSize(member.RawTag)}+{member.Contract.Type}.MemberStructWriter.CalculateMessageSize(message.{member.Contract.Type.Name}_MemberStruct.Value); }}"))
-                              }}
-                              return size;
                           }
                       }
                       
@@ -671,39 +633,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       }
                                   }))
                               }}
-                          }
-                          
-                          public int CalculateSize({{proxyFor?.ToDisplayString()??className}} value) {
-                              {{className}} message = value;
-                              int size=0;
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.SelectMany(member => {
-                                      return Gen();
-
-                                      IEnumerable<string> Gen()
-                                      {
-                                          var tagSize = member.RawTagSize;
-                                          var checkIfNotEmpty = GetCheckIfNotEmpty(member,"message");
-
-                                          if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
-                                          {
-                                              yield return $"if(message.{member.Name}!=null)";
-                                              yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
-                                          }
-                                          else if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
-                                          {
-                                              yield return $"if({checkIfNotEmpty})";
-                                              yield return $"    size += {tagSize} + CodedOutputStream.Compute{name}Size(message.{member.Name});";
-                                          }
-                                          else
-                                          {
-                                              yield return $"if({checkIfNotEmpty})";
-                                              yield return $"    size += {tagSize} + {member.Name}_ProtoWriter.CalculateMessageSize(message.{member.Name});";
-                                          }
-                                      }
-                                  }))
-                              }}
-                              return size;
                           }
                       }
                       

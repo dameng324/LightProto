@@ -24,11 +24,6 @@ public sealed class Guid300ProtoParser : IProtoParser<Guid>
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
-        public int CalculateSize(Guid value)
-        {
-            return CodedOutputStream.ComputeStringSize(value.ToString());
-        }
-
         public void WriteTo(ref WriterContext output, Guid value)
         {
             output.WriteString(value.ToString());

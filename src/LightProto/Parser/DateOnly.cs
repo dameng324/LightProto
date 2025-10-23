@@ -22,14 +22,6 @@ public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int CalculateSize(DateOnly value)
-        {
-            return CodedOutputStream.ComputeInt32Size(value.DayNumber);
-        }
-
         public void WriteTo(ref WriterContext output, DateOnly value)
         {
             output.WriteInt32(value.DayNumber);

@@ -22,11 +22,6 @@ public sealed class TimeOnlyProtoParser : IProtoParser<TimeOnly>
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
-        public int CalculateSize(TimeOnly value)
-        {
-            return CodedOutputStream.ComputeInt64Size(value.Ticks);
-        }
-
         public void WriteTo(ref WriterContext output, TimeOnly value)
         {
             output.WriteInt64(value.Ticks);

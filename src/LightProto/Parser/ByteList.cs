@@ -24,20 +24,9 @@ public sealed class ByteListProtoParser : IProtoParser<List<byte>>
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int CalculateSize(List<byte> value)
-        {
-            return CodedOutputStream.ComputeLengthSize(value.Count) + value.Count;
-        }
-
         public void WriteTo(ref WriterContext output, List<byte> value)
         {
-            output.WriteLength(value.Count);
-            WritingPrimitives.WriteRawBytes(
-                ref output.buffer,
-                ref output.state,
+            output.WriteBytes(
 #if NET5_0_OR_GREATER
                 CollectionsMarshal.AsSpan(value)
 #else

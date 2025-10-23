@@ -18,9 +18,8 @@ public static partial class Serializer
         {
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }
-        WriterContext.Initialize(destination, out var ctx);
+        var ctx = new WriterContext(destination);
         writer.WriteTo(ref ctx, instance);
-        ctx.Flush();
     }
 
     public static void Serialize<T>(Stream destination, T instance, IProtoWriter<T> writer)
@@ -29,31 +28,19 @@ public static partial class Serializer
         {
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }
-        using var codedOutputStream = new CodedOutputStream(destination, leaveOpen: true);
-        WriterContext.Initialize(codedOutputStream, out var ctx);
+        using var bufferWriter = new ByteArrayPoolBufferWriter();
+        var ctx = new WriterContext(bufferWriter);
         writer.WriteTo(ref ctx, instance);
-        ctx.Flush();
+        bufferWriter.WriteToStream(destination);
+        destination.Flush();
     }
 
     public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
     {
-        unsafe
-        {
-            var size = writer.CalculateSize(message);
-            var array = ArrayPool<byte>.Shared.Rent(size);
-            try
-            {
-                var buffer = array.AsSpan(0, size);
-                WriterContext.Initialize(ref buffer, out var ctx);
-                writer.WriteTo(ref ctx, message);
-                ctx.Flush();
-                return Deserialize(buffer, reader);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(array);
-            }
-        }
+        using var arrayBufferWriter = new ByteArrayPoolBufferWriter();
+        var ctx = new WriterContext(arrayBufferWriter);
+        writer.WriteTo(ref ctx, message);
+        return Deserialize(arrayBufferWriter.WrittenMemory.Span, reader);
     }
 
 #if NET7_0_OR_GREATER

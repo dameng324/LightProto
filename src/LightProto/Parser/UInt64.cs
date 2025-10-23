@@ -21,11 +21,6 @@ public sealed class UInt64ProtoParser : IProtoParser<UInt64>
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
-        public int CalculateSize(UInt64 value)
-        {
-            return CodedOutputStream.ComputeUInt64Size(value);
-        }
-
         public void WriteTo(ref WriterContext output, UInt64 value)
         {
             output.WriteUInt64(value);
