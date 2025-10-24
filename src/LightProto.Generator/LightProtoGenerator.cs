@@ -2033,7 +2033,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         break;
                     }
 
-                    checkType = derivedType.BaseType;
+                    checkType = checkType.BaseType;
                 }
             }
 
