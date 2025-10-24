@@ -164,22 +164,10 @@ public class LightProtoGenerator : IIncrementalGenerator
         }
 
         string classBody;
-        if (
-            (IsProtoBufMessage(targetType.BaseType))
-            || (targetType.AllInterfaces.Any(IsProtoBufMessage))
-            || contract.DerivedTypeContracts.Any()
-        )
+        if (GetBaseProtoType(targetType) is not null || contract.DerivedTypeContracts.Any())
         {
             var derivedTypes = contract.DerivedTypeContracts.ToList();
-            INamedTypeSymbol? baseType = null;
-            if (IsProtoBufMessage(targetType.BaseType))
-            {
-                baseType = targetType.BaseType!;
-            }
-            else if (targetType.AllInterfaces.FirstOrDefault(IsProtoBufMessage) is { } it)
-            {
-                baseType = it;
-            }
+            INamedTypeSymbol? baseType = GetBaseProtoType(targetType);
 
             string baseParserTypeName =
                 baseType?.TypeKind is TypeKind.Interface
@@ -1713,7 +1701,52 @@ public class LightProtoGenerator : IIncrementalGenerator
         };
     }
 
-    private bool IsProtoBufMessage(ITypeSymbol? memberType)
+    private static bool HasProtoIncludeAttribute(
+        INamedTypeSymbol baseType,
+        INamedTypeSymbol derivedType
+    )
+    {
+        return baseType
+            .GetAttributes()
+            .Any(attr =>
+                attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoIncludeAttribute"
+                && SymbolEqualityComparer.Default.Equals(
+                    attr.ConstructorArguments[1].Value as INamedTypeSymbol,
+                    derivedType
+                )
+            );
+    }
+
+    private static INamedTypeSymbol? GetBaseProtoType(INamedTypeSymbol type)
+    {
+        if (
+            type.AllInterfaces.FirstOrDefault(interf =>
+                IsProtoBufMessage(interf) && HasProtoIncludeAttribute(interf, type)
+            ) is
+            { } it
+        )
+        {
+            return it;
+        }
+
+        var baseType = type.BaseType;
+        while (true)
+        {
+            if (baseType is null)
+            {
+                return null;
+            }
+
+            if (IsProtoBufMessage(baseType) && HasProtoIncludeAttribute(baseType, type))
+            {
+                return baseType;
+            }
+
+            baseType = baseType.BaseType;
+        }
+    }
+
+    private static bool IsProtoBufMessage(ITypeSymbol? memberType)
     {
         if (memberType is null)
         {
@@ -1983,15 +2016,24 @@ public class LightProtoGenerator : IIncrementalGenerator
             }
             else
             {
-                if (
-                    SymbolEqualityComparer.Default.Equals(derivedType.BaseType, targetType) == false
-                )
+                var checkType = derivedType;
+                while (true)
                 {
-                    throw LightProtoGeneratorException.ProtoInclude_Type_Not_Inherit(
-                        attribute,
-                        derivedType,
-                        targetType
-                    );
+                    if (checkType is null)
+                    {
+                        throw LightProtoGeneratorException.ProtoInclude_Type_Not_Inherit(
+                            attribute,
+                            derivedType,
+                            targetType
+                        );
+                    }
+
+                    if (SymbolEqualityComparer.Default.Equals(checkType.BaseType, targetType))
+                    {
+                        break;
+                    }
+
+                    checkType = checkType.BaseType;
                 }
             }
 
