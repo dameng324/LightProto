@@ -200,14 +200,8 @@ public static partial class Serializer
 
     static bool TryReadFixed32FromStream(Stream source, out uint value)
     {
-#if NET7_0_OR_GREATER
         Span<byte> bytes = stackalloc byte[4];
-        int read = source.Read(bytes);
-#else
-        byte[] bytes = new byte[4];
-        int read = source.Read(bytes, 0, 4);
-#endif
-        if (read < 4)
+        if (!TryRead4BytesFromStream(source, bytes))
         {
             value = 0;
             return false;
@@ -218,20 +212,47 @@ public static partial class Serializer
 
     static bool TryReadFixed32BigEndianFromStream(Stream source, out uint value)
     {
-#if NET7_0_OR_GREATER
         Span<byte> bytes = stackalloc byte[4];
-        int read = source.Read(bytes);
-#else
-        byte[] bytes = new byte[4];
-        int read = source.Read(bytes, 0, 4);
-#endif
-        if (read < 4)
+        if (!TryRead4BytesFromStream(source, bytes))
         {
             value = 0;
             return false;
         }
         value = BinaryPrimitives.ReadUInt32BigEndian(bytes);
         return true;
+    }
+
+    private static bool TryRead4BytesFromStream(Stream source, scoped Span<byte> bytes)
+    {
+#if NET7_0_OR_GREATER
+        try
+        {
+            source.ReadExactly(bytes);
+            return true;
+        }
+        catch (EndOfStreamException)
+        {
+            return false;
+        }
+#else
+        byte[] buffer = new byte[4];
+        int total = 0;
+        while (total < 4)
+        {
+            int read = source.Read(buffer, total, 4 - total);
+            if (read <= 0)
+            {
+                if (total == 0)
+                {
+                    return false;
+                }
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
+            total += read;
+        }
+        buffer.CopyTo(bytes);
+        return true;
+#endif
     }
 
     public static T DeserializeWithLengthPrefix<T>(
