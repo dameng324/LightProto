@@ -617,4 +617,317 @@ public partial class SerializerTests
         var parsed = Serializer.Deserialize(deZip, Int32ProtoParser.ProtoReader.GetArrayReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
+
+    [Test]
+    [Arguments(PrefixStyle.Base128)]
+    [Arguments(PrefixStyle.Fixed32)]
+    [Arguments(PrefixStyle.Fixed32BigEndian)]
+    public async Task DeserializeItems(PrefixStyle prefixStyle)
+    {
+        var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
+#else
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            prefixStyle,
+            TestContract.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            prefixStyle,
+            TestContract.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            prefixStyle,
+            TestContract.ProtoWriter
+        );
+#endif
+        ms.Position = 0;
+#if NET6_0_OR_GREATER
+        var cloned1 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, prefixStyle);
+        var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle).ToList();
+#else
+        var cloned1 = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            prefixStyle,
+            TestContract.ProtoReader
+        );
+        var cloned = Serializer
+            .DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader)
+            .ToList();
+#endif
+        await Assert.That(cloned1).IsNotNull();
+        await Assert.That(cloned.Count).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task DeserializeItems2()
+    {
+        PrefixStyle prefixStyle = PrefixStyle.None;
+        var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
+#else
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            prefixStyle,
+            TestContract.ProtoWriter
+        );
+#endif
+        ms.Position = 0;
+#if NET6_0_OR_GREATER
+        var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle).ToList();
+#else
+        var cloned = Serializer
+            .DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader)
+            .ToList();
+#endif
+        await Assert.That(cloned.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task DeserializeItems3()
+    {
+        PrefixStyle prefixStyle = (PrefixStyle)4; // Undefined
+        var ex1 = Assert.Throws(() =>
+        {
+            var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+            Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
+#else
+            Serializer.SerializeWithLengthPrefix(
+                ms,
+                CreateTestContract(),
+                prefixStyle,
+                TestContract.ProtoWriter
+            );
+#endif
+        });
+        await Assert.That(ex1).IsTypeOf<ArgumentOutOfRangeException>();
+        var ex2 = Assert.Throws(() =>
+        {
+            var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+            var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle).ToList();
+#else
+            var cloned = Serializer
+                .DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader)
+                .ToList();
+#endif
+        });
+        await Assert.That(ex2).IsTypeOf<ArgumentOutOfRangeException>();
+    }
+
+    [Test]
+    public async Task DeserializeLengthPrefix2()
+    {
+        var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.Base128,
+            fieldNumber: 2
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.Base128,
+            fieldNumber: 2
+        );
+#else
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.Base128,
+            fieldNumber: 2,
+            TestContract.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.Base128,
+            fieldNumber: 2,
+            TestContract.ProtoWriter
+        );
+#endif
+        ms.Position = 0;
+#if NET6_0_OR_GREATER
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.Base128,
+            fieldNumber: 2
+        );
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.Base128,
+            fieldNumber: 3
+        );
+#else
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.Base128,
+            fieldNumber: 2,
+            TestContract.ProtoReader
+        );
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.Base128,
+            fieldNumber: 3,
+            TestContract.ProtoReader
+        );
+#endif
+        await Assert.That(cloned).IsNotNull();
+        await Assert.That(cloned2).IsNull();
+    }
+
+    [Test]
+    public async Task DeserializeLengthPrefix3()
+    {
+        var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128);
+#else
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.Base128,
+            TestContract.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.Base128,
+            TestContract.ProtoWriter
+        );
+#endif
+        ms.Position = 0;
+#if NET6_0_OR_GREATER
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128);
+#else
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.Base128,
+            TestContract.ProtoReader
+        );
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.Base128,
+            TestContract.ProtoReader
+        );
+#endif
+        await Assert.That(cloned).IsNotNull();
+        await Assert.That(cloned2).IsNotNull();
+    }
+
+    [Test]
+    public async Task DeserializeLengthPrefix_None()
+    {
+        var ms = new MemoryStream();
+#if NET6_0_OR_GREATER
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.None);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.None);
+#else
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.None,
+            TestContract.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            CreateTestContract(),
+            PrefixStyle.None,
+            TestContract.ProtoWriter
+        );
+#endif
+        ms.Position = 0;
+#if NET6_0_OR_GREATER
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.None);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.None);
+#else
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.None,
+            TestContract.ProtoReader
+        );
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
+            ms,
+            PrefixStyle.None,
+            TestContract.ProtoReader
+        );
+#endif
+        await Assert.That(cloned).IsNotNull();
+        await Assert.That(cloned2).IsNotNull();
+    }
+
+    [Test]
+    public async Task DeserializeLengthPrefix_NotMessageType()
+    {
+        var ms = new MemoryStream();
+        int number = 10;
+#if NET6_0_OR_GREATER
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            number,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            number,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoWriter
+        );
+#else
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            number,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoWriter
+        );
+        Serializer.SerializeWithLengthPrefix(
+            ms,
+            number,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoWriter
+        );
+#endif
+        ms.Position = 0;
+#if NET6_0_OR_GREATER
+        var cloned = Serializer.DeserializeWithLengthPrefix<int>(
+            ms,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoReader
+        );
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<int>(
+            ms,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoReader
+        );
+#else
+        var cloned = Serializer.DeserializeWithLengthPrefix<int>(
+            ms,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoReader
+        );
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<int>(
+            ms,
+            PrefixStyle.Base128,
+            Int32ProtoParser.ProtoReader
+        );
+#endif
+        await Assert.That(cloned).IsEqualTo(number);
+        await Assert.That(cloned2).IsEqualTo(number);
+    }
 }

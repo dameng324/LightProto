@@ -37,22 +37,19 @@ public static partial class Serializer
 
     public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
     {
-        unsafe
+        var size = writer.CalculateSize(message);
+        var array = ArrayPool<byte>.Shared.Rent(size);
+        try
         {
-            var size = writer.CalculateSize(message);
-            var array = ArrayPool<byte>.Shared.Rent(size);
-            try
-            {
-                var buffer = array.AsSpan(0, size);
-                WriterContext.Initialize(ref buffer, out var ctx);
-                writer.WriteTo(ref ctx, message);
-                ctx.Flush();
-                return Deserialize(buffer, reader);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(array);
-            }
+            var buffer = array.AsSpan(0, size);
+            WriterContext.Initialize(ref buffer, out var ctx);
+            writer.WriteTo(ref ctx, message);
+            ctx.Flush();
+            return Deserialize(buffer, reader);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(array);
         }
     }
 

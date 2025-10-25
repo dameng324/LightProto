@@ -211,6 +211,39 @@ public partial class FailedTests
         await Assert.That(ex!.Message).Contains("malformed varint");
     }
 
+    [Test]
+    public async Task MalformedVarint_WhenDeserializingWithLengthPrefix()
+    {
+        var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+        {
+            var bytes = new byte[]
+            {
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+            };
+            var ms = new MemoryStream(bytes);
+            var strings = Serializer.DeserializeWithLengthPrefix<MalformedVarint>(
+                ms,
+                PrefixStyle.Base128
+            );
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("malformed varint");
+    }
+
     [ProtoContract]
     public partial class MalformedVarint64
     {
