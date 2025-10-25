@@ -110,6 +110,13 @@ namespace LightProto
             WritingPrimitives.WriteFixed32(ref buffer, ref state, value);
 
         /// <summary>
+        /// Writes a fixed32 field value, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteFixedBigEndian32(uint value) =>
+            WritingPrimitives.WriteRawBigEndian32(ref buffer, ref state, value);
+
+        /// <summary>
         /// Writes a bool field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>

@@ -34,6 +34,8 @@ namespace LightProto
         /// </summary>
         private readonly bool leaveOpen;
 
+        internal int leftSize;
+
         /// <summary>
         /// Buffer of data read from the stream or provided at construction time.
         /// </summary>
@@ -64,13 +66,14 @@ namespace LightProto
         /// <param name="leaveOpen"><c>true</c> to leave <paramref name="input"/> open when the returned
         /// <c cref="CodedInputStream"/> is disposed; <c>false</c> to dispose of the given stream when the
         /// returned object is disposed.</param>
-        public CodedInputStream(Stream input, bool leaveOpen)
+        public CodedInputStream(Stream input, bool leaveOpen, int maxSize = int.MaxValue)
             : this(
                 ProtoPreconditions.CheckNotNull(input, "input"),
                 new byte[BufferSize],
                 0,
                 0,
-                leaveOpen
+                leaveOpen,
+                maxSize
             ) { }
 
         /// <summary>
@@ -82,7 +85,8 @@ namespace LightProto
             byte[] buffer,
             int bufferPos,
             int bufferSize,
-            bool leaveOpen
+            bool leaveOpen,
+            int maxSize
         )
         {
             this.input = input;
@@ -93,8 +97,8 @@ namespace LightProto
             this.state.recursionLimit = DefaultRecursionLimit;
             SegmentedBufferHelper.Initialize(this, out this.state.segmentedBufferHelper);
             this.leaveOpen = leaveOpen;
-
             this.state.currentLimit = int.MaxValue;
+            this.leftSize = maxSize;
         }
 
         #endregion

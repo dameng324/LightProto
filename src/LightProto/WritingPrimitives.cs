@@ -564,6 +564,37 @@ namespace LightProto
             }
         }
 
+        public static void WriteRawBigEndian32(
+            ref Span<byte> buffer,
+            ref WriterInternalState state,
+            uint value
+        )
+        {
+            const int length = sizeof(uint);
+            if (state.position + length > buffer.Length)
+            {
+                WriteRawBigEndian32SlowPath(ref buffer, ref state, value);
+            }
+            else
+            {
+                BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(state.position), value);
+                state.position += length;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WriteRawBigEndian32SlowPath(
+            ref Span<byte> buffer,
+            ref WriterInternalState state,
+            uint value
+        )
+        {
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 16));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
+            WriteRawByte(ref buffer, ref state, (byte)value);
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void WriteRawLittleEndian32SlowPath(
             ref Span<byte> buffer,

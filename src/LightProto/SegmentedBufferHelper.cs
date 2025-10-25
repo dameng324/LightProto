@@ -8,6 +8,7 @@
 #endregion
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -83,7 +84,12 @@ namespace LightProto
         {
             if (codedInputStream != null)
             {
-                return RefillFromCodedInputStream(ref buffer, ref state, mustSucceed);
+                return RefillFromCodedInputStream(
+                    codedInputStream,
+                    ref buffer,
+                    ref state,
+                    mustSucceed
+                );
             }
             else
             {
@@ -212,7 +218,8 @@ namespace LightProto
             }
         }
 
-        private bool RefillFromCodedInputStream(
+        private static bool RefillFromCodedInputStream(
+            CodedInputStream codedInputStream,
             ref ReadOnlySpan<byte> buffer,
             ref ParserInternalState state,
             bool mustSucceed
@@ -233,12 +240,21 @@ namespace LightProto
                 }
             }
 
-            Stream? input = codedInputStream?.InternalInputStream;
+            Stream input = codedInputStream.InternalInputStream;
 
             state.totalBytesRetired += state.bufferSize;
 
             state.bufferPos = 0;
-            state.bufferSize = input?.Read(codedInputStream!.InternalBuffer, 0, buffer.Length) ?? 0;
+            int bytesToRead = Math.Min(buffer.Length, codedInputStream.leftSize);
+            if (bytesToRead == 0)
+            {
+                state.bufferSize = 0;
+            }
+            else
+            {
+                state.bufferSize = input.Read(codedInputStream.InternalBuffer, 0, bytesToRead);
+                codedInputStream.leftSize -= state.bufferSize;
+            }
             if (state.bufferSize < 0)
             {
                 throw new InvalidOperationException("Stream.Read returned a negative count");

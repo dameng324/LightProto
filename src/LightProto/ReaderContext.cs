@@ -147,6 +147,9 @@ namespace LightProto
         public uint ReadFixed32() =>
             ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
 
+        public uint ReadFixedBigEndian32() =>
+            ParsingPrimitives.ParseRawBigEndian32(ref buffer, ref state);
+
         /// <summary>
         /// Reads a bool field from the input.
         /// </summary>
