@@ -27,14 +27,6 @@ public sealed class SFixed32ProtoParser : IProtoParser<int>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(int value)
-        {
-            return CodedOutputStream.ComputeSFixed32Size(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, int value)
         {
             output.WriteSFixed32(value);

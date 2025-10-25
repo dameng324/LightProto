@@ -30,17 +30,6 @@ struct MessageWrapper<T>
 
             ItemWriter.WriteTo(ref output, value);
         }
-
-        public int CalculateSize(T value)
-        {
-            int size = 0;
-            if (ItemWriter is not ICollectionWriter)
-            {
-                size += CodedOutputStream.ComputeRawVarint32Size(tag);
-            }
-            size += ItemWriter.CalculateSize(value);
-            return size;
-        }
     }
 
     public struct ProtoReader : IProtoReader<T>

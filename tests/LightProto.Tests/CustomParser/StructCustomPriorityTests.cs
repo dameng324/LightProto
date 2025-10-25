@@ -33,11 +33,6 @@ public partial class StructCustomPriorityTests
             public WireFormat.WireType WireType { get; } = WireFormat.WireType.Varint;
             public bool IsMessage { get; } = false;
 
-            public int CalculateSize(Person value)
-            {
-                return CodedOutputStream.ComputeInt32Size(value.Id);
-            }
-
             public void WriteTo(ref WriterContext output, Person value)
             {
                 output.WriteInt32(value.Id);

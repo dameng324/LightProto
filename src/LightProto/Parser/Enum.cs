@@ -27,12 +27,6 @@ public sealed class EnumProtoParser<T> : IProtoParser<T>
         public bool IsMessage => false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int CalculateSize(T value)
-        {
-            return CodedOutputStream.ComputeEnumSize(Unsafe.As<T, int>(ref value));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteTo(ref WriterContext output, T value)
         {
             output.WriteEnum(Unsafe.As<T, int>(ref value));

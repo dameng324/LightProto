@@ -27,14 +27,6 @@ public sealed class Fixed64ProtoParser : IProtoParser<UInt64>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(UInt64 value)
-        {
-            return CodedOutputStream.ComputeFixed64Size(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, UInt64 value)
         {
             output.WriteFixed64(value);

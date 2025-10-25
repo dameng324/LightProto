@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using LightProto.Parser;
 
 namespace LightProto;
@@ -7,12 +8,6 @@ namespace LightProto;
 public static partial class Serializer
 {
 #if NET7_0_OR_GREATER
-    public static int CalculateSize<T>(T message)
-        where T : IProtoParser<T>
-    {
-        return T.ProtoWriter.CalculateSize(message);
-    }
-
     public static byte[] ToByteArray<T>(this T message)
         where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
 
@@ -36,19 +31,6 @@ public static partial class Serializer
         where T : IProtoParser<T> => Serialize(destination, instance);
 #endif
 
-    public static int CalculateMessageSize<T>(this IProtoWriter<T> writer, T value)
-    {
-        var size = writer.CalculateSize(value);
-        if (writer.IsMessage)
-        {
-            return CodedOutputStream.ComputeLengthSize(size) + size;
-        }
-        else
-        {
-            return size;
-        }
-    }
-
     public static void WriteMessageTo<T>(
         this IProtoWriter<T> writer,
         ref WriterContext output,
@@ -57,10 +39,16 @@ public static partial class Serializer
     {
         if (writer.IsMessage)
         {
-            output.WriteLength(writer.CalculateSize(value));
+            var lengthSpan = output.GetLengthSpan();
+            var oldWritten = output.WrittenCount;
+            writer.WriteTo(ref output, value);
+            var length = output.WrittenCount - oldWritten;
+            output.WriteLength(lengthSpan, length);
         }
-
-        writer.WriteTo(ref output, value);
+        else
+        {
+            writer.WriteTo(ref output, value);
+        }
     }
 
     public static T ParseMessageFrom<T>(this IProtoReader<T> reader, ref ReaderContext input)
@@ -104,12 +92,11 @@ public static partial class Serializer
         {
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }
-        var buffer = new byte[writer.CalculateSize(message)];
-        using CodedOutputStream output = new CodedOutputStream(buffer);
-        WriterContext.Initialize(output, out var ctx);
+
+        using var bufferWriter = new ByteArrayPoolBufferWriter();
+        WriterContext ctx = new WriterContext(bufferWriter);
         writer.WriteTo(ref ctx, message);
-        ctx.Flush();
-        return buffer;
+        return bufferWriter.WrittenMemory.ToArray();
     }
 
     public static void SerializeTo<T>(

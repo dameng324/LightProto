@@ -36,14 +36,6 @@ public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
     )]
-    public int CalculateSize(Nullable<T> value)
-    {
-        return value.HasValue == false ? 0 : ValueWriter.CalculateMessageSize(value.Value);
-    }
-
-    [System.Runtime.CompilerServices.MethodImpl(
-        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-    )]
     public void WriteTo(ref WriterContext output, Nullable<T> value)
     {
         if (value.HasValue)

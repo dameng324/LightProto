@@ -21,11 +21,6 @@ public sealed class BooleanProtoParser : IProtoParser<bool>
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
-        public int CalculateSize(bool value)
-        {
-            return CodedOutputStream.ComputeBoolSize(value);
-        }
-
         public void WriteTo(ref WriterContext output, bool value)
         {
             output.WriteBool(value);

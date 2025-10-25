@@ -221,7 +221,7 @@ namespace LightProto
         )]
         public static int ComputeLengthSize(int length)
         {
-            return ComputeRawVarint32Size((uint)length);
+            return 5;
         }
 
         /// <summary>

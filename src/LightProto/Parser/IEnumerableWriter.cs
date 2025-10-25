@@ -27,66 +27,6 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         ItemFixedSize = itemFixedSize;
     }
 
-    private int CalculatePackedDataSize(TCollection collection, int count)
-    {
-        return ItemFixedSize != 0 ? ItemFixedSize * count : GetAllItemSize(collection);
-    }
-
-    int GetAllItemSize(TCollection collection)
-    {
-        int size = 0;
-
-        if (collection is IList<TItem> list)
-        {
-            for (var index = 0; index < list.Count; index++)
-            {
-                var item = list[index];
-                if (item is null)
-                {
-                    throw new Exception("Sequence contained null element");
-                }
-
-                size += ItemWriter.CalculateMessageSize(item);
-            }
-        }
-        else
-        {
-            foreach (var item in collection)
-            {
-                if (item is null)
-                {
-                    throw new Exception("Sequence contained null element");
-                }
-
-                size += ItemWriter.CalculateMessageSize(item);
-            }
-        }
-        return size;
-    }
-
-    public int CalculateSize(TCollection value)
-    {
-        if (value is null)
-            return 0;
-        var count = GetCount(value);
-        if (count == 0)
-        {
-            return 0;
-        }
-
-        if (IsPacked && PackedRepeated.Support<TItem>())
-        {
-            var dataSize = CalculatePackedDataSize(value, count);
-            return CodedOutputStream.ComputeRawVarint32Size(Tag)
-                + CodedOutputStream.ComputeLengthSize(dataSize)
-                + dataSize;
-        }
-        else
-        {
-            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + GetAllItemSize(value);
-        }
-    }
-
     public bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
 
     public void WriteTo(ref WriterContext output, TCollection collection)
@@ -105,10 +45,11 @@ public class IEnumerableProtoWriter<TCollection, TItem>
         if (IsPacked && PackedRepeated.Support<TItem>())
         {
             // Packed primitive type
-            int size = CalculatePackedDataSize(collection, count);
+            //int size = CalculatePackedDataSize(collection, count);
             output.WriteTag(Tag);
-            output.WriteLength(size);
+            var lengthSpan = output.GetLengthSpan();
 
+            var oldWritten = output.WrittenCount;
             // if littleEndian and elements has fixed size, treat array as bytes (and write it as bytes to buffer) for improved performance
             // if(TryGetArrayAsSpanPinnedUnsafe(codec, out Span<byte> span, out GCHandle handle))
             // {
@@ -124,6 +65,8 @@ public class IEnumerableProtoWriter<TCollection, TItem>
                     ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
+            var length = output.WrittenCount - oldWritten;
+            output.WriteLength(lengthSpan, length);
         }
         else
         {

@@ -366,20 +366,20 @@ public partial class FailedTests
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
-    [Test]
-    public async Task OutOfSpaceExceptionTest()
-    {
-        var ex = Assert.Throws<CodedOutputStream.OutOfSpaceException>(() =>
-        {
-            var message = "1234567";
-            var writer = StringProtoParser.ProtoWriter;
-            var buffer = new byte[writer.CalculateSize(message) - 1];
-            using CodedOutputStream output = new CodedOutputStream(buffer);
-            WriterContext.Initialize(output, out var ctx);
-            writer.WriteTo(ref ctx, message);
-            ctx.Flush();
-        });
-        await Assert.That(ex!.Message).Contains("ran out of space");
-    }
+    // [Test]
+    // public async Task OutOfSpaceExceptionTest()
+    // {
+    //     var ex = Assert.Throws<CodedOutputStream.OutOfSpaceException>(() =>
+    //     {
+    //         var message = "1234567";
+    //         var writer = StringProtoParser.ProtoWriter;
+    //         var buffer = new byte[writer.CalculateSize(message) - 1];
+    //         using CodedOutputStream output = new CodedOutputStream(buffer);
+    //         WriterContext.Initialize(output, out var ctx);
+    //         writer.WriteTo(ref ctx, message);
+    //         ctx.Flush();
+    //     });
+    //     await Assert.That(ex!.Message).Contains("ran out of space");
+    // }
 }
 #endif

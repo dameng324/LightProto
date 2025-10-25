@@ -1,5 +1,4 @@
-﻿#if !NET6_0_OR_GREATER
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Copied from https://github.com/dotnet/corefx/blob/b0751dcd4a419ba6731dcaa7d240a8a1946c934c/src/System.Text.Json/src/System/Text/Json/Serialization/ArrayBufferWriter.cs
@@ -7,32 +6,32 @@
 using System.Buffers;
 using System.Diagnostics;
 
-namespace LightProto.Tests;
+namespace LightProto;
 
 // Note: this is currently an internal class that will be replaced with a shared version.
-public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
+internal sealed class ByteArrayPoolBufferWriter : IBufferWriter<byte>, IDisposable
 {
-    private T[] _rentedBuffer;
+    private byte[] _rentedBuffer;
     private int _index;
 
     private const int MinimumBufferSize = 256;
 
-    public ArrayBufferWriter()
+    public ByteArrayPoolBufferWriter()
     {
-        _rentedBuffer = ArrayPool<T>.Shared.Rent(MinimumBufferSize);
+        _rentedBuffer = ArrayPool<byte>.Shared.Rent(MinimumBufferSize);
         _index = 0;
     }
 
-    public ArrayBufferWriter(int initialCapacity)
+    public ByteArrayPoolBufferWriter(int initialCapacity)
     {
         if (initialCapacity <= 0)
             throw new ArgumentException(nameof(initialCapacity));
 
-        _rentedBuffer = ArrayPool<T>.Shared.Rent(initialCapacity);
+        _rentedBuffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
         _index = 0;
     }
 
-    public ReadOnlyMemory<T> WrittenMemory
+    public ReadOnlyMemory<byte> WrittenMemory
     {
         get
         {
@@ -40,6 +39,11 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
             return _rentedBuffer.AsMemory(0, _index);
         }
+    }
+
+    public void WriteToStream(Stream stream)
+    {
+        stream.Write(_rentedBuffer, 0, _index);
     }
 
     public int WrittenCount
@@ -96,14 +100,14 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         }
 
         ClearHelper();
-        ArrayPool<T>.Shared.Return(_rentedBuffer);
+        ArrayPool<byte>.Shared.Return(_rentedBuffer);
         _rentedBuffer = null!;
     }
 
     private void CheckIfDisposed()
     {
         if (_rentedBuffer == null)
-            throw new ObjectDisposedException(nameof(ArrayBufferWriter<T>));
+            throw new ObjectDisposedException(nameof(ByteArrayPoolBufferWriter));
     }
 
     public void Advance(int count)
@@ -119,7 +123,7 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         _index += count;
     }
 
-    public Memory<T> GetMemory(int sizeHint = 0)
+    public Memory<byte> GetMemory(int sizeHint = 0)
     {
         CheckIfDisposed();
 
@@ -127,7 +131,7 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         return _rentedBuffer.AsMemory(_index);
     }
 
-    public Span<T> GetSpan(int sizeHint = 0)
+    public Span<byte> GetSpan(int sizeHint = 0)
     {
         CheckIfDisposed();
 
@@ -155,17 +159,17 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
             int newSize = checked(_rentedBuffer.Length + growBy);
 
-            T[] oldBuffer = _rentedBuffer;
+            byte[] oldBuffer = _rentedBuffer;
 
-            _rentedBuffer = ArrayPool<T>.Shared.Rent(newSize);
+            _rentedBuffer = ArrayPool<byte>.Shared.Rent(newSize);
 
             Debug.Assert(oldBuffer.Length >= _index);
             Debug.Assert(_rentedBuffer.Length >= _index);
 
-            Span<T> previousBuffer = oldBuffer.AsSpan(0, _index);
+            Span<byte> previousBuffer = oldBuffer.AsSpan(0, _index);
             previousBuffer.CopyTo(_rentedBuffer);
             previousBuffer.Clear();
-            ArrayPool<T>.Shared.Return(oldBuffer);
+            ArrayPool<byte>.Shared.Return(oldBuffer);
         }
 
         Debug.Assert(_rentedBuffer.Length - _index > 0);
@@ -177,5 +181,3 @@ public sealed class ArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         throw new InvalidOperationException("BufferWriterAdvancedTooFar");
     }
 }
-
-#endif

@@ -36,11 +36,11 @@ public partial class SerializerTests
     [Test]
     public async Task TestBufferWriter()
     {
-        ArrayBufferWriter<byte> bufferWriter = new();
+        using ByteArrayPoolBufferWriter bufferWriter = new();
         var obj = CreateTestContract();
 #if NET6_0_OR_GREATER
         Serializer.Serialize(bufferWriter, obj);
-        var data = bufferWriter.WrittenSpan.ToArray();
+        var data = bufferWriter.WrittenMemory.ToArray();
         var parsed = Serializer.Deserialize<TestContract>(data);
 #else
         Serializer.Serialize(bufferWriter, obj, TestContract.ProtoWriter);
@@ -173,18 +173,18 @@ public partial class SerializerTests
     [Test]
     public async Task MessageCollectionTest()
     {
-        using var ms = new MemoryStream();
+        using ByteArrayPoolBufferWriter writer = new ByteArrayPoolBufferWriter();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
 
 #if NET6_0_OR_GREATER
-        Serializer.Serialize(ms, original);
-        ms.Position = 0;
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms);
+        Serializer.Serialize(writer, original);
+        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
+            writer.WrittenMemory.Span
+        );
 #else
-        Serializer.Serialize(ms, original, TestContract.ProtoWriter.GetCollectionWriter());
-        ms.Position = 0;
+        Serializer.Serialize(writer, original, TestContract.ProtoWriter.GetCollectionWriter());
         var parsed = Serializer.Deserialize(
-            ms,
+            writer.WrittenMemory.Span,
             TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
         );
 #endif
@@ -253,12 +253,12 @@ public partial class SerializerTests
     [Test]
     public async Task CollectionTest4()
     {
-        ArrayBufferWriter<byte> bufferWriter = new();
+        using ByteArrayPoolBufferWriter bufferWriter = new();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
 #if NET6_0_OR_GREATER
         original.SerializeTo(bufferWriter);
         var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
-            GetReadonlySequence(bufferWriter.WrittenSpan.ToArray().Chunk(2).ToArray())
+            GetReadonlySequence(bufferWriter.WrittenMemory.ToArray().Chunk(2).ToArray())
         );
 #else
         original.SerializeTo(bufferWriter, TestContract.ProtoWriter.GetCollectionWriter());
@@ -286,7 +286,7 @@ public partial class SerializerTests
     [Test]
     public async Task CollectionTest6()
     {
-        ArrayBufferWriter<byte> bufferWriter = new();
+        using ByteArrayPoolBufferWriter bufferWriter = new();
         string[] original = ["", "123"];
         original.SerializeTo(bufferWriter, StringProtoParser.ProtoWriter.GetCollectionWriter());
 
@@ -391,23 +391,6 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task SerializeTest13()
-    {
-        byte[] Serialize()
-        {
-            using var ms = new MemoryStream();
-            var original = CreateTestContract();
-            using var codedOutputStream = new CodedOutputStream(ms, leaveOpen: false);
-            WriterContext.Initialize(codedOutputStream, out var ctx);
-            TestContract.ProtoWriter.WriteTo(ref ctx, original);
-            ctx.Flush();
-            return ms.ToArray();
-        }
-        var bytes = Serialize();
-        await Assert.That(bytes.Length).IsGreaterThan(0);
-    }
-
-    [Test]
     public async Task DeserializeTest()
     {
         var original = CreateTestContract();
@@ -430,7 +413,7 @@ public partial class SerializerTests
     [Test]
     public async Task DictionaryTest()
     {
-        ArrayBufferWriter<byte> bufferWriter = new();
+        using ByteArrayPoolBufferWriter bufferWriter = new();
         Dictionary<int, TestContract> original = new()
         {
             [1] = CreateTestContract(),

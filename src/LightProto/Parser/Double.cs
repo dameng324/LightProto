@@ -29,14 +29,6 @@ public sealed class DoubleProtoParser : IProtoParser<Double>
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
         )]
-        public int CalculateSize(Double value)
-        {
-            return CodedOutputStream.ComputeDoubleSize(value);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
         public void WriteTo(ref WriterContext output, Double value)
         {
             output.WriteDouble(value);
