@@ -10,6 +10,15 @@ public static partial class Serializer
     public static IEnumerable<T> DeserializeItems<T>(
         Stream source,
         PrefixStyle style,
+        IProtoReader<T> reader
+    )
+    {
+        return DeserializeItems(source, style, 0, reader);
+    }
+
+    public static IEnumerable<T> DeserializeItems<T>(
+        Stream source,
+        PrefixStyle style,
         int fieldNumber,
         IProtoReader<T> reader
     )
@@ -23,27 +32,17 @@ public static partial class Serializer
                 reader,
                 out var instance
             );
-            if (result is DeserializeWithLengthPrefixResult.NoMoreData)
+            switch (result)
             {
-                yield break;
-            }
-            if (result is DeserializeWithLengthPrefixResult.PrefixStyleIsNone)
-            {
-                yield break;
-            }
-            if (result is DeserializeWithLengthPrefixResult.Success)
-            {
-                yield return instance;
-            }
-            else if (result is DeserializeWithLengthPrefixResult.FieldNumberIsMismatched)
-            {
-                //skip
-            }
-            else
-            {
-                throw new NotSupportedException(
-                    "DeserializeWithLengthPrefix result is not supported."
-                );
+                case DeserializeWithLengthPrefixResult.NoMoreData:
+                case DeserializeWithLengthPrefixResult.PrefixStyleIsNone:
+                    yield break;
+                case DeserializeWithLengthPrefixResult.Success:
+                    yield return instance;
+                    break;
+                case DeserializeWithLengthPrefixResult.FieldNumberIsMismatched:
+                    //skip
+                    break;
             }
         }
     }
@@ -187,17 +186,6 @@ public static partial class Serializer
                     result |= (tmp = source.ReadByte()) << 28;
                     if (tmp >= 128)
                     {
-                        // Discard upper 32 bits.
-                        // Note that this has to use ReadRawByte() as we only ensure we've
-                        // got at least 5 bytes at the start of the method. This lets us
-                        // use the fast path in more cases, and we rarely hit this section of code.
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (source.ReadByte() < 128)
-                            {
-                                return result;
-                            }
-                        }
                         throw InvalidProtocolBufferException.MalformedVarint();
                     }
                 }
@@ -328,6 +316,12 @@ public static partial class Serializer
         return DeserializeItems(source, style, fieldNumber, T.ProtoReader);
     }
 
+    public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style)
+        where T : IProtoParser<T>
+    {
+        return DeserializeItems<T>(source, style, 0);
+    }
+
     public static T DeserializeWithLengthPrefix<T>(Stream source, PrefixStyle style)
         where T : IProtoParser<T>
     {
@@ -337,8 +331,7 @@ public static partial class Serializer
     public static T DeserializeWithLengthPrefix<T>(
         Stream source,
         PrefixStyle style,
-        int fieldNumber,
-        IProtoWriter<T> writer
+        int fieldNumber
     )
         where T : IProtoParser<T>
     {

@@ -211,7 +211,7 @@ public abstract class BaseProtoBufTestsWithParser<
         )
         {
             var messages = GetMessages().ToArray();
-            foreach (var fieldNumber in new[] { 0, 1, 100, 1000 })
+            foreach (var fieldNumber in new[] { 0, 1, 1000, 1000_000, 100_000_000 })
             {
                 yield return () => (style, fieldNumber, messages);
             }
