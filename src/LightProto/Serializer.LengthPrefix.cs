@@ -43,6 +43,8 @@ public static partial class Serializer
                 case DeserializeWithLengthPrefixResult.FieldNumberIsMismatched:
                     //skip
                     break;
+                default:
+                    throw new InvalidOperationException("Unreachable code");
             }
         }
     }
