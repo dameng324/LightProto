@@ -727,7 +727,7 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task DeserializeLenghtPrefix2()
+    public async Task DeserializeLengthPrefix2()
     {
         var ms = new MemoryStream();
 #if NET6_0_OR_GREATER
@@ -790,7 +790,7 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task DeserializeLenghtPrefix3()
+    public async Task DeserializeLengthPrefix3()
     {
         var ms = new MemoryStream();
 #if NET6_0_OR_GREATER
@@ -831,7 +831,7 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task DeserializeLenghtPrefix_None()
+    public async Task DeserializeLengthPrefix_None()
     {
         var ms = new MemoryStream();
 #if NET6_0_OR_GREATER
@@ -872,7 +872,7 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task DeserializeLenghtPrefix_NotMessageType()
+    public async Task DeserializeLengthPrefix_NotMessageType()
     {
         var ms = new MemoryStream();
         int number = 10;

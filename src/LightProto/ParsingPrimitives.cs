@@ -334,26 +334,6 @@ namespace LightProto
             return result;
         }
 
-        /// <summary>
-        /// Parses a 32-bit little-endian integer.
-        /// </summary>
-        public static uint ParseRawBigEndian32(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
-        {
-            const int uintLength = sizeof(uint);
-            const int ulongLength = sizeof(ulong);
-            if (state.bufferPos + ulongLength > state.bufferSize)
-            {
-                return ParseRawBigEndian32SlowPath(ref buffer, ref state);
-            }
-            uint result = (uint)
-                BinaryPrimitives.ReadUInt64BigEndian(buffer.Slice(state.bufferPos, ulongLength));
-            state.bufferPos += uintLength;
-            return result;
-        }
-
         private static uint ParseRawLittleEndian32SlowPath(
             ref ReadOnlySpan<byte> buffer,
             ref ParserInternalState state
@@ -364,18 +344,6 @@ namespace LightProto
             uint b3 = ReadRawByte(ref buffer, ref state);
             uint b4 = ReadRawByte(ref buffer, ref state);
             return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24);
-        }
-
-        private static uint ParseRawBigEndian32SlowPath(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
-        {
-            uint b1 = ReadRawByte(ref buffer, ref state);
-            uint b2 = ReadRawByte(ref buffer, ref state);
-            uint b3 = ReadRawByte(ref buffer, ref state);
-            uint b4 = ReadRawByte(ref buffer, ref state);
-            return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
         }
 
         /// <summary>

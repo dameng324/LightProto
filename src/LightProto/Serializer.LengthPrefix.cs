@@ -109,11 +109,29 @@ public static partial class Serializer
                 {
                     //skip the message
                     int left = length;
-                    var tempBuffer = new byte[length];
-                    while (left > 0)
+                    byte[]? tempBuffer = null;
+                    try
                     {
-                        var read = source.Read(tempBuffer, 0, left);
-                        left -= read;
+                        // Use a pooled buffer to avoid large allocations and improve performance.
+                        tempBuffer = ArrayPool<byte>.Shared.Rent(Math.Min(left, 8192));
+                        while (left > 0)
+                        {
+                            int toRead = Math.Min(left, tempBuffer.Length);
+                            var read = source.Read(tempBuffer, 0, toRead);
+                            if (read <= 0)
+                            {
+                                // End of stream reached prematurely.
+                                throw InvalidProtocolBufferException.TruncatedMessage();
+                            }
+                            left -= read;
+                        }
+                    }
+                    finally
+                    {
+                        if (tempBuffer != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(tempBuffer);
+                        }
                     }
                     result = default!;
                     return DeserializeWithLengthPrefixResult.FieldNumberIsMismatched;
@@ -156,42 +174,28 @@ public static partial class Serializer
 
     static int ReadVarintFromStream(Stream source)
     {
-        var tmp = source.ReadByte();
-        if (tmp < 128)
+        int result = 0;
+        int shift = 0;
+        for (int i = 0; i < 5; i++)
         {
-            return tmp;
-        }
-        int result = tmp & 0x7f;
-        if ((tmp = source.ReadByte()) < 128)
-        {
-            result |= tmp << 7;
-        }
-        else
-        {
-            result |= (tmp & 0x7f) << 7;
-            if ((tmp = source.ReadByte()) < 128)
+            int b = source.ReadByte();
+            if (b == -1)
             {
-                result |= tmp << 14;
+                if (i == 0)
+                {
+                    return -1; // Clean end-of-stream at the start of a new item.
+                }
+                throw InvalidProtocolBufferException.TruncatedMessage();
             }
-            else
+            result |= (b & 0x7f) << shift;
+            if ((b & 0x80) == 0)
             {
-                result |= (tmp & 0x7f) << 14;
-                if ((tmp = source.ReadByte()) < 128)
-                {
-                    result |= tmp << 21;
-                }
-                else
-                {
-                    result |= (tmp & 0x7f) << 21;
-                    result |= (tmp = source.ReadByte()) << 28;
-                    if (tmp >= 128)
-                    {
-                        throw InvalidProtocolBufferException.MalformedVarint();
-                    }
-                }
+                return result;
             }
+            shift += 7;
         }
-        return result;
+        // If we get here, the 5th byte had the MSB set, which is a malformed varint.
+        throw InvalidProtocolBufferException.MalformedVarint();
     }
 
     static bool TryReadFixed32FromStream(Stream source, out uint value)
@@ -367,7 +371,7 @@ public static partial class Serializer
 public enum PrefixStyle
 {
     /// <summary>
-    /// No length prefix is applied to the data; the data is terminated only be the end of the stream.
+    /// No length prefix is applied to the data; the data is terminated only by the end of the stream.
     /// </summary>
     None = 0,
 
