@@ -1,4 +1,6 @@
-﻿namespace LightProto.Parser;
+﻿using LightProto.Internal;
+
+namespace LightProto.Parser;
 
 public sealed class ArrayProtoWriter<T> : IEnumerableProtoWriter<T[], T>
 {
@@ -14,6 +16,11 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TItem[]> CreateWithCapacity { get; } = (capacity) => new TItem[capacity];
     public int ItemFixedSize { get; }
+
+    private readonly SimpleObjectPool<List<TItem>> _listPool = new(
+        static () => new(),
+        static list => list.Clear()
+    );
 
     public ArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
     {
@@ -91,13 +98,20 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
                 }
                 else
                 {
-                    var collection = new List<TItem>(4);
-                    // Content is variable size so add until we reach the limit.
-                    while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                    var collection = _listPool.Get();
+                    try
                     {
-                        collection.Add(ItemReader.ParseMessageFrom(ref ctx));
+                        // Content is variable size so add until we reach the limit.
+                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                        {
+                            collection.Add(ItemReader.ParseMessageFrom(ref ctx));
+                        }
+                        return collection.ToArray();
                     }
-                    return collection.ToArray();
+                    finally
+                    {
+                        _listPool.Return(collection);
+                    }
                 }
             }
             finally
@@ -108,12 +122,19 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
         else
         {
             // Not packed... (possibly not packable)
-            var collection = new List<TItem>();
-            do
+            var collection = _listPool.Get();
+            try
             {
-                collection.Add(ItemReader.ParseMessageFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
-            return collection.ToArray();
+                do
+                {
+                    collection.Add(ItemReader.ParseMessageFrom(ref ctx));
+                } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                return collection.ToArray();
+            }
+            finally
+            {
+                _listPool.Return(collection);
+            }
         }
     }
 }
