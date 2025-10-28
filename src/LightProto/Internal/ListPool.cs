@@ -1,4 +1,6 @@
-﻿namespace LightProto.Internal;
+﻿using System.Runtime.InteropServices;
+
+namespace LightProto.Internal;
 
 internal static class ListPool<TItem>
 {

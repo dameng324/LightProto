@@ -78,7 +78,7 @@ public class SimpleObjectPoolTest
                 createCount++;
                 return new object();
             },
-            maxSize: maxSize
+            size: maxSize
         );
 
         // Get and return maxSize + 1 objects
