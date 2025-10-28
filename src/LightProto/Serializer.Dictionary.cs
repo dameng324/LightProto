@@ -1,27 +1,45 @@
 ﻿using System.Buffers;
+using System.Collections.Concurrent;
 using LightProto.Parser;
 
 namespace LightProto;
 
 public static partial class Serializer
 {
-    public static IProtoReader<TDictionary> GetDictionaryReader<TDictionary, TKey, TValue>(
+    public static IProtoReader<Dictionary<TKey, TValue>> GetDictionaryReader<TKey, TValue>(
         this IProtoReader<TKey> keyReader,
         IProtoReader<TValue> valueReader
     )
-        where TDictionary : IDictionary<TKey, TValue>, new()
         where TKey : notnull
     {
-        return new IEnumerableKeyValuePairProtoReader<TDictionary, TKey, TValue>(
-            keyReader,
-            valueReader,
-            static capacity => new(),
-            static (dic, pair) =>
-            {
-                dic[pair.Key] = pair.Value;
-                return dic;
-            }
-        );
+        return new DictionaryProtoReader<TKey, TValue>(keyReader, valueReader);
+    }
+
+    public static IProtoReader<ConcurrentDictionary<TKey, TValue>> GetConcurrentDictionaryReader<
+        TKey,
+        TValue
+    >(this IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
+        where TKey : notnull
+    {
+        return new ConcurrentDictionaryProtoReader<TKey, TValue>(keyReader, valueReader);
+    }
+
+    public static IProtoReader<SortedDictionary<TKey, TValue>> GetSortedDictionaryReader<
+        TKey,
+        TValue
+    >(this IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
+        where TKey : notnull
+    {
+        return new SortedDictionaryProtoReader<TKey, TValue>(keyReader, valueReader);
+    }
+
+    public static IProtoReader<SortedList<TKey, TValue>> GetSortedListReader<TKey, TValue>(
+        this IProtoReader<TKey> keyReader,
+        IProtoReader<TValue> valueReader
+    )
+        where TKey : notnull
+    {
+        return new SortedListProtoReader<TKey, TValue>(keyReader, valueReader);
     }
 
     public static IProtoWriter<IDictionary<TKey, TValue>> GetDictionaryWriter<TKey, TValue>(

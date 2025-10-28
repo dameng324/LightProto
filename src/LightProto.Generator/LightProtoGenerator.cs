@@ -1182,7 +1182,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                 member
             );
             var fixedSize = GetFixedSize(elementType, format);
-            return $"new LightProto.Parser.ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
+            if (readerOrWriter == "Reader")
+            {
+                return $"new LightProto.Parser.ArrayProtoReader<{elementType}>({elementWriter},{fixedSize})";
+            }
+            else if (readerOrWriter == "Writer")
+            {
+                return $"new LightProto.Parser.ArrayProtoWriter<{elementType}>({elementWriter},{rawTag},{fixedSize})";
+            }
         }
 
         if (memberType is INamedTypeSymbol namedType)
@@ -1354,12 +1361,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                         {
                             if (IsListType(compilation, namedType))
                             {
-                                return $"new LightProto.Parser.ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                                return $"new LightProto.Parser.ListProto{readerOrWriter}<{elementType}>({elementParser},{fixedSize})";
                             }
 
                             if (IsSetType(compilation, namedType))
                             {
-                                return $"new LightProto.Parser.HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                                return $"new LightProto.Parser.HashSetProto{readerOrWriter}<{elementType}>({elementParser},{fixedSize})";
                             }
                         }
                         else if (readerOrWriter == "Writer")
@@ -1385,7 +1392,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                         || namedType.TypeKind == TypeKind.Struct
                     )
                     {
-                        return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                        if (readerOrWriter == "Reader")
+                        {
+                            return $"new LightProto.Parser.{memberType.Name}ProtoReader<{elementType}>({elementParser},{fixedSize})";
+                        }
+                        else if (readerOrWriter == "Writer")
+                        {
+                            return $"new LightProto.Parser.{memberType.Name}ProtoWriter<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                        }
                     }
                 }
             }
@@ -1465,7 +1479,14 @@ public class LightProtoGenerator : IIncrementalGenerator
 
                 if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
                 {
-                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
+                    if (readerOrWriter == "Reader")
+                    {
+                        return $"new LightProto.Parser.{memberType.Name}ProtoReader<{keyType},{valueType}>({keyWriter},{valueWriter})";
+                    }
+                    else if (readerOrWriter == "Writer")
+                    {
+                        return $"new LightProto.Parser.{memberType.Name}ProtoWriter<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
+                    }
                 }
             }
         }

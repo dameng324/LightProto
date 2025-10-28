@@ -10,16 +10,15 @@ public sealed class ConcurrentStackProtoWriter<T> : IEnumerableProtoWriter<Concu
 
 public sealed class ConcurrentStackProtoReader<T> : IEnumerableProtoReader<ConcurrentStack<T>, T>
 {
-    public ConcurrentStackProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
+    public ConcurrentStackProtoReader(IProtoReader<T> itemReader, int itemFixedSize)
         : base(
             itemReader,
-            static _ => new ConcurrentStack<T>(),
-            static (collection, item) =>
-            {
-                collection.Push(item);
-                return collection;
-            },
             itemFixedSize,
-            stack => new ConcurrentStack<T>(stack)
+            static items =>
+            {
+                items.Reverse();
+                return new(items);
+            },
+            new()
         ) { }
 }

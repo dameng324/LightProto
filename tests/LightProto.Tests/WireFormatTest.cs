@@ -33,7 +33,7 @@ public class WireFormatTest
     [Test]
     public async Task EnumerableParserShouldNotBeMessage()
     {
-        var reader = new ListProtoReader<int>(Int32ProtoParser.ProtoReader, 10, 0);
+        var reader = new ListProtoReader<int>(Int32ProtoParser.ProtoReader, 0);
         await Assert.That(reader.IsMessage).IsFalse();
         await Assert.That(reader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
 
@@ -45,7 +45,7 @@ public class WireFormatTest
     [Test]
     public async Task ArrayParserShouldNotBeMessage()
     {
-        var reader = new ArrayProtoReader<int>(Int32ProtoParser.ProtoReader, 10, 0);
+        var reader = new ArrayProtoReader<int>(Int32ProtoParser.ProtoReader, 0);
         await Assert.That(reader.IsMessage).IsFalse();
         await Assert.That(reader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
 
@@ -57,7 +57,7 @@ public class WireFormatTest
     [Test]
     public async Task CollectionMessageParserShouldNotBeMessage()
     {
-        var reader = Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>();
+        var reader = Int32ProtoParser.ProtoReader.GetListReader<int>();
         await Assert.That(reader.IsMessage).IsFalse();
         await Assert.That(reader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
     }

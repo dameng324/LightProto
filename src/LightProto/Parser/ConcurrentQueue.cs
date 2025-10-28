@@ -10,15 +10,6 @@ public sealed class ConcurrentQueueProtoWriter<T> : IEnumerableProtoWriter<Concu
 
 public sealed class ConcurrentQueueProtoReader<T> : IEnumerableProtoReader<ConcurrentQueue<T>, T>
 {
-    public ConcurrentQueueProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(
-            itemReader,
-            static (size) => new ConcurrentQueue<T>(),
-            static (collection, item) =>
-            {
-                collection.Enqueue(item);
-                return collection;
-            },
-            itemFixedSize
-        ) { }
+    public ConcurrentQueueProtoReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(itemReader, itemFixedSize, static items => new(items), new()) { }
 }

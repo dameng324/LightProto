@@ -8,15 +8,6 @@ public sealed class ListProtoWriter<T> : IEnumerableProtoWriter<List<T>, T>
 
 public sealed class ListProtoReader<T> : IEnumerableProtoReader<List<T>, T>
 {
-    public ListProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(
-            itemReader,
-            static capacity => new List<T>(capacity),
-            static (collection, item) =>
-            {
-                collection.Add(item);
-                return collection;
-            },
-            itemFixedSize
-        ) { }
+    public ListProtoReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(itemReader, itemFixedSize, static items => new(items), new()) { }
 }

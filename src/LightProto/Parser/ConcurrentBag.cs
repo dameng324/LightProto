@@ -10,15 +10,6 @@ public sealed class ConcurrentBagProtoWriter<T> : IEnumerableProtoWriter<Concurr
 
 public sealed class ConcurrentBagProtoReader<T> : IEnumerableProtoReader<ConcurrentBag<T>, T>
 {
-    public ConcurrentBagProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(
-            itemReader,
-            static (capacity) => new ConcurrentBag<T>(),
-            static (collection, item) =>
-            {
-                collection.Add(item);
-                return collection;
-            },
-            itemFixedSize
-        ) { }
+    public ConcurrentBagProtoReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(itemReader, itemFixedSize, static items => new ConcurrentBag<T>(items), new()) { }
 }

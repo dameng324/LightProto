@@ -1,4 +1,8 @@
-﻿namespace LightProto.Parser;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using LightProto.Internal;
+
+namespace LightProto.Parser;
 
 public interface ICollectionReader
 {
@@ -7,7 +11,7 @@ public interface ICollectionReader
 
 public interface ICollectionReader<out TCollection> : ICollectionReader
 {
-    public Func<int, TCollection> CreateWithCapacity { get; }
+    public TCollection Empty { get; }
 }
 
 public interface ICollectionItemReader<out TItem> : ICollectionReader
@@ -25,118 +29,117 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
-    private readonly Func<TCollection, TCollection>? _completeAction;
+    private readonly Func<List<TItem>, TCollection> _listToCollectionFunc;
     public IProtoReader<TItem> ItemReader { get; }
-    public Func<int, TCollection> CreateWithCapacity { get; }
-    public Func<TCollection, TItem, TCollection> AddItem { get; }
     public int ItemFixedSize { get; }
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    public TCollection Empty { get; }
 
     public IEnumerableProtoReader(
         IProtoReader<TItem> itemReader,
-        Func<int, TCollection> createWithCapacity,
-        Func<TCollection, TItem, TCollection> addItem,
         int itemFixedSize,
-        Func<TCollection, TCollection>? completeAction = null
+        Func<List<TItem>, TCollection> listToCollectionFunc,
+        TCollection empty
     )
     {
-        _completeAction = completeAction;
+        _listToCollectionFunc = listToCollectionFunc;
         ItemReader = itemReader;
-        CreateWithCapacity = createWithCapacity;
-        AddItem = addItem;
         ItemFixedSize = itemFixedSize;
+        Empty = empty;
     }
 
     public TCollection ParseFrom(ref ReaderContext ctx)
     {
         var tag = ctx.state.lastTag;
         var fixedSize = ItemFixedSize;
-        if (
-            WireFormat.GetTagWireType(tag) is WireFormat.WireType.LengthDelimited
-            && PackedRepeated.Support<TItem>()
-        )
+        var list = ListPool<TItem>.Default.Get();
+        try
         {
-            int length = ctx.ReadLength();
-            if (length <= 0)
-                return CreateWithCapacity(0);
-            int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
-
-            try
+            if (
+                WireFormat.GetTagWireType(tag) is WireFormat.WireType.LengthDelimited
+                && PackedRepeated.Support<TItem>()
+            )
             {
-                // If the content is fixed size then we can calculate the length
-                // of the repeated field and pre-initialize the underlying collection.
-                //
-                // Check that the supplied length doesn't exceed the underlying buffer.
-                // That prevents a malicious length from initializing a very large collection.
-                if (
-                    fixedSize > 0
-                    && length % fixedSize == 0
-                    && ParsingPrimitives.IsDataAvailable(ref ctx.state, length)
-                )
+                int length = ctx.ReadLength();
+                if (length <= 0)
+                    return Empty;
+                int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
+
+                try
                 {
-                    var count = length / fixedSize;
-                    var collection = CreateWithCapacity(count);
-                    // if littleEndian treat array as bytes and directly copy from buffer for improved performance
-                    // if (
-                    //     collection is List<TItem> list
-                    //     && BitConverter.IsLittleEndian
-                    //     && Marshal.SizeOf<TItem>() == fixedSize
-                    // )
-                    // {
-                    //     var itemSpan = CollectionsMarshal.AsSpan(list);
+                    // If the content is fixed size then we can calculate the length
+                    // of the repeated field and pre-initialize the underlying collection.
                     //
-                    //     var byteSpan = MemoryMarshal.CreateSpan(
-                    //         ref Unsafe.As<TItem, byte>(ref MemoryMarshal.GetReference(itemSpan)),
-                    //         checked(itemSpan.Length * fixedSize)
-                    //     );
-                    //     ParsingPrimitives.ReadPackedFieldLittleEndian(
-                    //         ref ctx.buffer,
-                    //         ref ctx.state,
-                    //         length,
-                    //         byteSpan
-                    //     );
-                    //     CollectionsMarshal.SetCount(list, count);
-                    // }
-                    // else
+                    // Check that the supplied length doesn't exceed the underlying buffer.
+                    // That prevents a malicious length from initializing a very large collection.
+                    if (
+                        fixedSize > 0
+                        && length % fixedSize == 0
+                        && ParsingPrimitives.IsDataAvailable(ref ctx.state, length)
+                    )
                     {
+#if NET7_0_OR_GREATER
+                        var count = length / fixedSize;
+                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
+                        if (BitConverter.IsLittleEndian && Marshal.SizeOf<TItem>() == fixedSize)
+                        {
+                            CollectionsMarshal.SetCount(list, count);
+                            var itemSpan = CollectionsMarshal.AsSpan(list);
+                            var byteSpan = MemoryMarshal.CreateSpan(
+                                ref Unsafe.As<TItem, byte>(
+                                    ref MemoryMarshal.GetReference(itemSpan)
+                                ),
+                                checked(itemSpan.Length * fixedSize)
+                            );
+                            ParsingPrimitives.ReadPackedFieldLittleEndian(
+                                ref ctx.buffer,
+                                ref ctx.state,
+                                length,
+                                byteSpan
+                            );
+                        }
+                        else
+#endif
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                // Only FieldCodecs with a fixed size can reach here, and they are all known
+                                // types that don't allow the user to specify a custom reader action.
+                                // reader action will never return null.
+                                list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                            }
+                        }
+                        return _listToCollectionFunc(list);
+                    }
+                    else
+                    {
+                        // Content is variable size so add until we reach the limit.
                         while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                         {
-                            // Only FieldCodecs with a fixed size can reach here, and they are all known
-                            // types that don't allow the user to specify a custom reader action.
-                            // reader action will never return null.
-                            collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            list.Add(ItemReader.ParseMessageFrom(ref ctx));
                         }
+                        return _listToCollectionFunc(list);
                     }
-
-                    return collection;
                 }
-                else
+                finally
                 {
-                    var collection = CreateWithCapacity(4);
-                    // Content is variable size so add until we reach the limit.
-                    while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
-                    {
-                        collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-                    }
-
-                    return collection;
+                    SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
                 }
             }
-            finally
+            else
             {
-                SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
+                // Not packed... (possibly not packable)
+                do
+                {
+                    list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+
+                return _listToCollectionFunc(list);
             }
         }
-        else
+        finally
         {
-            // Not packed... (possibly not packable)
-            var collection = CreateWithCapacity(4);
-            do
-            {
-                collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
-
-            return _completeAction is null ? collection : _completeAction.Invoke(collection);
+            ListPool<TItem>.Default.Return(list);
         }
     }
 }

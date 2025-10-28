@@ -878,5 +878,21 @@ namespace LightProto
                     break;
             }
         }
+
+        internal static void ReadPackedFieldLittleEndian(
+            ref ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state,
+            int length,
+            Span<byte> outBuffer
+        )
+        {
+            if (length <= state.bufferSize - state.bufferPos)
+            {
+                buffer.Slice(state.bufferPos, length).CopyTo(outBuffer);
+                state.bufferPos += length;
+            }
+            else
+                ReadRawBytesIntoSpan(ref buffer, ref state, length, outBuffer);
+        }
     }
 }

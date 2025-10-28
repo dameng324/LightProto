@@ -5,21 +5,22 @@ public sealed class DictionaryProtoReader<TKey, TValue>
     : IEnumerableKeyValuePairProtoReader<Dictionary<TKey, TValue>, TKey, TValue>
     where TKey : notnull
 {
-    public DictionaryProtoReader(
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader,
-        uint tag
-    )
-        : base(
-            keyReader,
-            valueReader,
-            static capacity => new(capacity),
-            static (dic, pair) =>
+    public DictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
+        : base(keyReader, valueReader,
+#if NET7_0_OR_GREATER
+            static items => new(items),
+#else
+            static items =>
             {
-                dic[pair.Key] = pair.Value;
+                var dic = new Dictionary<TKey, TValue>(items.Count);
+                foreach (var item in items)
+                {
+                    dic.Add(item.Key, item.Value);
+                }
                 return dic;
-            }
-        ) { }
+            },
+#endif
+            new()) { }
 }
 
 public sealed class DictionaryProtoWriter<TKey, TValue>

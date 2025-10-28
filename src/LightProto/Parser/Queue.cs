@@ -8,15 +8,6 @@ public sealed class QueueProtoWriter<T> : IEnumerableProtoWriter<Queue<T>, T>
 
 public sealed class QueueProtoReader<T> : IEnumerableProtoReader<Queue<T>, T>
 {
-    public QueueProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(
-            itemReader,
-            static (size) => new Queue<T>(size),
-            static (collection, item) =>
-            {
-                collection.Enqueue(item);
-                return collection;
-            },
-            itemFixedSize
-        ) { }
+    public QueueProtoReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(itemReader, itemFixedSize, static items => new(items), new()) { }
 }

@@ -8,19 +8,6 @@ public sealed class HashSetProtoWriter<T> : IEnumerableProtoWriter<HashSet<T>, T
 
 public sealed class HashSetProtoReader<T> : IEnumerableProtoReader<HashSet<T>, T>
 {
-    public HashSetProtoReader(IProtoReader<T> itemReader, uint tag, int itemFixedSize)
-        : base(
-            itemReader,
-#if NET7_0_OR_GREATER
-            static (size) => new HashSet<T>(size),
-#else
-            static (size) => new HashSet<T>(),
-#endif
-            static (collection, item) =>
-            {
-                collection.Add(item);
-                return collection;
-            },
-            itemFixedSize
-        ) { }
+    public HashSetProtoReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(itemReader, itemFixedSize, static items => new(items), new()) { }
 }

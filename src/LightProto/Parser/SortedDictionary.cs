@@ -7,18 +7,19 @@ public sealed class SortedDictionaryProtoReader<TKey, TValue>
 {
     public SortedDictionaryProtoReader(
         IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader,
-        uint tag
+        IProtoReader<TValue> valueReader
     )
         : base(
             keyReader,
             valueReader,
-            static (_) => new(),
-            static (dic, pair) =>
+            static items =>
             {
-                dic[pair.Key] = pair.Value;
+                var dic = new SortedDictionary<TKey, TValue>();
+                foreach (var item in items)
+                    dic.Add(item.Key, item.Value);
                 return dic;
-            }
+            },
+            new()
         ) { }
 }
 

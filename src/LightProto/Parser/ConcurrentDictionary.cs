@@ -9,19 +9,9 @@ public sealed class ConcurrentDictionaryProtoReader<TKey, TValue>
 {
     public ConcurrentDictionaryProtoReader(
         IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader,
-        uint tag
+        IProtoReader<TValue> valueReader
     )
-        : base(
-            keyReader,
-            valueReader,
-            static (_) => new(),
-            static (dic, pair) =>
-            {
-                dic[pair.Key] = pair.Value;
-                return dic;
-            }
-        ) { }
+        : base(keyReader, valueReader, static items => new(items), new()) { }
 }
 
 public sealed class ConcurrentDictionaryProtoWriter<TKey, TValue>

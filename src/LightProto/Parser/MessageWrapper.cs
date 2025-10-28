@@ -89,7 +89,7 @@ struct MessageWrapper<T>
 
             if (value is null && _itemReader is ICollectionReader<T> collectionReader)
             {
-                return collectionReader.CreateWithCapacity(0);
+                return collectionReader.Empty;
             }
 
             return value;

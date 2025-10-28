@@ -5,20 +5,18 @@ public sealed class SortedListProtoReader<TKey, TValue>
     : IEnumerableKeyValuePairProtoReader<SortedList<TKey, TValue>, TKey, TValue>
     where TKey : notnull
 {
-    public SortedListProtoReader(
-        IProtoReader<TKey> keyReader,
-        IProtoReader<TValue> valueReader,
-        uint tag
-    )
+    public SortedListProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
         : base(
             keyReader,
             valueReader,
-            static (_) => new(),
-            static (dic, pair) =>
+            static items =>
             {
-                dic[pair.Key] = pair.Value;
+                var dic = new SortedList<TKey, TValue>(items.Count);
+                foreach (var item in items)
+                    dic.Add(item.Key, item.Value);
                 return dic;
-            }
+            },
+            new()
         ) { }
 }
 
