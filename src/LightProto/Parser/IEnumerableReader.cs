@@ -67,6 +67,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
 
                 try
                 {
+#if NET7_0_OR_GREATER
                     // If the content is fixed size then we can calculate the length
                     // of the repeated field and pre-initialize the underlying collection.
                     //
@@ -76,48 +77,45 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
                         fixedSize > 0
                         && length % fixedSize == 0
                         && ParsingPrimitives.IsDataAvailable(ref ctx.state, length)
+                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
+                        && BitConverter.IsLittleEndian
+                        && Marshal.SizeOf<TItem>() == fixedSize
                     )
                     {
-#if NET7_0_OR_GREATER
                         var count = length / fixedSize;
-                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
-                        if (BitConverter.IsLittleEndian && Marshal.SizeOf<TItem>() == fixedSize)
-                        {
-                            CollectionsMarshal.SetCount(list, count);
-                            var itemSpan = CollectionsMarshal.AsSpan(list);
-                            var byteSpan = MemoryMarshal.CreateSpan(
-                                ref Unsafe.As<TItem, byte>(
-                                    ref MemoryMarshal.GetReference(itemSpan)
-                                ),
-                                checked(itemSpan.Length * fixedSize)
-                            );
-                            ParsingPrimitives.ReadPackedFieldLittleEndian(
-                                ref ctx.buffer,
-                                ref ctx.state,
-                                length,
-                                byteSpan
-                            );
-                        }
-                        else
-#endif
-                        {
-                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
-                            {
-                                // Only FieldCodecs with a fixed size can reach here, and they are all known
-                                // types that don't allow the user to specify a custom reader action.
-                                // reader action will never return null.
-                                list.Add(ItemReader.ParseMessageFrom(ref ctx));
-                            }
-                        }
+                        CollectionsMarshal.SetCount(list, count);
+                        var itemSpan = CollectionsMarshal.AsSpan(list);
+                        var byteSpan = MemoryMarshal.CreateSpan(
+                            ref Unsafe.As<TItem, byte>(ref MemoryMarshal.GetReference(itemSpan)),
+                            checked(itemSpan.Length * fixedSize)
+                        );
+                        ParsingPrimitives.ReadPackedFieldLittleEndian(
+                            ref ctx.buffer,
+                            ref ctx.state,
+                            length,
+                            byteSpan
+                        );
                         return _listToCollectionFunc(list);
                     }
                     else
+#endif
                     {
                         // Content is variable size so add until we reach the limit.
+                        int i = 0;
                         while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                         {
-                            list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                            var item = ItemReader.ParseMessageFrom(ref ctx);
+                            if (i >= list.Count)
+                            {
+                                list.Add(item);
+                                i++;
+                            }
+                            else
+                                list[i++] = item;
                         }
+
+                        if (list.Count > i)
+                            list.RemoveRange(i, list.Count - i);
                         return _listToCollectionFunc(list);
                     }
                 }
@@ -129,11 +127,23 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
             else
             {
                 // Not packed... (possibly not packable)
+                int i = 0;
                 do
                 {
-                    list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                    var item = ItemReader.ParseMessageFrom(ref ctx);
+                    if (i >= list.Count)
+                    {
+                        list.Add(item);
+                        i++;
+                    }
+                    else
+                    {
+                        list[i++] = item;
+                    }
                 } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
 
+                if (list.Count > i)
+                    list.RemoveRange(i, list.Count - i);
                 return _listToCollectionFunc(list);
             }
         }

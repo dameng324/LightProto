@@ -72,14 +72,11 @@ public class SimpleObjectPoolTest
     {
         var maxSize = 2;
         var createCount = 0;
-        var pool = new SimpleObjectPool<object>(
-            () =>
-            {
-                createCount++;
-                return new object();
-            },
-            size: maxSize
-        );
+        var pool = new SimpleObjectPool<object>(() =>
+        {
+            createCount++;
+            return new object();
+        });
 
         // Get and return maxSize + 1 objects
         var objects = new List<object>();

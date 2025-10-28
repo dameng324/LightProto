@@ -18,6 +18,9 @@ internal class SimpleObjectPool<T>
     private readonly Func<T> _objectFactory;
     private readonly Action<T>? _resetAction;
 
+    public SimpleObjectPool(Func<T> objectFactory)
+        : this(objectFactory, null, Environment.ProcessorCount * 2) { }
+
     public SimpleObjectPool(Func<T> objectFactory, Action<T>? resetAction)
         : this(objectFactory, resetAction, Environment.ProcessorCount * 2) { }
 
