@@ -3,7 +3,8 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class IReadOnlyCollectionTests : BaseTests<IReadOnlyCollectionTests.Message, IListPackedTestsMessage>
+public partial class IReadOnlyCollectionTests
+    : BaseTests<IReadOnlyCollectionTests.Message, IListPackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -29,7 +30,7 @@ public partial class IReadOnlyCollectionTests : BaseTests<IReadOnlyCollectionTes
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled => true;
-    
+
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property).IsEquivalentTo(message.Property);

@@ -49,9 +49,9 @@ public abstract class BaseTests<
     [MethodDataSource(nameof(GetMessages))]
     public async Task ProtoBuf_net_Serialize_GoogleProto_Deserialize(Message message)
     {
-        if(ProtoBuf_net_Serialize_Disabled)
+        if (ProtoBuf_net_Serialize_Disabled)
             return;
-        
+
         var ms = new MemoryStream();
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
@@ -68,9 +68,9 @@ public abstract class BaseTests<
     [MethodDataSource(nameof(GetGoogleMessages))]
     public async Task GoogleProto_Serialize_ProtoBuf_net_Deserialize(GoogleProtobufMessage google)
     {
-        if(ProtoBuf_net_Deserialize_Disabled)
+        if (ProtoBuf_net_Deserialize_Disabled)
             return;
-        
+
         var bytes = google.ToByteArray();
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"GoogleProto_Serialize bytes: {string.Join(",", bytes)}");
@@ -169,7 +169,6 @@ public abstract class BaseProtoBufTestsWithParser<
         await AssertResult(clone, message);
     }
 
-
     [Test]
     [MethodDataSource(nameof(GetMessages))]
     [SkipAot]
@@ -184,13 +183,12 @@ public abstract class BaseProtoBufTestsWithParser<
         await AssertResult(clone, message);
     }
 
-
     [Test]
     [MethodDataSource(nameof(GetMessages))]
     [SkipAot]
     public async Task ProtoBuf_net_Serialize_Deserialize(Message message)
     {
-        if (ProtoBuf_net_Deserialize_Disabled||ProtoBuf_net_Serialize_Disabled)
+        if (ProtoBuf_net_Deserialize_Disabled || ProtoBuf_net_Serialize_Disabled)
             return;
         var ms = new MemoryStream();
         ProtoBuf.Serializer.Serialize(ms, message);
@@ -356,7 +354,7 @@ public abstract class BaseProtoBufTestsWithParser<
         Message[] messages
     )
     {
-        if (ProtoBuf_net_Serialize_Disabled||ProtoBuf_net_Deserialize_Disabled)
+        if (ProtoBuf_net_Serialize_Disabled || ProtoBuf_net_Deserialize_Disabled)
             return;
         using var ms = new MemoryStream();
         foreach (var message in messages)

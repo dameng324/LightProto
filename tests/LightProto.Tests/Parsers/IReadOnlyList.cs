@@ -3,7 +3,8 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class IReadOnlyListTests : BaseTests<IReadOnlyListTests.Message, IListPackedTestsMessage>
+public partial class IReadOnlyListTests
+    : BaseTests<IReadOnlyListTests.Message, IListPackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
