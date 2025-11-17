@@ -11,7 +11,7 @@ public partial class IReadOnlyCollectionTests : BaseTests<IReadOnlyCollectionTes
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public IReadOnlyList<int> Property { get; set; } = [];
+        public IReadOnlyCollection<int> Property { get; set; } = [];
 
         public override string ToString()
         {

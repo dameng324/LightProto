@@ -3,7 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class IReadOnlyListTests : BaseTests<IReadOnlyListTests.Message, IListPackedTestsMessage>
+public partial class IReadOnlyListNoDefaultValueTests : BaseTests<IReadOnlyListNoDefaultValueTests.Message, IListPackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -11,7 +11,7 @@ public partial class IReadOnlyListTests : BaseTests<IReadOnlyListTests.Message, 
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public IReadOnlyList<int> Property { get; set; } = [];
+        public required IReadOnlyList<int> Property { get; init; } 
 
         public override string ToString()
         {
