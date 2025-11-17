@@ -41,9 +41,8 @@ public partial class InheritanceInterfaceTests
         yield return new StructMessage { Value = Guid.NewGuid().ToString() };
     }
 
-    protected override bool LightProto_Serialize_ProtoBuf_net_Deserialize_Disabled => true;
-    protected override bool ProtoBuf_net_Serialize_Deserialize_Disabled => true;
-    protected override bool ProtoBuf_net_Serialize_LightProto_Deserialize_Disabled => true;
+    protected override bool ProtoBuf_net_Serialize_Disabled => true;
+    protected override bool ProtoBuf_net_Deserialize_Disabled => true;
 
     public override async Task AssertResult(Base clone, Base message)
     {
