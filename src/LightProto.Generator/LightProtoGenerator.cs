@@ -1822,6 +1822,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         return constructedFrom switch
         {
             "System.Collections.Generic.IList<T>"
+            or "System.Collections.Generic.IReadOnlyList<T>"
             or "System.Collections.Generic.ICollection<T>"
             or "System.Collections.Generic.IReadOnlyCollection<T>" => compilation
                 .GetTypeByMetadataName("System.Collections.Generic.List`1")
