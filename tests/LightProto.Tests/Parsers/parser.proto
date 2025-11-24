@@ -180,3 +180,14 @@ message PrimitiveArrayTestMessage {
   repeated uint64 UInt64Values = 12 [packed = false];
   repeated uint32 UInt32Values = 13 [packed = false];
 }
+message BclVersion
+{
+  sint32 Major = 1;
+  sint32 Minor = 2;
+  sint32 Build = 3;
+  sint32 Revision = 4;
+}
+message VersionTestsMessage
+{
+  BclVersion Property = 1;
+}
