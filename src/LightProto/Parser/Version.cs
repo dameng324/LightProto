@@ -18,18 +18,7 @@ public partial struct VersionProtoParser
 
     public static implicit operator Version(VersionProtoParser protoParser)
     {
-        if (protoParser.Revision == -1)
-        {
-            if (protoParser.Build == -1)
-            {
-                return new Version(protoParser.Major, protoParser.Minor);
-            }
-            else
-            {
-                return new Version(protoParser.Major, protoParser.Minor, protoParser.Build);
-            }
-        }
-        else
+        if (protoParser.Revision != -1)
         {
             return new Version(
                 protoParser.Major,
@@ -38,6 +27,13 @@ public partial struct VersionProtoParser
                 protoParser.Revision
             );
         }
+
+        if (protoParser.Build != -1)
+        {
+            return new Version(protoParser.Major, protoParser.Minor, protoParser.Build);
+        }
+
+        return new Version(protoParser.Major, protoParser.Minor);
     }
 
     public static implicit operator VersionProtoParser(Version value)

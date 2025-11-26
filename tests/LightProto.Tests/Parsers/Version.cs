@@ -24,7 +24,6 @@ public partial class VersionTests : BaseTests<VersionTests.Message, VersionTests
         yield return new() { Property = new Version(1, 2) };
         yield return new() { Property = new Version(1, 2, 3) };
         yield return new() { Property = new Version(1, 2, 3, 4) };
-        yield return new() { Property = new Version("1.2.3.4") };
     }
 
     public override IEnumerable<VersionTestsMessage> GetGoogleMessages()
@@ -37,15 +36,14 @@ public partial class VersionTests : BaseTests<VersionTests.Message, VersionTests
                     Major = o.Property.Major,
                     Minor = o.Property.Minor,
                     Build = o.Property.Build,
-                    Revision = o.Property.Revision
-                }
+                    Revision = o.Property.Revision,
+                },
             });
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property).IsEquivalentTo(message.Property);
-        //await Assert.That(clone.Property.Kind).IsEquivalentTo(message.Property.Kind); // Kind is not include by default in protobuf-net
     }
 
     public override async Task AssertGoogleResult(VersionTestsMessage clone, Message message)
