@@ -318,3 +318,17 @@ public partial class ContractCollectionTest
         };
     }
 }
+
+[InheritsTests]
+public class UriCollectionTest : BaseCollectionTestWithParser<UriProtoParser, Uri?>
+{
+    public override IEnumerable<Uri[]> GetCollection()
+    {
+        yield return
+        [
+            new Uri("file:///home/user/file.txt"),
+            new Uri("https://localhost:8080"),
+            new Uri("/relative/path", UriKind.Relative),
+        ];
+    }
+}
