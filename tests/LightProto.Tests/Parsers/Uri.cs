@@ -30,4 +30,18 @@ public partial class UriTests : BaseProtoBufTestsWithParser<UriTests.Message, Ur
     {
         await Assert.That(clone.Property?.OriginalString).IsEquivalentTo(message.Property?.OriginalString);
     }
+
+    [Test]
+    public async Task InvalidUri_DeserializesToNull()
+    {
+        // Manually create bytes that would represent an invalid URI string
+        // The format is: field1 (tag=10, length-delimited string), length, invalid-uri-bytes
+        // Tag for field 1 with wire type 2 (LengthDelimited) = (1 << 3) | 2 = 10
+        // An invalid URI format that Uri.TryCreate would reject
+        // "http://[invalid" is rejected by Uri.TryCreate
+        var invalidUri = "http://[invalid"u8;
+        byte[] invalidUriBytes = [10, (byte)invalidUri.Length, .. invalidUri];
+        var result = Serializer.Deserialize(invalidUriBytes, UriTests.Message.ProtoReader);
+        await Assert.That(result.Property).IsNull();
+    }
 }

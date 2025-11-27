@@ -21,7 +21,12 @@ public sealed class UriProtoParser : IProtoParser<Uri?>
                 return null;
             }
 
-            return new Uri(uriString, UriKind.RelativeOrAbsolute);
+            if (Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri))
+            {
+                return uri;
+            }
+
+            return null;
         }
     }
 
