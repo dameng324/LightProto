@@ -1,6 +1,6 @@
-# LightProto
+# LightProto 🚀
 
-![.NET](https://img.shields.io/badge/netstandard2.0|net8.0|net9.0-5C2D91?logo=.NET&labelColor=gray)
+![.NET](https://img.shields.io/badge/netstandard2.0|net8.0|net9.0|net10.0-5C2D91?logo=.NET&labelColor=gray)
 [![NuGet](https://img.shields.io/nuget/v/LightProto.svg)](https://www.nuget.org/packages/LightProto/)
 [![downloads](https://img.shields.io/nuget/dt/LightProto)](https://www.nuget.org/packages/LightProto)
 ![Build](https://github.com/dameng324/LightProto/actions/workflows/ci.yml/badge.svg)
@@ -12,15 +12,15 @@
 
 A high‑performance, Native AOT–friendly Protocol Buffers implementation for C#/.NET. 
 
-## Warnings
+## Warnings ⚠️
 
 This project is under active development and may introduce breaking changes. Use in production at your own risk.
 
-## Why LightProto?
+## Why LightProto? 🤔
 
 [protobuf-net](https://github.com/protobuf-net/protobuf-net) is a popular Protocol Buffers implementation in .NET, but some scenarios (especially Native AOT) can be challenging due to runtime reflection and dynamic generation. LightProto addresses this with compile-time code generation and a protobuf-net–style API.
 
-## Features
+## Features ✨
 
 - Source generator–powered serializers/parsers at compile time
 - protobuf-net–style Serializer API and familiar attributes
@@ -30,7 +30,7 @@ This project is under active development and may introduce breaking changes. Use
 - Stream and IBufferWriter<byte> serialization or ToByteArray
 - ReadOnlySpan<byte>/ReadOnlySequence<byte>/Stream deserialization
 
-## Performance & Benchmarks
+## Performance & Benchmarks 📊
 
 The following benchmarks compare serialization performance between LightProto, protobuf-net, and Google.Protobuf.
 
@@ -76,7 +76,7 @@ AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
 
 Note: Results vary by hardware, runtime, and data model. Please run the benchmarks on your environment for the most relevant numbers.
 
-## Quick Start
+## Quick Start ⚡
 
 Install from NuGet:
 
@@ -122,7 +122,7 @@ Person fromStream = Serializer.Deserialize<Person>(input);
 // Person fromStream = Serializer.Deserialize<Person>(input,Person.ProtoReader); // use this overload when .netstandard2.0
 ```
 
-## Migration from protobuf-net
+## Migration from protobuf-net 🔁
 
 Most code migrates by swapping the namespace and marking your types partial.
 
@@ -163,7 +163,7 @@ Common replacements:
 - RuntimeTypeModel and runtime surrogates → use compile-time attributes (see Surrogates below).
 - Non-partial types → mark as partial to enable generator output.
 
-## Need to know
+## Need to know 🧠
 
 LightProto aims to minimize differences from protobuf-net; notable ones include:
 
@@ -241,7 +241,7 @@ public partial struct PersonProtoParser
   internal string Name { get; set; }    
   public static implicit operator Person(PersonProtoParser parser) //must define implicit conversions for surrogate type
   {
-      return Person.FromName(parser.Name)
+      return Person.FromName(parser.Name);
   }    
   public static implicit operator PersonProtoParser(Person value) //must define implicit conversions for surrogate type
   {
@@ -272,29 +272,14 @@ Not supported; all configuration is static via attributes and generated code
 
 If you encounter different behavior versus protobuf-net, please open an issue.
 
-## Working with .proto files
+## Working with .proto files 📄
 
 LightProto doesn’t ship a .proto → C# generator. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn’t work, please file an issue.
 
-## Contributing
+## Contributing 🤝
 
-Contributions are welcome!
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed contribution guidelines.
 
-1. Check existing issues and discussions
-2. Follow the project’s coding standards
-3. Add tests for new functionality
-4. Update documentation as needed
-
-Development setup:
-
-```bash
-git clone https://github.com/dameng324/LightProto.git
-cd LightProto
-dotnet restore
-dotnet build
-dotnet test
-```
-
-## License
+## License 📄
 
 MIT License — see LICENSE for details.
