@@ -44,7 +44,7 @@ public partial class UriTests : BaseProtoBufTestsWithParser<UriTests.Message, Ur
         // Tag for field 1 with wire type 2 (LengthDelimited) = (1 << 3) | 2 = 10
         // An invalid URI format that Uri.TryCreate would reject
         // "http://[invalid" is rejected by Uri.TryCreate
-        var invalidUri = "http://[invalid"u8;
+        var invalidUri = "https://[invalid"u8;
         byte[] invalidUriBytes = [10, (byte)invalidUri.Length, .. invalidUri];
         var result = Serializer.Deserialize(invalidUriBytes, UriTests.Message.ProtoReader);
         await Assert.That(result.Property).IsNull();
