@@ -21,14 +21,19 @@ public partial class UriTests : BaseProtoBufTestsWithParser<UriTests.Message, Ur
         yield return new() { Property = null };
         yield return new() { Property = new Uri("https://example.com") };
         yield return new() { Property = new Uri("https://example.com/path/to/resource") };
-        yield return new() { Property = new Uri("https://example.com:8080/path?query=value#fragment") };
+        yield return new()
+        {
+            Property = new Uri("https://example.com:8080/path?query=value#fragment"),
+        };
         yield return new() { Property = new Uri("file:///home/user/file.txt") };
         yield return new() { Property = new Uri("/relative/path", UriKind.Relative) };
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property?.OriginalString).IsEquivalentTo(message.Property?.OriginalString);
+        await Assert
+            .That(clone.Property?.OriginalString)
+            .IsEquivalentTo(message.Property?.OriginalString);
     }
 
     [Test]
