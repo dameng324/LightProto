@@ -328,7 +328,7 @@ public class UriCollectionTest : BaseCollectionTestWithParser<UriProtoParser, Ur
         [
             new Uri("file:///home/user/file.txt"),
             new Uri("https://localhost:8080"),
-            new Uri("/relative/path", UriKind.Relative)
+            new Uri("/relative/path", UriKind.Relative),
         ];
     }
 }
