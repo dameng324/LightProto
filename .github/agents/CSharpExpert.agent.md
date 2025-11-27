@@ -153,12 +153,14 @@ When invoked:
 
 ### Code coverage (dotnet-coverage)
 
-- **Tool (one-time):**
-  bash
-  `dotnet tool install -g dotnet-coverage`
+- **Tool (one-time):**  
+  ```bash
+  dotnet tool install -g dotnet-coverage
+  ```
 - **Run locally (every time add/modify tests):**
-  bash
-  `dotnet-coverage collect -f cobertura -o coverage.cobertura.xml dotnet test`
+  ```bash
+  dotnet-coverage collect -f cobertura -o coverage.cobertura.xml dotnet test
+  ```
 
 ## Test framework-specific guidance
 

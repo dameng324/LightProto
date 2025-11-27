@@ -78,7 +78,7 @@ Note: Results vary by hardware, runtime, and data model. Please run the benchmar
 
 ## Quick Start ⚡
 
-Install from NuGet: 📦
+Install from NuGet:
 
 ```bash
 dotnet add package LightProto

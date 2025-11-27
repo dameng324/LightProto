@@ -189,14 +189,14 @@ dotnet publish -c Release -r win-x64 -p:PublishAot=true
   - Keep style consistent with the surrounding file.
   - Be mindful of target frameworks (especially the generator project which targets only `netstandard2.0`).
 
-### 5.2 Error handling and diagnostics
+### 5.3 Error handling and diagnostics
 
 - In the source generator, prefer using `LightProtoGeneratorException` to report structured diagnostics:
   - Give each diagnostic a stable Id (e.g. `LIGHT_PROTO_00X`).
   - Provide actionable, clear messages that help users fix their code.
 - In runtime code, avoid swallowing exceptions; use appropriate exception types such as `InvalidProtocolBufferException` or `ArgumentException` for protocol and API misuse.
 
-### 5.3 Performance considerations
+### 5.4 Performance considerations
 
 - Core `Serializer` and parser paths are performance-sensitive:
   - Avoid unnecessary allocations (especially LINQ, `ToArray()`, excessive string concatenation).
