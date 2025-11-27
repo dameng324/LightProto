@@ -9,7 +9,7 @@ public partial class UriTests : BaseProtoBufTestsWithParser<UriTests.Message, Ur
     [ProtoContract]
     public partial record Message
     {
-        [ProtoMember(1, ParserType = typeof(UriProtoParser))]
+        [ProtoMember(1)]
         public Uri? Property { get; set; }
     }
 
