@@ -191,3 +191,7 @@ message VersionTestsMessage
 {
   BclVersion Property = 1;
 }
+message HalfTestsMessage
+{
+  float Property = 1;
+}
