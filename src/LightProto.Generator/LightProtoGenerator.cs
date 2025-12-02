@@ -1870,6 +1870,12 @@ public class LightProtoGenerator : IIncrementalGenerator
         return displayString == "System.TimeOnly" || displayString == "TimeOnly";
     }
 
+    static bool IsRuneType(ITypeSymbol type)
+    {
+        var displayString = type.ToDisplayString();
+        return displayString == "System.Text.Rune" || displayString == "Rune";
+    }
+
     static bool IsStringBuilderType(ITypeSymbol type)
     {
         var displayString = type.ToDisplayString();
@@ -2502,6 +2508,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                 case SpecialType.None when IsDateOnlyType(Type): //int32
                     return PbWireType.Varint;
                 case SpecialType.None when IsTimeOnlyType(Type): //int64
+                    return PbWireType.Varint;
+                case SpecialType.None when IsRuneType(Type): //uint32
                     return PbWireType.Varint;
                 case SpecialType.System_String:
                 case SpecialType.None when IsGuidType(Type):
