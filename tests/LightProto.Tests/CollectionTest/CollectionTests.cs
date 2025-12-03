@@ -332,3 +332,12 @@ public class UriCollectionTest : BaseCollectionTestWithParser<UriProtoParser, Ur
         ];
     }
 }
+
+[InheritsTests]
+public class HalfCollectionTest : BaseCollectionTestWithParser<HalfProtoParser, Half>
+{
+    public override IEnumerable<Half[]> GetCollection()
+    {
+        yield return new Half[] { (Half)0.1, (Half)(-2.0), (Half)3.5 };
+    }
+}
