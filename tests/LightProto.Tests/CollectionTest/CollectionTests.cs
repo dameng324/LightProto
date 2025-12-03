@@ -377,6 +377,103 @@ public class UInt128CollectionTest : BaseCollectionTestWithParser<UInt128ProtoPa
         yield return new UInt128[] { UInt128.MinValue, UInt128.MaxValue, 1111111111111111111 };
     }
 }
+
+[InheritsTests]
+public class Vector2CollectionTest : BaseCollectionTestWithParser<Vector2ProtoParser, Vector2>
+{
+    public override IEnumerable<Vector2[]> GetCollection()
+    {
+        yield return new Vector2[]
+        {
+            new Vector2(-1, -2),
+            new Vector2(1, -2),
+            new Vector2(-1, 2),
+            new Vector2(1, 2),
+            new Vector2(0, 0),
+        };
+    }
+}
+
+[InheritsTests]
+public class Vector3CollectionTest : BaseCollectionTestWithParser<Vector3ProtoParser, Vector3>
+{
+    public override IEnumerable<Vector3[]> GetCollection()
+    {
+        yield return new Vector3[]
+        {
+            new Vector3(-1, -2, 3),
+            new Vector3(1, -2, 3),
+            new Vector3(-1, 2, 3),
+            new Vector3(1, 2, 3),
+            new Vector3(0, 0, 0),
+        };
+    }
+}
+
+[InheritsTests]
+public class QuaternionCollectionTest
+    : BaseCollectionTestWithParser<QuaternionProtoParser, Quaternion>
+{
+    public override IEnumerable<Quaternion[]> GetCollection()
+    {
+        yield return new Quaternion[]
+        {
+            new Quaternion(-1, -2, 3, 4),
+            new Quaternion(1, -2, 3, 4),
+            new Quaternion(-1, 2, 3, 4),
+            new Quaternion(1, 2, 3, 4),
+            new Quaternion(0, 0, 0, 0),
+        };
+    }
+}
+
+[InheritsTests]
+public class PlaneCollectionTest : BaseCollectionTestWithParser<PlaneProtoParser, Plane>
+{
+    public override IEnumerable<Plane[]> GetCollection()
+    {
+        yield return new Plane[]
+        {
+            new Plane(-1, -2, 3, 4),
+            new Plane(1, -2, 3, 4),
+            new Plane(-1, 2, 3, 4),
+            new Plane(1, 2, 3, 4),
+            new Plane(0, 0, 0, 0),
+        };
+    }
+}
+
+[InheritsTests]
+public class Matrix3x2CollectionTest : BaseCollectionTestWithParser<Matrix3x2ProtoParser, Matrix3x2>
+{
+    public override IEnumerable<Matrix3x2[]> GetCollection()
+    {
+        yield return new Matrix3x2[]
+        {
+            new Matrix3x2(-1, -2, 3, 4, 5, 6),
+            new Matrix3x2(1, -2, 3, 4, 5, 6),
+            new Matrix3x2(-1, 2, 3, 4, 5, 6),
+            new Matrix3x2(1, 2, 3, 4, 5, 6),
+            new Matrix3x2(0, 0, 0, 0, 0, 0),
+        };
+    }
+}
+
+[InheritsTests]
+public class Matrix4x4CollectionTest : BaseCollectionTestWithParser<Matrix4x4ProtoParser, Matrix4x4>
+{
+    public override IEnumerable<Matrix4x4[]> GetCollection()
+    {
+        yield return new Matrix4x4[]
+        {
+            new Matrix4x4(-1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
+            new Matrix4x4(1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
+            new Matrix4x4(-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
+            new Matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
+            new Matrix4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        };
+    }
+}
 #endif
 
 [InheritsTests]
