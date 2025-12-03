@@ -12,7 +12,7 @@ public partial class VersionTests : BaseTests<VersionTests.Message, VersionTests
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public Version Property { get; set; }
+        public Version? Property { get; set; }
     }
 
     protected override bool ProtoBuf_net_Serialize_Disabled { get; } = true;
