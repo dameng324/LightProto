@@ -12,6 +12,18 @@ public partial struct Matrix4x4ProtoParser
 
     public static implicit operator Matrix4x4(Matrix4x4ProtoParser protoParser)
     {
+        if (protoParser.Floats is null)
+        {
+            return default;
+        }
+
+        if (protoParser.Floats.Length != 16)
+        {
+            throw new ArgumentException(
+                "Input array must contain 16 elements for Matrix4x4 conversion.",
+                nameof(protoParser)
+            );
+        }
         return new Matrix4x4(
             protoParser.Floats[0],
             protoParser.Floats[1],

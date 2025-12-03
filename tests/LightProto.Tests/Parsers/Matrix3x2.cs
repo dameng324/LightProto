@@ -67,5 +67,33 @@ public partial class Matrix3x2Tests : BaseTests<Matrix3x2Tests.Message, Matrix3x
         );
         await Assert.That(matrix).IsEqualTo(message.Property);
     }
+
+    [Test]
+    public async Task NullFloatsArray_Should_ParseToDefault()
+    {
+        var protoParser = new Matrix3x2ProtoParser() { Floats = null };
+
+        Matrix3x2 result = protoParser;
+        await Assert.That(result).IsEqualTo(default(Matrix3x2));
+    }
+
+    [Test]
+    public async Task FloatsArrayWithInvalidLength_Should_ThrowException()
+    {
+        var protoParser = new Matrix3x2ProtoParser()
+        {
+            Floats = new float[] { 1, 2, 3 }, // Invalid length
+        };
+
+        var exception = await Assert
+            .That(() =>
+            {
+                Matrix3x2 result = protoParser;
+            })
+            .Throws<ArgumentException>();
+        await Assert
+            .That(exception!.Message)
+            .Contains("Input array must contain 6 elements for Matrix3x2 conversion.");
+    }
 }
 #endif

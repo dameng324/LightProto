@@ -12,6 +12,19 @@ public partial struct Matrix3x2ProtoParser
 
     public static implicit operator Matrix3x2(Matrix3x2ProtoParser protoParser)
     {
+        if (protoParser.Floats is null)
+        {
+            return default;
+        }
+
+        if (protoParser.Floats.Length != 6)
+        {
+            throw new ArgumentException(
+                "Input array must contain 6 elements for Matrix3x2 conversion.",
+                nameof(protoParser)
+            );
+        }
+
         return new Matrix3x2(
             protoParser.Floats[0],
             protoParser.Floats[1],

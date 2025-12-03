@@ -12,6 +12,18 @@ public partial struct PlaneProtoParser
 
     public static implicit operator Plane(PlaneProtoParser protoParser)
     {
+        if (protoParser.Floats is null)
+        {
+            return default;
+        }
+
+        if (protoParser.Floats.Length != 4)
+        {
+            throw new ArgumentException(
+                "Input array must contain 4 elements for Plane conversion.",
+                nameof(protoParser)
+            );
+        }
         return new Plane(
             protoParser.Floats[0],
             protoParser.Floats[1],

@@ -51,10 +51,39 @@ public partial class QuaternionTests : BaseTests<QuaternionTests.Message, Quater
 
     public override async Task AssertGoogleResult(QuaternionTestsMessage clone, Message message)
     {
+        await Assert.That(clone.Property.M.Count).IsEqualTo(4);
         await Assert.That(clone.Property.M[0]).IsEqualTo(message.Property.X);
         await Assert.That(clone.Property.M[1]).IsEqualTo(message.Property.Y);
         await Assert.That(clone.Property.M[2]).IsEqualTo(message.Property.Z);
         await Assert.That(clone.Property.M[3]).IsEqualTo(message.Property.W);
+    }
+
+    [Test]
+    public async Task NullFloatsArray_Should_ParseToDefault()
+    {
+        var protoParser = new QuaternionProtoParser() { Floats = null };
+
+        Quaternion result = protoParser;
+        await Assert.That(result).IsEqualTo(default(Quaternion));
+    }
+
+    [Test]
+    public async Task FloatsArrayWithInvalidLength_Should_ThrowException()
+    {
+        var protoParser = new QuaternionProtoParser()
+        {
+            Floats = new float[] { 1, 2, 3 }, // Invalid length
+        };
+
+        var exception = await Assert
+            .That(() =>
+            {
+                Quaternion result = protoParser;
+            })
+            .Throws<ArgumentException>();
+        await Assert
+            .That(exception!.Message)
+            .Contains("Input array must contain 4 elements for Quaternion conversion.");
     }
 }
 #endif

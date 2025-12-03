@@ -55,10 +55,39 @@ public partial class PlaneTests : BaseTests<PlaneTests.Message, PlaneTestsMessag
 
     public override async Task AssertGoogleResult(PlaneTestsMessage clone, Message message)
     {
+        await Assert.That(clone.Property.M.Count).IsEqualTo(4);
         await Assert.That(clone.Property.M[0]).IsEqualTo(message.Property.Normal.X);
         await Assert.That(clone.Property.M[1]).IsEqualTo(message.Property.Normal.Y);
         await Assert.That(clone.Property.M[2]).IsEqualTo(message.Property.Normal.Z);
         await Assert.That(clone.Property.M[3]).IsEqualTo(message.Property.D);
+    }
+
+    [Test]
+    public async Task NullFloatsArray_Should_ParseToDefault()
+    {
+        var protoParser = new PlaneProtoParser() { Floats = null };
+
+        Plane result = protoParser;
+        await Assert.That(result).IsEqualTo(default(Plane));
+    }
+
+    [Test]
+    public async Task FloatsArrayWithInvalidLength_Should_ThrowException()
+    {
+        var protoParser = new PlaneProtoParser()
+        {
+            Floats = new float[] { 1, 2, 3 }, // Invalid length
+        };
+
+        var exception = await Assert
+            .That(() =>
+            {
+                Plane result = protoParser;
+            })
+            .Throws<ArgumentException>();
+        await Assert
+            .That(exception!.Message)
+            .Contains("Input array must contain 4 elements for Plane conversion.");
     }
 }
 #endif

@@ -239,21 +239,27 @@ message Matrix4x4Message
 {
   repeated float M = 1 [packed = true];
 }
-message Vector2TestsMessage{
+message Vector2TestsMessage
+{
   Vector2Message Property = 1;
 }
-message Vector3TestsMessage{
+message Vector3TestsMessage
+{
   Vector3Message Property = 1;
 }
-message QuaternionTestsMessage{
+message QuaternionTestsMessage
+{
   QuaternionMessage Property = 1;
 }
-message PlaneTestsMessage{
+message PlaneTestsMessage
+{
   PlaneMessage Property = 1;
 }
-message Matrix3x2TestsMessage{
+message Matrix3x2TestsMessage
+{
   Matrix3x2Message Property = 1;
 }
-message Matrix4x4TestsMessage{
+message Matrix4x4TestsMessage
+{
   Matrix4x4Message Property = 1;
 }
