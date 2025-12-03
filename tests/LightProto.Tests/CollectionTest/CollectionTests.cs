@@ -333,6 +333,7 @@ public class UriCollectionTest : BaseCollectionTestWithParser<UriProtoParser, Ur
     }
 }
 
+#if NET7_0_OR_GREATER
 [InheritsTests]
 public class HalfCollectionTest : BaseCollectionTestWithParser<HalfProtoParser, Half>
 {
@@ -341,3 +342,4 @@ public class HalfCollectionTest : BaseCollectionTestWithParser<HalfProtoParser, 
         yield return new Half[] { (Half)0.1, (Half)(-2.0), (Half)3.5 };
     }
 }
+#endif
