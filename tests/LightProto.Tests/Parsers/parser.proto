@@ -199,3 +199,16 @@ message RuneTestsMessage
 {
   uint32 Property = 1;
 }
+message Int128Message
+{
+  uint64 Upper=1;
+  uint64 Lower=2;
+}
+message Int128TestsMessage
+{
+  Int128Message Property = 1;
+}
+message BigIntegerTestsMessage
+{
+  bytes Property = 1;
+}

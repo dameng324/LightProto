@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Numerics;
+using System.Text;
 using LightProto.Parser;
 
 namespace LightProto.Tests.CollectionTest;
@@ -351,4 +352,43 @@ public class RuneCollectionTest : BaseCollectionTestWithParser<RuneProtoParser, 
         yield return new Rune[] { new('A'), new('z'), new('0'), new('€'), new('中') };
     }
 }
+
+[InheritsTests]
+public class Int128CollectionTest : BaseCollectionTestWithParser<Int128ProtoParser, Int128>
+{
+    public override IEnumerable<Int128[]> GetCollection()
+    {
+        yield return new Int128[]
+        {
+            Int128.MinValue,
+            Int128.MaxValue,
+            Int128.Zero,
+            1111111111111111111,
+            -1111111111111111111,
+        };
+    }
+}
+
+[InheritsTests]
+public class UInt128CollectionTest : BaseCollectionTestWithParser<UInt128ProtoParser, UInt128>
+{
+    public override IEnumerable<UInt128[]> GetCollection()
+    {
+        yield return new UInt128[] { UInt128.MinValue, UInt128.MaxValue, 1111111111111111111 };
+    }
+}
 #endif
+
+[InheritsTests]
+public class BigIntegerCollectionTest
+    : BaseCollectionTestWithParser<BigIntegerProtoParser, BigInteger>
+{
+    public override IEnumerable<BigInteger[]> GetCollection()
+    {
+        yield return new BigInteger[]
+        {
+            BigInteger.Parse("1111111111111111111111111111111111111111111111111111111111111111"),
+            BigInteger.Parse("-1111111111111111111111111111111111111111111111111111111111111111"),
+        };
+    }
+}
