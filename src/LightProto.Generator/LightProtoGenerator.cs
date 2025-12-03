@@ -1876,6 +1876,12 @@ public class LightProtoGenerator : IIncrementalGenerator
         return displayString == "System.Text.StringBuilder" || displayString == "StringBuilder";
     }
 
+    private static bool IsHalfType(ITypeSymbol type)
+    {
+        var displayString = type.ToDisplayString();
+        return displayString == "System.Half" || displayString == "Half";
+    }
+
     private ITypeSymbol? GetProxyType(IEnumerable<AttributeData> attributeDatas)
     {
         if (
@@ -2496,6 +2502,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                 case SpecialType.System_Enum:
                     return PbWireType.Varint;
                 case SpecialType.System_Single:
+                case SpecialType.None when IsHalfType(Type): // float16
                     return PbWireType.Fixed32;
                 case SpecialType.System_Double:
                     return PbWireType.Fixed64;
