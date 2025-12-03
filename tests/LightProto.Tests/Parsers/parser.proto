@@ -195,3 +195,7 @@ message HalfTestsMessage
 {
   float Property = 1;
 }
+message RuneTestsMessage
+{
+  uint32 Property = 1;
+}

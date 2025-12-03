@@ -342,4 +342,13 @@ public class HalfCollectionTest : BaseCollectionTestWithParser<HalfProtoParser, 
         yield return new Half[] { (Half)0.1, (Half)(-2.0), (Half)3.5 };
     }
 }
+
+[InheritsTests]
+public class RuneCollectionTest : BaseCollectionTestWithParser<RuneProtoParser, Rune>
+{
+    public override IEnumerable<Rune[]> GetCollection()
+    {
+        yield return new Rune[] { new('A'), new('z'), new('0'), new('€'), new('中') };
+    }
+}
 #endif
