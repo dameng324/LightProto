@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Numerics;
+using System.Text;
 using LightProto.Parser;
 
 namespace LightProto.Tests.CollectionTest;
@@ -377,3 +378,17 @@ public class UInt128CollectionTest : BaseCollectionTestWithParser<UInt128ProtoPa
     }
 }
 #endif
+
+[InheritsTests]
+public class BigIntegerCollectionTest
+    : BaseCollectionTestWithParser<BigIntegerProtoParser, BigInteger>
+{
+    public override IEnumerable<BigInteger[]> GetCollection()
+    {
+        yield return new BigInteger[]
+        {
+            BigInteger.Parse("1111111111111111111111111111111111111111111111111111111111111111"),
+            BigInteger.Parse("-1111111111111111111111111111111111111111111111111111111111111111"),
+        };
+    }
+}

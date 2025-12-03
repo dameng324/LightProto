@@ -208,3 +208,7 @@ message Int128TestsMessage
 {
   Int128Message Property = 1;
 }
+message BigIntegerTestsMessage
+{
+  bytes Property = 1;
+}
