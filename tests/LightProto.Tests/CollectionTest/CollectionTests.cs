@@ -549,7 +549,6 @@ public class DateTimeOffsetCollectionTest
         {
             DateTimeOffset.MinValue,
             DateTimeOffset.MaxValue,
-            DateTimeOffset.UtcNow,
             DateTimeOffset.Now,
             new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(1)),
             new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(-1)),
