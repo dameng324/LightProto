@@ -16,7 +16,7 @@ message DateTimeTestsMessage
 }
 message NestedRequiredMemberMessage
 {
-  NullableIntTestsMessage Property=1;
+  NullableIntTestsMessage Property = 1;
 }
 message DateOnlyTestsMessage
 {
@@ -109,8 +109,8 @@ message Map3TestsMessage
 }
 message Map3NestMessage
 {
-  repeated int32 Key = 1[packed=false];
-  repeated int64 Value = 2[packed=false];
+  repeated int32 Key = 1[packed = false];
+  repeated int64 Value = 2[packed = false];
 }
 
 message RecordStructTestsMessage
@@ -134,7 +134,7 @@ message InheritanceTestsBaseMessage
 {
   string BaseValue = 1;
   oneof Inheritance {
-    InheritanceTestsMessage Derived = 2;
+ InheritanceTestsMessage Derived = 2;
   }
 }
 message InheritanceTestsMessage
@@ -211,4 +211,55 @@ message Int128TestsMessage
 message BigIntegerTestsMessage
 {
   bytes Property = 1;
+}
+message Vector2Message
+{
+  float X = 1;
+  float Y = 2;
+}
+message Vector3Message
+{
+  float X = 1;
+  float Y = 2;
+  float Z = 3;
+}
+message QuaternionMessage
+{
+  repeated float M = 1 [packed = true];
+}
+message PlaneMessage
+{
+  repeated float M = 1 [packed = true];
+}
+message Matrix3x2Message
+{
+  repeated float M = 1 [packed = true];
+}
+message Matrix4x4Message
+{
+  repeated float M = 1 [packed = true];
+}
+message Vector2TestsMessage
+{
+  Vector2Message Property = 1;
+}
+message Vector3TestsMessage
+{
+  Vector3Message Property = 1;
+}
+message QuaternionTestsMessage
+{
+  QuaternionMessage Property = 1;
+}
+message PlaneTestsMessage
+{
+  PlaneMessage Property = 1;
+}
+message Matrix3x2TestsMessage
+{
+  Matrix3x2Message Property = 1;
+}
+message Matrix4x4TestsMessage
+{
+  Matrix4x4Message Property = 1;
 }
