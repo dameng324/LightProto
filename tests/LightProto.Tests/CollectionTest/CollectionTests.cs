@@ -592,10 +592,14 @@ public class TimeZoneInfoCollectionTest
     public override IEnumerable<TimeZoneInfo[]> GetCollection()
     {
         List<TimeZoneInfo> timeZones = [TimeZoneInfo.Utc];
+#if NET48
+        timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
+#else
         if (OperatingSystem.IsWindows())
         {
             timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai"));
         }
+#endif
         yield return timeZones.ToArray();
     }
 }

@@ -18,17 +18,14 @@ public partial class TimeZoneInfoTests
     {
         yield return new() { Property = TimeZoneInfo.Utc };
         yield return new() { Property = TimeZoneInfo.Local };
-        if (OperatingSystem.IsWindows())
+#if NET48
+        yield return new()
         {
-            yield return new()
-            {
-                Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"),
-            };
-        }
-        else
-        {
-            yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai") };
-        }
+            Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"),
+        };
+#else
+        yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai") };
+#endif
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
