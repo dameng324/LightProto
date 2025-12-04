@@ -283,6 +283,7 @@ public class NullableCollectionTest : BaseCollectionTest<int?>
 {
     public override IProtoWriter<int?> ProtoWriter { get; } =
         new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter);
+
     public override IProtoReader<int?> ProtoReader { get; } =
         new NullableProtoReader<int>(Int32ProtoParser.ProtoReader);
 
@@ -561,6 +562,7 @@ public class LazyCollectionTest
 {
     public IProtoWriter<Lazy<int>> ProtoWriter { get; } =
         new LazyProtoWriter<int>(Int32ProtoParser.ProtoWriter);
+
     public IProtoReader<Lazy<int>> ProtoReader { get; } =
         new LazyProtoReader<int>(Int32ProtoParser.ProtoReader);
 
@@ -589,10 +591,11 @@ public class TimeZoneInfoCollectionTest
 {
     public override IEnumerable<TimeZoneInfo[]> GetCollection()
     {
-        yield return new TimeZoneInfo[]
+        List<TimeZoneInfo> timeZones = [TimeZoneInfo.Utc];
+        if (OperatingSystem.IsWindows())
         {
-            TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai"),
-            TimeZoneInfo.Utc,
-        };
+            timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai"));
+        }
+        yield return timeZones.ToArray();
     }
 }

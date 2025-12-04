@@ -8,11 +8,9 @@ public partial class TimeZoneInfoTests
     : BaseTests<TimeZoneInfoTests.Message, TimeZoneInfoTestsMessage>
 {
     [ProtoContract]
-    [ProtoBuf.ProtoContract]
     public partial record Message
     {
         [ProtoMember(1)]
-        [ProtoBuf.ProtoMember(1)]
         public required TimeZoneInfo Property { get; set; }
     }
 
@@ -20,6 +18,17 @@ public partial class TimeZoneInfoTests
     {
         yield return new() { Property = TimeZoneInfo.Utc };
         yield return new() { Property = TimeZoneInfo.Local };
+        if (OperatingSystem.IsWindows())
+        {
+            yield return new()
+            {
+                Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"),
+            };
+        }
+        else
+        {
+            yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai") };
+        }
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
@@ -36,7 +45,18 @@ public partial class TimeZoneInfoTests
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
+        // https://github.com/dotnet/runtime/issues/19794 :TimeZoneInfo.ToSerializedString/FromSerializedString do not round trip on Unix
+        await Assert
+            .That(clone.Property.BaseUtcOffset)
+            .IsEquivalentTo(message.Property.BaseUtcOffset);
+        await Assert.That(clone.Property.Id).IsEquivalentTo(message.Property.Id);
+        await Assert.That(clone.Property.DisplayName).IsEquivalentTo(message.Property.DisplayName);
+        await Assert
+            .That(clone.Property.StandardName)
+            .IsEquivalentTo(message.Property.StandardName);
+        await Assert
+            .That(clone.Property.DaylightName)
+            .IsEquivalentTo(message.Property.DaylightName);
     }
 
     public override async Task AssertGoogleResult(TimeZoneInfoTestsMessage clone, Message message)
