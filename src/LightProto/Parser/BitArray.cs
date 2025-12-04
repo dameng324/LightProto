@@ -8,18 +8,19 @@ namespace LightProto.Parser;
 public partial struct BitArrayProtoParser
 {
     [ProtoMember(1, IsPacked = true)]
-    internal bool[] bits { get; set; }
+    internal bool[] Bits { get; set; }
 
     public static implicit operator BitArray(BitArrayProtoParser proxy)
     {
-        return new BitArray(proxy.bits);
+        return new BitArray(proxy.Bits ?? []);
     }
 
     public static implicit operator BitArrayProtoParser(BitArray value)
     {
+        if (value is null)
+            return new BitArrayProtoParser { Bits = [] };
         bool[] bits = new bool[value.Count];
         value.CopyTo(bits, 0);
-
-        return new BitArrayProtoParser { bits = bits };
+        return new BitArrayProtoParser { Bits = bits };
     }
 }

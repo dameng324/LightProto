@@ -1294,27 +1294,10 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             if (typeArguments.Length == 1)
             {
-                if (namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-                {
-                    var elementType = typeArguments[0];
-                    var elementParser = GetProtoParser(
-                        compilation,
-                        elementType,
-                        format,
-                        mapFormat,
-                        readerOrWriter,
-                        rawTag,
-                        targetType,
-                        isPacked,
-                        depth,
-                        compatibilityLevel,
-                        stringIntern,
-                        member
-                    );
-                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
-                }
-                //Lazy
-                else if (namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>")
+                if (
+                    namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                    || namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>"
+                )
                 {
                     var elementType = typeArguments[0];
                     var elementParser = GetProtoParser(

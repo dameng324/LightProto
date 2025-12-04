@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Google.Protobuf;
 using LightProto;
+using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
 
@@ -53,6 +54,22 @@ public partial class BitArrayTests : BaseTests<BitArrayTests.Message, BitArrayTe
         await Assert
             .That(clone.Property.Bits.ToArray())
             .IsEquivalentTo(message.Property.ToBoolArray());
+    }
+
+    [Test]
+    public async Task BitArrayProtoParser_ShouldBeEmpty_WhenBitArrayIsNull()
+    {
+        BitArray bitArray = null!;
+        BitArrayProtoParser parser = bitArray;
+        await Assert.That(parser.Bits).IsEmpty();
+    }
+
+    [Test]
+    public async Task BitArrayProtoParser_ShouldHandleNullBits_WhenDeserializing()
+    {
+        BitArrayProtoParser parser = new BitArrayProtoParser() { Bits = null! };
+        BitArray bitArray = parser;
+        await Assert.That(bitArray.Length).IsEqualTo(0);
     }
 }
 
