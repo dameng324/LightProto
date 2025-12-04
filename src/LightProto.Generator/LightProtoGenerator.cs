@@ -1313,6 +1313,26 @@ public class LightProtoGenerator : IIncrementalGenerator
                     );
                     return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
                 }
+                //Lazy
+                else if (namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>")
+                {
+                    var elementType = typeArguments[0];
+                    var elementParser = GetProtoParser(
+                        compilation,
+                        elementType,
+                        format,
+                        mapFormat,
+                        readerOrWriter,
+                        rawTag,
+                        targetType,
+                        isPacked,
+                        depth,
+                        compatibilityLevel,
+                        stringIntern,
+                        member
+                    );
+                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
+                }
                 else
                 {
                     if (rawTag == 0)
@@ -1595,6 +1615,9 @@ public class LightProtoGenerator : IIncrementalGenerator
             return false;
 
         if (namedType.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
+            return false;
+
+        if (namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>")
             return false;
 
         var elementType = namedType.TypeArguments[0];
@@ -2455,7 +2478,10 @@ public class LightProtoGenerator : IIncrementalGenerator
             // Handle nullable value types by getting the underlying type
             if (
                 Type is INamedTypeSymbol namedType
-                && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                && (
+                    namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                    || namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>"
+                )
             )
             {
                 return GetPbWireType(compilation, namedType.TypeArguments[0], DataFormat);

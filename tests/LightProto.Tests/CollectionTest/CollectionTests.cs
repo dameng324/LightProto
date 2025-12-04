@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.Collections;
+using System.Globalization;
+using System.Numerics;
 using System.Text;
 using LightProto.Parser;
 
@@ -487,5 +489,107 @@ public class BigIntegerCollectionTest
             BigInteger.Parse("1111111111111111111111111111111111111111111111111111111111111111"),
             BigInteger.Parse("-1111111111111111111111111111111111111111111111111111111111111111"),
         };
+    }
+}
+
+[InheritsTests]
+public class BitArrayCollectionTest : BaseCollectionTestWithParser<BitArrayProtoParser, BitArray>
+{
+    public override IEnumerable<BitArray[]> GetCollection()
+    {
+        yield return new BitArray[]
+        {
+            new BitArray(new bool[] { true, false, true, false }),
+            new BitArray(new bool[] { false, false, false, false }),
+            new BitArray(new bool[] { true, true, true, true }),
+            new BitArray(new bool[] { }),
+        };
+    }
+}
+
+[InheritsTests]
+public class ComplexCollectionTest : BaseCollectionTestWithParser<ComplexProtoParser, Complex>
+{
+    public override IEnumerable<Complex[]> GetCollection()
+    {
+        yield return new Complex[]
+        {
+            new Complex(-1, -2),
+            new Complex(1, -2),
+            new Complex(-1, 2),
+            new Complex(1, 2),
+            new Complex(0, 0),
+        };
+    }
+}
+
+[InheritsTests]
+public class CultureInfoCollectionTest
+    : BaseCollectionTestWithParser<CultureInfoProtoParser, CultureInfo>
+{
+    public override IEnumerable<CultureInfo[]> GetCollection()
+    {
+        yield return new CultureInfo[]
+        {
+            CultureInfo.InvariantCulture,
+            new CultureInfo("en-US"),
+            new CultureInfo("fr-FR"),
+            new CultureInfo("zh-CN"),
+        };
+    }
+}
+
+[InheritsTests]
+public class DateTimeOffsetCollectionTest
+    : BaseCollectionTestWithParser<DateTimeOffsetProtoParser, DateTimeOffset>
+{
+    public override IEnumerable<DateTimeOffset[]> GetCollection()
+    {
+        yield return new DateTimeOffset[]
+        {
+            DateTimeOffset.MinValue,
+            DateTimeOffset.MaxValue,
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.Now,
+            new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(1)),
+            new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(-1)),
+        };
+    }
+}
+
+[InheritsTests]
+public class LazyCollectionTest
+{
+    public IProtoWriter<Lazy<int>> ProtoWriter { get; } =
+        new LazyProtoWriter<int>(Int32ProtoParser.ProtoWriter);
+    public IProtoReader<Lazy<int>> ProtoReader { get; } =
+        new LazyProtoReader<int>(Int32ProtoParser.ProtoReader);
+
+    [Test]
+    [Category("CollectionTest")]
+    public async Task CollectionSerializeAndDeserialize()
+    {
+        int[] original = [-1, 0, 1, 2];
+        var lazyList = original.Select(o => new Lazy<int>(() => o)).ToList();
+        using var ms = new MemoryStream();
+        Serializer.Serialize(ms, lazyList, ProtoWriter.GetCollectionWriter());
+
+        ms.Position = 0;
+        var parsed = Serializer.Deserialize(
+            ms,
+            ProtoReader.GetCollectionReader<List<Lazy<int>>, Lazy<int>>()
+        );
+        var parsedValues = parsed.Select(o => o.Value).ToList();
+        await Assert.That(parsedValues).IsEquivalentTo(original);
+    }
+}
+
+[InheritsTests]
+public class TimeZoneInfoCollectionTest
+    : BaseCollectionTestWithParser<TimeZoneInfoProtoParser, TimeZoneInfo>
+{
+    public override IEnumerable<TimeZoneInfo[]> GetCollection()
+    {
+        yield return new TimeZoneInfo[] { TimeZoneInfo.Local, TimeZoneInfo.Utc };
     }
 }

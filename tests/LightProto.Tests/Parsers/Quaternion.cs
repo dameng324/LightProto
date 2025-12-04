@@ -61,7 +61,7 @@ public partial class QuaternionTests : BaseTests<QuaternionTests.Message, Quater
     [Test]
     public async Task NullFloatsArray_Should_ParseToDefault()
     {
-        var protoParser = new QuaternionProtoParser() { Floats = null };
+        var protoParser = new QuaternionProtoParser() { Floats = null! };
 
         Quaternion result = protoParser;
         await Assert.That(result).IsEqualTo(default(Quaternion));

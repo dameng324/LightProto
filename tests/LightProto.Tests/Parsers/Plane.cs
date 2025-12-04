@@ -65,7 +65,7 @@ public partial class PlaneTests : BaseTests<PlaneTests.Message, PlaneTestsMessag
     [Test]
     public async Task NullFloatsArray_Should_ParseToDefault()
     {
-        var protoParser = new PlaneProtoParser() { Floats = null };
+        var protoParser = new PlaneProtoParser() { Floats = null! };
 
         Plane result = protoParser;
         await Assert.That(result).IsEqualTo(default(Plane));

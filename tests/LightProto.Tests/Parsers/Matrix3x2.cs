@@ -71,7 +71,7 @@ public partial class Matrix3x2Tests : BaseTests<Matrix3x2Tests.Message, Matrix3x
     [Test]
     public async Task NullFloatsArray_Should_ParseToDefault()
     {
-        var protoParser = new Matrix3x2ProtoParser() { Floats = null };
+        var protoParser = new Matrix3x2ProtoParser() { Floats = null! };
 
         Matrix3x2 result = protoParser;
         await Assert.That(result).IsEqualTo(default(Matrix3x2));
