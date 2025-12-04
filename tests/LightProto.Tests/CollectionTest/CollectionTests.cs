@@ -589,6 +589,10 @@ public class TimeZoneInfoCollectionTest
 {
     public override IEnumerable<TimeZoneInfo[]> GetCollection()
     {
-        yield return new TimeZoneInfo[] { TimeZoneInfo.Local, TimeZoneInfo.Utc };
+        yield return new TimeZoneInfo[]
+        {
+            TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai"),
+            TimeZoneInfo.Utc,
+        };
     }
 }
