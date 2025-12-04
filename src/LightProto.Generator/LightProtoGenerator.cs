@@ -1294,7 +1294,10 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             if (typeArguments.Length == 1)
             {
-                if (namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                if (
+                    namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                    || namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>"
+                )
                 {
                     var elementType = typeArguments[0];
                     var elementParser = GetProtoParser(
@@ -1595,6 +1598,9 @@ public class LightProtoGenerator : IIncrementalGenerator
             return false;
 
         if (namedType.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
+            return false;
+
+        if (namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>")
             return false;
 
         var elementType = namedType.TypeArguments[0];
@@ -2455,7 +2461,10 @@ public class LightProtoGenerator : IIncrementalGenerator
             // Handle nullable value types by getting the underlying type
             if (
                 Type is INamedTypeSymbol namedType
-                && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                && (
+                    namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                    || namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>"
+                )
             )
             {
                 return GetPbWireType(compilation, namedType.TypeArguments[0], DataFormat);

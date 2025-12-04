@@ -106,7 +106,7 @@ public partial class Matrix4x4Tests : BaseTests<Matrix4x4Tests.Message, Matrix4x
     [Test]
     public async Task NullFloatsArray_Should_ParseToDefault()
     {
-        var protoParser = new Matrix4x4ProtoParser() { Floats = null };
+        var protoParser = new Matrix4x4ProtoParser() { Floats = null! };
 
         Matrix4x4 result = protoParser;
         await Assert.That(result).IsEqualTo(default(Matrix4x4));

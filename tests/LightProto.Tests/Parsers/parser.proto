@@ -263,3 +263,42 @@ message Matrix4x4TestsMessage
 {
   Matrix4x4Message Property = 1;
 }
+message LazyTestsMessage
+{
+  int32 Property = 1;
+  string Property2 = 2;
+}
+message BitArrayMessage
+{
+  repeated bool Bits = 1 [packed = true];
+}
+message BitArrayTestsMessage
+{
+  BitArrayMessage Property = 1;
+}
+message TimeZoneInfoTestsMessage
+{
+  string Property = 1;
+}
+message ComplexMessage
+{
+  double Real = 1;
+  double Imaginary = 2;
+}
+message ComplexTestsMessage
+{
+  ComplexMessage Property = 1;
+}
+message CultureInfoTestsMessage
+{
+  string Property = 1;
+}
+message DateTimeOffsetMessage
+{
+  int64 Ticks = 1;
+  int64 OffsetTicks = 2;
+}
+message DateTimeOffsetTestsMessage
+{
+  DateTimeOffsetMessage Property = 1;
+}
