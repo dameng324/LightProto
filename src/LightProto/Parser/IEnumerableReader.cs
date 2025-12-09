@@ -7,7 +7,7 @@ public interface ICollectionReader
 
 public interface ICollectionReader<out TCollection> : ICollectionReader
 {
-    public Func<int, TCollection> CreateWithCapacity { get; }
+    public TCollection Empty { get; }
 }
 
 public interface ICollectionItemReader<out TItem> : ICollectionReader
@@ -28,6 +28,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
+    public TCollection Empty => CreateWithCapacity(0);
     public Func<TCollection, TItem, TCollection> AddItem { get; }
     public int ItemFixedSize { get; }
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
