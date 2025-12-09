@@ -169,6 +169,38 @@ public static partial class Serializer
         );
     }
 
+    public static IProtoReader<LinkedList<TItem>> GetLinkedListReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetEnumerableReader<LinkedList<TItem>, TItem>(
+            capacityFactory: static capacity => new LinkedList<TItem>(),
+            addItem: (
+                (collection, item) =>
+                {
+                    collection.AddLast(item);
+                    return collection;
+                }
+            )
+        );
+    }
+
+    public static IProtoReader<BlockingCollection<TItem>> GetBlockingCollectionReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetEnumerableReader<BlockingCollection<TItem>, TItem>(
+            capacityFactory: static capacity => new BlockingCollection<TItem>(),
+            addItem: (
+                (collection, item) =>
+                {
+                    collection.Add(item);
+                    return collection;
+                }
+            )
+        );
+    }
+
     public static IProtoReader<Collection<TItem>> GetCollectionReader<TItem>(
         this IProtoReader<TItem> reader
     )

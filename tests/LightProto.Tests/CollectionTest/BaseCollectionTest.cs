@@ -104,5 +104,15 @@ public abstract class BaseCollectionTest<T>
             );
             await Assert.That(parsed).IsEquivalentTo(original);
         }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetLinkedListReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetBlockingCollectionReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
     }
 }
