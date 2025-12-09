@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace LightProto.Parser;
+﻿namespace LightProto.Parser;
 
 public sealed class LinkedListProtoWriter<T> : IEnumerableProtoWriter<LinkedList<T>, T>
 {

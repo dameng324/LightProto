@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using LightProto;
+using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
 
@@ -67,5 +68,16 @@ public partial class ReadOnlyObservableCollectionTests
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property).IsEquivalentTo(message.Property);
+    }
+
+    [Test]
+    public async Task EmptyTest()
+    {
+        byte[] bytes = [];
+        var deserialized = Serializer.Deserialize(
+            bytes,
+            Int32ProtoParser.ProtoReader.GetReadOnlyObservableCollectionReader()
+        );
+        await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }
