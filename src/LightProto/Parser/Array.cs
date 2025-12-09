@@ -14,7 +14,7 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
     public bool IsMessage => false;
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
     public IProtoReader<TItem> ItemReader { get; }
-    public Func<int, TItem[]> CreateWithCapacity { get; } = (capacity) => new TItem[capacity];
+    public TItem[] Empty => Array.Empty<TItem>();
     public int ItemFixedSize { get; }
 
     private readonly SimpleObjectPool<List<TItem>> _listPool = new(

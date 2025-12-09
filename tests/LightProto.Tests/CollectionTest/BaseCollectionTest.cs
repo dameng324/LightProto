@@ -81,5 +81,28 @@ public abstract class BaseCollectionTest<T>
             // so we reverse the result to match the original collection's order for comparison.
             await Assert.That(parsed.Reverse()).IsEquivalentTo(original);
         }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetCollectionReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetReadOnlyCollectionReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetObservableCollectionReader());
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
+        {
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(
+                ms,
+                ProtoReader.GetReadOnlyObservableCollectionReader()
+            );
+            await Assert.That(parsed).IsEquivalentTo(original);
+        }
     }
 }

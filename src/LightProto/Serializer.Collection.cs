@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using LightProto.Parser;
 
 namespace LightProto;
@@ -166,5 +167,51 @@ public static partial class Serializer
                 }
             )
         );
+    }
+
+    public static IProtoReader<Collection<TItem>> GetCollectionReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetEnumerableReader<Collection<TItem>, TItem>(
+            capacityFactory: static capacity => new Collection<TItem>(),
+            addItem: (
+                (collection, item) =>
+                {
+                    collection.Add(item);
+                    return collection;
+                }
+            )
+        );
+    }
+
+    public static IProtoReader<ReadOnlyCollection<TItem>> GetReadOnlyCollectionReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return new ReadOnlyCollectionProtoReader<TItem>(reader, itemFixedSize: 0);
+    }
+
+    public static IProtoReader<ObservableCollection<TItem>> GetObservableCollectionReader<TItem>(
+        this IProtoReader<TItem> reader
+    )
+    {
+        return reader.GetEnumerableReader<ObservableCollection<TItem>, TItem>(
+            capacityFactory: static capacity => new ObservableCollection<TItem>(),
+            addItem: (
+                (collection, item) =>
+                {
+                    collection.Add(item);
+                    return collection;
+                }
+            )
+        );
+    }
+
+    public static IProtoReader<
+        ReadOnlyObservableCollection<TItem>
+    > GetReadOnlyObservableCollectionReader<TItem>(this IProtoReader<TItem> reader)
+    {
+        return new ReadOnlyObservableCollectionProtoReader<TItem>(reader, itemFixedSize: 0);
     }
 }
