@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using LightProto;
+using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
 
@@ -55,5 +56,20 @@ public partial class ReadOnlyMapTests : BaseTests<ReadOnlyMapTests.Message, MapT
     public override async Task AssertGoogleResult(MapTestsMessage clone, Message message)
     {
         await Assert.That(clone.Property.ToArray()).IsEquivalentTo(message.Property.ToArray());
+    }
+
+    [Test]
+    public async Task EmptyTest()
+    {
+        byte[] bytes = [];
+        var deserialized = Serializer.Deserialize(
+            bytes,
+            new ReadOnlyDictionaryProtoReader<int, string>(
+                Int32ProtoParser.ProtoReader,
+                StringProtoParser.ProtoReader,
+                0
+            )
+        );
+        await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }
