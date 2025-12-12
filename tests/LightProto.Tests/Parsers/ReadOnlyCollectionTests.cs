@@ -23,7 +23,6 @@ public partial class ReadOnlyCollectionTests
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
-    protected override bool ProtoBuf_net_Serialize_Disabled { get; } = true;
 
     public override IEnumerable<Message> GetMessages()
     {
