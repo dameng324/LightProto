@@ -697,7 +697,7 @@ public partial class SerializerTests
     public async Task DeserializeItems3()
     {
         PrefixStyle prefixStyle = (PrefixStyle)4; // Undefined
-        var ex1 = Assert.Throws(() =>
+        var ex1 = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
             var ms = new MemoryStream();
 #if NET6_0_OR_GREATER
@@ -711,8 +711,7 @@ public partial class SerializerTests
             );
 #endif
         });
-        await Assert.That(ex1).IsTypeOf<ArgumentOutOfRangeException>();
-        var ex2 = Assert.Throws(() =>
+        var ex2 = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
             var ms = new MemoryStream();
 #if NET6_0_OR_GREATER
@@ -723,7 +722,6 @@ public partial class SerializerTests
                 .ToList();
 #endif
         });
-        await Assert.That(ex2).IsTypeOf<ArgumentOutOfRangeException>();
     }
 
     [Test]
