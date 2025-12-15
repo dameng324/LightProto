@@ -1,0 +1,23 @@
+﻿<Project Sdk="MSTest.Sdk/4.0.1">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>exe</OutputType>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LightProto\LightProto.csproj" />
+    <ProjectReference
+      Include="..\..\src\LightProto.Generator\LightProto.Generator.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\LightProto.Tests\CsPackage.cs">
+      <Link>CsPackage.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

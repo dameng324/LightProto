@@ -109,7 +109,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         var compilation = contract.Compilation;
         var namespaceDeclare = targetType.ContainingNamespace.IsGlobalNamespace
             ? ""
-            : $"namespace {targetType.ContainingNamespace.ToDisplayString()};";
+            : $"namespace {targetType.ContainingNamespace.ToDisplayString()} {{";
         var className = targetType.Name;
 
         var typeDeclarationString = targetType.IsValueType
@@ -891,6 +891,10 @@ public class LightProtoGenerator : IIncrementalGenerator
         }
         var nestedClassStructure = GenerateNestedClassStructure(targetType, classBody);
         sourceBuilder.AppendLine(nestedClassStructure);
+        if (targetType.ContainingNamespace.IsGlobalNamespace == false)
+        {
+            sourceBuilder.Append(@"}");
+        }
         return sourceBuilder.ToString();
     }
 

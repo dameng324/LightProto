@@ -1,4 +1,5 @@
-﻿using Person = LightProto.Tests.CustomParser.CustomPriorityTests.Person;
+﻿using System.Numerics;
+using Person = LightProto.Tests.CustomParser.CustomPriorityTests.Person;
 using StructPersonProtoParsers = LightProto.Tests.CustomParser.CustomPriorityTests.StructPersonProtoParsers;
 
 [assembly: LightProto.ProtoParserTypeMap(

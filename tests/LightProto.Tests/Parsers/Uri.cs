@@ -33,7 +33,7 @@ public partial class UriTests : BaseProtoBufTestsWithParser<UriTests.Message, Ur
     {
         await Assert
             .That(clone.Property?.OriginalString)
-            .IsEquivalentTo(message.Property?.OriginalString);
+            .IsEqualTo(message.Property?.OriginalString);
     }
 
     [Test]

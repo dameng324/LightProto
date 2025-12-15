@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text;
 using LightProto.Parser;
+using TUnit.Assertions.Conditions.Helpers;
 
 namespace LightProto.Tests.CollectionTest;
 
@@ -172,6 +173,9 @@ public class BoolCollectionTest : BaseCollectionTestWithParser<BooleanProtoParse
 [InheritsTests]
 public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayProtoParser, byte[]>
 {
+    protected override IEqualityComparer<byte[]> Comparer { get; } =
+        StructuralEqualityComparer<byte[]>.Instance;
+
     public override IEnumerable<byte[][]> GetCollection()
     {
         yield return new byte[][] { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
@@ -181,6 +185,9 @@ public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayPro
 [InheritsTests]
 public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProtoParser, List<byte>>
 {
+    protected override IEqualityComparer<List<byte>> Comparer { get; } =
+        StructuralEqualityComparer<List<byte>>.Instance;
+
     public override IEnumerable<List<byte>[]> GetCollection()
     {
         yield return new List<byte>[]
@@ -272,6 +279,26 @@ public class InternedStringCollectionTest
 public class StringBuilderCollectionTest
     : BaseCollectionTestWithParser<StringBuilderProtoParser, StringBuilder>
 {
+    public class StringBuilderEqualityComparer : EqualityComparer<StringBuilder>
+    {
+        public override bool Equals(StringBuilder? x, StringBuilder? y)
+        {
+            if (ReferenceEquals(x, y))
+                return true;
+            if (x is null || y is null)
+                return false;
+            return x.ToString() == y.ToString();
+        }
+
+        public override int GetHashCode(StringBuilder obj)
+        {
+            return obj.ToString().GetHashCode();
+        }
+    }
+
+    protected override IEqualityComparer<StringBuilder> Comparer { get; } =
+        new StringBuilderEqualityComparer();
+
     public override IEnumerable<StringBuilder[]> GetCollection()
     {
         yield return new StringBuilder[] { new StringBuilder(), new StringBuilder("123") };
@@ -297,6 +324,9 @@ public class NullableCollectionTest : BaseCollectionTest<int?>
 public partial class ContractCollectionTest
     : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
 {
+    protected override IEqualityComparer<Message> Comparer { get; } =
+        StructuralEqualityComparer<Message>.Instance;
+
     [ProtoContract]
     public partial class Message : IComparable<Message>
     {
@@ -496,6 +526,9 @@ public class BigIntegerCollectionTest
 [InheritsTests]
 public class BitArrayCollectionTest : BaseCollectionTestWithParser<BitArrayProtoParser, BitArray>
 {
+    protected override IEqualityComparer<BitArray> Comparer { get; } =
+        StructuralEqualityComparer<BitArray>.Instance;
+
     public override IEnumerable<BitArray[]> GetCollection()
     {
         yield return new BitArray[]

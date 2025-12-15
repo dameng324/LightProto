@@ -76,7 +76,7 @@ jobs:
         run: dotnet tool restore && dotnet tool run csharpier check .
         
       - name: Run tests and collect code coverage
-        run: dotnet test --configuration Release tests/LightProto.Tests/ -p:PublishAot=false -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+        run: dotnet test --configuration Release --project tests/LightProto.Tests/ -p:PublishAot=false --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
                 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
