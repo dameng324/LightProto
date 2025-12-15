@@ -33,11 +33,11 @@ public partial class CultureInfoTests : BaseTests<CultureInfoTests.Message, Cult
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Property).IsEqualTo(message.Property);
     }
 
     public override async Task AssertGoogleResult(CultureInfoTestsMessage clone, Message message)
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property.Name);
+        await Assert.That(clone.Property).IsEqualTo(message.Property.Name);
     }
 }

@@ -1,0 +1,28 @@
+﻿<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.github/">
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/publish.yml" />
+  </Folder>
+  <Folder Name="/items/">
+    <File Path=".codecov.yml" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/LightProto.Generator/LightProto.Generator.csproj" />
+    <Project Path="src/LightProto/LightProto.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Benchmark/Benchmark.csproj" />
+    <Project Path="tests/LightProto.AssemblyLevelTests/LightProto.AssemblyLevelTests.csproj" />
+    <Project Path="tests/LightProto.Tests/LightProto.Tests.csproj" />
+    <Project Path="tests/TestAot/TestAot.csproj" />
+  </Folder>
+</Solution>

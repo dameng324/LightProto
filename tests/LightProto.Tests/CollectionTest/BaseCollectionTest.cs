@@ -1,5 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace LightProto.Tests.CollectionTest;
 
@@ -36,6 +38,8 @@ public abstract class BaseCollectionTest<T>
         }
     }
 
+    protected virtual IEqualityComparer<T> Comparer { get; } = EqualityComparer<T>.Default;
+
     [Test]
     [Category("CollectionTest")]
     [MethodDataSource(nameof(GetArguments))]
@@ -47,31 +51,31 @@ public abstract class BaseCollectionTest<T>
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetCollectionReader<List<T>, T>());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
 
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
 
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetHashSetReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
 
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetArrayReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
 
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetConcurrentQueueReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
 
         {
@@ -79,22 +83,22 @@ public abstract class BaseCollectionTest<T>
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetConcurrentBagReader());
             // ConcurrentBag<T> enumerates items in reverse order of insertion,
             // so we reverse the result to match the original collection's order for comparison.
-            await Assert.That(parsed.Reverse()).IsEquivalentTo(original);
+            await Assert.That(parsed.Reverse()).IsEquivalentTo(original, Comparer);
         }
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetCollectionReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetReadOnlyCollectionReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetObservableCollectionReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
         {
             ms.Position = 0;
@@ -102,17 +106,17 @@ public abstract class BaseCollectionTest<T>
                 ms,
                 ProtoReader.GetReadOnlyObservableCollectionReader()
             );
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetLinkedListReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetBlockingCollectionReader());
-            await Assert.That(parsed).IsEquivalentTo(original);
+            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
         }
     }
 }
