@@ -12,7 +12,7 @@ public partial class FailedTests
         List<string> strings = new() { "one", null!, "three" };
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
-            var bytes = strings.ToByteArray();
+            strings.ToByteArray();
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -24,7 +24,7 @@ public partial class FailedTests
         HashSet<string> strings = new() { "one", null!, "three" };
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
-            var bytes = strings.ToByteArray();
+            strings.ToByteArray();
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -62,7 +62,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 0, 1, 0 };
-            var strings = Serializer.Deserialize<List<int>>(bytes);
+            Serializer.Deserialize<List<int>>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("invalid tag");
@@ -84,7 +84,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 10, 255, 255, 255, 255, 255, 255, 255, 255, 1, 16, 1 };
-            var strings = Serializer.Deserialize<TestContract>(bytes);
+            Serializer.Deserialize<TestContract>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("have negative size");
@@ -96,7 +96,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 8, 1, 8 };
-            var strings = Serializer.Deserialize<List<int>>(bytes);
+            Serializer.Deserialize<List<int>>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("input has been truncated");
@@ -109,7 +109,7 @@ public partial class FailedTests
         {
             // normal bytes is new byte[] { 10,3,111,110,111,10,5,116,104,114,101,101 };
             var bytes = new byte[] { 10, 3, 0xE0, 0x80, 0x80, 10, 5, 116, 104, 114, 101, 101 };
-            var strings = Serializer.Deserialize<List<string>>(bytes);
+            Serializer.Deserialize<List<string>>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("is invalid UTF-8");
@@ -118,18 +118,18 @@ public partial class FailedTests
     [Test]
     public async Task RecursionLimitExceeded_WhenDeserializing()
     {
-        var bytes = new TestContract()
+        new TestContract()
         {
             Object = new TestContract()
             {
                 Value = 1,
                 Object = new TestContract() { Object = new TestContract() { Value = 1 } },
             },
-        }.ToByteArray(); //10,8,10,4,10,2,16,1,16,1
+        }.ToByteArray();
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 10, 8, 10, 4, 10, 2, 16, 1, 16, 1 };
-            var obj = Parse(bytes);
+            Parse(bytes);
             static TestContract Parse(byte[] bytes)
             {
                 ReaderContext.Initialize(bytes, out var ctx);
@@ -151,7 +151,7 @@ public partial class FailedTests
                     .Chunk(2)
                     .ToArray()
             );
-            var obj = Parse(bytes);
+            Parse(bytes);
             static TestContract Parse(ReadOnlySequence<byte> bytes)
             {
                 ReaderContext.Initialize(bytes, out var ctx);
@@ -194,7 +194,7 @@ public partial class FailedTests
                 0xFF,
                 0xFF,
             };
-            var strings = Serializer.Deserialize<MalformedVarint>(bytes);
+            Serializer.Deserialize<MalformedVarint>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
@@ -224,10 +224,7 @@ public partial class FailedTests
                 0xFF,
             };
             var ms = new MemoryStream(bytes);
-            var strings = Serializer.DeserializeWithLengthPrefix<MalformedVarint>(
-                ms,
-                PrefixStyle.Base128
-            );
+            Serializer.DeserializeWithLengthPrefix<MalformedVarint>(ms, PrefixStyle.Base128);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
@@ -264,7 +261,7 @@ public partial class FailedTests
                 0xFF,
                 0xFF,
             };
-            var strings = Serializer.Deserialize<MalformedVarint64>(bytes);
+            Serializer.Deserialize<MalformedVarint64>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
@@ -301,7 +298,7 @@ public partial class FailedTests
                 0xFF,
                 0xFF,
             };
-            var strings = Serializer.Deserialize<MalformedVarUint64>(bytes);
+            Serializer.Deserialize<MalformedVarUint64>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
@@ -450,6 +447,26 @@ public partial class FailedTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
             Serializer.GetProtoReader<ValueTuple<int, string, double>>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest5()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<ValueTuple<int, string>>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest6()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<ValueTuple<int>>();
         });
         await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
     }

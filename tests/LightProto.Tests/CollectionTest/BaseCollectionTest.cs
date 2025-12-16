@@ -103,8 +103,8 @@ public abstract class BaseCollectionTest<T>
         {
             ms.Position = 0;
             var parsed = Serializer.Deserialize<ConcurrentBag<T>>(ms);
-            // ConcurrentBag<T> enumerates items in reverse order of insertion,
-            // so we reverse the result to match the original collection's order for comparison.
+            // ConcurrentBag<T> does not guarantee enumeration order,
+            // so we use CollectionOrdering.Any to ignore order during comparison.
             await Assert
                 .That(parsed)
                 .IsEquivalentTo(original, Comparer, ordering: CollectionOrdering.Any);

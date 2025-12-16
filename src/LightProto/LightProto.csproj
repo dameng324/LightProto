@@ -6,7 +6,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
     <LangVersion>latest</LangVersion>
-    <NoWarn>IL3050;IL2055</NoWarn>
+    <!-- Suppress IL3050 warnings related to trimming/AOT analysis. -->
+    <NoWarn>IL3050</NoWarn>
     <!-- NuGet Package Metadata -->
     <PackageId>LightProto</PackageId>
     <Title>LightProto.Extension - Generic Protobuf Deserialization</Title>

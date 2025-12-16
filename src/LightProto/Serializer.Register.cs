@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using LightProto.Parser;
 
 namespace LightProto;
@@ -12,13 +14,24 @@ public static partial class Serializer
     static readonly ConcurrentDictionary<Type, Type> GenericReaderTypes = new();
     static readonly ConcurrentDictionary<Type, Type> GenericWriterTypes = new();
 
+    /// <summary>
+    /// Registers a custom ProtoReader and ProtoWriter for type T
+    /// </summary>
     public static void RegisterParser<T>(IProtoReader<T> reader, IProtoWriter<T> writer)
     {
         Readers.TryAdd(typeof(T), reader);
         Writers.TryAdd(typeof(T), writer);
     }
 
-    internal static void RegisterGenericParser(Type type, Type readerType, Type writerType)
+    static void RegisterGenericParser(Type type,
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+        Type readerType,
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+        Type writerType)
     {
         GenericReaderTypes.TryAdd(type, readerType);
         GenericWriterTypes.TryAdd(type, writerType);
@@ -74,7 +87,6 @@ public static partial class Serializer
             typeof(NullableProtoWriter<>)
         );
         RegisterGenericParser(typeof(Lazy<>), typeof(LazyProtoReader<>), typeof(LazyProtoWriter<>));
-        RegisterGenericParser(typeof(List<>), typeof(ListProtoReader<>), typeof(ListProtoWriter<>));
         RegisterGenericParser(
             typeof(Stack<>),
             typeof(StackProtoReader<>),
@@ -187,23 +199,60 @@ public static partial class Serializer
         );
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    internal static IProtoReader<T> GetProtoReader<T>() =>
-        (IProtoReader<T>)GetProtoParser(typeof(T), isReader: true);
+#if NET7_0_OR_GREATER
+    private const DynamicallyAccessedMemberTypes LightProtoRequiredMembers =
+        DynamicallyAccessedMemberTypes.All;
+#endif
 
-    internal static IProtoWriter<T> GetProtoWriter<T>() =>
-        (IProtoWriter<T>)GetProtoParser(typeof(T), isReader: false);
+    internal static IProtoReader<T> GetProtoReader<
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+        T>() => (IProtoReader<T>)GetProtoParser(typeof(T), isReader: true);
 
-    static object GetProtoParser(Type type, bool isReader)
+    internal static IProtoWriter<T> GetProtoWriter<
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+        T>()
+    {
+        return (IProtoWriter<T>)GetProtoParser(typeof(T), isReader: false);
+    }
+
+    static object GetProtoParser(
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+        Type type, bool isReader)
     {
         var parsers = isReader ? Readers : Writers;
         if (parsers.TryGetValue(type, out var obj))
         {
             return obj;
+        }
+
+        if (typeof(IProtoParser<>).MakeGenericType(type).IsAssignableFrom(type))
+        {
+            if (isReader)
+            {
+                var parser = type.GetProperty(
+                            "ProtoReader",
+                            BindingFlags.Public | BindingFlags.Static
+                        )!
+                    .GetValue(null)!;
+                parsers.TryAdd(type, parser);
+                return parser;
+            }
+            else
+            {
+                var parser = type.GetProperty(
+                            "ProtoWriter",
+                            BindingFlags.Public | BindingFlags.Static
+                        )!
+                    .GetValue(null)!;
+                parsers.TryAdd(type, parser);
+                return parser;
+            }
         }
 
         if (type.IsEnum)

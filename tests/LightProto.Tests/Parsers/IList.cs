@@ -11,7 +11,7 @@ public partial class IListPackedTests : BaseTests<IListPackedTests.Message, ILis
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public ICollection<int> Property { get; set; } = [];
+        public IList<int> Property { get; set; } = [];
 
         public override string ToString()
         {

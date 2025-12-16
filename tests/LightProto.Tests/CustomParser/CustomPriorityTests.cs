@@ -106,15 +106,7 @@ public partial class CustomPriorityTests
     public async Task MemberLevelParserTest()
     {
         var message = new MemberParserPersonContract() { Person = new Person() { Id = 37 } };
-#if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
-#else
-        var cloned = Serializer.DeepClone(
-            message,
-            MemberParserPersonContract.ProtoReader,
-            MemberParserPersonContract.ProtoWriter
-        );
-#endif
 
         await Assert
             .That(cloned.Person!.ParserType)
@@ -126,15 +118,7 @@ public partial class CustomPriorityTests
     public async Task ClassLevelParserTest()
     {
         var message = new ClassParserPersonContract() { Person = new Person() { Id = 37 } };
-#if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
-#else
-        var cloned = Serializer.DeepClone(
-            message,
-            ClassParserPersonContract.ProtoReader,
-            ClassParserPersonContract.ProtoWriter
-        );
-#endif
 
         await Assert
             .That(cloned.Person!.ParserType)
@@ -146,15 +130,7 @@ public partial class CustomPriorityTests
     public async Task TypeLevelParserTest()
     {
         var message = new TypeParserPersonContract() { Person = new Person() { Id = 37 } };
-#if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
-#else
-        var cloned = Serializer.DeepClone(
-            message,
-            TypeParserPersonContract.ProtoReader,
-            TypeParserPersonContract.ProtoWriter
-        );
-#endif
 
         await Assert
             .That(cloned.Person!.ParserType)
