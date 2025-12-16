@@ -98,11 +98,34 @@ public class IntergrationTests
     [Repeat(100)]
     public async Task GoogleProtobuf_Should_Compatible()
     {
-        await RunGoogleProtobuf<CsTestMessage, TestMessage>(
-            NewCsMessage(),
-            TestMessage.Parser.ParseFrom,
-            t2 => t2.ToByteArray()
-        );
+        var origin = NewCsMessage();
+
+        var bytes = origin.ToByteArray();
+        var parsed = TestMessage.Parser.ParseFrom(bytes);
+
+        var originalBytes = Convert.ToBase64String(origin.ToByteArray());
+        var t2Array = parsed.ToByteString().ToByteArray();
+        var parsedBytes = Convert.ToBase64String(t2Array);
+        try
+        {
+            await Assert.That(originalBytes).IsEqualTo(parsedBytes);
+            await Assert.That(t2Array.Length).IsEqualTo(Serializer.CalculateSize(origin));
+        }
+        catch (Exception)
+        {
+            // Console.WriteLine($"original: {JsonSerializer.Serialize(origin)}");
+            // Console.WriteLine($"parsed: {JsonSerializer.Serialize(parsed)}");
+            throw;
+        }
+
+        var parseBack = LightProto.Serializer.Deserialize<CsTestMessage>(bytes);
+        var bytes2 = parseBack.ToByteArray();
+
+        var parseBackBytes = Convert.ToBase64String(bytes2);
+        await Assert.That(parseBackBytes).IsEqualTo(originalBytes);
+        await Assert
+            .That(Serializer.CalculateSize(parseBack))
+            .IsEqualTo(Serializer.CalculateSize(origin));
     }
 
     [ProtoBuf.ProtoContract(
@@ -171,55 +194,6 @@ public class IntergrationTests
         //Console.WriteLine( ProtoBuf.Serializer.GetProto<InheritanceTests.Container>());
     }
 
-    async Task<T2> RunGoogleProtobuf<T1, T2>(
-        T1 origin,
-        Func<byte[], T2> parserFunc,
-        Func<T2, byte[]> t2ToByteArray
-    )
-        where T1 : IProtoParser<T1>
-    {
-        var bytes = origin.ToByteArray(ProtoParser<T1>.ProtoWriter);
-        var parsed = parserFunc(bytes);
-
-        var originalBytes = Convert.ToBase64String(origin.ToByteArray(ProtoParser<T1>.ProtoWriter));
-        var t2Array = t2ToByteArray(parsed);
-        var parsedBytes = Convert.ToBase64String(t2Array);
-        try
-        {
-            await Assert.That(originalBytes).IsEqualTo(parsedBytes);
-            await Assert.That(t2Array.Length).IsEqualTo(
-#if NET6_0_OR_GREATER
-                Serializer.CalculateSize(origin)
-#else
-                    ProtoParser<T1>.ProtoWriter.CalculateSize(origin)
-#endif
-            );
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"original: {JsonSerializer.Serialize(origin)}");
-            Console.WriteLine($"parsed: {JsonSerializer.Serialize(parsed)}");
-            throw;
-        }
-
-        var parseBack = LightProto.Serializer.Deserialize<T1>(bytes, ProtoParser<T1>.ProtoReader);
-        var bytes2 = parseBack.ToByteArray(ProtoParser<T1>.ProtoWriter);
-
-        var parseBackBytes = Convert.ToBase64String(bytes2);
-        await Assert.That(parseBackBytes).IsEqualTo(originalBytes);
-#if NET6_0_OR_GREATER
-        await Assert
-            .That(Serializer.CalculateSize(parseBack))
-            .IsEqualTo(Serializer.CalculateSize(origin));
-#else
-        await Assert
-            .That(ProtoParser<T1>.ProtoWriter.CalculateSize(parseBack))
-            .IsEqualTo(ProtoParser<T1>.ProtoWriter.CalculateSize(origin));
-
-#endif
-        return parsed;
-    }
-
     [Test]
     public async Task Collection_ShouldNotBeNull_WhenDefaultSizeIsSet_WhenDeserializing()
     {
@@ -234,16 +208,8 @@ public class IntergrationTests
         await Assert.That(obj.StringStackFieldTests).IsNotNull();
         await Assert.That(obj.ConcurrentStringQueueFieldTests).IsNotNull();
         await Assert.That(obj.ConcurrentStringStackFieldTests).IsNotNull();
-#if NET6_0_OR_GREATER
         var bytes = obj.ToByteArray();
         var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(bytes);
-#else
-        var bytes = obj.ToByteArray(ProtoParser<CsTestMessage>.ProtoWriter);
-        var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(
-            bytes,
-            ProtoParser<CsTestMessage>.ProtoReader
-        );
-#endif
         await Assert.That(parsed.Int32ArrayFields).IsNotNull();
         await Assert.That(parsed.StringArrayFields).IsNotNull();
         await Assert.That(parsed.IntListFieldTests).IsNotNull();

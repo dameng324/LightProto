@@ -1,7 +1,5 @@
-﻿#if NET6_0_OR_GREATER
-using System.Buffers;
+﻿using System.Buffers;
 using System.IO.Compression;
-using System.Runtime.Intrinsics.X86;
 using LightProto.Parser;
 
 namespace LightProto.Tests;
@@ -14,7 +12,7 @@ public partial class FailedTests
         List<string> strings = new() { "one", null!, "three" };
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
-            var bytes = strings.ToByteArray(StringProtoParser.ProtoWriter.GetCollectionWriter());
+            var bytes = strings.ToByteArray();
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -26,7 +24,7 @@ public partial class FailedTests
         HashSet<string> strings = new() { "one", null!, "three" };
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
-            var bytes = strings.ToByteArray(StringProtoParser.ProtoWriter.GetCollectionWriter());
+            var bytes = strings.ToByteArray();
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -39,7 +37,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
             using var ms = new MemoryStream();
-            strings.SerializeTo(ms, StringProtoParser.ProtoWriter.GetCollectionWriter());
+            strings.SerializeTo(ms);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -52,7 +50,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<Exception>(async () =>
         {
             using var ms = new MemoryStream();
-            strings.SerializeTo(ms, StringProtoParser.ProtoWriter.GetCollectionWriter());
+            strings.SerializeTo(ms);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).IsEqualTo("Sequence contained null element");
@@ -64,10 +62,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 0, 1, 0 };
-            var strings = Serializer.Deserialize(
-                bytes,
-                Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
-            );
+            var strings = Serializer.Deserialize<List<int>>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("invalid tag");
@@ -101,10 +96,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 8, 1, 8 };
-            var strings = Serializer.Deserialize(
-                bytes,
-                Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
-            );
+            var strings = Serializer.Deserialize<List<int>>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("input has been truncated");
@@ -117,10 +109,7 @@ public partial class FailedTests
         {
             // normal bytes is new byte[] { 10,3,111,110,111,10,5,116,104,114,101,101 };
             var bytes = new byte[] { 10, 3, 0xE0, 0x80, 0x80, 10, 5, 116, 104, 114, 101, 101 };
-            var strings = Serializer.Deserialize(
-                bytes,
-                StringProtoParser.ProtoReader.GetCollectionReader<List<string>, string>()
-            );
+            var strings = Serializer.Deserialize<List<string>>(bytes);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("is invalid UTF-8");
@@ -391,11 +380,11 @@ public partial class FailedTests
 
         using var ms = new MemoryStream();
         using (var gzip = new GZipStream(ms, mode: CompressionMode.Compress, leaveOpen: true))
-            original.SerializeTo(gzip, ByteArrayProtoParser.ProtoWriter);
+            original.SerializeTo(gzip);
 
         ms.Position = 0;
         using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
-        var parsed = Serializer.Deserialize<byte[]>(deZip, ByteArrayProtoParser.ProtoReader);
+        var parsed = Serializer.Deserialize<byte[]>(deZip);
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -414,5 +403,54 @@ public partial class FailedTests
         });
         await Assert.That(ex!.Message).Contains("ran out of space");
     }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<FailedTests>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest1()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<FailedTests[]>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest2()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<List<FailedTests>>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest3()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<Dictionary<int, FailedTests>>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    public async Task NoProtoParserRegisteredTest4()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.GetProtoReader<ValueTuple<int, string, double>>();
+        });
+        await Assert.That(ex!.Message).Contains("No ProtoParser registered for type");
+    }
 }
-#endif

@@ -6,6 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
     <LangVersion>latest</LangVersion>
+    <NoWarn>IL3050;IL2055</NoWarn>
     <!-- NuGet Package Metadata -->
     <PackageId>LightProto</PackageId>
     <Title>LightProto.Extension - Generic Protobuf Deserialization</Title>

@@ -4,7 +4,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class UriTests : BaseProtoBufTestsWithParser<UriTests.Message, UriTests.Message>
+public partial class UriTests : BaseProtoBufTests<UriTests.Message>
 {
     [ProtoContract]
     public partial record Message

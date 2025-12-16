@@ -73,10 +73,7 @@ public partial class ReadOnlyObservableCollectionTests
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            Int32ProtoParser.ProtoReader.GetReadOnlyObservableCollectionReader()
-        );
+        var deserialized = Serializer.Deserialize<ReadOnlyObservableCollection<int>>(bytes);
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }

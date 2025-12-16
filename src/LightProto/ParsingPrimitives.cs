@@ -81,7 +81,7 @@ namespace LightProto
                     {
                         // Nope, rewind and go the potentially slow route.
                         state.bufferPos -= 2;
-                        state.lastTag = ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
+                        state.lastTag = ParseRawVarint32(ref buffer, ref state);
                     }
                 }
             }
@@ -93,7 +93,7 @@ namespace LightProto
                     return 0;
                 }
 
-                state.lastTag = ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
+                state.lastTag = ParseRawVarint32(ref buffer, ref state);
             }
             if (WireFormat.GetTagFieldNumber(state.lastTag) == 0)
             {
@@ -599,8 +599,8 @@ namespace LightProto
             ref ParserInternalState state
         )
         {
-            int length = ParsingPrimitives.ParseLength(ref buffer, ref state);
-            return ParsingPrimitives.ReadRawString(ref buffer, ref state, length);
+            int length = ParseLength(ref buffer, ref state);
+            return ReadRawString(ref buffer, ref state, length);
         }
 
         /// <summary>
@@ -864,17 +864,17 @@ namespace LightProto
             switch (WireFormat.GetTagWireType(state.lastTag))
             {
                 case WireFormat.WireType.Fixed32:
-                    ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
+                    ParseRawLittleEndian32(ref buffer, ref state);
                     break;
                 case WireFormat.WireType.Fixed64:
-                    ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
+                    ParseRawLittleEndian64(ref buffer, ref state);
                     break;
                 case WireFormat.WireType.LengthDelimited:
-                    var length = ParsingPrimitives.ParseLength(ref buffer, ref state);
-                    ParsingPrimitives.SkipRawBytes(ref buffer, ref state, length);
+                    var length = ParseLength(ref buffer, ref state);
+                    SkipRawBytes(ref buffer, ref state, length);
                     break;
                 case WireFormat.WireType.Varint:
-                    ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
+                    ParseRawVarint32(ref buffer, ref state);
                     break;
             }
         }

@@ -21,15 +21,7 @@ public partial class AssemblyStructPriorityTests
     public async Task AssemblyParserTest()
     {
         var message = new AssemblyParserPersonContract() { Person = new Person() { Id = 37 } };
-#if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
-#else
-        var cloned = Serializer.DeepClone(
-            message,
-            AssemblyParserPersonContract.ProtoReader,
-            AssemblyParserPersonContract.ProtoWriter
-        );
-#endif
 
         await Assert
             .That(cloned.Person!.Value.ParserType)

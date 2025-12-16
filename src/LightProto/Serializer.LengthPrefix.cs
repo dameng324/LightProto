@@ -7,29 +7,36 @@ namespace LightProto;
 
 public static partial class Serializer
 {
-    public static IEnumerable<T> DeserializeItems<T>(
+    public static T DeserializeWithLengthPrefix<T>(Stream source, PrefixStyle style)
+    {
+        return DeserializeWithLengthPrefix<T>(source, style, 0);
+    }
+
+    public static T DeserializeWithLengthPrefix<T>(
         Stream source,
         PrefixStyle style,
-        IProtoReader<T> reader
+        int fieldNumber
     )
     {
-        return DeserializeItems(source, style, 0, reader);
+        _ = DeserializeWithLengthPrefixInternal<T>(source, style, fieldNumber, out var instance);
+        return instance;
     }
+
+    public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style) =>
+        DeserializeItems<T>(source, style, 0);
 
     public static IEnumerable<T> DeserializeItems<T>(
         Stream source,
         PrefixStyle style,
-        int fieldNumber,
-        IProtoReader<T> reader
+        int fieldNumber
     )
     {
         while (true)
         {
-            var result = DeserializeWithLengthPrefixInternal(
+            var result = DeserializeWithLengthPrefixInternal<T>(
                 source,
                 style,
                 fieldNumber,
-                reader,
                 out var instance
             );
             switch (result)
@@ -49,15 +56,6 @@ public static partial class Serializer
         }
     }
 
-    public static T DeserializeWithLengthPrefix<T>(
-        Stream source,
-        PrefixStyle style,
-        IProtoReader<T> reader
-    )
-    {
-        return DeserializeWithLengthPrefix(source, style, 0, reader);
-    }
-
     internal enum DeserializeWithLengthPrefixResult
     {
         Success,
@@ -70,10 +68,10 @@ public static partial class Serializer
         Stream source,
         PrefixStyle style,
         int fieldNumber,
-        IProtoReader<T> reader,
         out T result
     )
     {
+        var reader = GetProtoReader<T>();
         if (style is not PrefixStyle.None)
         {
             if (reader.IsMessage == false)
@@ -257,31 +255,14 @@ public static partial class Serializer
 #endif
     }
 
-    public static T DeserializeWithLengthPrefix<T>(
-        Stream source,
-        PrefixStyle style,
-        int fieldNumber,
-        IProtoReader<T> reader
-    )
-    {
-        _ = DeserializeWithLengthPrefixInternal(
-            source,
-            style,
-            fieldNumber,
-            reader,
-            out var instance
-        );
-        return instance;
-    }
-
     public static void SerializeWithLengthPrefix<T>(
         Stream destination,
         T instance,
         PrefixStyle style,
-        int fieldNumber,
-        IProtoWriter<T> writer
+        int fieldNumber
     )
     {
+        var writer = GetProtoWriter<T>();
         using var codedOutputStream = new CodedOutputStream(destination, leaveOpen: true);
         WriterContext.Initialize(codedOutputStream, out var ctx);
         if (style != PrefixStyle.None)
@@ -325,67 +306,11 @@ public static partial class Serializer
     public static void SerializeWithLengthPrefix<T>(
         Stream destination,
         T instance,
-        PrefixStyle style,
-        IProtoWriter<T> writer
-    )
-    {
-        SerializeWithLengthPrefix(destination, instance, style, 0, writer);
-    }
-
-#if NET7_0_OR_GREATER
-    public static IEnumerable<T> DeserializeItems<T>(
-        Stream source,
-        PrefixStyle style,
-        int fieldNumber
-    )
-        where T : IProtoParser<T>
-    {
-        return DeserializeItems(source, style, fieldNumber, T.ProtoReader);
-    }
-
-    public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style)
-        where T : IProtoParser<T>
-    {
-        return DeserializeItems<T>(source, style, 0);
-    }
-
-    public static T DeserializeWithLengthPrefix<T>(Stream source, PrefixStyle style)
-        where T : IProtoParser<T>
-    {
-        return DeserializeWithLengthPrefix(source, style, T.ProtoReader);
-    }
-
-    public static T DeserializeWithLengthPrefix<T>(
-        Stream source,
-        PrefixStyle style,
-        int fieldNumber
-    )
-        where T : IProtoParser<T>
-    {
-        return DeserializeWithLengthPrefix(source, style, fieldNumber, T.ProtoReader);
-    }
-
-    public static void SerializeWithLengthPrefix<T>(
-        Stream destination,
-        T instance,
-        PrefixStyle style,
-        int fieldNumber
-    )
-        where T : IProtoParser<T>
-    {
-        SerializeWithLengthPrefix(destination, instance, style, fieldNumber, T.ProtoWriter);
-    }
-
-    public static void SerializeWithLengthPrefix<T>(
-        Stream destination,
-        T instance,
         PrefixStyle style
     )
-        where T : IProtoParser<T>
     {
-        SerializeWithLengthPrefix(destination, instance, style, T.ProtoWriter);
+        SerializeWithLengthPrefix<T>(destination, instance, style, 0);
     }
-#endif
 }
 
 /// <summary>

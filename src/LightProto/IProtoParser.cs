@@ -15,9 +15,13 @@ public interface IProtoReader<out T>
     public T ParseFrom(ref ReaderContext input);
 }
 
-public interface IProtoWriter<in T>
+public interface IProtoWriter
 {
     public WireFormat.WireType WireType { get; }
+}
+
+public interface IProtoWriter<in T> : IProtoWriter
+{
     public bool IsMessage { get; }
     public int CalculateSize(T value);
     public void WriteTo(ref WriterContext output, T value);
