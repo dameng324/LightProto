@@ -8,12 +8,12 @@
     <LangVersion>latest</LangVersion>
     <!-- NuGet Package Metadata -->
     <PackageId>LightProto</PackageId>
-    <Title>LightProto.Extension - Generic Protobuf Deserialization</Title>
-    <Description>Native AOT solution for protobuf-net</Description>
-    <PackageTags>protobuf;google-protobuf;source-generator;generic;deserialization;codegen</PackageTags>
+    <Title>LightProto</Title>
+    <Description>A high-performance, NativeAOT-friendly Protobuf library, Easy protobuf-net migration</Description>
+    <PackageTags>lightproto;protobuf;google-protobuf;source-generator;generic;deserialization;codegen</PackageTags>
     <Authors>dameng324</Authors>
     <Copyright>Copyright (c) 2025 dameng324</Copyright>
-    <PackageProjectUrl>https://github.com/dameng324/LightProto.Extension</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/dameng324/LightProto</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dameng324/LightProto.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryBranch>main</RepositoryBranch>
