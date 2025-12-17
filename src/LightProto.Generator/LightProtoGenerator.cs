@@ -1914,7 +1914,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         return null;
     }
 
-    private ITypeSymbol? GetProxyFor(AttributeData[] attributeDatas)
+    private ITypeSymbol? GetProxyFor(ImmutableArray<AttributeData> attributeDatas)
     {
         if (
             attributeDatas.FirstOrDefault(o =>
@@ -2002,7 +2002,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             as TypeDeclarationSyntax
         )!;
 
-        var proxyFor = GetProxyFor(targetType.GetAttributes().ToArray());
+        var proxyFor = GetProxyFor(targetType.GetAttributes());
 
         var protoIncludeAttributes = targetType
             .GetAttributes()

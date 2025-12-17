@@ -11,7 +11,6 @@ public partial class Proxy2Tests
         var parsed = Serializer.Deserialize<ProtoProxy>(bytes, ProtoProxy.ProtoReader);
         await Assert.That(parsed.Instrument.Name).IsEqualTo(testObj.Instrument.Name);
         await Assert.That(parsed.Instrument.Value).IsEqualTo(testObj.Instrument.Value);
-        //parsed.GetHashCode()await Assert.That().IsEqualTo(testObj.GetHashCode());
     }
 
     [ProtoContract]
