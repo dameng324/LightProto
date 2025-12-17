@@ -1914,7 +1914,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         return null;
     }
 
-    private ITypeSymbol? GetProxyFor(IEnumerable<AttributeData> attributeDatas)
+    private ITypeSymbol? GetProxyFor(AttributeData[] attributeDatas)
     {
         if (
             attributeDatas.FirstOrDefault(o =>
@@ -1925,6 +1925,15 @@ public class LightProtoGenerator : IIncrementalGenerator
         )
         {
             return proxyAttr2.AttributeClass!.TypeArguments[0];
+        }
+        if (
+            attributeDatas.FirstOrDefault(o =>
+                o.AttributeClass?.ToDisplayString() == ("LightProto.ProtoSurrogateForAttribute")
+            ) is
+            { } proxyAttr
+        )
+        {
+            return proxyAttr.ConstructorArguments[0].Value as ITypeSymbol;
         }
 
         return null;
@@ -1993,7 +2002,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             as TypeDeclarationSyntax
         )!;
 
-        var proxyFor = GetProxyFor(targetType.GetAttributes());
+        var proxyFor = GetProxyFor(targetType.GetAttributes().ToArray());
 
         var protoIncludeAttributes = targetType
             .GetAttributes()

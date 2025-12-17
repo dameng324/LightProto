@@ -1,6 +1,6 @@
 ﻿namespace LightProto.Tests;
 
-public partial class ProxyTests
+public partial class Proxy2Tests
 {
     [Test]
     public async Task ProxyTest()
@@ -34,7 +34,7 @@ public partial class ProxyTests
     }
 
     [ProtoContract]
-    [ProtoSurrogateFor<Instrument>()]
+    [ProtoSurrogateFor(typeof(Instrument))]
     public partial class InstrumentProtoParser
     {
         [ProtoMember(11)]
