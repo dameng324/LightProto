@@ -11,6 +11,8 @@ namespace LightProto.Generator;
 [Generator]
 public class LightProtoGenerator : IIncrementalGenerator
 {
+    const string NewLine = "\r\n";
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var namedTypeSymbols = context.SyntaxProvider.CreateSyntaxProvider(
@@ -80,7 +82,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                             new DiagnosticDescriptor(
                                 "LIGHT_PROTO_000",
                                 "Unknown Exception",
-                                e.ToString().Replace(Environment.NewLine, " "),
+                                e.ToString().Replace(NewLine, " "),
                                 "Unknown",
                                 DiagnosticSeverity.Error,
                                 isEnabledByDefault: true
@@ -135,7 +137,7 @@ public class LightProtoGenerator : IIncrementalGenerator
               )}} at {{DateTime.Now:yyyy-MM-dd HH:mm:ss}}
               // </auto-generated>
 
-              #pragma warning disable 1591, 0612, 3021, 8981, CS9035, CS0109, CS8669, CS1570
+              #pragma warning disable 1591, 0612, 3021, 8981, CS9035, CS0109, CS8669, CS1570, CS0219
               using System;
               using System.Linq;
               using LightProto;
@@ -149,7 +151,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         if (implicitFields is not ImplicitFields.None)
         {
             showFiledNumber = string.Join(
-                Environment.NewLine,
+                NewLine,
                 protoMembers
                     .OrderBy(o => o.FieldNumber)
                     .Select(o => $"/// {o.Name} FieldNumber: {o.FieldNumber} <br/>")
@@ -195,7 +197,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       {{
                           Invoke(baseType is null, 
                               () => {
-                                  return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
+                                  return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
                                       yield return $"public sealed class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
@@ -207,7 +209,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }
                               }, 
                               () => {
-                                  return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
+                                  return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
                                       yield return $"public sealed new class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
@@ -223,7 +225,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       {{
                           Invoke(baseType is null, 
                               () => {
-                                  return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
+                                  return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
                                       yield return $"public sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
@@ -238,7 +240,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                               () => {
                                   if (targetType.TypeKind is TypeKind.Struct)
                                   {
-                                      return string.Join(Environment.NewLine+GetIntendedSpace(1), Gen());
+                                      return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                       IEnumerable<string> Gen()
                                       {
                                           yield return $"public sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
@@ -259,21 +261,21 @@ public class LightProtoGenerator : IIncrementalGenerator
                       
                       public new struct MemberStruct
                       {
-                          {{string.Join(Environment.NewLine + GetIntendedSpace(1),
+                          {{string.Join(NewLine + GetIntendedSpace(1),
                               protoMembers.Select(member => $"public {member.Type} {member.Name};"))
                           }}
-                          {{string.Join(Environment.NewLine + GetIntendedSpace(1),
+                          {{string.Join(NewLine + GetIntendedSpace(1),
                               derivedTypes.Select(member => $"public {member.Contract.Type}.MemberStruct? {member.Contract.Type.Name}_MemberStruct;"))
                           }}
                           public static MemberStruct FromMessage({{className}} message)
                           {
                               var memberStruct = new MemberStruct
                               {
-                                  {{string.Join("," + Environment.NewLine + GetIntendedSpace(3),
+                                  {{string.Join("," + NewLine + GetIntendedSpace(3),
                                       protoMembers.Select(member => $"{member.Name}=message.{member.Name}"))
                                   }}
                               };
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(1),
+                              {{string.Join(NewLine + GetIntendedSpace(1),
                                   derivedTypes.Select((member,index) => {
                                       return $"if (message is {member.Contract.Type} derived{index}) {{ memberStruct.{member.Contract.Type.Name}_MemberStruct = {member.Contract.Type}.MemberStruct.FromMessage(derived{index}); }}";
                                   }))
@@ -283,7 +285,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           {{
                               Invoke(baseType is null,
                                   () => {
-                                      return string.Join(Environment.NewLine+GetIntendedSpace(2), Gen());
+                                      return string.Join(NewLine+GetIntendedSpace(2), Gen());
 
                                       IEnumerable<string> Gen()
                                       {
@@ -314,7 +316,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       }
                                   }, 
                                   () => {
-                                      return string.Join(Environment.NewLine+GetIntendedSpace(2), Gen());
+                                      return string.Join(NewLine+GetIntendedSpace(2), Gen());
                                       IEnumerable<string> Gen()
                                       {
                                           var rootBaseType = GetRootProtoBaseClass(baseType!);
@@ -377,7 +379,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-                          {{string.Join(Environment.NewLine + GetIntendedSpace(2),
+                          {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member =>
                               {
                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
@@ -392,7 +394,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           }}
                           public void WriteTo(ref WriterContext output, MemberStruct message)
                           {
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
                                       return Gen();
                                       IEnumerable<string> Gen()
@@ -419,14 +421,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       }
                                   }))
                               }}
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   derivedTypes.Select(member => $"if(message.{member.Contract.Type.Name}_MemberStruct.HasValue) {{ output.WriteTag({member.RawTag}); {member.Contract.Type}.MemberStructWriter.WriteMessageTo(ref output, message.{member.Contract.Type.Name}_MemberStruct.Value); }}"))
                               }}
                           }
                           
                           public int CalculateSize(MemberStruct message) {
                               int size=0;
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
                                       return Gen();
 
@@ -454,7 +456,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }))
                               }}
                               
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   derivedTypes.Select(member => $"if(message.{member.Contract.Type.Name}_MemberStruct.HasValue) {{ size+={ProtoMember.GetRawTagSize(member.RawTag)}+{member.Contract.Type}.MemberStructWriter.CalculateMessageSize(message.{member.Contract.Type.Name}_MemberStruct.Value); }}"))
                               }}
                               return size;
@@ -465,7 +467,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-                          {{string.Join(Environment.NewLine + GetIntendedSpace(2),
+                          {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member => {
                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
                                   {
@@ -479,10 +481,10 @@ public class LightProtoGenerator : IIncrementalGenerator
                           }}
                           public MemberStruct ParseFrom(ref ReaderContext input)
                           {
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
                               }}
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   derivedTypes.Select(member => $"{member.Contract.Type}.MemberStruct? _{member.Contract.Type.Name}_memberStruct = null;"))
                               }}
                               uint tag;
@@ -496,7 +498,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       default: 
                                           input.SkipLastField();
                                           break;
-                                      {{string.Join(Environment.NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
+                                      {{string.Join(NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
                                           {
                                               return Gen();
 
@@ -531,14 +533,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               }
                                           }))
                                       }}
-                                      {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                                      {{string.Join(NewLine + GetIntendedSpace(3),
                                           derivedTypes.Select(member => $"case {member.RawTag}: _{member.Contract.Type.Name}_memberStruct = {member.Contract.Type}.MemberStructReader.ParseMessageFrom(ref input); break;"))
                                       }}
                                   }
                               }
                               var parsed = new MemberStruct()
                               {
-                                  {{string.Join(Environment.NewLine + GetIntendedSpace(4),
+                                  {{string.Join(NewLine + GetIntendedSpace(4),
                                       protoMembers.Select(member => {
                                           if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
                                           {
@@ -550,11 +552,11 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           }
                                       }))
                                   }}
-                                 {{string.Join(Environment.NewLine + GetIntendedSpace(4),
+                                 {{string.Join(NewLine + GetIntendedSpace(4),
                                      derivedTypes.Select(member => $"{member.Contract.Type.Name}_MemberStruct = _{member.Contract.Type.Name}_memberStruct,"))
                                  }}
                               };
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
                                       return Gen();
                                       IEnumerable<string> Gen()
@@ -615,7 +617,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-                          {{string.Join(Environment.NewLine + GetIntendedSpace(2),
+                          {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member =>
                               {
                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
@@ -631,7 +633,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           public void WriteTo(ref WriterContext output, {{proxyFor?.ToDisplayString()??className}} value)
                           {
                               {{className}} message = value;
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
                                       return Gen();
 
@@ -664,7 +666,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           public int CalculateSize({{proxyFor?.ToDisplayString()??className}} value) {
                               {{className}} message = value;
                               int size=0;
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
                                       return Gen();
 
@@ -699,7 +701,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-                          {{string.Join(Environment.NewLine + GetIntendedSpace(2),
+                          {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member => {
                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
                                   {
@@ -713,12 +715,11 @@ public class LightProtoGenerator : IIncrementalGenerator
                           }}
                           public {{proxyFor?.ToDisplayString()??className}} ParseFrom(ref ReaderContext input)
                           {
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
+                              {{string.Join(NewLine + GetIntendedSpace(3),
+                                  protoMembers.Select(member => $"{member.Type} _{member.Name} = default;"))
                               }}
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
-                                  protoMembers.Where(member=>member.IsProtoMemberRequired)
-                                      .Select(member => $"bool _{member.Name}HasValue = false;"))
+                              {{string.Join(NewLine + GetIntendedSpace(3),
+                                  protoMembers.Select(member => $"bool _{member.Name}HasValue = false;"))
                               }}
                               uint tag;
                               while ((tag = input.ReadTag()) != 0)
@@ -731,7 +732,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       default:
                                           input.SkipLastField();
                                           break;
-                                      {{string.Join(Environment.NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
+                                      {{string.Join(NewLine + GetIntendedSpace(5), protoMembers.SelectMany(member =>
                                           {
                                               return Gen();
 
@@ -751,8 +752,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                                   {
                                                       yield return $"{{";
-                                                      if(member.IsProtoMemberRequired)
-                                                          yield return $"    _{member.Name}HasValue = true;";
+                                                      yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = input.Read{name}();";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -760,8 +760,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else if (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type))
                                                   {
                                                       yield return $"{{";
-                                                      if(member.IsProtoMemberRequired)
-                                                          yield return $"    _{member.Name}HasValue = true;";
+                                                      yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseFrom(ref input);";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -769,8 +768,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   else
                                                   {
                                                       yield return $"{{";
-                                                      if(member.IsProtoMemberRequired)
-                                                          yield return $"    _{member.Name}HasValue = true;";
+                                                      yield return $"    _{member.Name}HasValue = true;";
                                                       yield return $"    _{member.Name} = {member.Name}_ProtoReader.ParseMessageFrom(ref input);";
                                                       yield return $"    break;";
                                                       yield return $"}}";
@@ -780,7 +778,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       }}
                                   }
                               }
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.Where(member=>member.IsProtoMemberRequired)
                                       .SelectMany(member => {
                                       return Gen();
@@ -792,11 +790,11 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }))
                               }}
                               {{
-                                  string.Join(Environment.NewLine + GetIntendedSpace(3),skipConstructor
+                                  string.Join(NewLine + GetIntendedSpace(3),skipConstructor
                                       ?GenSkipConstructor()
                                       :GenGeneralConstructor())
                               }}
-                              {{string.Join(Environment.NewLine + GetIntendedSpace(3),
+                              {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
                                       return Gen();
                                       IEnumerable<string> Gen()
@@ -858,7 +856,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        yield return $"parsed.{member.Name} = _{member.Name};";
+                        yield return $"parsed.{member.Name} =_{member.Name}HasValue? _{member.Name}:{member.Initializer};";
                     }
                 }
             }
@@ -882,7 +880,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        yield return $"    {member.Name} = _{member.Name},";
+                        yield return $"    {member.Name} = _{member.Name}HasValue? _{member.Name}:{member.Initializer},";
                     }
                 }
 
@@ -2130,7 +2128,8 @@ public class LightProtoGenerator : IIncrementalGenerator
     )
     {
         var members = new List<ProtoMember>();
-
+        var semanticModel = compilation.GetSemanticModel(typeDeclaration.SyntaxTree);
+        var emitter = new ExpressionEmitter(semanticModel);
         foreach (var member in targetType.GetMembers())
         {
             if (member.IsStatic)
@@ -2243,7 +2242,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                     .Members.OfType<PropertyDeclarationSyntax>()
                     .FirstOrDefault(m => m.Identifier.Text == memberName);
                 memberDeclarationSyntax = propertyDeclarationSyntax;
-                initializer = propertyDeclarationSyntax?.Initializer?.Value.ToString();
+                var initializerSyntax = propertyDeclarationSyntax?.Initializer?.Value;
+                initializer = initializerSyntax is null ? null : emitter.Emit(initializerSyntax);
                 nullableAnnotation = property.NullableAnnotation;
                 memberType = property.Type;
                 isReadOnly = property.IsReadOnly;
@@ -2258,10 +2258,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                     .FirstOrDefault(m =>
                         m.Declaration.Variables.Any(v => v.Identifier.Text == memberName)
                     );
+
                 memberDeclarationSyntax = fieldDeclarationSyntax;
-                initializer = fieldDeclarationSyntax
+                var initializerSyntax = fieldDeclarationSyntax
                     ?.Declaration.Variables.FirstOrDefault()
-                    ?.Initializer?.Value.ToString();
+                    ?.Initializer?.Value;
+                initializer = initializerSyntax is null ? null : emitter.Emit(initializerSyntax);
                 nullableAnnotation = field.NullableAnnotation;
                 memberType = field.Type;
                 isReadOnly = field.IsReadOnly;
