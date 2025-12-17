@@ -69,13 +69,12 @@ public class ProtoIgnoreAttribute : Attribute;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 public class ProtoSurrogateForAttribute<T> : Attribute;
 
-// donot support ProtoInclude for now
-// [Obsolete("compatibility protobuf-net only, no effect")]
-// public class ProtoIncludeAttribute(Type type, uint tag) : Attribute
-// {
-//     public Type Type { get; } = type;
-//     public uint Tag { get; } = tag;
-// }
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+public class ProtoSurrogateForAttribute(Type type) : Attribute
+{
+    public Type Type { get; } = type;
+}
 
 /// <summary>
 /// Defines the compatibiltiy level to use for an element
