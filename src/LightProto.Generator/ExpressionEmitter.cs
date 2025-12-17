@@ -24,8 +24,8 @@ internal sealed class ExpressionEmitter
 
         if (expr is DefaultExpressionSyntax def)
         {
-            var type = _semanticModel.GetTypeInfo(def.Type).Type!;
-            return $"default({Fqn(type)})";
+            var type = _semanticModel.GetTypeInfo(def.Type).Type;
+            return type is null ? expr.ToFullString() : $"default({Fqn(type)})";
         }
 
         if (expr is CollectionExpressionSyntax collection)
@@ -89,7 +89,12 @@ internal sealed class ExpressionEmitter
 
     private string EmitObjectCreation(ObjectCreationExpressionSyntax creation)
     {
-        var type = (_semanticModel.GetSymbolInfo(creation.Type).Symbol as ITypeSymbol)!;
+        var type = (_semanticModel.GetSymbolInfo(creation.Type).Symbol as ITypeSymbol);
+
+        if (type is null)
+        {
+            return creation.ToFullString();
+        }
         var typeName = Fqn(type);
         var args = EmitArgumentsExpression(creation.ArgumentList);
         var init = EmitInitializerExpression(creation.Initializer);
@@ -103,7 +108,7 @@ internal sealed class ExpressionEmitter
 
         if (type is null)
         {
-            return $"/* {creation.ToString()} */";
+            return creation.ToFullString();
         }
         var typeName = Fqn(type);
         var args = EmitArgumentsExpression(creation.ArgumentList);
@@ -148,26 +153,10 @@ internal sealed class ExpressionEmitter
         {
             if (invocation.Expression is MemberAccessExpressionSyntax memberAccessExpressionSyntax)
             {
-                // if (method.MethodKind is MethodKind.Ordinary)
-                // {
-                //     if (method.IsStatic)
-                //     {
-                //         var name = method.ToDisplayString(FullyQualifiedMemberFormat);
-                //         var args = EmitArgumentsExpression(invocation.ArgumentList);
-                //         return $"/*MethodKind1:{method.MethodKind}*/{name}{args}";
-                //     }
-                //     else
-                //     {
-                //         var name = method.ToDisplayString(FullyQualifiedMemberFormat);
-                //         var args = EmitArgumentsExpression(invocation.ArgumentList);
-                //         return $"/*MethodKind1.1:{method.MethodKind}*/{name}{args}";
-                //     }
-                // }
                 var method = symbol as IMethodSymbol;
                 if (method is null)
                 {
-                    return $"/*invocation.Expression is MemberAccessExpressionSyntax method:{symbol.GetType()}*/"
-                        + expr.ToFullString();
+                    return expr.ToFullString();
                 }
 
                 var reducedMethod = method;
@@ -222,7 +211,7 @@ internal sealed class ExpressionEmitter
             }
             else
             {
-                return $"/*MethodKind3 {invocation.Expression.GetType()}*/" + expr.ToFullString();
+                return expr.ToFullString();
             }
         }
         else if (expr is PostfixUnaryExpressionSyntax postfixUnary)
@@ -240,9 +229,7 @@ internal sealed class ExpressionEmitter
             return symbol.ToDisplayString(FullyQualifiedMemberFormat);
         }
 
-        // 字段 / 属性 / enum
-        return $"/*ToDisplayString {expr.GetType()} {symbol.GetType()}*/"
-            + symbol.ToDisplayString(FullyQualifiedMemberFormat);
+        return symbol.ToDisplayString(FullyQualifiedMemberFormat);
     }
 
     private static string Fqn(ITypeSymbol type)

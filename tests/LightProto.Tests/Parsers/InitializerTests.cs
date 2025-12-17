@@ -6,7 +6,6 @@ namespace LightProto.Tests.Parsers;
 public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Message>
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
-    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllFields)]
     public partial record Message
     {
         public string Value { get; set; } = "";
@@ -34,10 +33,15 @@ public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Messa
         public string Value16 { get; set; } = Initializer.GetDefaultValue();
         public string Value17 { get; set; } = Initializer.GetInitializer().ToString()!;
         public string Value18 { get; set; } = new Initializer().ToString()!;
+        public string Value19 = new Initializer().ToString()!;
+        public Initializer Value20 = new Initializer();
     }
 
-    public class Initializer
+    [ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
+    public partial class Initializer
     {
+        public string Value { get; set; } = "";
+
         public static string GetDefaultValue()
         {
             return "defaultValueFromMethod";
@@ -48,6 +52,9 @@ public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Messa
             return new Initializer();
         }
     }
+
+    protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
+    protected override bool ProtoBuf_net_Serialize_Disabled { get; } = true;
 
     public override IEnumerable<Message> GetMessages()
     {
@@ -70,5 +77,10 @@ public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Messa
         await Assert.That(clone.Value12).IsEquivalentTo(message.Value12);
         await Assert.That(clone.Value13).IsEquivalentTo(message.Value13);
         await Assert.That(clone.Value14).IsEquivalentTo(message.Value14);
+        await Assert.That(clone.Value15).IsEquivalentTo(message.Value15);
+        await Assert.That(clone.Value16).IsEqualTo(message.Value16);
+        await Assert.That(clone.Value17).IsEqualTo(message.Value17);
+        await Assert.That(clone.Value18).IsEqualTo(message.Value18);
+        await Assert.That(clone.Value19).IsEqualTo(message.Value19);
     }
 }

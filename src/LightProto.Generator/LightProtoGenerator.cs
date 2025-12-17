@@ -856,7 +856,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        yield return $"parsed.{member.Name} =_{member.Name}HasValue? _{member.Name}:{member.Initializer};";
+                        yield return $"parsed.{member.Name} = _{member.Name}HasValue ? _{member.Name} : {member.Initializer};";
                     }
                 }
             }
@@ -880,7 +880,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        yield return $"    {member.Name} = _{member.Name}HasValue? _{member.Name}:{member.Initializer},";
+                        yield return $"    {member.Name} = _{member.Name}HasValue ? _{member.Name} : {member.Initializer},";
                     }
                 }
 
