@@ -3,6 +3,18 @@ using LightProto.Internal;
 
 namespace LightProto.Parser;
 
+public sealed class IReadOnlyDictionaryProtoWriter<TKey, TValue>
+    : IEnumerableKeyValuePairProtoWriter<IReadOnlyDictionary<TKey, TValue>, TKey, TValue>
+    where TKey : notnull
+{
+    public IReadOnlyDictionaryProtoWriter(
+        IProtoWriter<TKey> keyWriter,
+        IProtoWriter<TValue> valueWriter,
+        uint tag
+    )
+        : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
+}
+
 public sealed class ReadOnlyDictionaryProtoWriter<TKey, TValue>
     : IEnumerableKeyValuePairProtoWriter<ReadOnlyDictionary<TKey, TValue>, TKey, TValue>
     where TKey : notnull
