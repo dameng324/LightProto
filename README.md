@@ -25,7 +25,7 @@ This project is under active development and may introduce breaking changes. Use
 - Source generator–powered serializers/parsers at compile time
 - protobuf-net–style Serializer API and familiar attributes
 - Target frameworks: netstandard2.0, net8.0, net9.0, net10.0
-- C# 9 language support for unity environments
+- C# 9 language support for Unity Environments
 - Performance is about 20%-50% better than protobuf-net
 - AOT-friendly by design
 - Stream and IBufferWriter<byte> serialization or ToByteArray
@@ -35,12 +35,12 @@ This project is under active development and may introduce breaking changes. Use
 
 - .NET primitives (`byte`, `int`, `bool`, `char`, `double`, etc.)
 - `string`, `decimal`, `Half`, `Int128`, `UInt128`, `Guid`, `Rune`, `BigInteger`
-- `TimeSpan`,  `DateTime`, `DateTimeOffset`, `TimeOnly`, `DateOnly`, `TimeZoneInfo`
-- `Complex`, `Plane`, `Quaternion` `Matrix3x2`, `Matrix4x4`, `Vector2`, `Vector3`, `Vector4`
+- `TimeSpan`, `DateTime`, `DateTimeOffset`, `TimeOnly`, `DateOnly`, `TimeZoneInfo`
+- `Complex`, `Plane`, `Quaternion`, `Matrix3x2`, `Matrix4x4`, `Vector2`, `Vector3`, `Vector4`
 - `Uri`, `Version`, `StringBuilder`, `BitArray`, `CultureInfo`
 - `Nullable<>`, `Lazy<>`
 - `T[]`, `List<>`, `LinkedList<>`, `Queue<>`, `Stack<>`, `HashSet<>`, `SortedSet<>`
-- `Dictionary<,>`, `SortedList<,>`, `SortedDictionary<,>`,  `ReadOnlyDictionary<,>`
+- `Dictionary<,>`, `SortedList<,>`, `SortedDictionary<,>`, `ReadOnlyDictionary<,>`
 - `Collection<>`, `ReadOnlyCollection<>`, `ObservableCollection<>`, `ReadOnlyObservableCollection<>`
 - `IEnumerable<>`, `ICollection<>`, `IList<>`, `IReadOnlyCollection<>`, `IReadOnlyList<>`, `ISet<>`
 - `IDictionary<,>`, `IReadOnlyDictionary<,>`
@@ -213,7 +213,7 @@ var bytes = list.ToByteArray(Int32ProtoParser.Writer.GetCollectionWriter());// e
 ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
 LightProto.Serializer.Serialize(writer, list,Int32ProtoParser.Writer.GetCollectionWriter()); // pass collection writer
 LightProto.Serializer.SerializeDynamically<List<int>>(writer, list); // dynamic API, not AOT-safe aproach.
-List<int> arr2=LightProto.Serializer.Deserialize(bytes,Int32ProtoParser.Reader.GetListWriter()); // pass element reader
+List<int> arr2=LightProto.Serializer.Deserialize(bytes,Int32ProtoParser.Reader.GetListReader()); // pass element reader
 List<int> arr3=LightProto.Serializer.DeserializeDynamically<List<int>>(bytes); // dynamic API, not AOT-safe aproach.
 ```
 
