@@ -35,6 +35,14 @@ public static partial class Serializer
         ctx.Flush();
     }
 
+    /// <summary>
+    /// Creates a deep clone of the given message.
+    /// </summary>
+    /// <param name="message">The instance to deep-clone.</param>
+    /// <param name="reader">The proto reader of T.</param>
+    /// <param name="writer">The proto writer of T.</param>
+    /// <typeparam name="T">The type of the message being cloned.</typeparam>
+    /// <returns>A new instance that is a deep clone of <paramref name="message"/>.</returns>
     public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
     {
         var size = writer.CalculateSize(message);
@@ -54,6 +62,12 @@ public static partial class Serializer
     }
 
 #if NET7_0_OR_GREATER
+    /// <summary>
+    /// Creates a deep clone of the given message.
+    /// </summary>
+    /// <param name="message">The instance to deep-clone.</param>
+    /// <typeparam name="T">The type of the message being cloned.</typeparam>
+    /// <returns>A new instance that is a deep clone of <paramref name="message"/>.</returns>
     public static T DeepClone<T>(T message)
         where T : IProtoParser<T>
     {
@@ -64,7 +78,7 @@ public static partial class Serializer
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
+    /// <param name="destination">The destination to write to.</param>
     public static void Serialize<T>(Stream destination, T instance)
         where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
 
@@ -72,7 +86,7 @@ public static partial class Serializer
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
+    /// <param name="destination">The destination to write to.</param>
     public static void Serialize<T>(IBufferWriter<byte> destination, T instance)
         where T : IProtoParser<T> => Serialize(destination, instance, T.ProtoWriter);
 #endif

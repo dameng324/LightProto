@@ -23,7 +23,7 @@ public static partial class Serializer
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
+    /// <param name="destination">The destination to write to.</param>
     public static void SerializeTo<T>(this ICollection<T> instance, Stream destination)
         where T : IProtoParser<T> => Serialize(destination, instance);
 
@@ -31,7 +31,7 @@ public static partial class Serializer
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
+    /// <param name="destination">The destination to write to.</param>
     public static void SerializeTo<T>(this ICollection<T> instance, IBufferWriter<byte> destination)
         where T : IProtoParser<T> => Serialize(destination, instance);
 #endif
