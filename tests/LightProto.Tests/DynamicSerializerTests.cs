@@ -145,7 +145,6 @@ public partial class DynamicSerializerTests
     [Test]
     public async Task DeepCloneTest()
     {
-        using var ms = new MemoryStream();
         var original = CreateTestContract();
         var parsed = Serializer.DeepCloneDynamically(original);
         await Assert.That(parsed).IsEquivalentTo(original);
@@ -154,7 +153,6 @@ public partial class DynamicSerializerTests
     [Test]
     public async Task SmallDeepCloneTest()
     {
-        using var ms = new MemoryStream();
         var original = new TestContract()
         {
             Name = Guid.NewGuid().ToString(),
@@ -225,7 +223,6 @@ public partial class DynamicSerializerTests
         using var ms = new MemoryStream();
 
         Serializer.SerializeDynamically(ms, original);
-        ms.Position = 0;
 
         var bytes = ms.ToArray();
         var parsed = Serializer.DeserializeDynamically<List<TestContract>>(bytes);
@@ -384,7 +381,7 @@ public partial class DynamicSerializerTests
 
         using var ms = new MemoryStream();
         using (var gzip = new GZipStream(ms, mode: CompressionMode.Compress, leaveOpen: true))
-            Serializer.SerializeDynamically(ms, original);
+            Serializer.SerializeDynamically(gzip, original);
 
         ms.Position = 0;
         using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);

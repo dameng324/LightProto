@@ -12,13 +12,13 @@ public static partial class Serializer
 {
 #if NET7_0_OR_GREATER
     const string AOTWarning =
-        "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. but for other types, it's not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for aot safe.";
+        "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it's not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for aot safe.";
 #endif
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
+    /// <param name="destination">The destination to write to.</param>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
 #endif
@@ -33,7 +33,7 @@ public static partial class Serializer
     /// Writes a protocol-buffer representation of the given instance to the supplied stream.
     /// </summary>
     /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
-    /// <param name="destination">The destination stream to write to.</param>
+    /// <param name="destination">The destination to write to.</param>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
 #endif
@@ -83,11 +83,11 @@ public static partial class Serializer
         T>(ReadOnlySpan<byte> source) => Deserialize(source, GetProtoReader<T>());
 
     /// <summary>
-    /// Creates a deep clone of the given message
+    /// Creates a deep clone of the given message.
     /// </summary>
-    /// <param name="message"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <param name="message">The instance to deep-clone.</param>
+    /// <typeparam name="T">The type of the message being cloned.</typeparam>
+    /// <returns>A new instance that is a deep clone of <paramref name="message"/>.</returns>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
 #endif
@@ -321,46 +321,25 @@ public static partial class Serializer
         }
         if (typeof(IProtoParser<>).MakeGenericType(type).IsAssignableFrom(type))
         {
-            if (isReader)
-            {
-                var parser = type.GetProperty(
-                            "ProtoReader",
-                            BindingFlags.Public | BindingFlags.Static
-                        )!
-                    .GetValue(null)!;
-                parsers.TryAdd(type, parser);
-                return parser;
-            }
-            else
-            {
-                var parser = type.GetProperty(
-                            "ProtoWriter",
-                            BindingFlags.Public | BindingFlags.Static
-                        )!
-                    .GetValue(null)!;
-                parsers.TryAdd(type, parser);
-                return parser;
-            }
+            var parser = type.GetProperty(
+                        isReader ? "ProtoReader" : "ProtoWriter",
+                        BindingFlags.Public | BindingFlags.Static
+                    )!
+                .GetValue(null)!;
+            parsers.TryAdd(type, parser);
+            return parser;
         }
         if (type.IsEnum)
         {
             var enumParserType = typeof(EnumProtoParser<>).MakeGenericType(type);
-            if (isReader)
-            {
-                var parser = enumParserType
-                    .GetProperty("ProtoReader", BindingFlags.Public | BindingFlags.Static)!
-                    .GetValue(null)!;
-                parsers.TryAdd(type, parser);
-                return parser;
-            }
-            else
-            {
-                var parser = enumParserType
-                    .GetProperty("ProtoWriter", BindingFlags.Public | BindingFlags.Static)!
-                    .GetValue(null)!;
-                parsers.TryAdd(type, parser);
-                return parser;
-            }
+            var parser = enumParserType
+                .GetProperty(
+                    isReader ? "ProtoReader" : "ProtoWriter",
+                    BindingFlags.Public | BindingFlags.Static
+                )!
+                .GetValue(null)!;
+            parsers.TryAdd(type, parser);
+            return parser;
         }
 
         if (type.IsArray)

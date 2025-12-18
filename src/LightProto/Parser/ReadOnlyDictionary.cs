@@ -12,7 +12,7 @@ public sealed class IReadOnlyDictionaryProtoWriter<TKey, TValue>
         IProtoWriter<TValue> valueWriter,
         uint tag
     )
-        : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
+        : base(keyWriter, valueWriter, tag, static (dic) => dic.Count) { }
 }
 
 public sealed class ReadOnlyDictionaryProtoWriter<TKey, TValue>
@@ -24,7 +24,7 @@ public sealed class ReadOnlyDictionaryProtoWriter<TKey, TValue>
         IProtoWriter<TValue> valueWriter,
         uint tag
     )
-        : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
+        : base(keyWriter, valueWriter, tag, static (dic) => dic.Count) { }
 }
 
 public sealed class ReadOnlyDictionaryProtoReader<TKey, TValue>

@@ -213,7 +213,6 @@ public partial class SerializerTests
     [Test]
     public async Task DeepCloneTest()
     {
-        using var ms = new MemoryStream();
         var original = CreateTestContract();
 #if NET6_0_OR_GREATER
         var parsed = Serializer.DeepClone(original);
