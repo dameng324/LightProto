@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.IO.Compression;
+using System.Net;
 using LightProto.Parser;
 
 namespace LightProto.Tests;
@@ -31,6 +32,39 @@ public partial class DynamicSerializerTests
             Doubles = Enumerable.Range(0, 1000).Select(i => (double)(i % 256)).ToArray(),
             Floats = Enumerable.Range(0, 1000).Select(i => (float)(i % 256)).ToArray(),
         };
+    }
+
+    [Test]
+    public async Task TestEnum()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        var obj = HttpStatusCode.OK;
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<HttpStatusCode>(data);
+        await Assert.That(parsed).IsEquivalentTo(obj);
+    }
+
+    [Test]
+    public async Task TestNullable()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        int? obj = 10;
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<int?>(data);
+        await Assert.That(parsed).IsEquivalentTo(obj);
+    }
+
+    [Test]
+    public async Task TestLazy()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        Lazy<int> obj = new Lazy<int>(() => 10);
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<Lazy<int>>(data);
+        await Assert.That(parsed.Value).IsEquivalentTo(obj.Value);
     }
 
     [Test]
@@ -216,6 +250,153 @@ public partial class DynamicSerializerTests
 
     [Test]
     [SkipAot]
+    public async Task CollectionTest81()
+    {
+        using var ms = new MemoryStream();
+        HttpStatusCode[] original =
+        [
+            HttpStatusCode.OK,
+            HttpStatusCode.NotFound,
+            HttpStatusCode.InternalServerError,
+        ];
+
+        Serializer.SerializeDynamically(ms, original);
+        ms.Position = 0;
+
+        var parsed = Serializer.DeserializeDynamically<List<HttpStatusCode>>(ms);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task CollectionTest82()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var ms = new MemoryStream();
+            Serializer.SerializeDynamically(ms, TestContext.Current);
+        });
+        await Assert.That(ex.Message).Contains("No ProtoParser registered for type");
+
+        var ex2 = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.DeserializeDynamically<TestContext>(new MemoryStream());
+        });
+        await Assert.That(ex2.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task CollectionTest83()
+    {
+        using var ms = new MemoryStream();
+        List<HttpStatusCode> original =
+        [
+            HttpStatusCode.OK,
+            HttpStatusCode.NotFound,
+            HttpStatusCode.InternalServerError,
+        ];
+
+        Serializer.SerializeDynamically(ms, original);
+        ms.Position = 0;
+
+        var parsed = Serializer.DeserializeDynamically<IEnumerable<HttpStatusCode>>(ms);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task CollectionTest84()
+    {
+        using var ms = new MemoryStream();
+        ICollection<HttpStatusCode> original =
+        [
+            HttpStatusCode.OK,
+            HttpStatusCode.NotFound,
+            HttpStatusCode.InternalServerError,
+        ];
+
+        Serializer.SerializeDynamically(ms, original);
+        ms.Position = 0;
+
+        var parsed = Serializer.DeserializeDynamically<ICollection<HttpStatusCode>>(ms);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task CollectionTest85()
+    {
+        using var ms = new MemoryStream();
+        ValueTuple<HttpStatusCode> original = new ValueTuple<HttpStatusCode>(
+            HttpStatusCode.Accepted
+        );
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var ms = new MemoryStream();
+            Serializer.SerializeDynamically(ms, original);
+        });
+        await Assert.That(ex.Message).Contains("No ProtoParser registered for type");
+
+        var ex2 = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.DeserializeDynamically<ValueTuple<HttpStatusCode>>(new MemoryStream());
+        });
+        await Assert.That(ex2.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task CollectionTest86()
+    {
+        using var ms = new MemoryStream();
+        ValueTuple<int, HttpStatusCode> original = new ValueTuple<int, HttpStatusCode>(
+            123,
+            HttpStatusCode.Accepted
+        );
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var ms = new MemoryStream();
+            Serializer.SerializeDynamically(ms, original);
+        });
+        await Assert.That(ex.Message).Contains("No ProtoParser registered for type");
+
+        var ex2 = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.DeserializeDynamically<ValueTuple<int, HttpStatusCode>>(new MemoryStream());
+        });
+        await Assert.That(ex2.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task CollectionTest87()
+    {
+        using var ms = new MemoryStream();
+        ValueTuple<int, string, HttpStatusCode> original = new ValueTuple<
+            int,
+            string,
+            HttpStatusCode
+        >(123, "hello", HttpStatusCode.Accepted);
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var ms = new MemoryStream();
+            Serializer.SerializeDynamically(ms, original);
+        });
+        await Assert.That(ex.Message).Contains("No ProtoParser registered for type");
+
+        var ex2 = Assert.Throws<InvalidOperationException>(() =>
+        {
+            Serializer.DeserializeDynamically<ValueTuple<int, string, HttpStatusCode>>(
+                new MemoryStream()
+            );
+        });
+        await Assert.That(ex2.Message).Contains("No ProtoParser registered for type");
+    }
+
+    [Test]
+    [SkipAot]
     public async Task CollectionTest7()
     {
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
@@ -327,6 +508,34 @@ public partial class DynamicSerializerTests
         Serializer.SerializeDynamically(ms, map);
         var bytes = ms.ToArray();
         var clone = Serializer.DeserializeDynamically<Dictionary<string, int>>(bytes.AsSpan());
+        await Assert.That(clone).IsEquivalentTo(map);
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task DictionaryTest5()
+    {
+        var map = new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
+        MemoryStream ms = new MemoryStream();
+        Serializer.SerializeDynamically(ms, map);
+        var bytes = ms.ToArray();
+        var clone = Serializer.DeserializeDynamically<IEnumerable<KeyValuePair<string, int>>>(
+            bytes.AsSpan()
+        );
+        await Assert.That(clone).IsEquivalentTo(map);
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task DictionaryTest6()
+    {
+        var map = new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
+        MemoryStream ms = new MemoryStream();
+        Serializer.SerializeDynamically<IReadOnlyDictionary<string, int>>(ms, map);
+        var bytes = ms.ToArray();
+        var clone = Serializer.DeserializeDynamically<IReadOnlyDictionary<string, int>>(
+            bytes.AsSpan()
+        );
         await Assert.That(clone).IsEquivalentTo(map);
     }
 

@@ -269,6 +269,11 @@ public static partial class Serializer
             typeof(SortedSetProtoWriter<>)
         );
         RegisterGenericParser(
+            typeof(KeyValuePair<,>),
+            typeof(KeyValuePairProtoReader<,>),
+            typeof(KeyValuePairProtoWriter<,>)
+        );
+        RegisterGenericParser(
             typeof(Dictionary<,>),
             typeof(DictionaryProtoReader<,>),
             typeof(DictionaryProtoWriter<,>)
@@ -464,8 +469,16 @@ public static partial class Serializer
 #pragma warning restore IL2062
             var parserType = genericParserType.MakeGenericType(keyType, valueType);
 
-            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
-            var parser = Activator.CreateInstance(parserType, keyParser, valueParser, tag)!;
+            object parser;
+            if (genericDef == typeof(KeyValuePair<,>))
+            {
+                parser = Activator.CreateInstance(parserType, keyParser, valueParser)!;
+            }
+            else
+            {
+                uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+                parser = Activator.CreateInstance(parserType, keyParser, valueParser, tag)!;
+            }
 
             parsers.TryAdd(type, parser);
             return parser;
