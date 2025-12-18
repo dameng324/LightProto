@@ -212,9 +212,9 @@ List<int> list=[1,2,3];
 var bytes = list.ToByteArray(Int32ProtoParser.Writer.GetCollectionWriter());// extension method
 ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
 LightProto.Serializer.Serialize(writer, list,Int32ProtoParser.Writer.GetCollectionWriter()); // pass collection writer
-LightProto.Serializer.SerializeDynamically<List<int>>(writer, list); // dynamic API, not AOT-safe aproach.
+LightProto.Serializer.SerializeDynamically<List<int>>(writer, list); // dynamic API, not AOT-safe approach.
 List<int> arr2=LightProto.Serializer.Deserialize(bytes,Int32ProtoParser.Reader.GetListReader()); // pass element reader
-List<int> arr3=LightProto.Serializer.DeserializeDynamically<List<int>>(bytes); // dynamic API, not AOT-safe aproach.
+List<int> arr3=LightProto.Serializer.DeserializeDynamically<List<int>>(bytes); // dynamic API, not AOT-safe approach.
 ```
 
 ### .netstandard
