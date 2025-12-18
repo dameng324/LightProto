@@ -46,6 +46,7 @@ public partial class DynamicSerializerTests
     }
 
     [Test]
+    [SkipAot]
     public async Task TestNullable()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
@@ -57,6 +58,7 @@ public partial class DynamicSerializerTests
     }
 
     [Test]
+    [SkipAot]
     public async Task TestLazy()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
