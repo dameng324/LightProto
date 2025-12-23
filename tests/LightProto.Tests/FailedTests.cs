@@ -66,7 +66,7 @@ public partial class FailedTests
             var bytes = new byte[] { 0, 1, 0 };
             var strings = Serializer.Deserialize(
                 bytes,
-                Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
+                Int32ProtoParser.ProtoReader.GetListReader()
             );
             await Task.CompletedTask;
         });
@@ -103,7 +103,7 @@ public partial class FailedTests
             var bytes = new byte[] { 8, 1, 8 };
             var strings = Serializer.Deserialize(
                 bytes,
-                Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
+                Int32ProtoParser.ProtoReader.GetListReader()
             );
             await Task.CompletedTask;
         });
@@ -119,7 +119,7 @@ public partial class FailedTests
             var bytes = new byte[] { 10, 3, 0xE0, 0x80, 0x80, 10, 5, 116, 104, 114, 101, 101 };
             var strings = Serializer.Deserialize(
                 bytes,
-                StringProtoParser.ProtoReader.GetCollectionReader<List<string>, string>()
+                StringProtoParser.ProtoReader.GetListReader()
             );
             await Task.CompletedTask;
         });

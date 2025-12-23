@@ -67,7 +67,7 @@ public sealed class StackProtoReader<T> : IEnumerableProtoReader<Stack<T>, T>
             .Compile();
     }
 
-    public static Stack<T> ReverseStack(Stack<T> stack)
+    static Stack<T> ReverseStack(Stack<T> stack)
     {
         var arr = _getArray(stack);
         var size = _getSize(stack);

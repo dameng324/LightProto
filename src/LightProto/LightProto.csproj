@@ -6,6 +6,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
     <LangVersion>latest</LangVersion>
+    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+    <WarningsAsErrors>RS0017;RS0041</WarningsAsErrors>
     <!-- NuGet Package Metadata -->
     <PackageId>LightProto</PackageId>
     <Title>LightProto</Title>
@@ -42,5 +44,19 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <AdditionalFiles Include="PublicAPI/netstandard2.0/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/netstandard2.0/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' != 'netstandard2.0' ">
+    <AdditionalFiles Include="PublicAPI/net/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/net/PublicAPI.Unshipped.txt" />
   </ItemGroup>
 </Project>

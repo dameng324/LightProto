@@ -163,10 +163,7 @@ public partial class SerializerTests
         var original = new List<int>() { 1, 2, 3 };
         Serializer.Serialize(ms, original, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
         ms.Position = 0;
-        var parsed = Serializer.Deserialize(
-            ms,
-            Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
-        );
+        var parsed = Serializer.Deserialize(ms, Int32ProtoParser.ProtoReader.GetListReader<int>());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -176,18 +173,12 @@ public partial class SerializerTests
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
 
-#if NET6_0_OR_GREATER
-        Serializer.Serialize(ms, original);
-        ms.Position = 0;
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms);
-#else
         Serializer.Serialize(ms, original, TestContract.ProtoWriter.GetCollectionWriter());
         ms.Position = 0;
-        var parsed = Serializer.Deserialize(
+        var parsed = Serializer.Deserialize<List<TestContract>>(
             ms,
-            TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
+            TestContract.ProtoReader.GetListReader()
         );
-#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -197,16 +188,8 @@ public partial class SerializerTests
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
 
-#if NET6_0_OR_GREATER
-        Serializer.Serialize(ms, original);
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms.ToArray());
-#else
         Serializer.Serialize(ms, original, TestContract.ProtoWriter.GetCollectionWriter());
-        var parsed = Serializer.Deserialize(
-            ms.ToArray(),
-            TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
-        );
-#endif
+        var parsed = Serializer.Deserialize(ms.ToArray(), TestContract.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -254,18 +237,11 @@ public partial class SerializerTests
     {
         ArrayBufferWriter<byte> bufferWriter = new();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
-#if NET6_0_OR_GREATER
-        original.SerializeTo(bufferWriter);
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(
-            GetReadonlySequence(bufferWriter.WrittenSpan.ToArray().Chunk(2).ToArray())
-        );
-#else
         original.SerializeTo(bufferWriter, TestContract.ProtoWriter.GetCollectionWriter());
         var parsed = Serializer.Deserialize(
             GetReadonlySequence(bufferWriter.WrittenMemory.ToArray().Chunk(2).ToArray()),
-            TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
+            TestContract.ProtoReader.GetListReader()
         );
-#endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -275,10 +251,7 @@ public partial class SerializerTests
         string[] original = ["", "123"];
         var bytes = original.ToByteArray(StringProtoParser.ProtoWriter.GetCollectionWriter());
 
-        var parsed = Serializer.Deserialize(
-            bytes,
-            StringProtoParser.ProtoReader.GetCollectionReader<List<string>, string>()
-        );
+        var parsed = Serializer.Deserialize(bytes, StringProtoParser.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -291,7 +264,7 @@ public partial class SerializerTests
 
         var parsed = Serializer.Deserialize(
             bufferWriter.WrittenMemory.Span,
-            StringProtoParser.ProtoReader.GetCollectionReader<List<string>, string>()
+            StringProtoParser.ProtoReader.GetListReader()
         );
         await Assert.That(parsed).IsEquivalentTo(original);
     }
@@ -304,10 +277,7 @@ public partial class SerializerTests
         original.SerializeTo(ms, StringProtoParser.ProtoWriter.GetCollectionWriter());
         ms.Position = 0;
 
-        var parsed = Serializer.Deserialize(
-            ms,
-            StringProtoParser.ProtoReader.GetCollectionReader<List<string>, string>()
-        );
+        var parsed = Serializer.Deserialize(ms, StringProtoParser.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -316,16 +286,8 @@ public partial class SerializerTests
     {
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
 
-#if NET6_0_OR_GREATER
-        var bytes = original.ToByteArray();
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(bytes);
-#else
         var bytes = original.ToByteArray(TestContract.ProtoWriter.GetCollectionWriter());
-        var parsed = Serializer.Deserialize(
-            bytes,
-            TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
-        );
-#endif
+        var parsed = Serializer.Deserialize(bytes, TestContract.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -334,19 +296,9 @@ public partial class SerializerTests
     {
         using var ms = new MemoryStream();
         TestContract[] original = [CreateTestContract(), CreateTestContract()];
-#if NET6_0_OR_GREATER
-        original.SerializeTo(ms);
-        ms.Position = 0;
-
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(ms);
-#else
         original.SerializeTo(ms, TestContract.ProtoWriter.GetCollectionWriter());
         ms.Position = 0;
-        var parsed = Serializer.Deserialize(
-            ms,
-            TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
-        );
-#endif
+        var parsed = Serializer.Deserialize(ms, TestContract.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -354,11 +306,7 @@ public partial class SerializerTests
     public async Task CollectionTest10()
     {
         TestContract[] original = [];
-#if NET6_0_OR_GREATER
-        var bytes = original.ToByteArray();
-#else
         var bytes = original.ToByteArray(TestContract.ProtoWriter.GetCollectionWriter());
-#endif
         await Assert.That(bytes.Length).IsEqualTo(0);
     }
 
@@ -366,11 +314,7 @@ public partial class SerializerTests
     public async Task CollectionTest11()
     {
         TestContract[] original = null!;
-#if NET6_0_OR_GREATER
-        var bytes = original.ToByteArray();
-#else
         var bytes = original.ToByteArray(TestContract.ProtoWriter.GetCollectionWriter());
-#endif
         await Assert.That(bytes.Length).IsEqualTo(0);
     }
 
@@ -378,14 +322,7 @@ public partial class SerializerTests
     public async Task CollectionTest12()
     {
         byte[] bytes = [];
-#if NET6_0_OR_GREATER
-        var parsed = Serializer.Deserialize<List<TestContract>, TestContract>(bytes);
-#else
-        var parsed = Serializer.Deserialize(
-            bytes,
-            TestContract.ProtoReader.GetCollectionReader<List<TestContract>, TestContract>()
-        );
-#endif
+        var parsed = Serializer.Deserialize(bytes, TestContract.ProtoReader.GetListReader());
         await Assert.That(parsed.Count).IsEqualTo(0);
     }
 
@@ -412,11 +349,7 @@ public partial class SerializerTests
         var original = CreateTestContract();
         TestContract Deserialize()
         {
-#if NET6_0_OR_GREATER
-            var bytes = original.ToByteArray();
-#else
             var bytes = original.ToByteArray(TestContract.ProtoWriter);
-#endif
             var stream = new MemoryStream(bytes);
             using var codedStream = new CodedInputStream(stream, leaveOpen: false);
             ReaderContext.Initialize(codedStream, out var ctx);
@@ -488,10 +421,7 @@ public partial class SerializerTests
         original.SerializeTo(ms, keyWriter.GetDictionaryWriter(TestContract.ProtoWriter));
         ms.Position = 0;
 
-        IProtoReader<List<int>> keyReader = Int32ProtoParser.ProtoReader.GetCollectionReader<
-            List<int>,
-            int
-        >();
+        IProtoReader<List<int>> keyReader = Int32ProtoParser.ProtoReader.GetListReader();
 
         var parsed = Serializer.Deserialize(
             ms,
@@ -582,10 +512,7 @@ public partial class SerializerTests
         original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
 
         ms.Position = 0;
-        var parsed = Serializer.Deserialize(
-            ms,
-            Int32ProtoParser.ProtoReader.GetCollectionReader<List<int>, int>()
-        );
+        var parsed = Serializer.Deserialize(ms, Int32ProtoParser.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
