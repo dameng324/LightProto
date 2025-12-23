@@ -28,12 +28,12 @@ public partial struct DateTime240ProtoParser
     /// <summary>
     /// The number of nanoseconds in a second.
     /// </summary>
-    public const int NanosecondsPerSecond = 1000000000;
+    const int NanosecondsPerSecond = 1000000000;
 
     /// <summary>
     /// The number of nanoseconds in a BCL tick (as used by <see cref="TimeSpan"/> and <see cref="DateTime"/>).
     /// </summary>
-    public const int NanosecondsPerTick = 100;
+    const int NanosecondsPerTick = 100;
     internal const int MaxNanos = NanosecondsPerSecond - 1;
 
     public static implicit operator DateTime(DateTime240ProtoParser protoParser)

@@ -48,11 +48,6 @@ public abstract class BaseCollectionTest<T>
     {
         using var ms = new MemoryStream();
         Serializer.Serialize(ms, original, ProtoWriter.GetCollectionWriter());
-        {
-            ms.Position = 0;
-            var parsed = Serializer.Deserialize(ms, ProtoReader.GetCollectionReader<List<T>, T>());
-            await Assert.That(parsed).IsEquivalentTo(original, Comparer);
-        }
 
         {
             ms.Position = 0;

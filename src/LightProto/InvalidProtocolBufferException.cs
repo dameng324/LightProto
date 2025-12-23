@@ -15,7 +15,7 @@ namespace LightProto
     /// </summary>
     public sealed class InvalidProtocolBufferException : IOException
     {
-        public InvalidProtocolBufferException(string message)
+        InvalidProtocolBufferException(string message)
             : base(message) { }
 
         internal InvalidProtocolBufferException(string message, Exception innerException)

@@ -66,7 +66,8 @@ namespace LightProto
         /// <param name="leaveOpen"><c>true</c> to leave <paramref name="input"/> open when the returned
         /// <c cref="CodedInputStream"/> is disposed; <c>false</c> to dispose of the given stream when the
         /// returned object is disposed.</param>
-        public CodedInputStream(Stream input, bool leaveOpen, int maxSize = int.MaxValue)
+        /// <param name="maxSize"></param>
+        internal CodedInputStream(Stream input, bool leaveOpen, int maxSize = int.MaxValue)
             : this(
                 ProtoPreconditions.CheckNotNull(input, "input"),
                 new byte[BufferSize],

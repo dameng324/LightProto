@@ -609,10 +609,7 @@ public class LazyCollectionTest
         Serializer.Serialize(ms, lazyList, ProtoWriter.GetCollectionWriter());
 
         ms.Position = 0;
-        var parsed = Serializer.Deserialize(
-            ms,
-            ProtoReader.GetCollectionReader<List<Lazy<int>>, Lazy<int>>()
-        );
+        var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
         var parsedValues = parsed.Select(o => o.Value).ToList();
         await Assert.That(parsedValues).IsEquivalentTo(original);
     }

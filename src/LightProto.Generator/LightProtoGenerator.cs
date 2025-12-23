@@ -137,7 +137,7 @@ public class LightProtoGenerator : IIncrementalGenerator
               )}} at {{DateTime.Now:yyyy-MM-dd HH:mm:ss}}
               // </auto-generated>
 
-              #pragma warning disable 1591, 0612, 3021, 8981, CS9035, CS0109, CS8669, CS1570, CS0219
+              #pragma warning disable 1591, 0612, 3021, 8981, CS9035, CS0109, CS8669, CS1570, CS0219, RS0016, RS0041
               using System;
               using System.Linq;
               using LightProto;
@@ -191,8 +191,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                               () => $"public static IProtoWriter<{proxyFor?.ToDisplayString() ?? className}> ProtoWriter {{get;}} = new LightProtoWriter();", 
                               () => $"public static new IProtoWriter<{proxyFor?.ToDisplayString()??className}> ProtoWriter => {baseParserTypeName}.ProtoWriter;")
                       }}
-                      public static new IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
-                      public static new IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
+                      internal static new IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
+                      internal static new IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
                       
                       {{
                           Invoke(baseType is null, 
@@ -200,7 +200,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"public sealed class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return $"internal sealed class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
                                       yield return "{";
                                       yield return "    public bool IsMessage => true;";
                                       yield return "    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
@@ -212,7 +212,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"public sealed new class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return $"internal sealed new class LightProtoReader:IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
                                       yield return "{";
                                       yield return "    public bool IsMessage => true;";
                                       yield return "    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
@@ -228,7 +228,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"public sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return $"internal sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
                                       yield return "{";
                                       yield return $"    public bool IsMessage => true;";
                                       yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
@@ -243,7 +243,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                       IEnumerable<string> Gen()
                                       {
-                                          yield return $"public sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
+                                          yield return $"internal sealed class LightProtoWriter:IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
                                           yield return "{";
                                           yield return $"    public bool IsMessage => true;";
                                           yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
@@ -259,7 +259,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                               })
                       }}
                       
-                      public new struct MemberStruct
+                      internal new struct MemberStruct
                       {
                           {{string.Join(NewLine + GetIntendedSpace(1),
                               protoMembers.Select(member => $"public {member.Type} {member.Name};"))
@@ -375,7 +375,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   })
                           }}
                       }
-                      public sealed new class MemberStructLightProtoWriter:IProtoWriter<MemberStruct>
+                      internal sealed new class MemberStructLightProtoWriter:IProtoWriter<MemberStruct>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -463,7 +463,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           }
                       }
                       
-                      public sealed new class MemberStructLightProtoReader:IProtoReader<MemberStruct>
+                      internal sealed new class MemberStructLightProtoReader:IProtoReader<MemberStruct>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -613,7 +613,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                       public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader {get; } = new LightProtoReader();
                       public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter {get; } = new LightProtoWriter();
 
-                      public sealed class LightProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
+                      internal sealed class LightProtoWriter:IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -697,7 +697,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           }
                       }
                       
-                      public sealed class LightProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
+                      internal sealed class LightProtoReader:IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
                       {
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;

@@ -22,7 +22,7 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
         static list => list.Clear()
     );
 
-    public ArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
+    internal ArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
     {
         ItemReader = itemReader;
         ItemFixedSize = itemFixedSize;

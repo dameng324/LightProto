@@ -35,7 +35,7 @@ namespace LightProto
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
         /// </summary>
-        public static readonly int DefaultBufferSize = 4096;
+        static readonly int DefaultBufferSize = 4096;
 
         private readonly bool leaveOpen;
         private readonly byte[] buffer;
@@ -136,7 +136,7 @@ namespace LightProto
         /// <summary>
         /// Flushes any buffered data to the underlying stream (if there is one).
         /// </summary>
-        public void Flush()
+        internal void Flush()
         {
             var span = new Span<byte>(buffer);
             WriteBufferHelper.Flush(ref span, ref state);
