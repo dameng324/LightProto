@@ -8,37 +8,26 @@ using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
 
 namespace LightProto.Generator;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public class LightProtoGenerator : IIncrementalGenerator
 {
     const string NewLine = "\r\n";
+    const string ProtoContractAttributeFullName = "LightProto.ProtoContractAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var namedTypeSymbols = context.SyntaxProvider.CreateSyntaxProvider(
+        var symbols = context.SyntaxProvider.ForAttributeWithMetadataName(
+            ProtoContractAttributeFullName,
             predicate: (node, _) =>
                 node
                     is ClassDeclarationSyntax
                         or StructDeclarationSyntax
                         or InterfaceDeclarationSyntax
                         or RecordDeclarationSyntax,
-            transform: (ctx, _) => ctx.SemanticModel.GetDeclaredSymbol(ctx.Node)
+            transform: (ctx, _) => ctx.TargetSymbol
         );
 
-        var protoContracts = namedTypeSymbols.Where(
-            (symbol) =>
-            {
-                if (symbol is not INamedTypeSymbol)
-                    return false;
-                return symbol
-                    .GetAttributes()
-                    .Any(attr =>
-                        attr.AttributeClass?.ToDisplayString()
-                        == "LightProto.ProtoContractAttribute"
-                    );
-            }
-        );
-        var typesAndCompilation = protoContracts.Combine(context.CompilationProvider);
+        var typesAndCompilation = symbols.Combine(context.CompilationProvider);
 
         context.RegisterSourceOutput(
             typesAndCompilation,
@@ -1512,7 +1501,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
         var isProtoContract = parser
             .GetAttributes()
-            .Any(o => o.AttributeClass?.ToDisplayString() == "LightProto.ProtoContractAttribute");
+            .Any(o => o.AttributeClass?.ToDisplayString() == ProtoContractAttributeFullName);
 
         var memberTypeDisplayString = memberType
             .WithNullableAnnotation(NullableAnnotation.None)
@@ -1763,9 +1752,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         return memberType.TypeKind != TypeKind.Enum
                 && memberType
                     .GetAttributes()
-                    .Any(o =>
-                        o.AttributeClass?.ToDisplayString() == "LightProto.ProtoContractAttribute"
-                    )
+                    .Any(o => o.AttributeClass?.ToDisplayString() == ProtoContractAttributeFullName)
             || (
                 memberType is INamedTypeSymbol namedType
                 && namedType.AllInterfaces.Any(i =>
@@ -1969,7 +1956,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         var protoContractAttr = targetType
             .GetAttributes()
             .FirstOrDefault(attr =>
-                attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoContractAttribute"
+                attr.AttributeClass?.ToDisplayString() == ProtoContractAttributeFullName
             );
 
         if (protoContractAttr is null)
@@ -2238,9 +2225,10 @@ public class LightProtoGenerator : IIncrementalGenerator
             if (member is IPropertySymbol property)
             {
                 memberName = property.Name;
-                var propertyDeclarationSyntax = typeDeclaration
-                    .Members.OfType<PropertyDeclarationSyntax>()
-                    .FirstOrDefault(m => m.Identifier.Text == memberName);
+                var propertyDeclarationSyntax = property
+                    .DeclaringSyntaxReferences.Select(x => x.GetSyntax())
+                    .OfType<PropertyDeclarationSyntax>()
+                    .FirstOrDefault();
                 memberDeclarationSyntax = propertyDeclarationSyntax;
                 var initializerSyntax = propertyDeclarationSyntax?.Initializer?.Value;
                 initializer = initializerSyntax is null ? null : emitter.Emit(initializerSyntax);
@@ -2253,11 +2241,17 @@ public class LightProtoGenerator : IIncrementalGenerator
             else if (member is IFieldSymbol field)
             {
                 memberName = field.Name;
-                var fieldDeclarationSyntax = typeDeclaration
-                    .Members.OfType<FieldDeclarationSyntax>()
-                    .FirstOrDefault(m =>
-                        m.Declaration.Variables.Any(v => v.Identifier.Text == memberName)
-                    );
+
+                var fieldDeclarationSyntax = field
+                    .DeclaringSyntaxReferences.Select(x =>
+                        x.GetSyntax() is VariableDeclaratorSyntax v
+                        && v.Parent is VariableDeclarationSyntax vd
+                        && vd.Parent is FieldDeclarationSyntax f
+                            ? f
+                            : null
+                    )
+                    .OfType<FieldDeclarationSyntax>()
+                    .FirstOrDefault();
 
                 memberDeclarationSyntax = fieldDeclarationSyntax;
                 var initializerSyntax = fieldDeclarationSyntax
@@ -2277,7 +2271,9 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             if (memberDeclarationSyntax is null)
             {
-                throw LightProtoGeneratorException.Member_DeclarationSyntax_Not_Found(memberName);
+                throw LightProtoGeneratorException.Member_DeclarationSyntax_Not_Found(
+                    $"{targetType.ToDisplayString()}.{member.Name}"
+                );
             }
 
             if (initializer is null)
