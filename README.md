@@ -10,11 +10,7 @@
 ![Size](https://img.shields.io/github/repo-size/dameng324/LightProto.svg)
 [![License](https://img.shields.io/github/license/dameng324/LightProto.svg)](LICENSE)
 
-A high‑performance, Native AOT–friendly Protocol Buffers implementation for C#/.NET. 
-
-## Warnings ⚠️
-
-This project is under active development and may introduce breaking changes. Use in production at your own risk.
+A high‑performance, Native AOT–friendly, production ready Protocol Buffers implementation for C#/.NET, powered by source generators.
 
 ## Why LightProto? 🤔
 
@@ -23,11 +19,12 @@ This project is under active development and may introduce breaking changes. Use
 ## Features ✨
 
 - Source generator–powered serializers/parsers at compile time
+- AOT-friendly by design, No IL warnings
+- minimal C# 9.0 requirement for broader compatibility (including Unity)
+- No third-party dependencies
 - protobuf-net–style Serializer API and familiar attributes
+- Performance is about 20%-50% better than protobuf-net, see [benchmarks](#performance--benchmarks-) below
 - Target frameworks: netstandard2.0, net8.0, net9.0, net10.0
-- C# 9 language support for Unity Environments
-- Performance is about 20%-50% better than protobuf-net
-- AOT-friendly by design
 - Stream and IBufferWriter<byte> serialization or ToByteArray
 - ReadOnlySpan<byte>/ReadOnlySequence<byte>/Stream deserialization
 
@@ -46,52 +43,6 @@ This project is under active development and may introduce breaking changes. Use
 - `IDictionary<,>`, `IReadOnlyDictionary<,>`
 - `ConcurrentBag<>`, `ConcurrentQueue<>`, `ConcurrentStack<>`, `ConcurrentDictionary<,>`, `BlockingCollection<>`
 - `ImmutableList<>`, `ImmutableArray<>`, `ImmutableHashSet<>`, `ImmutableDictionary<,>`
-
-## Performance & Benchmarks 📊
-
-The following benchmarks compare serialization performance between LightProto, protobuf-net, and Google.Protobuf.
-
-You can reproduce these by cloning the repo and running tests/Benchmark.
-
-```md
-BenchmarkDotNet v0.15.3, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
-AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 10.0.100-rc.1.25451.107
-[Host]    : .NET 8.0.20 (8.0.20, 8.0.2025.41914), X64 RyuJIT x86-64-v3
-.NET 10.0 : .NET 10.0.0 (10.0.0-rc.1.25451.107, 10.0.25.45207), X64 RyuJIT x86-64-v3
-.NET 8.0  : .NET 8.0.20 (8.0.20, 8.0.2025.41914), X64 RyuJIT x86-64-v3
-.NET 9.0  : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
-```
-| Method                   | Job       | Runtime   | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
-|------------------------- |---------- |---------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
-| Serialize_ProtoBuf_net   | .NET 10.0 | .NET 10.0 | 645.6 μs | 12.70 μs | 11.88 μs |  1.39 |    0.03 | 526.41 KB |        1.03 |
-| Serialize_GoogleProtoBuf | .NET 10.0 | .NET 10.0 | 539.9 μs | 10.71 μs | 12.75 μs |  1.16 |    0.03 | 512.95 KB |        1.00 |
-| Serialize_LightProto     | .NET 10.0 | .NET 10.0 | 465.1 μs |  7.88 μs |  6.99 μs |  1.00 |    0.02 | 512.95 KB |        1.00 |
-|                          |           |           |          |          |          |       |         |           |             |
-| Serialize_ProtoBuf_net   | .NET 8.0  | .NET 8.0  | 757.0 μs | 12.80 μs | 11.98 μs |  1.42 |    0.04 | 526.41 KB |        1.03 |
-| Serialize_GoogleProtoBuf | .NET 8.0  | .NET 8.0  | 553.9 μs | 10.97 μs |  9.72 μs |  1.04 |    0.03 | 512.95 KB |        1.00 |
-| Serialize_LightProto     | .NET 8.0  | .NET 8.0  | 531.9 μs | 10.52 μs | 14.04 μs |  1.00 |    0.04 | 512.95 KB |        1.00 |
-|                          |           |           |          |          |          |       |         |           |             |
-| Serialize_ProtoBuf_net   | .NET 9.0  | .NET 9.0  | 712.6 μs | 13.61 μs | 12.73 μs |  1.39 |    0.04 | 526.41 KB |        1.03 |
-| Serialize_GoogleProtoBuf | .NET 9.0  | .NET 9.0  | 546.7 μs | 10.70 μs | 16.33 μs |  1.07 |    0.04 | 512.95 KB |        1.00 |
-| Serialize_LightProto     | .NET 9.0  | .NET 9.0  | 513.6 μs | 10.15 μs | 13.89 μs |  1.00 |    0.04 | 512.95 KB |        1.00 |
-
-
-| Method                     | Job       | Runtime   | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
-|--------------------------- |---------- |---------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
-| Deserialize_ProtoBuf_net   | .NET 10.0 | .NET 10.0 | 569.2 μs | 10.88 μs | 12.53 μs |  1.38 |    0.04 |    562 KB |        0.84 |
-| Deserialize_GoogleProtoBuf | .NET 10.0 | .NET 10.0 | 441.4 μs |  8.67 μs | 10.64 μs |  1.07 |    0.04 |  648.7 KB |        0.97 |
-| Deserialize_LightProto     | .NET 10.0 | .NET 10.0 | 411.5 μs |  8.08 μs |  9.92 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
-|                            |           |           |          |          |          |       |         |           |             |
-| Deserialize_ProtoBuf_net   | .NET 8.0  | .NET 8.0  | 688.0 μs | 13.51 μs | 15.56 μs |  1.55 |    0.05 |    562 KB |        0.84 |
-| Deserialize_GoogleProtoBuf | .NET 8.0  | .NET 8.0  | 595.5 μs | 11.51 μs | 16.14 μs |  1.34 |    0.04 |  648.7 KB |        0.97 |
-| Deserialize_LightProto     | .NET 8.0  | .NET 8.0  | 444.8 μs |  8.88 μs |  9.12 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
-|                            |           |           |          |          |          |       |         |           |             |
-| Deserialize_ProtoBuf_net   | .NET 9.0  | .NET 9.0  | 662.3 μs | 12.60 μs | 11.17 μs |  1.53 |    0.04 |    562 KB |        0.84 |
-| Deserialize_GoogleProtoBuf | .NET 9.0  | .NET 9.0  | 491.7 μs |  9.64 μs | 13.52 μs |  1.14 |    0.04 |  648.7 KB |        0.97 |
-| Deserialize_LightProto     | .NET 9.0  | .NET 9.0  | 431.9 μs |  8.33 μs |  9.25 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
-
-Note: Results vary by hardware, runtime, and data model. Please run the benchmarks on your environment for the most relevant numbers.
 
 ## Quick Start ⚡
 
@@ -188,18 +139,18 @@ LightProto aims to minimize differences from protobuf-net; notable ones include:
 
 protobuf-net: partial not required
 
-LightProto: mark [ProtoContract] types as partial so the generator can emit code. 
+LightProto: mark `[ProtoContract]` types as partial so the generator can emit code. 
 
 ### Serialization APIs
 
-protobuf-net: Serializer.Serialize<T>(...) and Serializer.Deserialize<T>(...)
+protobuf-net: `Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)`
 
 LightProto: 
 
-- Generic-constrained APIs: Serializer.Serialize<T>(...) and Serializer.Deserialize<T>(...) require that T must implement IProtoParser<T> (i.e., a generated message type); 
-- Explicitly passing IProtoReader/Writer APIs: Serializer.Serialize<T>(..., IProtoWriter<T>) and Serializer.Deserialize<T>(..., IProtoReader<T>) for types without IProtoParser<T> implementation (e.g., primitive types).
-- Non-Generic-constrained APIs: Serializer.SerializeDynamically<T>(...) and Serializer.DeserializeDynamically<T>(...) resolve IProtoReader/Writer at runtime (not AOT-safe for generic container shapes).
-  They only work in AOT when T is a [ProtoContract]-marked type or a primitive/known built-in type; using generic container shapes like Nullable<>, Lazy<>, List<>, Dictionary<,> etc. will fail at runtime on AOT due to missing type metadata.
+- Generic-constrained APIs: `Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)` require that `T` must implement `IProtoParser<T>` (i.e., a generated message type); 
+- Explicitly passing `IProtoReader/Writer` APIs: `Serializer.Serialize<T>(..., IProtoWriter<T>)` and `Serializer.Deserialize<T>(..., IProtoReader<T>)` for types without `IProtoParser<T>` implementation (e.g., primitive types).
+- Non-Generic-constrained APIs: `Serializer.SerializeDynamically<T>(...)` and `Serializer.DeserializeDynamically<T>(...)` resolve `IProtoReader/Writer` at runtime (not AOT-safe for generic container shapes).
+  They only work in AOT when `T` is a `[ProtoContract]` marked type or a primitive/known built-in type; using generic container shapes like `Nullable<>`, `Lazy<>`, `List<>`, `Dictionary<,>` etc. will fail at runtime on AOT due to missing type metadata.
 
 ```csharp
 int a=10;
@@ -219,11 +170,11 @@ List<int> arr3=LightProto.Serializer.DeserializeDynamically<List<int>>(bytes); /
 
 ### .netstandard
 
-In .netstandard targeting platform such as .NET framework, we can't use [static virtual members in interface](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members) to find ProtoReader/Writer.
+In .netstandard targeting platform such as .NET Framework, we can't use [static virtual members in interface](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members) to find `ProtoReader/Writer`.
 
-So LightProto requires user to specify a ProtoWriter when serializing and a ProtoReader when deserializing.
+So LightProto requires user to specify a `ProtoWriter` when serializing and a `ProtoReader` when deserializing.
 
-For `[ProtoContract]` marked MessageType the ProtoReader/Writer is generated by LightProto, just use MessageType.ProtoReader/Writer.
+For `[ProtoContract]` marked MessageType the `ProtoReader/Writer` is generated by LightProto, just use `MessageType.ProtoReader/Writer`.
 
 For primitive types, LightProto has predefined in `LightProto.Parser` namespace, such as `LightProto.Parser.DateTimeParser`. 
 
@@ -231,9 +182,9 @@ If you don't need AOT support, you can use dynamic APIs `Serializer.SerializeDyn
 
 ### IExtensible
 
-protobuf-net: supports IExtensible for dynamic extensions
+protobuf-net: supports `IExtensible` for dynamic extensions
 
-LightProto: IExtensible is defined for compatibility only and has no effect
+LightProto: `IExtensible` is defined for compatibility only and has no effect
 
 ### Surrogates
 
@@ -291,7 +242,7 @@ You can also read/write raw binary data, for example see:[DateOnlyProtoParser](h
 
 protobuf-net: Use `RuntimeTypeModel.Default.StringInterning = true;` to enable string interning globally
 
-LightProto: [StringIntern] attribute can apply to individual string members/class/module/assembly. 
+LightProto: `[StringIntern]` attribute can apply to individual string members/class/module/assembly. 
 
 ### RuntimeTypeModel
 
@@ -305,13 +256,63 @@ LightProto supports C# 9, making it compatible with Unity projects targeting .NE
 
 IL2CPP builds are supported since LightProto is AOT-friendly.
 
+## Performance & Benchmarks 📊
+
+The following benchmarks compare serialization performance between LightProto, protobuf-net, and Google.Protobuf.
+
+You can reproduce these by cloning the repo and running tests/Benchmark.
+
+```md
+BenchmarkDotNet v0.15.3, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
+AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 10.0.100-rc.1.25451.107
+[Host]    : .NET 8.0.20 (8.0.20, 8.0.2025.41914), X64 RyuJIT x86-64-v3
+.NET 10.0 : .NET 10.0.0 (10.0.0-rc.1.25451.107, 10.0.25.45207), X64 RyuJIT x86-64-v3
+.NET 8.0  : .NET 8.0.20 (8.0.20, 8.0.2025.41914), X64 RyuJIT x86-64-v3
+.NET 9.0  : .NET 9.0.9 (9.0.9, 9.0.925.41916), X64 RyuJIT x86-64-v3
+```
+| Method                   | Job       | Runtime   | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------------------------- |---------- |---------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Serialize_ProtoBuf_net   | .NET 10.0 | .NET 10.0 | 645.6 μs | 12.70 μs | 11.88 μs |  1.39 |    0.03 | 526.41 KB |        1.03 |
+| Serialize_GoogleProtoBuf | .NET 10.0 | .NET 10.0 | 539.9 μs | 10.71 μs | 12.75 μs |  1.16 |    0.03 | 512.95 KB |        1.00 |
+| Serialize_LightProto     | .NET 10.0 | .NET 10.0 | 465.1 μs |  7.88 μs |  6.99 μs |  1.00 |    0.02 | 512.95 KB |        1.00 |
+|                          |           |           |          |          |          |       |         |           |             |
+| Serialize_ProtoBuf_net   | .NET 8.0  | .NET 8.0  | 757.0 μs | 12.80 μs | 11.98 μs |  1.42 |    0.04 | 526.41 KB |        1.03 |
+| Serialize_GoogleProtoBuf | .NET 8.0  | .NET 8.0  | 553.9 μs | 10.97 μs |  9.72 μs |  1.04 |    0.03 | 512.95 KB |        1.00 |
+| Serialize_LightProto     | .NET 8.0  | .NET 8.0  | 531.9 μs | 10.52 μs | 14.04 μs |  1.00 |    0.04 | 512.95 KB |        1.00 |
+|                          |           |           |          |          |          |       |         |           |             |
+| Serialize_ProtoBuf_net   | .NET 9.0  | .NET 9.0  | 712.6 μs | 13.61 μs | 12.73 μs |  1.39 |    0.04 | 526.41 KB |        1.03 |
+| Serialize_GoogleProtoBuf | .NET 9.0  | .NET 9.0  | 546.7 μs | 10.70 μs | 16.33 μs |  1.07 |    0.04 | 512.95 KB |        1.00 |
+| Serialize_LightProto     | .NET 9.0  | .NET 9.0  | 513.6 μs | 10.15 μs | 13.89 μs |  1.00 |    0.04 | 512.95 KB |        1.00 |
+
+
+| Method                     | Job       | Runtime   | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|--------------------------- |---------- |---------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Deserialize_ProtoBuf_net   | .NET 10.0 | .NET 10.0 | 569.2 μs | 10.88 μs | 12.53 μs |  1.38 |    0.04 |    562 KB |        0.84 |
+| Deserialize_GoogleProtoBuf | .NET 10.0 | .NET 10.0 | 441.4 μs |  8.67 μs | 10.64 μs |  1.07 |    0.04 |  648.7 KB |        0.97 |
+| Deserialize_LightProto     | .NET 10.0 | .NET 10.0 | 411.5 μs |  8.08 μs |  9.92 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
+|                            |           |           |          |          |          |       |         |           |             |
+| Deserialize_ProtoBuf_net   | .NET 8.0  | .NET 8.0  | 688.0 μs | 13.51 μs | 15.56 μs |  1.55 |    0.05 |    562 KB |        0.84 |
+| Deserialize_GoogleProtoBuf | .NET 8.0  | .NET 8.0  | 595.5 μs | 11.51 μs | 16.14 μs |  1.34 |    0.04 |  648.7 KB |        0.97 |
+| Deserialize_LightProto     | .NET 8.0  | .NET 8.0  | 444.8 μs |  8.88 μs |  9.12 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
+|                            |           |           |          |          |          |       |         |           |             |
+| Deserialize_ProtoBuf_net   | .NET 9.0  | .NET 9.0  | 662.3 μs | 12.60 μs | 11.17 μs |  1.53 |    0.04 |    562 KB |        0.84 |
+| Deserialize_GoogleProtoBuf | .NET 9.0  | .NET 9.0  | 491.7 μs |  9.64 μs | 13.52 μs |  1.14 |    0.04 |  648.7 KB |        0.97 |
+| Deserialize_LightProto     | .NET 9.0  | .NET 9.0  | 431.9 μs |  8.33 μs |  9.25 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
+
+Note: Results vary by hardware, runtime, and data model. Please run the benchmarks on your environment for the most relevant numbers.
+
 ## Working with .proto files 📄
 
-LightProto doesn’t ship a .proto → C# generator. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn’t work, please file an issue.
+LightProto doesn’t ship a .proto → C# generator for now. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn’t work, please file an issue.
+
+If you need a dedicated .proto → C# generator, please vote this [issue](https://github.com/dameng324/LightProto/issues/85).
 
 ## Contributing 🤝
 
-Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed contribution guidelines.
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed contribution guidelines. 
+
+[ARCHITECTURE.md](ARCHITECTURE.md) describes the internal design and structure of LightProto, which may be helpful for contributors.
 
 ## License 📄
 
