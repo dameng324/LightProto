@@ -59,4 +59,14 @@
     <AdditionalFiles Include="PublicAPI/net/PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="PublicAPI/net/PublicAPI.Unshipped.txt" />
   </ItemGroup>
+  <!-- Enable Source Link for better debugging experience -->
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
 </Project>
