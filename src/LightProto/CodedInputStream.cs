@@ -34,7 +34,7 @@ namespace LightProto
         /// </summary>
         private readonly bool leaveOpen;
 
-        internal int leftSize;
+        internal long leftSize;
 
         /// <summary>
         /// Buffer of data read from the stream or provided at construction time.
@@ -54,7 +54,7 @@ namespace LightProto
         private ParserInternalState state;
 
         internal const int DefaultRecursionLimit = 100;
-        internal const int DefaultSizeLimit = Int32.MaxValue;
+        internal const long DefaultSizeLimit = long.MaxValue;
         internal const int BufferSize = 4096;
 
         #region Construction
@@ -67,7 +67,7 @@ namespace LightProto
         /// <c cref="CodedInputStream"/> is disposed; <c>false</c> to dispose of the given stream when the
         /// returned object is disposed.</param>
         /// <param name="maxSize"></param>
-        internal CodedInputStream(Stream input, bool leaveOpen, int maxSize = int.MaxValue)
+        internal CodedInputStream(Stream input, bool leaveOpen, long maxSize = long.MaxValue)
             : this(
                 ProtoPreconditions.CheckNotNull(input, "input"),
                 new byte[BufferSize],
@@ -87,7 +87,7 @@ namespace LightProto
             int bufferPos,
             int bufferSize,
             bool leaveOpen,
-            int maxSize
+            long maxSize
         )
         {
             this.input = input;
@@ -98,7 +98,7 @@ namespace LightProto
             this.state.recursionLimit = DefaultRecursionLimit;
             SegmentedBufferHelper.Initialize(this, out this.state.segmentedBufferHelper);
             this.leaveOpen = leaveOpen;
-            this.state.currentLimit = int.MaxValue;
+            this.state.currentLimit = DefaultSizeLimit;
             this.leftSize = maxSize;
         }
 

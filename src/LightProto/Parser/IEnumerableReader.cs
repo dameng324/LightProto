@@ -57,10 +57,10 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
             && PackedRepeated.Support<TItem>()
         )
         {
-            int length = ctx.ReadLength();
+            var length = ctx.ReadInt64();
             if (length <= 0)
                 return CreateWithCapacity(0);
-            int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
+            var oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
 
             try
             {
@@ -76,7 +76,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
                 )
                 {
                     var count = length / fixedSize;
-                    var collection = CreateWithCapacity(count);
+                    var collection = CreateWithCapacity((int)count);
                     // if littleEndian treat array as bytes and directly copy from buffer for improved performance
                     // if (
                     //     collection is List<TItem> list

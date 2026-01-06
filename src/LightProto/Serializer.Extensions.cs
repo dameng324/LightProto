@@ -48,13 +48,13 @@ public static partial class Serializer
     {
         if (reader.IsMessage)
         {
-            int length = ParsingPrimitives.ParseLength(ref input.buffer, ref input.state);
+            var length = input.ReadInt64();
             if (input.state.recursionDepth >= input.state.recursionLimit)
             {
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
             }
 
-            int oldLimit = SegmentedBufferHelper.PushLimit(ref input.state, length);
+            var oldLimit = SegmentedBufferHelper.PushLimit(ref input.state, length);
             ++input.state.recursionDepth;
             var message = reader.ParseFrom(ref input);
 
