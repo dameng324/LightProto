@@ -105,14 +105,14 @@ namespace LightProto
         /// limit is returned.
         /// </summary>
         /// <returns>The old limit.</returns>
-        public static int PushLimit(ref ParserInternalState state, int byteLimit)
+        public static long PushLimit(ref ParserInternalState state, long byteLimit)
         {
             if (byteLimit < 0)
             {
                 throw InvalidProtocolBufferException.NegativeSize();
             }
             byteLimit += state.totalBytesRetired + state.bufferPos;
-            int oldLimit = state.currentLimit;
+            var oldLimit = state.currentLimit;
             if (byteLimit > oldLimit)
             {
                 throw InvalidProtocolBufferException.TruncatedMessage();
@@ -127,7 +127,7 @@ namespace LightProto
         /// <summary>
         /// Discards the current limit, returning the previous limit.
         /// </summary>
-        public static void PopLimit(ref ParserInternalState state, int oldLimit)
+        public static void PopLimit(ref ParserInternalState state, long oldLimit)
         {
             state.currentLimit = oldLimit;
             RecomputeBufferSizeAfterLimit(ref state);
@@ -143,7 +143,7 @@ namespace LightProto
             {
                 return false;
             }
-            int currentAbsolutePosition = state.totalBytesRetired + state.bufferPos;
+            long currentAbsolutePosition = state.totalBytesRetired + state.bufferPos;
             return currentAbsolutePosition >= state.currentLimit;
         }
 
@@ -208,7 +208,7 @@ namespace LightProto
             else
             {
                 RecomputeBufferSizeAfterLimit(ref state);
-                int totalBytesRead =
+                long totalBytesRead =
                     state.totalBytesRetired + state.bufferSize + state.bufferSizeAfterLimit;
                 if (totalBytesRead < 0 || totalBytesRead > state.sizeLimit)
                 {
@@ -245,7 +245,7 @@ namespace LightProto
             state.totalBytesRetired += state.bufferSize;
 
             state.bufferPos = 0;
-            int bytesToRead = Math.Min(buffer.Length, codedInputStream.leftSize);
+            int bytesToRead = (int)Math.Min(buffer.Length, codedInputStream.leftSize);
             if (bytesToRead == 0)
             {
                 state.bufferSize = 0;
@@ -273,7 +273,7 @@ namespace LightProto
             else
             {
                 RecomputeBufferSizeAfterLimit(ref state);
-                int totalBytesRead =
+                long totalBytesRead =
                     state.totalBytesRetired + state.bufferSize + state.bufferSizeAfterLimit;
                 if (totalBytesRead < 0 || totalBytesRead > state.sizeLimit)
                 {
@@ -286,11 +286,11 @@ namespace LightProto
         private static void RecomputeBufferSizeAfterLimit(ref ParserInternalState state)
         {
             state.bufferSize += state.bufferSizeAfterLimit;
-            int bufferEnd = state.totalBytesRetired + state.bufferSize;
+            long bufferEnd = state.totalBytesRetired + state.bufferSize;
             if (bufferEnd > state.currentLimit)
             {
                 // Limit is in current buffer.
-                state.bufferSizeAfterLimit = bufferEnd - state.currentLimit;
+                state.bufferSizeAfterLimit = (int)(bufferEnd - state.currentLimit);
                 state.bufferSize -= state.bufferSizeAfterLimit;
             }
             else

@@ -88,7 +88,7 @@ public partial class FailedTests
     {
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
-            var bytes = new byte[] { 10, 255, 255, 255, 255, 255, 255, 255, 255, 1, 16, 1 };
+            var bytes = new byte[] { 10, 199, 159, 255, 255, 255, 255, 255, 255, 255, 1, 16, 1 };
             var strings = Serializer.Deserialize<TestContract>(bytes);
             await Task.CompletedTask;
         });

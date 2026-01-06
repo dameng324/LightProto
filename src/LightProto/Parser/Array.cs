@@ -44,7 +44,7 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
             int length = ctx.ReadLength();
             if (length <= 0)
                 return [];
-            int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
+            var oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
 
             try
             {
