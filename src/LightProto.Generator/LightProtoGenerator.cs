@@ -1006,6 +1006,11 @@ public class LightProtoGenerator : IIncrementalGenerator
 
         var check = $"{messageName}.{member.Name} != null";
 
+        if (member.Type.SpecialType == SpecialType.System_String)
+        {
+            return check;
+        }
+
         if (HasCountProperty(member.Type))
         {
             return $"{check} && {messageName}.{member.Name}.Count > 0";
