@@ -1006,13 +1006,19 @@ public class LightProtoGenerator : IIncrementalGenerator
 
         var check = $"{messageName}.{member.Name} != null";
 
-        if (HasCountProperty(member.Type))
+        if (
+            IsCollectionType(member.Compilation, member.Type)
+            || IsDictionaryType(member.Compilation, member.Type)
+        )
         {
-            return $"{check} && {messageName}.{member.Name}.Count > 0";
-        }
-        if (HasLengthProperty(member.Type))
-        {
-            return $"{check} && {messageName}.{member.Name}.Length > 0";
+            if (HasCountProperty(member.Type))
+            {
+                return $"{check} && {messageName}.{member.Name}.Count > 0";
+            }
+            if (HasLengthProperty(member.Type))
+            {
+                return $"{check} && {messageName}.{member.Name}.Length > 0";
+            }
         }
 
         return check;

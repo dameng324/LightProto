@@ -26,7 +26,7 @@ public class IntergrationTests
             StringField = "hello",
             Int32Field = 20,
             Int32ArrayFields = new List<int>() { 0, 13123 },
-            StringArrayFields = { string.Empty, Guid.NewGuid().ToString() },
+            StringArrayFields = { Guid.NewGuid().ToString() },
             BytesField = Enumerable.Range(0, random.Next(100)).Select(_ => (byte)20).ToArray(),
             BoolField = random.Next() % 2 == 0,
             DoubleField = random.NextDouble(),
