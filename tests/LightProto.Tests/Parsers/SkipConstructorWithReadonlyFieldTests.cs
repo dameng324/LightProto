@@ -1,8 +1,9 @@
-﻿namespace LightProto.Tests.Parsers;
+namespace LightProto.Tests.Parsers;
 
+#if NET7_0_OR_GREATER
 [InheritsTests]
-public partial class SkipConstructorTests
-    : BaseTests<SkipConstructorTests.Message, StructTestsMessage>
+public partial class SkipConstructorWithReadonlyFieldTests
+    : BaseTests<SkipConstructorWithReadonlyFieldTests.Message, StructTestsMessage>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
@@ -10,21 +11,26 @@ public partial class SkipConstructorTests
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public string Property { get; set; }
+        public string Property { get; } = "PropertyInitializer";
 
-        public int IgnoredProperty { get; set; }
+        [ProtoMember(2)]
+        [ProtoBuf.ProtoMember(2)]
+        public readonly int Number = 42;
 
-        public Message()
+        public int IgnoredProperty { get; set; } = 100;
+
+        public Message(string property, int number)
         {
             IgnoredProperty = 10;
-            Property = string.Empty;
+            Property = "ConstructorValue";
+            Number = 99;
         }
     }
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new() { Property = string.Empty };
-        yield return new() { Property = Guid.NewGuid().ToString("N") };
+        yield return new(string.Empty, 0);
+        yield return new(Guid.NewGuid().ToString("N"), 123);
     }
 
     public override IEnumerable<StructTestsMessage> GetGoogleMessages()
@@ -36,6 +42,8 @@ public partial class SkipConstructorTests
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Number).IsEquivalentTo(message.Number);
+        // IgnoredProperty should be default (0), not the initializer (100) or constructor value (10)
         await Assert.That(clone.IgnoredProperty).IsEquivalentTo(0);
     }
 
@@ -46,3 +54,4 @@ public partial class SkipConstructorTests
             .IsEquivalentTo(message.Property ?? string.Empty);
     }
 }
+#endif

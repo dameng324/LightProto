@@ -115,7 +115,10 @@ public class LightProtoGenerator : IIncrementalGenerator
         var proxyFor = contract.ProxyFor;
         bool skipConstructor = contract.SkipConstructor;
         var implicitFields = contract.ImplicitFields;
-
+        var net8OrGreater =
+            contract.TypeDeclaration.SyntaxTree.Options.PreprocessorSymbolNames.Contains(
+                "NET8_0_OR_GREATER"
+            );
         var sourceBuilder = new StringBuilder();
 
         sourceBuilder.AppendLine(
@@ -785,7 +788,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                               }}
                               {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.SelectMany(member => {
-                                      return Gen();
+                                      return net8OrGreater ? [] : Gen();
+
                                       IEnumerable<string> Gen()
                                       {
                                           if (member.IsReadOnly && (IsCollectionType(compilation, member.Type)||IsDictionaryType(compilation, member.Type)))
@@ -820,28 +824,32 @@ public class LightProtoGenerator : IIncrementalGenerator
             );
             IEnumerable<string> GenSkipConstructor()
             {
-                yield return $"var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                if (net8OrGreater)
+                {
+                    yield return $"var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                }
+                else
+                {
+                    yield return $"var parsed = ({className})System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof({className}));";
+                }
                 foreach (var member in protoMembers)
                 {
-                    if (
-                        member.IsReadOnly
-                        && (
-                            IsCollectionType(compilation, member.Type)
-                            || IsDictionaryType(compilation, member.Type)
-                        )
-                    )
+                    if (member.IsReadOnly || member.IsInitOnly)
                     {
-                        throw LightProtoGeneratorException.ReadOnlyWhenSkipConstructor(
-                            member.Name,
-                            member.DeclarationSyntax.GetLocation()
-                        );
-                    }
-                    else if (member.IsInitOnly)
-                    {
-                        throw LightProtoGeneratorException.InitOnlyWhenSkipConstructor(
-                            member.Name,
-                            member.DeclarationSyntax.GetLocation()
-                        );
+                        if (net8OrGreater)
+                        {
+                            foreach (
+                                var p in AssignReadonlyMemberByUnsafeAccessor(contract, member)
+                            )
+                                yield return p;
+                        }
+                        else
+                        {
+                            throw LightProtoGeneratorException.InitOnlyOrReadOnlyWhenSkipConstructor(
+                                member.Name,
+                                member.DeclarationSyntax.GetLocation()
+                            );
+                        }
                     }
                     else
                     {
@@ -852,20 +860,42 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             IEnumerable<string> GenGeneralConstructor()
             {
+                if (contract.Type.Constructors.Any(x => x.Parameters.Length == 0) == false)
+                {
+                    throw LightProtoGeneratorException.No_Parameterless_Constructor(
+                        contract.Type.ToDisplayString(),
+                        contract.TypeDeclaration.GetLocation()
+                    );
+                }
+
                 yield return $"var parsed = new {className}()";
                 yield return $"{{";
 
+                var unsafeAccessorMember = new List<ProtoMember>();
+
                 foreach (var member in protoMembers)
                 {
-                    if (
-                        member.IsReadOnly
-                        && (
+                    if (member.IsReadOnly)
+                    {
+                        if (net8OrGreater)
+                        {
+                            unsafeAccessorMember.Add(member);
+                            yield return $"    // {member.Name} is readonly use UnsafeAccessor to assign value";
+                        }
+                        else if (
                             IsCollectionType(compilation, member.Type)
                             || IsDictionaryType(compilation, member.Type)
                         )
-                    )
-                    {
-                        yield return $"    // {member.Name} is readonly";
+                        {
+                            yield return $"    // {member.Name} is readonly";
+                        }
+                        else
+                        {
+                            throw LightProtoGeneratorException.ReadOnlyMemberCannotInitialize(
+                                $"{contract.Type}.{member.Name}",
+                                member.DeclarationSyntax.GetLocation()
+                            );
+                        }
                     }
                     else
                     {
@@ -874,6 +904,11 @@ public class LightProtoGenerator : IIncrementalGenerator
                 }
 
                 yield return $"}};";
+                foreach (var member in unsafeAccessorMember)
+                {
+                    foreach (var p in AssignReadonlyMemberByUnsafeAccessor(contract, member))
+                        yield return p;
+                }
             }
         }
         var nestedClassStructure = GenerateNestedClassStructure(targetType, classBody);
@@ -883,6 +918,36 @@ public class LightProtoGenerator : IIncrementalGenerator
             sourceBuilder.Append(@"}");
         }
         return sourceBuilder.ToString();
+    }
+
+    private static IEnumerable<string> AssignReadonlyMemberByUnsafeAccessor(
+        ProtoContract contract,
+        ProtoMember member
+    )
+    {
+        var fieldName = $"<{member.Name}>k__BackingField";
+        if (contract.Type.GetMembers(fieldName).Length > 0)
+        {
+            // OK
+        }
+        else if (contract.Type.GetMembers(member.Name).OfType<IFieldSymbol>().Any())
+        {
+            fieldName = member.Name;
+        }
+        else
+        {
+            throw LightProtoGeneratorException.CannotFindReadonlyMemberFieldName(
+                $"{contract.Type}.{member.Name}",
+                contract.TypeDeclaration.GetLocation()
+            );
+        }
+
+        yield return $"if (_{member.Name}HasValue) {{";
+        yield return $"    [System.Runtime.CompilerServices.UnsafeAccessor(System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = \"{fieldName}\")]";
+        yield return $"    static extern ref {member.Type} Get_{member.Name}_Field({contract.Type} message);";
+        yield return $"    ref var ref_{member.Name} = ref Get_{member.Name}_Field(parsed);";
+        yield return $"    ref_{member.Name} = _{member.Name};";
+        yield return $"}}";
     }
 
     private INamedTypeSymbol GetRootProtoBaseClass(INamedTypeSymbol type)
@@ -2595,33 +2660,16 @@ public class LightProtoGenerator : IIncrementalGenerator
         public Location? Location { get; set; }
         public IEnumerable<Location>? AdditionalLocations { get; set; }
 
-        public static LightProtoGeneratorException InitOnlyWhenSkipConstructor(
+        public static LightProtoGeneratorException InitOnlyOrReadOnlyWhenSkipConstructor(
             string memberName,
             Location? location
         )
         {
             return new LightProtoGeneratorException(
-                "Member should not be initonly when SkipConstructor as we can't assign a value to it"
+                "Member should not be initonly or readonly when SkipConstructor as we can't assign a value to it"
             )
             {
                 Id = "LIGHT_PROTO_001",
-                Title = $"{memberName} is InitOnly",
-                Category = "Usage",
-                Severity = DiagnosticSeverity.Error,
-                Location = location,
-            };
-        }
-
-        public static LightProtoGeneratorException ReadOnlyWhenSkipConstructor(
-            string memberName,
-            Location? location
-        )
-        {
-            return new LightProtoGeneratorException(
-                "Member should not be readonly when SkipConstructor as we can't assign a value to it"
-            )
-            {
-                Id = "LIGHT_PROTO_002",
                 Title = $"{memberName} is InitOnly",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
@@ -2831,6 +2879,57 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = location,
+            };
+        }
+
+        public static Exception CannotFindReadonlyMemberFieldName(
+            string memberName,
+            Location getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Cannot find backing field for property {memberName}. Only support auto property.'"
+            )
+            {
+                Id = "LIGHT_PROTO_016",
+                Title = $"Cannot find backing field for property {memberName}",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
+            };
+        }
+
+        public static Exception ReadOnlyMemberCannotInitialize(
+            string memberName,
+            Location getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"ReadOnly member {memberName} cannot be initialized."
+            )
+            {
+                Id = "LIGHT_PROTO_017",
+                Title = $"ReadOnly member {memberName} cannot be initialized",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
+            };
+        }
+
+        public static Exception No_Parameterless_Constructor(
+            string contractType,
+            Location getLocation
+        )
+        {
+            return new LightProtoGeneratorException(
+                $"Type {contractType} must have a parameterless constructor when SkipConstructor is false."
+            )
+            {
+                Id = "LIGHT_PROTO_018",
+                Title = $"Type {contractType} must have a parameterless constructor",
+                Category = "Usage",
+                Severity = DiagnosticSeverity.Error,
+                Location = getLocation,
             };
         }
     }
