@@ -845,7 +845,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        yield return $"if (_{member.Name}HasValue) parsed.{member.Name} =  _{member.Name};";
+                        yield return $"if (_{member.Name}HasValue) parsed.{member.Name} = _{member.Name};";
                     }
                 }
             }
