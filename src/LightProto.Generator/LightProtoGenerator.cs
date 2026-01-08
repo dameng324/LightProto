@@ -1006,11 +1006,6 @@ public class LightProtoGenerator : IIncrementalGenerator
 
         var check = $"{messageName}.{member.Name} != null";
 
-        if (member.Type.SpecialType == SpecialType.System_String)
-        {
-            return check;
-        }
-
         if (
             IsCollectionType(member.Compilation, member.Type)
             || IsDictionaryType(member.Compilation, member.Type)
