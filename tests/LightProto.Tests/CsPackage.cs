@@ -27,7 +27,7 @@ namespace LightProto.Tests
 
         [global::LightProto.ProtoMember(1)]
         [global::System.ComponentModel.DefaultValue("")]
-        public string StringField { get; set; } = "";
+        public string StringField { get; set; } = "123";
 
         [global::LightProto.ProtoMember(2)]
         public int Int32Field { get; set; }
@@ -210,7 +210,7 @@ namespace LightProto.Tests
 
         [global::LightProto.ProtoMember(72)]
         [global::System.ComponentModel.DefaultValue("")]
-        public StringBuilder StringBuilderField { get; set; } = new();
+        public StringBuilder? StringBuilderField { get; set; }
 
         public override bool Equals(object? obj)
         {
