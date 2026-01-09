@@ -353,7 +353,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   memberStructName += $".{derivedType.Name}_MemberStruct.Value";
                                               }
                                                   
-                                              var baseProtoMembers = GetProtoContract(compilation, derivedType,spc)!.Members;
+                                              var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
                                               foreach(var member in baseProtoMembers)
                                               {
                                                   yield return $"        {member.Name}={memberStructName}.{member.Name},";
@@ -860,7 +860,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             IEnumerable<string> GenGeneralConstructor()
             {
-                if (contract.Type.Constructors.Any(x => x.Parameters.Length == 0) == false)
+                if (!contract.Type.Constructors.Any(x => x.Parameters.Length == 0))
                 {
                     throw LightProtoGeneratorException.No_Parameterless_Constructor(
                         contract.Type.ToDisplayString(),
@@ -2395,10 +2395,10 @@ public class LightProtoGenerator : IIncrementalGenerator
             else
             {
                 if (
-                    skipConstructor == false
+                    !skipConstructor
                     && memberType.IsValueType
-                    && IsCollectionType(compilation, memberType) == false
-                    && IsDictionaryType(compilation, memberType) == false
+                    && !IsCollectionType(compilation, memberType)
+                    && !IsDictionaryType(compilation, memberType)
                 )
                 {
                     spc.ReportDiagnostic(
@@ -2701,7 +2701,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             )
             {
                 Id = "LIGHT_PROTO_001",
-                Title = $"{memberName} is InitOnly",
+                Title = $"{memberName} is InitOnly or ReadOnly when SkipConstructor",
                 Category = "Usage",
                 Severity = DiagnosticSeverity.Error,
                 Location = location,
@@ -2919,7 +2919,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         )
         {
             return new LightProtoGeneratorException(
-                $"Cannot find backing field for property {memberName}. Only support auto property.'"
+                $"Cannot find backing field for property {memberName}. Only support auto property."
             )
             {
                 Id = "LIGHT_PROTO_016",
@@ -2980,7 +2980,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     category: "Usage",
                     defaultSeverity: DiagnosticSeverity.Warning,
                     isEnabledByDefault: true,
-                    helpLinkUri: "https://github.com/dameng324/LightProto/blob/main/docs/Diagnostic.md#LIGHT_PROTO_W001"
+                    helpLinkUri: "https://github.com/dameng324/LightProto/blob/main/docs/Diagnostics.md#LIGHT_PROTO_W001"
                 ),
                 locations.FirstOrDefault() ?? Location.None,
                 additionalLocations: locations.Skip(1),

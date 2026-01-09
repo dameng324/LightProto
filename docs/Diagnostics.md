@@ -1,4 +1,4 @@
-﻿# Diagnotics 
+﻿# Diagnostics
 
 ## LIGHT_PROTO_W001
 

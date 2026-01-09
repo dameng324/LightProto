@@ -1,6 +1,6 @@
 namespace LightProto.Tests.Parsers;
 
-#if NET7_0_OR_GREATER
+#if NET8_0_OR_GREATER
 [InheritsTests]
 public partial class SkipConstructorWithReadonlyFieldTests
     : BaseTests<SkipConstructorWithReadonlyFieldTests.Message, StructTestsMessage>
