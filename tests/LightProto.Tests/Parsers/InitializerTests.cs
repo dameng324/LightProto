@@ -1,8 +1,13 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
+[SuppressMessage(
+    "Usage",
+    "LIGHT_PROTO_W001:Member has default value which may break deserialization"
+)]
 public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Message>
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllFields)]

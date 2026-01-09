@@ -348,7 +348,7 @@ namespace LightProto.Tests
             if (this.GuidField != other.GuidField)
                 return false;
 
-            if (this.StringBuilderField.ToString() != other.StringBuilderField.ToString())
+            if (this.StringBuilderField?.ToString() != other.StringBuilderField?.ToString())
                 return false;
 
             if (this.MapFields.Count != other.MapFields.Count)

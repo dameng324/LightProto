@@ -36,14 +36,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                 var (type, compilation) = pair;
                 try
                 {
-                    var contract = GetProtoContract(compilation, type);
+                    var contract = GetProtoContract(compilation, type, spc);
                     if (contract is null)
                     {
                         return;
                     }
 
                     // Generate the basic IMessage implementation
-                    var sourceCode = GenerateBasicProtobufMessage(contract);
+                    var sourceCode = GenerateBasicProtobufMessage(contract, spc);
                     var fileName = $"{type}.g.cs";
                     spc.AddSource(fileName, SourceText.From(sourceCode, Encoding.UTF8));
                 }
@@ -94,7 +94,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         return prediction() ? ifTrue() : ifFalse();
     }
 
-    private string GenerateBasicProtobufMessage(ProtoContract contract)
+    private string GenerateBasicProtobufMessage(ProtoContract contract, SourceProductionContext spc)
     {
         var targetType = contract.Type;
         var compilation = contract.Compilation;
@@ -353,7 +353,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   memberStructName += $".{derivedType.Name}_MemberStruct.Value";
                                               }
                                                   
-                                              var baseProtoMembers = GetProtoContract(compilation, derivedType)!.Members;
+                                              var baseProtoMembers = GetProtoContract(compilation, derivedType,spc)!.Members;
                                               foreach(var member in baseProtoMembers)
                                               {
                                                   yield return $"        {member.Name}={memberStructName}.{member.Name},";
@@ -2017,7 +2017,11 @@ public class LightProtoGenerator : IIncrementalGenerator
             new();
     }
 
-    private ProtoContract? GetProtoContract(Compilation compilation, ISymbol? type)
+    private ProtoContract? GetProtoContract(
+        Compilation compilation,
+        ISymbol? type,
+        SourceProductionContext spc
+    )
     {
         if (type is not INamedTypeSymbol targetType)
         {
@@ -2125,7 +2129,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                 }
             }
 
-            var contract = GetProtoContract(compilation, derivedType);
+            var contract = GetProtoContract(compilation, derivedType, spc);
             if (contract is null)
             {
                 throw LightProtoGeneratorException.ProtoInclude_Type_Should_Be_ProtoContract(
@@ -2165,7 +2169,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                 targetType,
                 typeDeclaration,
                 implicitFields,
-                implicitFirstTag
+                implicitFirstTag,
+                skipConstructor,
+                spc
             ),
             ImplicitFields = implicitFields,
             ImplicitFirstTag = implicitFirstTag,
@@ -2182,7 +2188,9 @@ public class LightProtoGenerator : IIncrementalGenerator
         INamedTypeSymbol targetType,
         TypeDeclarationSyntax typeDeclaration,
         ImplicitFields implicitFields,
-        uint firstImplicitTag
+        uint firstImplicitTag,
+        bool skipConstructor,
+        SourceProductionContext spc
     )
     {
         var members = new List<ProtoMember>();
@@ -2382,6 +2390,23 @@ public class LightProtoGenerator : IIncrementalGenerator
                 else
                 {
                     initializer = "default";
+                }
+            }
+            else
+            {
+                if (
+                    skipConstructor == false
+                    && memberType.IsValueType
+                    && IsCollectionType(compilation, memberType) == false
+                    && IsDictionaryType(compilation, memberType) == false
+                )
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.MemberDefaultValueMayBreakDeserialization(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
                 }
             }
 
@@ -2937,6 +2962,30 @@ public class LightProtoGenerator : IIncrementalGenerator
                 Severity = DiagnosticSeverity.Error,
                 Location = getLocation,
             };
+        }
+    }
+
+    internal static class LightProtoGeneratorWarning
+    {
+        internal static Diagnostic MemberDefaultValueMayBreakDeserialization(
+            string memberName,
+            ImmutableArray<Location> locations
+        )
+        {
+            return Diagnostic.Create(
+                new DiagnosticDescriptor(
+                    id: "LIGHT_PROTO_W001",
+                    title: "Member has default value which may break deserialization",
+                    messageFormat: "Member '{0}' has a default value which may get a different deserialization result than expected. Consider setting SkipConstructor=true on ProtoContract or removing the default value.",
+                    category: "Usage",
+                    defaultSeverity: DiagnosticSeverity.Warning,
+                    isEnabledByDefault: true,
+                    helpLinkUri: "https://github.com/dameng324/LightProto/blob/main/docs/Diagnostic.md#LIGHT_PROTO_W001"
+                ),
+                locations.FirstOrDefault() ?? Location.None,
+                additionalLocations: locations.Skip(1),
+                memberName
+            );
         }
     }
 }

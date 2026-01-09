@@ -11,11 +11,11 @@ public partial class SkipConstructorFalseWithReadonlyFieldTests
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public string Property { get; } = "PropertyInitializer";
+        public string Property { get; } = "";
 
         [ProtoMember(2)]
         [ProtoBuf.ProtoMember(2)]
-        public readonly int Number = 42;
+        public int Number;
 
         public int IgnoredProperty { get; set; } = 100;
 
@@ -23,15 +23,15 @@ public partial class SkipConstructorFalseWithReadonlyFieldTests
 
         public Message(string property, int number)
         {
-            IgnoredProperty = 10;
-            Property = "ConstructorValue";
-            Number = 99;
+            Property = property;
+            Number = number;
         }
     }
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new(string.Empty, 0);
+        yield return new(string.Empty, 10);
+        yield return new();
         yield return new(Guid.NewGuid().ToString("N"), 123);
     }
 
@@ -43,7 +43,7 @@ public partial class SkipConstructorFalseWithReadonlyFieldTests
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
         await Assert.That(clone.Number).IsEquivalentTo(message.Number);
         await Assert.That(clone.IgnoredProperty).IsEquivalentTo(100);
     }
