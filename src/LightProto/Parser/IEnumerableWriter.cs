@@ -3,12 +3,19 @@ namespace LightProto.Parser;
 public interface ICollectionWriter { }
 
 public class IEnumerableProtoWriter<TCollection, TItem>
-    : IProtoWriter<TCollection>,
+    : IProtoWriter,
+        IProtoWriter<TCollection>,
         ICollectionWriter
     where TCollection : IEnumerable<TItem>
 {
+    int IProtoWriter.CalculateSize(object value) => CalculateSize((TCollection)value);
+
+    void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+        WriteTo(ref output, (TCollection)value);
+
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
+
     public IProtoWriter<TItem> ItemWriter { get; }
     public uint Tag { get; set; }
     public Func<TCollection, int> GetCount { get; }

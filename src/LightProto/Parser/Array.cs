@@ -12,7 +12,12 @@ public sealed class ArrayProtoReader<TItem> : ICollectionReader<TItem[], TItem>
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
+
+    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
+
     public IProtoReader<TItem> ItemReader { get; }
     public TItem[] Empty => Array.Empty<TItem>();
     public int ItemFixedSize { get; }

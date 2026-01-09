@@ -5,8 +5,10 @@ public sealed class InternedStringProtoParser : IProtoParser<string>
     public static IProtoReader<string> ProtoReader { get; } = new InternedStringProtoReader();
     public static IProtoWriter<string> ProtoWriter => StringProtoParser.ProtoWriter;
 
-    sealed class InternedStringProtoReader : IProtoReader<string>
+    sealed class InternedStringProtoReader : IProtoReader, IProtoReader<string>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

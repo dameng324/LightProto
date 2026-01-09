@@ -3,11 +3,12 @@
 public interface ICollectionReader
 {
     public WireFormat.WireType ItemWireType { get; }
+    internal object Empty { get; }
 }
 
 public interface ICollectionReader<out TCollection> : ICollectionReader
 {
-    public TCollection Empty { get; }
+    public new TCollection Empty { get; }
 }
 
 public interface ICollectionItemReader<out TItem> : ICollectionReader
@@ -16,15 +17,19 @@ public interface ICollectionItemReader<out TItem> : ICollectionReader
 }
 
 public interface ICollectionReader<out TCollection, out TItem>
-    : IProtoReader<TCollection>,
+    : IProtoReader,
+        IProtoReader<TCollection>,
         ICollectionReader<TCollection>,
-        ICollectionItemReader<TItem> { }
+        ICollectionItemReader<TItem>;
 
 public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCollection, TItem>
     where TCollection : IEnumerable<TItem>
 {
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
+
+    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
     private readonly Func<TCollection, TCollection>? _completeAction;
     public IProtoReader<TItem> ItemReader { get; }
     public Func<int, TCollection> CreateWithCapacity { get; }
@@ -32,6 +37,7 @@ public class IEnumerableProtoReader<TCollection, TItem> : ICollectionReader<TCol
     public Func<TCollection, TItem, TCollection> AddItem { get; }
     public int ItemFixedSize { get; }
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
 
     public IEnumerableProtoReader(
         IProtoReader<TItem> itemReader,

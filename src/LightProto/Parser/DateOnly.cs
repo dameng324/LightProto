@@ -6,8 +6,10 @@ public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
     public static IProtoReader<DateOnly> ProtoReader { get; } = new DateOnlyProtoReader();
     public static IProtoWriter<DateOnly> ProtoWriter { get; } = new DateOnlyProtoWriter();
 
-    sealed class DateOnlyProtoReader : IProtoReader<DateOnly>
+    sealed class DateOnlyProtoReader : IProtoReader, IProtoReader<DateOnly>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
@@ -17,8 +19,13 @@ public sealed class DateOnlyProtoParser : IProtoParser<DateOnly>
         }
     }
 
-    sealed class DateOnlyProtoWriter : IProtoWriter<DateOnly>
+    sealed class DateOnlyProtoWriter : IProtoWriter, IProtoWriter<DateOnly>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((DateOnly)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (DateOnly)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 

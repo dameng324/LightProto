@@ -7,8 +7,10 @@ public sealed class ByteListProtoParser : IProtoParser<List<byte>>
     public static IProtoReader<List<byte>> ProtoReader { get; } = new ByteListProtoReader();
     public static IProtoWriter<List<byte>> ProtoWriter { get; } = new ByteListProtoWriter();
 
-    sealed class ByteListProtoReader : IProtoReader<List<byte>>
+    sealed class ByteListProtoReader : IProtoReader, IProtoReader<List<byte>>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -19,8 +21,13 @@ public sealed class ByteListProtoParser : IProtoParser<List<byte>>
         }
     }
 
-    sealed class ByteListProtoWriter : IProtoWriter<List<byte>>
+    sealed class ByteListProtoWriter : IProtoWriter, IProtoWriter<List<byte>>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((List<byte>)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (List<byte>)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

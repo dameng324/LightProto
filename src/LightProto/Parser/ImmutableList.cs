@@ -14,12 +14,16 @@ public sealed class ImmutableListProtoReader<TItem> : ICollectionReader<Immutabl
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
 
+    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
     public ImmutableList<TItem> ParseFrom(ref ReaderContext input)
     {
         return ImmutableList.Create(_arrayReader.ParseFrom(ref input));
     }
 
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
+
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
 

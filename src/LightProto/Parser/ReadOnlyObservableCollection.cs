@@ -21,6 +21,8 @@ public sealed class ReadOnlyObservableCollectionProtoReader<TItem>
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
 
+    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
     public ReadOnlyObservableCollection<TItem> ParseFrom(ref ReaderContext input)
     {
         return new ReadOnlyObservableCollection<TItem>(
@@ -29,6 +31,8 @@ public sealed class ReadOnlyObservableCollectionProtoReader<TItem>
     }
 
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
+
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
 

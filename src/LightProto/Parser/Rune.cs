@@ -6,8 +6,10 @@ public sealed class RuneProtoParser : IProtoParser<System.Text.Rune>
     public static IProtoReader<System.Text.Rune> ProtoReader { get; } = new RuneProtoReader();
     public static IProtoWriter<System.Text.Rune> ProtoWriter { get; } = new RuneProtoWriter();
 
-    sealed class RuneProtoReader : IProtoReader<System.Text.Rune>
+    sealed class RuneProtoReader : IProtoReader, IProtoReader<System.Text.Rune>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
@@ -17,8 +19,13 @@ public sealed class RuneProtoParser : IProtoParser<System.Text.Rune>
         }
     }
 
-    sealed class RuneProtoWriter : IProtoWriter<System.Text.Rune>
+    sealed class RuneProtoWriter : IProtoWriter, IProtoWriter<System.Text.Rune>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((System.Text.Rune)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (System.Text.Rune)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 

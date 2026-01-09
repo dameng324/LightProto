@@ -8,8 +8,10 @@ public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
     public static IProtoReader<Decimal> ProtoReader { get; } = new Decimal300ProtoReader();
     public static IProtoWriter<Decimal> ProtoWriter { get; } = new Decimal300ProtoWriter();
 
-    sealed class Decimal300ProtoReader : IProtoReader<Decimal>
+    sealed class Decimal300ProtoReader : IProtoReader, IProtoReader<Decimal>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -20,8 +22,13 @@ public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
         }
     }
 
-    sealed class Decimal300ProtoWriter : IProtoWriter<Decimal>
+    sealed class Decimal300ProtoWriter : IProtoWriter, IProtoWriter<Decimal>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((Decimal)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (Decimal)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

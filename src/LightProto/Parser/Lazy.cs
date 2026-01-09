@@ -33,8 +33,13 @@ public sealed class LazyProtoWriter<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
     T
-> : IProtoWriter<Lazy<T>>
+> : IProtoWriter, IProtoWriter<Lazy<T>>
 {
+    int IProtoWriter.CalculateSize(object value) => CalculateSize((Lazy<T>)value);
+
+    void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+        WriteTo(ref output, (Lazy<T>)value);
+
     public IProtoWriter<T> ValueWriter { get; }
     public WireFormat.WireType WireType => ValueWriter.WireType;
     public bool IsMessage => ValueWriter.IsMessage;

@@ -8,8 +8,10 @@ public sealed class CultureInfoProtoParser : IProtoParser<CultureInfo>
     public static IProtoReader<CultureInfo> ProtoReader { get; } = new CultureInfoProtoReader();
     public static IProtoWriter<CultureInfo> ProtoWriter { get; } = new CultureInfoProtoWriter();
 
-    sealed class CultureInfoProtoReader : IProtoReader<CultureInfo>
+    sealed class CultureInfoProtoReader : IProtoReader, IProtoReader<CultureInfo>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -20,8 +22,13 @@ public sealed class CultureInfoProtoParser : IProtoParser<CultureInfo>
         }
     }
 
-    sealed class CultureInfoProtoWriter : IProtoWriter<CultureInfo>
+    sealed class CultureInfoProtoWriter : IProtoWriter, IProtoWriter<CultureInfo>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((CultureInfo)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (CultureInfo)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

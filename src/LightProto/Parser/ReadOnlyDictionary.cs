@@ -35,11 +35,15 @@ public sealed class ReadOnlyDictionaryProtoReader<TKey, TValue>
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
 
+    object IProtoReader.ParseFrom(ref ReaderContext input) =>
+        new ReadOnlyDictionary<TKey, TValue>(_dictionaryReader.ParseFrom(ref input));
+
     ReadOnlyDictionary<TKey, TValue> IProtoReader<ReadOnlyDictionary<TKey, TValue>>.ParseFrom(
         ref ReaderContext input
     ) => new(_dictionaryReader.ParseFrom(ref input));
 
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
 
     public ReadOnlyDictionaryProtoReader(
         IProtoReader<TKey> keyReader,

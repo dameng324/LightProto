@@ -5,8 +5,10 @@ public sealed class Fixed64ProtoParser : IProtoParser<UInt64>
     public static IProtoReader<UInt64> ProtoReader { get; } = new Fixed64ProtoReader();
     public static IProtoWriter<UInt64> ProtoWriter { get; } = new Fixed64ProtoWriter();
 
-    sealed class Fixed64ProtoReader : IProtoReader<UInt64>
+    sealed class Fixed64ProtoReader : IProtoReader, IProtoReader<UInt64>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
         public bool IsMessage => false;
 
@@ -19,8 +21,13 @@ public sealed class Fixed64ProtoParser : IProtoParser<UInt64>
         }
     }
 
-    sealed class Fixed64ProtoWriter : IProtoWriter<UInt64>
+    sealed class Fixed64ProtoWriter : IProtoWriter, IProtoWriter<UInt64>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((UInt64)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (UInt64)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
         public bool IsMessage => false;
 

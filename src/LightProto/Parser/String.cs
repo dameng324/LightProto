@@ -5,8 +5,10 @@ public sealed class StringProtoParser : IProtoParser<string>
     public static IProtoReader<string> ProtoReader { get; } = new StringProtoReader();
     public static IProtoWriter<string> ProtoWriter { get; } = new StringProtoWriter();
 
-    sealed class StringProtoReader : IProtoReader<string>
+    sealed class StringProtoReader : IProtoReader, IProtoReader<string>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -19,8 +21,13 @@ public sealed class StringProtoParser : IProtoParser<string>
         }
     }
 
-    sealed class StringProtoWriter : IProtoWriter<string>
+    sealed class StringProtoWriter : IProtoWriter, IProtoWriter<string>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((string)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (string)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

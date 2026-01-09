@@ -22,11 +22,15 @@ public sealed class ImmutableDictionaryProtoReader<TKey, TValue>
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
 
+    object IProtoReader.ParseFrom(ref ReaderContext input) =>
+        _dictionaryReader.ParseFrom(ref input).ToImmutableDictionary();
+
     ImmutableDictionary<TKey, TValue> IProtoReader<ImmutableDictionary<TKey, TValue>>.ParseFrom(
         ref ReaderContext input
     ) => _dictionaryReader.ParseFrom(ref input).ToImmutableDictionary();
 
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
 
     public ImmutableDictionaryProtoReader(
         IProtoReader<TKey> keyReader,

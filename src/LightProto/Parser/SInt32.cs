@@ -5,8 +5,10 @@ public sealed class SInt32ProtoParser : IProtoParser<Int32>
     public static IProtoReader<Int32> ProtoReader { get; } = new SInt32ProtoReader();
     public static IProtoWriter<Int32> ProtoWriter { get; } = new SInt32ProtoWriter();
 
-    sealed class SInt32ProtoReader : IProtoReader<Int32>
+    sealed class SInt32ProtoReader : IProtoReader, IProtoReader<Int32>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 
@@ -19,8 +21,13 @@ public sealed class SInt32ProtoParser : IProtoParser<Int32>
         }
     }
 
-    sealed class SInt32ProtoWriter : IProtoWriter<Int32>
+    sealed class SInt32ProtoWriter : IProtoWriter, IProtoWriter<Int32>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((Int32)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (Int32)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;
 

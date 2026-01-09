@@ -13,6 +13,12 @@ public static partial class Serializer
         return T.ProtoWriter.CalculateSize(message);
     }
 
+    /// <summary>
+    /// Serializes the message to a byte array.
+    /// </summary>
+    /// <param name="message"> The message to serialize. </param>
+    /// <typeparam name="T"> The type of the message. </typeparam>
+    /// <returns> A byte array containing the serialized message. </returns>
     public static byte[] ToByteArray<T>(this T message)
         where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
 #endif
@@ -79,6 +85,13 @@ public static partial class Serializer
         }
     }
 
+    /// <summary>
+    /// Serializes the message to a byte array.
+    /// </summary>
+    /// <param name="message"> The message to serialize. </param>
+    /// <param name="writer"> The proto writer for the message. </param>
+    /// <typeparam name="T"> The type of the message. </typeparam>
+    /// <returns> A byte array containing the serialized message. </returns>
     public static byte[] ToByteArray<T>(this T message, IProtoWriter<T> writer)
     {
         if (writer.IsMessage == false && writer is not ICollectionWriter)
@@ -86,19 +99,33 @@ public static partial class Serializer
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }
         var buffer = new byte[writer.CalculateSize(message)];
-        using CodedOutputStream output = new CodedOutputStream(buffer);
-        WriterContext.Initialize(output, out var ctx);
+        var span = buffer.AsSpan();
+        WriterContext.Initialize(ref span, out var ctx);
         writer.WriteTo(ref ctx, message);
         ctx.Flush();
         return buffer;
     }
 
+    /// <summary>
+    /// Serializes the instance to the given destination stream.
+    /// </summary>
+    /// <param name="instance"> The instance to serialize. </param>
+    /// <param name="destination"> The destination buffer to serialize to. </param>
+    /// <param name="writer"> The proto writer to use for serialization. </param>
+    /// <typeparam name="T"> The type of the instance to serialize. </typeparam>
     public static void SerializeTo<T>(
         this T instance,
         Stream destination,
         IProtoWriter<T> writer
     ) => Serialize(destination, instance, writer);
 
+    /// <summary>
+    /// Serializes the instance to the given destination buffer.
+    /// </summary>
+    /// <param name="instance"> The instance to serialize. </param>
+    /// <param name="destination"> The destination buffer to serialize to. </param>
+    /// <param name="writer"> The proto writer to use for serialization. </param>
+    /// <typeparam name="T"> The type of the instance to serialize. </typeparam>
     public static void SerializeTo<T>(
         this T instance,
         IBufferWriter<byte> destination,

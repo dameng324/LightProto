@@ -15,12 +15,16 @@ public sealed class ImmutableHashSetProtoReader<TItem>
     public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
     public bool IsMessage => false;
 
+    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
     public ImmutableHashSet<TItem> ParseFrom(ref ReaderContext input)
     {
         return ImmutableHashSet.Create(_arrayReader.ParseFrom(ref input));
     }
 
     public WireFormat.WireType ItemWireType => ItemReader.WireType;
+    object ICollectionReader.Empty => Empty;
+
     public IProtoReader<TItem> ItemReader { get; }
     public int ItemFixedSize { get; }
 

@@ -12,7 +12,7 @@ public static partial class Serializer
 {
 #if NET7_0_OR_GREATER
     const string AOTWarning =
-        "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it's not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for aot safe.";
+        "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it is not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for aot safe and remove IL warnings.";
 #endif
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
@@ -21,6 +21,7 @@ public static partial class Serializer
     /// <param name="destination">The destination to write to.</param>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     public static void SerializeDynamically<
 #if NET7_0_OR_GREATER
@@ -36,6 +37,7 @@ public static partial class Serializer
     /// <param name="destination">The destination to write to.</param>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     public static void SerializeDynamically<
 #if NET7_0_OR_GREATER
@@ -51,6 +53,7 @@ public static partial class Serializer
     /// <returns>A new, initialized instance.</returns>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     public static T DeserializeDynamically<
 #if NET7_0_OR_GREATER
@@ -59,10 +62,30 @@ public static partial class Serializer
         T>(Stream source) => Deserialize(source, GetProtoReader<T>());
 
     /// <summary>
+    /// Serializes the given message to a byte array.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns> </returns>
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
+#endif
+    public static byte[] SerializeToArrayDynamically<
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+        T>(T message)
+    {
+        return message.ToByteArray(GetProtoWriter<T>());
+    }
+
+    /// <summary>
     /// Creates a new instance from a protocol-buffer stream
     /// </summary>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     public static T DeserializeDynamically<
 #if NET7_0_OR_GREATER
@@ -75,6 +98,7 @@ public static partial class Serializer
     /// </summary>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     public static T DeserializeDynamically<
 #if NET7_0_OR_GREATER
@@ -90,6 +114,7 @@ public static partial class Serializer
     /// <returns>A new instance that is a deep clone of <paramref name="message"/>.</returns>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     public static T DeepCloneDynamically<
 #if NET7_0_OR_GREATER
@@ -99,8 +124,9 @@ public static partial class Serializer
 
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
-    static IProtoReader<T> GetProtoReader<
+    public static IProtoReader<T> GetProtoReader<
 #if NET7_0_OR_GREATER
         [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
@@ -108,8 +134,9 @@ public static partial class Serializer
 
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
-    static IProtoWriter<T> GetProtoWriter<
+    public static IProtoWriter<T> GetProtoWriter<
 #if NET7_0_OR_GREATER
         [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
@@ -126,7 +153,7 @@ public static partial class Serializer
     /// <summary>
     /// Registers a custom ProtoReader and ProtoWriter for type T
     /// </summary>
-    static void RegisterParser<T>(IProtoReader<T> reader, IProtoWriter<T> writer)
+    public static void RegisterParser<T>(IProtoReader<T> reader, IProtoWriter<T> writer)
     {
         Readers.TryAdd(typeof(T), reader);
         Writers.TryAdd(typeof(T), writer);
@@ -312,6 +339,7 @@ public static partial class Serializer
 
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
+    [RequiresUnreferencedCode(AOTWarning)]
 #endif
     static object GetProtoParser(
 #if NET7_0_OR_GREATER
@@ -373,6 +401,21 @@ public static partial class Serializer
 
         if (type.IsGenericType == false)
         {
+            if (
+                type.IsInterface
+                && type.Assembly.GetType($"{type}ProtoParser") is { } protoParserType
+            )
+            {
+                var parser = protoParserType
+                    .GetProperty(
+                        isReader ? "ProtoReader" : "ProtoWriter",
+                        BindingFlags.Public | BindingFlags.Static
+                    )!
+                    .GetValue(null)!;
+                parsers.TryAdd(type, parser);
+                parsers.TryAdd(type, parser);
+                return parser;
+            }
             throw new InvalidOperationException($"No ProtoParser registered for type {type}");
         }
 

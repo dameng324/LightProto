@@ -7,8 +7,10 @@ public sealed class Guid300ProtoParser : IProtoParser<Guid>
     public static IProtoReader<Guid> ProtoReader { get; } = new Guid300ProtoReader();
     public static IProtoWriter<Guid> ProtoWriter { get; } = new Guid300ProtoWriter();
 
-    sealed class Guid300ProtoReader : IProtoReader<Guid>
+    sealed class Guid300ProtoReader : IProtoReader, IProtoReader<Guid>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -19,8 +21,13 @@ public sealed class Guid300ProtoParser : IProtoParser<Guid>
         }
     }
 
-    sealed class Guid300ProtoWriter : IProtoWriter<Guid>
+    sealed class Guid300ProtoWriter : IProtoWriter, IProtoWriter<Guid>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((Guid)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (Guid)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

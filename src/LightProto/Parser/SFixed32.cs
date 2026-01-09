@@ -5,8 +5,10 @@ public sealed class SFixed32ProtoParser : IProtoParser<int>
     public static IProtoReader<int> ProtoReader { get; } = new SFixed32ProtoReader();
     public static IProtoWriter<int> ProtoWriter { get; } = new SFixed32ProtoWriter();
 
-    sealed class SFixed32ProtoReader : IProtoReader<int>
+    sealed class SFixed32ProtoReader : IProtoReader, IProtoReader<int>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 
@@ -19,8 +21,13 @@ public sealed class SFixed32ProtoParser : IProtoParser<int>
         }
     }
 
-    sealed class SFixed32ProtoWriter : IProtoWriter<int>
+    sealed class SFixed32ProtoWriter : IProtoWriter, IProtoWriter<int>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((int)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (int)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 

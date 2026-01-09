@@ -1,1 +1,22 @@
 #nullable enable
+LightProto.IProtoReader
+LightProto.IProtoReader.IsMessage.get -> bool
+LightProto.IProtoReader.ParseFrom(ref LightProto.ReaderContext input) -> object!
+LightProto.IProtoReader.WireType.get -> LightProto.WireFormat.WireType
+LightProto.IProtoWriter
+LightProto.IProtoWriter.CalculateSize(object! value) -> int
+LightProto.IProtoWriter.IsMessage.get -> bool
+LightProto.IProtoWriter.WireType.get -> LightProto.WireFormat.WireType
+LightProto.IProtoWriter.WriteTo(ref LightProto.WriterContext output, object! value) -> void
+static LightProto.Serializer.DeserializeNonGeneric(System.Buffers.ReadOnlySequence<byte> source, System.Type! type) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.IO.Stream! source, System.Type! type) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.ReadOnlySpan<byte> source, System.Type! type) -> object!
+static LightProto.Serializer.GetProtoReader(System.Type! type) -> LightProto.IProtoReader!
+static LightProto.Serializer.GetProtoReader<T>() -> LightProto.IProtoReader<T>!
+static LightProto.Serializer.GetProtoWriter(System.Type! type) -> LightProto.IProtoWriter!
+static LightProto.Serializer.GetProtoWriter<T>() -> LightProto.IProtoWriter<T>!
+static LightProto.Serializer.RegisterParser<T>(LightProto.IProtoReader<T>! reader, LightProto.IProtoWriter<T>! writer) -> void
+static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object! instance) -> void
+static LightProto.Serializer.SerializeNonGeneric(System.IO.Stream! destination, object! instance) -> void
+static LightProto.Serializer.SerializeToArrayDynamically<T>(T message) -> byte[]!
+static LightProto.Serializer.SerializeToArrayNonGeneric(object! instance) -> byte[]!

@@ -7,8 +7,10 @@ public sealed class BigIntegerProtoParser : IProtoParser<BigInteger>
     public static IProtoReader<BigInteger> ProtoReader { get; } = new BigIntegerProtoReader();
     public static IProtoWriter<BigInteger> ProtoWriter { get; } = new BigIntegerProtoWriter();
 
-    sealed class BigIntegerProtoReader : IProtoReader<BigInteger>
+    sealed class BigIntegerProtoReader : IProtoReader, IProtoReader<BigInteger>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -20,10 +22,15 @@ public sealed class BigIntegerProtoParser : IProtoParser<BigInteger>
         }
     }
 
-    sealed class BigIntegerProtoWriter : IProtoWriter<BigInteger>
+    sealed class BigIntegerProtoWriter : IProtoWriter, IProtoWriter<BigInteger>
     {
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
+
+        public int CalculateSize(object value) => CalculateSize((BigInteger)value);
+
+        public void WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (BigInteger)value);
 
         [System.Runtime.CompilerServices.MethodImpl(
             System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining

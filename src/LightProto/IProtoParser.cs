@@ -1,4 +1,6 @@
-﻿namespace LightProto;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace LightProto;
 
 public interface IProtoParser<T>
 {
@@ -21,4 +23,19 @@ public interface IProtoWriter<in T>
     public bool IsMessage { get; }
     public int CalculateSize(T value);
     public void WriteTo(ref WriterContext output, T value);
+}
+
+public interface IProtoReader
+{
+    public WireFormat.WireType WireType { get; }
+    public bool IsMessage { get; }
+    public object ParseFrom(ref ReaderContext input);
+}
+
+public interface IProtoWriter
+{
+    public WireFormat.WireType WireType { get; }
+    public bool IsMessage { get; }
+    public int CalculateSize(object value);
+    public void WriteTo(ref WriterContext output, object value);
 }

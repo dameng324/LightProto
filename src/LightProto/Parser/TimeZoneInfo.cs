@@ -8,8 +8,10 @@ public sealed class TimeZoneInfoProtoParser : IProtoParser<TimeZoneInfo>
     public static IProtoReader<TimeZoneInfo> ProtoReader { get; } = new TimeZoneInfoProtoReader();
     public static IProtoWriter<TimeZoneInfo> ProtoWriter { get; } = new TimeZoneInfoProtoWriter();
 
-    sealed class TimeZoneInfoProtoReader : IProtoReader<TimeZoneInfo>
+    sealed class TimeZoneInfoProtoReader : IProtoReader, IProtoReader<TimeZoneInfo>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
@@ -20,8 +22,13 @@ public sealed class TimeZoneInfoProtoParser : IProtoParser<TimeZoneInfo>
         }
     }
 
-    sealed class TimeZoneInfoProtoWriter : IProtoWriter<TimeZoneInfo>
+    sealed class TimeZoneInfoProtoWriter : IProtoWriter, IProtoWriter<TimeZoneInfo>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((TimeZoneInfo)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (TimeZoneInfo)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 

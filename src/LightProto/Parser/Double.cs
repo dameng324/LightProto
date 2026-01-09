@@ -5,8 +5,10 @@ public sealed class DoubleProtoParser : IProtoParser<Double>
     public static IProtoReader<Double> ProtoReader { get; } = new DoubleProtoReader();
     public static IProtoWriter<Double> ProtoWriter { get; } = new DoubleProtoWriter();
 
-    sealed class DoubleProtoReader : IProtoReader<Double>
+    sealed class DoubleProtoReader : IProtoReader, IProtoReader<Double>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
 
         public bool IsMessage => false;
@@ -20,8 +22,13 @@ public sealed class DoubleProtoParser : IProtoParser<Double>
         }
     }
 
-    sealed class DoubleProtoWriter : IProtoWriter<Double>
+    sealed class DoubleProtoWriter : IProtoWriter, IProtoWriter<Double>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((Double)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (Double)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
 
         public bool IsMessage => false;

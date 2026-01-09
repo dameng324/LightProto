@@ -1,27 +1,32 @@
 ﻿namespace LightProto.Parser;
 
-struct MessageWrapper
+struct MessageWrapper<T>
 {
-    public struct ProtoWriter : IProtoWriter
+    public struct ProtoWriter : IProtoWriter, IProtoWriter<T>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((T)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (T)value);
+
         private readonly uint tag;
         public bool IsMessage => true;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        private readonly IProtoWriter ItemWriter;
+        private readonly IProtoWriter<T> ItemWriter;
 
-        public static ProtoWriter From(IProtoWriter itemWriter, int fieldNumber = 1)
+        public static ProtoWriter From(IProtoWriter<T> itemWriter, int fieldNumber = 1)
         {
             uint tag = WireFormat.MakeTag(fieldNumber, itemWriter.WireType);
             return new ProtoWriter(tag, itemWriter);
         }
 
-        ProtoWriter(uint tag, IProtoWriter itemWriter)
+        ProtoWriter(uint tag, IProtoWriter<T> itemWriter)
         {
             this.tag = tag;
             ItemWriter = itemWriter;
         }
 
-        public void WriteTo(ref WriterContext output, object value)
+        public void WriteTo(ref WriterContext output, T value)
         {
             if (ItemWriter is not ICollectionWriter)
             {
@@ -31,7 +36,7 @@ struct MessageWrapper
             ItemWriter.WriteTo(ref output, value);
         }
 
-        public int CalculateSize(object value)
+        public int CalculateSize(T value)
         {
             int size = 0;
             if (ItemWriter is not ICollectionWriter)
@@ -43,13 +48,15 @@ struct MessageWrapper
         }
     }
 
-    public struct ProtoReader : IProtoReader
+    public struct ProtoReader : IProtoReader, IProtoReader<T>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input)!;
+
         private readonly uint _tag;
         private readonly uint? _tag2;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
 
-        public static ProtoReader From(IProtoReader itemReader)
+        public static ProtoReader From(IProtoReader<T> itemReader)
         {
             uint tag = WireFormat.MakeTag(1, itemReader.WireType);
             uint? tag2 = null;
@@ -60,7 +67,7 @@ struct MessageWrapper
             return new ProtoReader(tag, tag2, itemReader);
         }
 
-        ProtoReader(uint tag, uint? tag2, IProtoReader itemReader)
+        ProtoReader(uint tag, uint? tag2, IProtoReader<T> itemReader)
         {
             _tag = tag;
             _tag2 = tag2;
@@ -68,11 +75,11 @@ struct MessageWrapper
         }
 
         public bool IsMessage => true;
-        private readonly IProtoReader _itemReader;
+        private readonly IProtoReader<T> _itemReader;
 
-        public object ParseFrom(ref ReaderContext input)
+        public T ParseFrom(ref ReaderContext input)
         {
-            object value = default!;
+            T value = default(T)!;
             uint tag;
             while ((tag = input.ReadTag()) != 0)
             {
@@ -87,12 +94,12 @@ struct MessageWrapper
                 }
             }
 
-            if (value is null && _itemReader is ICollectionReader collectionReader)
+            if (value is null && _itemReader is ICollectionReader<T> collectionReader)
             {
                 return collectionReader.Empty;
             }
 
-            return value!;
+            return value;
         }
     }
 }
