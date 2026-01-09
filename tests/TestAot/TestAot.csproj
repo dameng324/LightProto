@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MemoryPack" Version="1.21.4" />
+    <PackageReference Include="protobuf-net" Version="3.2.56" />
     <ProtoBuf Include="package.proto">
       <GrpcServices>Client</GrpcServices>
       <Generator>MSBuild:PreCompile</Generator>

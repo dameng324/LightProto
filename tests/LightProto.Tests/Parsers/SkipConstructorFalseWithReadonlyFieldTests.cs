@@ -1,35 +1,38 @@
 namespace LightProto.Tests.Parsers;
 
+#if NET8_0_OR_GREATER
 [InheritsTests]
-public partial class SkipConstructorWithInitializerTests
-    : BaseTests<SkipConstructorWithInitializerTests.Message, StructTestsMessage>
+public partial class SkipConstructorFalseWithReadonlyFieldTests
+    : BaseTests<SkipConstructorFalseWithReadonlyFieldTests.Message, StructTestsMessage>
 {
-    [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract(SkipConstructor = true)]
+    [ProtoContract()]
+    [ProtoBuf.ProtoContract()]
     public partial class Message
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public string Property { get; set; } = "PropertyInitializer";
+        public string Property { get; } = "";
 
         [ProtoMember(2)]
         [ProtoBuf.ProtoMember(2)]
-        public int Number { get; set; } = 42;
+        public int Number;
 
         public int IgnoredProperty { get; set; } = 100;
 
-        public Message()
+        public Message() { }
+
+        public Message(string property, int number)
         {
-            IgnoredProperty = 10;
-            Property = "ConstructorValue";
-            Number = 99;
+            Property = property;
+            Number = number;
         }
     }
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new() { Property = string.Empty, Number = 0 };
-        yield return new() { Property = Guid.NewGuid().ToString("N"), Number = 123 };
+        yield return new(string.Empty, 10);
+        yield return new();
+        yield return new(Guid.NewGuid().ToString("N"), 123);
     }
 
     public override IEnumerable<StructTestsMessage> GetGoogleMessages()
@@ -40,10 +43,9 @@ public partial class SkipConstructorWithInitializerTests
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property);
+        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
         await Assert.That(clone.Number).IsEquivalentTo(message.Number);
-        // IgnoredProperty should be default (0), not the initializer (100) or constructor value (10)
-        await Assert.That(clone.IgnoredProperty).IsEquivalentTo(0);
+        await Assert.That(clone.IgnoredProperty).IsEquivalentTo(100);
     }
 
     public override async Task AssertGoogleResult(StructTestsMessage clone, Message message)
@@ -53,3 +55,4 @@ public partial class SkipConstructorWithInitializerTests
             .IsEquivalentTo(message.Property ?? string.Empty);
     }
 }
+#endif
