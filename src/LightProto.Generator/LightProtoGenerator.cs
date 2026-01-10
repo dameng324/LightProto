@@ -357,7 +357,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           List<INamedTypeSymbol> derivedLevelTypes = new();
                                           while (true)
                                           {
-                                              if (currentBaseType is null || IsProtoBufMessage(currentBaseType)==false)
+                                              if (currentBaseType is null || !IsProtoBufMessage(currentBaseType))
                                               {
                                                   break;
                                               }
@@ -397,7 +397,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member =>
                               {
-                                  if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
+                                  if (!TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _))
                                   {
                                       return GetProtoParserMember(compilation, member, "Writer", targetType);
                                   }
@@ -484,7 +484,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
                           {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member => {
-                                  if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
+                                  if (!TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _))
                                   {
                                       return GetProtoParserMember(compilation, member, "Reader", targetType);
                                   }
@@ -598,7 +598,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               yield return $"}}";
                                           }
                                       }
-                                  }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
+                                  }).Where(x=>!string.IsNullOrWhiteSpace(x)))
                               }}
                               return parsed;
                           }
@@ -637,7 +637,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member =>
                               {
-                                  if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
+                                  if (!TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _))
                                   {
                                       return GetProtoParserMember(compilation, member, "Writer", targetType);
                                   }
@@ -721,7 +721,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
                           {{string.Join(NewLine + GetIntendedSpace(2),
                               protoMembers.SelectMany(member => {
-                                  if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _)==false)
+                                  if (!TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out _))
                                   {
                                       return GetProtoParserMember(compilation, member, "Reader", targetType);
                                   }
@@ -840,7 +840,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               yield return $"}}";
                                           }
                                       }
-                                  }).Where(x=>string.IsNullOrWhiteSpace(x)==false))
+                                  }).Where(x=>!string.IsNullOrWhiteSpace(x)))
                               }}
                               return parsed;
                           }
@@ -939,7 +939,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         }
         var nestedClassStructure = GenerateNestedClassStructure(targetType, classBody);
         sourceBuilder.AppendLine(nestedClassStructure);
-        if (targetType.ContainingNamespace.IsGlobalNamespace == false)
+        if (!targetType.ContainingNamespace.IsGlobalNamespace)
         {
             sourceBuilder.Append(@"}");
         }
@@ -988,7 +988,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             return it;
         }
 
-        if (IsProtoBufMessage(type.BaseType) == false)
+        if (!IsProtoBufMessage(type.BaseType))
         {
             return type;
         }
@@ -1064,7 +1064,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             SpecialType.System_String when stringIntern is false => "String",
             _ => "",
         };
-        return string.IsNullOrWhiteSpace(name) == false;
+        return !string.IsNullOrWhiteSpace(name);
     }
 
     private string GetCheckIfNotEmpty(ProtoMember member, string messageName)
@@ -1249,7 +1249,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                 return $"LightProto.Parser.ByteArrayProtoParser.Proto{readerOrWriter}";
             }
 
-            if (isPacked == false)
+            if (!isPacked)
             {
                 rawTag = ProtoMember.GetRawTag(
                     fieldNumber,
@@ -1434,7 +1434,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     );
                     var fixedSize = GetFixedSize(elementType, format);
 
-                    if (isPacked == false)
+                    if (!isPacked)
                     {
                         rawTag = ProtoMember.GetRawTag(
                             fieldNumber,
@@ -1621,7 +1621,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         == $"LightProto.IProtoReader<{memberTypeDisplayString}>"
                 )
             );
-        if (isProtoContract == false && hasProtoReader == false)
+        if (!isProtoContract && !hasProtoReader)
         {
             throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
                 parser.ToDisplayString(),
@@ -1645,7 +1645,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                 )
             );
 
-        if (isProtoContract == false && hasProtoWriter is false)
+        if (!isProtoContract && hasProtoWriter is false)
         {
             throw LightProtoGeneratorException.ProtoParserTypeMustContainProtoReaderWriter(
                 parser.ToDisplayString(),
@@ -2104,10 +2104,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         var derivedTypeContracts = new List<(uint RawTag, ProtoContract Contract)>();
         foreach (var attribute in protoIncludeAttributes)
         {
-            if (
-                uint.TryParse(attribute.ConstructorArguments[0].Value?.ToString(), out var tag)
-                == false
-            )
+            if (!uint.TryParse(attribute.ConstructorArguments[0].Value?.ToString(), out var tag))
             {
                 throw LightProtoGeneratorException.ProtoInclude_Tag_Invalid(
                     attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
@@ -2125,9 +2122,9 @@ public class LightProtoGenerator : IIncrementalGenerator
             if (targetType.TypeKind == TypeKind.Interface)
             {
                 if (
-                    derivedType.AllInterfaces.Any(it =>
+                    !derivedType.AllInterfaces.Any(it =>
                         SymbolEqualityComparer.Default.Equals(it, targetType)
-                    ) == false
+                    )
                 )
                 {
                     throw LightProtoGeneratorException.ProtoInclude_Type_Not_Inherit(

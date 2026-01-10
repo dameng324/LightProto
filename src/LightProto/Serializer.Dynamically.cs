@@ -12,7 +12,7 @@ public static partial class Serializer
 {
 #if NET7_0_OR_GREATER
     const string AOTWarning =
-        "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it is not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for aot safe and remove IL warnings.";
+        "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it is not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for AOT safety and to remove IL warnings.";
 #endif
     /// <summary>
     /// Writes a protocol-buffer representation of the given instance to the supplied writer.
@@ -64,9 +64,9 @@ public static partial class Serializer
     /// <summary>
     /// Serializes the given message to a byte array.
     /// </summary>
-    /// <param name="message"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns> </returns>
+    /// <param name="message"> The message to serialize. </param>
+    /// <typeparam name="T"> The type of the message. </typeparam>
+    /// <returns> A byte array containing the serialized message. </returns>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
     [RequiresUnreferencedCode(AOTWarning)]
@@ -385,7 +385,7 @@ public static partial class Serializer
             var parserType = isReader ? typeof(ArrayProtoReader<>) : typeof(ArrayProtoWriter<>);
             var arrayParserType = parserType.MakeGenericType(elementType);
             uint tag = 0;
-            if (isReader == false)
+            if (!isReader)
             {
                 // For writers, we need to provide a tag to indicate the field wire type
                 var wireType = (WireFormat.WireType)
@@ -399,7 +399,7 @@ public static partial class Serializer
             return arrayParser;
         }
 
-        if (type.IsGenericType == false)
+        if (!type.IsGenericType)
         {
             if (
                 type.IsInterface
@@ -412,7 +412,6 @@ public static partial class Serializer
                         BindingFlags.Public | BindingFlags.Static
                     )!
                     .GetValue(null)!;
-                parsers.TryAdd(type, parser);
                 parsers.TryAdd(type, parser);
                 return parser;
             }
@@ -430,7 +429,7 @@ public static partial class Serializer
 #pragma warning disable IL2062
             var itemParser = GetProtoParser(itemType, isReader);
 #pragma warning restore IL2062
-            if (genericTypes.TryGetValue(genericDef, out var genericParserType) == false)
+            if (!genericTypes.TryGetValue(genericDef, out var genericParserType))
             {
                 if (
                     isReader
@@ -438,7 +437,7 @@ public static partial class Serializer
                 )
                     genericParserType = typeof(ListProtoReader<>);
                 else if (
-                    isReader == false
+                    !isReader
                     && typeof(ICollection<>).MakeGenericType(itemType).IsAssignableFrom(type)
                 )
                     genericParserType = typeof(ICollectionProtoWriter<>);
@@ -449,7 +448,7 @@ public static partial class Serializer
             }
             var parserType = genericParserType.MakeGenericType(itemType);
             uint tag = 0;
-            if (isReader == false)
+            if (!isReader)
             {
                 // For writers, we need to provide a tag to indicate the field wire type
                 var wireType = (WireFormat.WireType)
@@ -482,7 +481,7 @@ public static partial class Serializer
         {
             var keyType = genericArguments[0];
             var valueType = genericArguments[1];
-            if (genericTypes.TryGetValue(genericDef, out var genericParserType) == false)
+            if (!genericTypes.TryGetValue(genericDef, out var genericParserType))
             {
                 if (
                     isReader
@@ -494,7 +493,7 @@ public static partial class Serializer
                 )
                     genericParserType = typeof(DictionaryProtoReader<,>);
                 else if (
-                    isReader == false
+                    !isReader
                     && typeof(IReadOnlyDictionary<,>)
                         .MakeGenericType(keyType, valueType)
                         .IsAssignableFrom(type)

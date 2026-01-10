@@ -38,7 +38,7 @@ public sealed class NullableProtoWriter<T> : IProtoWriter<Nullable<T>>
     )]
     public int CalculateSize(Nullable<T> value)
     {
-        return value.HasValue == false ? 0 : ValueWriter.CalculateMessageSize(value.Value);
+        return !value.HasValue ? 0 : ValueWriter.CalculateMessageSize(value.Value);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(

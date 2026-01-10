@@ -76,7 +76,7 @@ public static partial class Serializer
     {
         if (style is not PrefixStyle.None)
         {
-            if (reader.IsMessage == false)
+            if (!reader.IsMessage)
             {
                 reader = MessageWrapper<T>.ProtoReader.From(reader);
             }
@@ -107,7 +107,7 @@ public static partial class Serializer
                     result = default!;
                     return DeserializeWithLengthPrefixResult.NoMoreData;
                 }
-                if (fieldNumberIsMatched == false)
+                if (!fieldNumberIsMatched)
                 {
                     //skip the message
                     int left = length;
@@ -141,7 +141,7 @@ public static partial class Serializer
             }
             else if (style is PrefixStyle.Fixed32)
             {
-                if (TryReadFixed32FromStream(source, out var UIntLength) == false)
+                if (!TryReadFixed32FromStream(source, out var UIntLength))
                 {
                     // at end
                     result = default!;
@@ -152,7 +152,7 @@ public static partial class Serializer
             }
             else if (style is PrefixStyle.Fixed32BigEndian)
             {
-                if (TryReadFixed32BigEndianFromStream(source, out var UIntLength) == false)
+                if (!TryReadFixed32BigEndianFromStream(source, out var UIntLength))
                 {
                     // at end
                     result = default!;
@@ -286,7 +286,7 @@ public static partial class Serializer
         WriterContext.Initialize(codedOutputStream, out var ctx);
         if (style != PrefixStyle.None)
         {
-            if (writer.IsMessage == false && writer is not ICollectionWriter)
+            if (!writer.IsMessage && writer is not ICollectionWriter)
             {
                 writer = MessageWrapper<T>.ProtoWriter.From(writer);
             }

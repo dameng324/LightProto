@@ -14,7 +14,7 @@ public static partial class Serializer
         IProtoWriter<T> writer
     )
     {
-        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        if (!writer.IsMessage && writer is not ICollectionWriter)
         {
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }
@@ -25,7 +25,7 @@ public static partial class Serializer
 
     public static void Serialize<T>(Stream destination, T instance, IProtoWriter<T> writer)
     {
-        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        if (!writer.IsMessage && writer is not ICollectionWriter)
         {
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }

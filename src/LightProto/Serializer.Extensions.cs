@@ -94,7 +94,7 @@ public static partial class Serializer
     /// <returns> A byte array containing the serialized message. </returns>
     public static byte[] ToByteArray<T>(this T message, IProtoWriter<T> writer)
     {
-        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        if (!writer.IsMessage && writer is not ICollectionWriter)
         {
             writer = MessageWrapper<T>.ProtoWriter.From(writer);
         }

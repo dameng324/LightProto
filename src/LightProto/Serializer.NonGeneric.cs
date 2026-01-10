@@ -22,7 +22,7 @@ public static partial class Serializer
     public static void SerializeNonGeneric(Stream destination, object instance)
     {
         var writer = GetProtoWriter(instance.GetType());
-        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        if (!writer.IsMessage && writer is not ICollectionWriter)
         {
             writer = MessageWrapper.ProtoWriter.From(writer);
         }
@@ -44,7 +44,7 @@ public static partial class Serializer
     public static void SerializeNonGeneric(IBufferWriter<byte> destination, object instance)
     {
         var writer = GetProtoWriter(instance.GetType());
-        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        if (!writer.IsMessage && writer is not ICollectionWriter)
         {
             writer = MessageWrapper.ProtoWriter.From(writer);
         }
@@ -56,8 +56,8 @@ public static partial class Serializer
     /// <summary>
     /// Serializes the given message to a byte array.
     /// </summary>
-    /// <param name="instance"></param>
-    /// <returns> </returns>
+    /// <param name="instance"> The message to serialize. </param>
+    /// <returns> A byte array containing the serialized message. </returns>
 #if NET7_0_OR_GREATER
     [RequiresDynamicCode(AOTWarning)]
     [RequiresUnreferencedCode(AOTWarning)]
@@ -66,7 +66,7 @@ public static partial class Serializer
     {
         var writer = GetProtoWriter(instance.GetType());
 
-        if (writer.IsMessage == false && writer is not ICollectionWriter)
+        if (!writer.IsMessage && writer is not ICollectionWriter)
         {
             writer = MessageWrapper.ProtoWriter.From(writer);
         }
@@ -97,7 +97,7 @@ public static partial class Serializer
     )
     {
         var reader = GetProtoReader(type);
-        if (reader.IsMessage == false)
+        if (!reader.IsMessage)
         {
             reader = MessageWrapper.ProtoReader.From(reader);
         }
@@ -122,7 +122,7 @@ public static partial class Serializer
     )
     {
         var reader = GetProtoReader(type);
-        if (reader.IsMessage == false)
+        if (!reader.IsMessage)
         {
             reader = MessageWrapper.ProtoReader.From(reader);
         }
@@ -146,7 +146,7 @@ public static partial class Serializer
     )
     {
         var reader = GetProtoReader(type);
-        if (reader.IsMessage == false)
+        if (!reader.IsMessage)
         {
             reader = MessageWrapper.ProtoReader.From(reader);
         }

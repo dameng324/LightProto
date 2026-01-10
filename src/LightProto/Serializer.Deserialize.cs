@@ -33,7 +33,7 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(ReadOnlySequence<byte> source, IProtoReader<T> reader)
     {
-        if (reader.IsMessage == false)
+        if (!reader.IsMessage)
         {
             reader = MessageWrapper<T>.ProtoReader.From(reader);
         }
@@ -47,7 +47,7 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(ReadOnlySpan<byte> source, IProtoReader<T> reader)
     {
-        if (reader.IsMessage == false)
+        if (!reader.IsMessage)
         {
             reader = MessageWrapper<T>.ProtoReader.From(reader);
         }
@@ -60,7 +60,7 @@ public static partial class Serializer
     /// </summary>
     public static T Deserialize<T>(Stream source, IProtoReader<T> reader)
     {
-        if (reader.IsMessage == false)
+        if (!reader.IsMessage)
         {
             reader = MessageWrapper<T>.ProtoReader.From(reader);
         }
