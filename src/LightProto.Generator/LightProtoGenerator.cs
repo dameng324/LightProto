@@ -318,15 +318,28 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           }
                                           else
                                           {
-                                              yield return $"    var parsed = new {className}()";
-                                              yield return "    {";
-                                              foreach (var member in protoMembers)
+                                              if (skipConstructor && net8OrGreater)
                                               {
-                                                  yield return $"        {member.Name}={member.Name},";
+                                                  yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                                                  foreach (var member in protoMembers)
+                                                  {
+                                                      yield return $"    parsed.{member.Name}={member.Name};";
+                                                  }
+                                                  yield return "    return parsed;";
+                                                  yield return "}";
                                               }
-                                              yield return "    };";
-                                              yield return "    return parsed;";
-                                              yield return "}";
+                                              else
+                                              {
+                                                  yield return $"    var parsed = new {className}()";
+                                                  yield return "    {";
+                                                  foreach (var member in protoMembers)
+                                                  {
+                                                      yield return $"        {member.Name}={member.Name},";
+                                                  }
+                                                  yield return "    };";
+                                                  yield return "    return parsed;";
+                                                  yield return "}";
+                                              }
                                           }
                                       }
                                   }, 
@@ -346,13 +359,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           {
                                               yield return $"    if(memberStruct.{member.Contract.Type.Name}_MemberStruct.HasValue) return {member.Contract.Type}.MemberStruct.ToMessage(rootMemberStruct,memberStruct.{member.Contract.Type.Name}_MemberStruct.Value);";
                                           }
-                                          yield return $"    var parsed = new {className}()";
-                                          yield return "    {";
-                                          foreach(var member in protoMembers)
-                                          {
-                                              yield return $"        {member.Name}=memberStruct.{member.Name},";
-                                          }
-
+                                          
                                           var currentBaseType = baseType;
                                           List<INamedTypeSymbol> derivedLevelTypes = new();
                                           while (true)
@@ -366,26 +373,65 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           }
                                               
                                           derivedLevelTypes.Reverse();
-                                          var memberStructName = "rootMemberStruct";
-                                          for (var index = 0; index < derivedLevelTypes.Count; index++)
+                                          
+                                          if (skipConstructor && net8OrGreater)
                                           {
-                                              var derivedType = derivedLevelTypes[index];
+                                              yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                                              foreach(var member in protoMembers)
+                                              {
+                                                  yield return $"    parsed.{member.Name}=memberStruct.{member.Name};";
+                                              }
                                               
-                                              if (index > 0)
+                                              var memberStructName = "rootMemberStruct";
+                                              for (var index = 0; index < derivedLevelTypes.Count; index++)
                                               {
-                                                  memberStructName += $".{derivedType.Name}_MemberStruct.Value";
-                                              }
+                                                  var derivedType = derivedLevelTypes[index];
                                                   
-                                              var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
-                                              foreach(var member in baseProtoMembers)
-                                              {
-                                                  yield return $"        {member.Name}={memberStructName}.{member.Name},";
+                                                  if (index > 0)
+                                                  {
+                                                      memberStructName += $".{derivedType.Name}_MemberStruct.Value";
+                                                  }
+                                                      
+                                                  var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
+                                                  foreach(var member in baseProtoMembers)
+                                                  {
+                                                      yield return $"    parsed.{member.Name}={memberStructName}.{member.Name};";
+                                                  }
                                               }
+                                              
+                                              yield return "    return parsed;";
+                                              yield return "}";
                                           }
+                                          else
+                                          {
+                                              yield return $"    var parsed = new {className}()";
+                                              yield return "    {";
+                                              foreach(var member in protoMembers)
+                                              {
+                                                  yield return $"        {member.Name}=memberStruct.{member.Name},";
+                                              }
 
-                                          yield return "    };";
-                                          yield return "    return parsed;";
-                                          yield return "}";
+                                              var memberStructName = "rootMemberStruct";
+                                              for (var index = 0; index < derivedLevelTypes.Count; index++)
+                                              {
+                                                  var derivedType = derivedLevelTypes[index];
+                                                  
+                                                  if (index > 0)
+                                                  {
+                                                      memberStructName += $".{derivedType.Name}_MemberStruct.Value";
+                                                  }
+                                                      
+                                                  var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
+                                                  foreach(var member in baseProtoMembers)
+                                                  {
+                                                      yield return $"        {member.Name}={memberStructName}.{member.Name},";
+                                                  }
+                                              }
+
+                                              yield return "    };";
+                                              yield return "    return parsed;";
+                                              yield return "}";
+                                          }
                                       }
                                   })
                           }}
