@@ -1,56 +1,59 @@
 ﻿using System.Text;
 
-namespace LightProto.Parser;
-
-public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
+namespace LightProto.Parser
 {
-    public static IProtoReader<StringBuilder> ProtoReader { get; } = new StringBuilderProtoReader();
-    public static IProtoWriter<StringBuilder> ProtoWriter { get; } = new StringBuilderProtoWriter();
-
-    sealed class StringBuilderProtoReader : IProtoReader, IProtoReader<StringBuilder>
+    public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<StringBuilder> ProtoReader { get; } =
+            new StringBuilderProtoReader();
+        public static IProtoWriter<StringBuilder> ProtoWriter { get; } =
+            new StringBuilderProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public StringBuilder ParseFrom(ref ReaderContext input)
+        sealed class StringBuilderProtoReader : IProtoReader, IProtoReader<StringBuilder>
         {
-            return new StringBuilder(input.ReadString());
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class StringBuilderProtoWriter : IProtoWriter, IProtoWriter<StringBuilder>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((StringBuilder)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (StringBuilder)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public int CalculateSize(StringBuilder value)
-        {
-#if NET5_0_OR_GREATER
-            int size = 0;
-            foreach (var readOnlyMemory in value.GetChunks())
+            public StringBuilder ParseFrom(ref ReaderContext input)
             {
-                int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(
-                    readOnlyMemory.Span
-                );
-                size += CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
+                return new StringBuilder(input.ReadString());
             }
-            return size;
-#else
-            int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(value.ToString());
-            return CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
-#endif
         }
 
-        public void WriteTo(ref WriterContext output, StringBuilder value)
+        sealed class StringBuilderProtoWriter : IProtoWriter, IProtoWriter<StringBuilder>
         {
-            output.WriteString(value.ToString());
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((StringBuilder)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (StringBuilder)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            public int CalculateSize(StringBuilder value)
+            {
+#if NET5_0_OR_GREATER
+                int size = 0;
+                foreach (var readOnlyMemory in value.GetChunks())
+                {
+                    int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(
+                        readOnlyMemory.Span
+                    );
+                    size += CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
+                }
+                return size;
+#else
+                int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(value.ToString());
+                return CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
+#endif
+            }
+
+            public void WriteTo(ref WriterContext output, StringBuilder value)
+            {
+                output.WriteString(value.ToString());
+            }
         }
     }
 }

@@ -1,48 +1,54 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace LightProto.Internal;
-
-internal class SimpleObjectPool<T>
-    where T : class
+namespace LightProto.Internal
 {
-    private readonly ConcurrentBag<T> _objects;
-    private readonly Func<T> _objectFactory;
-    private readonly Action<T>? _resetAction;
-    private readonly int _maxSize;
-
-    public SimpleObjectPool(Func<T> objectFactory, Action<T>? resetAction = null, int maxSize = 128)
+    internal class SimpleObjectPool<T>
+        where T : class
     {
-        _objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
-        _resetAction = resetAction;
-        _maxSize = maxSize;
+        private readonly ConcurrentBag<T> _objects;
+        private readonly Func<T> _objectFactory;
+        private readonly Action<T>? _resetAction;
+        private readonly int _maxSize;
 
-        _objects = new ConcurrentBag<T>();
-    }
-
-    public T Get()
-    {
-        if (_objects.TryTake(out var item))
+        public SimpleObjectPool(
+            Func<T> objectFactory,
+            Action<T>? resetAction = null,
+            int maxSize = 128
+        )
         {
-            return item;
+            _objectFactory =
+                objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
+            _resetAction = resetAction;
+            _maxSize = maxSize;
+
+            _objects = new ConcurrentBag<T>();
         }
 
-        return _objectFactory();
-    }
-
-    public void Return(T item)
-    {
-        if (item == null)
+        public T Get()
         {
-            throw new ArgumentNullException(nameof(item));
+            if (_objects.TryTake(out var item))
+            {
+                return item;
+            }
+
+            return _objectFactory();
         }
 
-        _resetAction?.Invoke(item);
-        if (_maxSize > 0 && _objects.Count >= _maxSize)
+        public void Return(T item)
         {
-            // discard
-            return;
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            _resetAction?.Invoke(item);
+            if (_maxSize > 0 && _objects.Count >= _maxSize)
+            {
+                // discard
+                return;
+            }
+            _objects.Add(item);
         }
-        _objects.Add(item);
     }
 }

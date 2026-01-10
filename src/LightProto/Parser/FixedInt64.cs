@@ -1,50 +1,51 @@
-﻿namespace LightProto.Parser;
-
-public sealed class Fixed64ProtoParser : IProtoParser<UInt64>
+﻿namespace LightProto.Parser
 {
-    public static IProtoReader<UInt64> ProtoReader { get; } = new Fixed64ProtoReader();
-    public static IProtoWriter<UInt64> ProtoWriter { get; } = new Fixed64ProtoWriter();
-
-    sealed class Fixed64ProtoReader : IProtoReader, IProtoReader<UInt64>
+    public sealed class Fixed64ProtoParser : IProtoParser<UInt64>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<UInt64> ProtoReader { get; } = new Fixed64ProtoReader();
+        public static IProtoWriter<UInt64> ProtoWriter { get; } = new Fixed64ProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
-        public bool IsMessage => false;
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public UInt64 ParseFrom(ref ReaderContext input)
+        sealed class Fixed64ProtoReader : IProtoReader, IProtoReader<UInt64>
         {
-            return input.ReadFixed64();
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class Fixed64ProtoWriter : IProtoWriter, IProtoWriter<UInt64>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((UInt64)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (UInt64)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
-        public bool IsMessage => false;
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int CalculateSize(UInt64 value)
-        {
-            return CodedOutputStream.ComputeFixed64Size(value);
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public UInt64 ParseFrom(ref ReaderContext input)
+            {
+                return input.ReadFixed64();
+            }
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public void WriteTo(ref WriterContext output, UInt64 value)
+        sealed class Fixed64ProtoWriter : IProtoWriter, IProtoWriter<UInt64>
         {
-            output.WriteFixed64(value);
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((UInt64)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (UInt64)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
+            public bool IsMessage => false;
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public int CalculateSize(UInt64 value)
+            {
+                return CodedOutputStream.ComputeFixed64Size(value);
+            }
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public void WriteTo(ref WriterContext output, UInt64 value)
+            {
+                output.WriteFixed64(value);
+            }
         }
     }
 }

@@ -1,45 +1,48 @@
 ﻿using System.Buffers.Binary;
 using System.Globalization;
 
-namespace LightProto.Parser;
-
-public sealed class TimeZoneInfoProtoParser : IProtoParser<TimeZoneInfo>
+namespace LightProto.Parser
 {
-    public static IProtoReader<TimeZoneInfo> ProtoReader { get; } = new TimeZoneInfoProtoReader();
-    public static IProtoWriter<TimeZoneInfo> ProtoWriter { get; } = new TimeZoneInfoProtoWriter();
-
-    sealed class TimeZoneInfoProtoReader : IProtoReader, IProtoReader<TimeZoneInfo>
+    public sealed class TimeZoneInfoProtoParser : IProtoParser<TimeZoneInfo>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<TimeZoneInfo> ProtoReader { get; } =
+            new TimeZoneInfoProtoReader();
+        public static IProtoWriter<TimeZoneInfo> ProtoWriter { get; } =
+            new TimeZoneInfoProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public TimeZoneInfo ParseFrom(ref ReaderContext input)
+        sealed class TimeZoneInfoProtoReader : IProtoReader, IProtoReader<TimeZoneInfo>
         {
-            var str = input.ReadString();
-            return TimeZoneInfo.FromSerializedString(str);
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class TimeZoneInfoProtoWriter : IProtoWriter, IProtoWriter<TimeZoneInfo>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((TimeZoneInfo)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (TimeZoneInfo)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public int CalculateSize(TimeZoneInfo value)
-        {
-            return CodedOutputStream.ComputeStringSize(value.ToSerializedString());
+            public TimeZoneInfo ParseFrom(ref ReaderContext input)
+            {
+                var str = input.ReadString();
+                return TimeZoneInfo.FromSerializedString(str);
+            }
         }
 
-        public void WriteTo(ref WriterContext output, TimeZoneInfo value)
+        sealed class TimeZoneInfoProtoWriter : IProtoWriter, IProtoWriter<TimeZoneInfo>
         {
-            output.WriteString(value.ToSerializedString());
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((TimeZoneInfo)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (TimeZoneInfo)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            public int CalculateSize(TimeZoneInfo value)
+            {
+                return CodedOutputStream.ComputeStringSize(value.ToSerializedString());
+            }
+
+            public void WriteTo(ref WriterContext output, TimeZoneInfo value)
+            {
+                output.WriteString(value.ToSerializedString());
+            }
         }
     }
 }

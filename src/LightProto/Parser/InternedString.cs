@@ -1,23 +1,24 @@
-﻿namespace LightProto.Parser;
-
-public sealed class InternedStringProtoParser : IProtoParser<string>
+﻿namespace LightProto.Parser
 {
-    public static IProtoReader<string> ProtoReader { get; } = new InternedStringProtoReader();
-    public static IProtoWriter<string> ProtoWriter => StringProtoParser.ProtoWriter;
-
-    sealed class InternedStringProtoReader : IProtoReader, IProtoReader<string>
+    public sealed class InternedStringProtoParser : IProtoParser<string>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<string> ProtoReader { get; } = new InternedStringProtoReader();
+        public static IProtoWriter<string> ProtoWriter => StringProtoParser.ProtoWriter;
 
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public string ParseFrom(ref ReaderContext input)
+        sealed class InternedStringProtoReader : IProtoReader, IProtoReader<string>
         {
-            return string.Intern(input.ReadString());
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public string ParseFrom(ref ReaderContext input)
+            {
+                return string.Intern(input.ReadString());
+            }
         }
     }
 }

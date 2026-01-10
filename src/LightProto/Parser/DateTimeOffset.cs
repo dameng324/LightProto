@@ -1,28 +1,29 @@
-﻿namespace LightProto.Parser;
-
-[ProtoContract]
-[ProtoSurrogateFor<DateTimeOffset>]
-public partial struct DateTimeOffsetProtoParser
+﻿namespace LightProto.Parser
 {
-    [ProtoMember(1)]
-    internal long DateTimeTicks { get; set; }
-
-    [ProtoMember(2)]
-    internal long OffsetTicks { get; set; }
-
-    public static implicit operator DateTimeOffset(DateTimeOffsetProtoParser proxy)
+    [ProtoContract]
+    [ProtoSurrogateFor<DateTimeOffset>]
+    public partial struct DateTimeOffsetProtoParser
     {
-        return new DateTimeOffset(proxy.DateTimeTicks, TimeSpan.Zero).ToOffset(
-            new TimeSpan(proxy.OffsetTicks)
-        );
-    }
+        [ProtoMember(1)]
+        internal long DateTimeTicks { get; set; }
 
-    public static implicit operator DateTimeOffsetProtoParser(DateTimeOffset dt)
-    {
-        return new DateTimeOffsetProtoParser
+        [ProtoMember(2)]
+        internal long OffsetTicks { get; set; }
+
+        public static implicit operator DateTimeOffset(DateTimeOffsetProtoParser proxy)
         {
-            DateTimeTicks = dt.UtcTicks,
-            OffsetTicks = dt.Offset.Ticks,
-        };
+            return new DateTimeOffset(proxy.DateTimeTicks, TimeSpan.Zero).ToOffset(
+                new TimeSpan(proxy.OffsetTicks)
+            );
+        }
+
+        public static implicit operator DateTimeOffsetProtoParser(DateTimeOffset dt)
+        {
+            return new DateTimeOffsetProtoParser
+            {
+                DateTimeTicks = dt.UtcTicks,
+                OffsetTicks = dt.Offset.Ticks,
+            };
+        }
     }
 }

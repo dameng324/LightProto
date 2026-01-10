@@ -1,53 +1,58 @@
 ﻿using System.Collections.ObjectModel;
 using LightProto.Internal;
 
-namespace LightProto.Parser;
-
-public sealed class ReadOnlyCollectionProtoWriter<T>
-    : IEnumerableProtoWriter<ReadOnlyCollection<T>, T>
+namespace LightProto.Parser
 {
-    public ReadOnlyCollectionProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
-        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
-}
-
-public sealed class ReadOnlyCollectionProtoReader<TItem>
-    : ICollectionReader<ReadOnlyCollection<TItem>, TItem>
-{
-    private readonly ListProtoReader<TItem> _listReader;
-    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-    public bool IsMessage => false;
-
-    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
-
-    public ReadOnlyCollection<TItem> ParseFrom(ref ReaderContext input)
+    public sealed class ReadOnlyCollectionProtoWriter<T>
+        : IEnumerableProtoWriter<ReadOnlyCollection<T>, T>
     {
-        return _listReader.ParseFrom(ref input).AsReadOnly();
+        public ReadOnlyCollectionProtoWriter(
+            IProtoWriter<T> itemWriter,
+            uint tag,
+            int itemFixedSize
+        )
+            : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
     }
 
-    public WireFormat.WireType ItemWireType => ItemReader.WireType;
-    object ICollectionReader.Empty => Empty;
-
-    public IProtoReader<TItem> ItemReader { get; }
-    public int ItemFixedSize { get; }
-
-    public ReadOnlyCollectionProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
+    public sealed class ReadOnlyCollectionProtoReader<TItem>
+        : ICollectionReader<ReadOnlyCollection<TItem>, TItem>
     {
-        _listReader = new ListProtoReader<TItem>(itemReader, itemFixedSize);
-        ItemReader = itemReader;
-        ItemFixedSize = itemFixedSize;
-    }
+        private readonly ListProtoReader<TItem> _listReader;
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+        public bool IsMessage => false;
 
-    public ReadOnlyCollectionProtoReader(
-        IProtoReader<TItem> itemReader,
-        uint tag,
-        int itemFixedSize
-    )
-        : this(itemReader, itemFixedSize) { }
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
+        public ReadOnlyCollection<TItem> ParseFrom(ref ReaderContext input)
+        {
+            return _listReader.ParseFrom(ref input).AsReadOnly();
+        }
+
+        public WireFormat.WireType ItemWireType => ItemReader.WireType;
+        object ICollectionReader.Empty => Empty;
+
+        public IProtoReader<TItem> ItemReader { get; }
+        public int ItemFixedSize { get; }
+
+        public ReadOnlyCollectionProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
+        {
+            _listReader = new ListProtoReader<TItem>(itemReader, itemFixedSize);
+            ItemReader = itemReader;
+            ItemFixedSize = itemFixedSize;
+        }
+
+        public ReadOnlyCollectionProtoReader(
+            IProtoReader<TItem> itemReader,
+            uint tag,
+            int itemFixedSize
+        )
+            : this(itemReader, itemFixedSize) { }
 
 #if NET7_0_OR_GREATER
-    public ReadOnlyCollection<TItem> Empty => ReadOnlyCollection<TItem>.Empty;
+        public ReadOnlyCollection<TItem> Empty => ReadOnlyCollection<TItem>.Empty;
 #else
-    public ReadOnlyCollection<TItem> Empty => s_empty;
-    static ReadOnlyCollection<TItem> s_empty { get; } = new(new Collection<TItem>());
+        public ReadOnlyCollection<TItem> Empty => s_empty;
+        static ReadOnlyCollection<TItem> s_empty { get; } = new(new Collection<TItem>());
 #endif
+    }
 }

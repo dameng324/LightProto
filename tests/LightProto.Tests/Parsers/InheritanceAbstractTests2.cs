@@ -10,7 +10,7 @@ public partial class InheritanceAbstractTests2
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public Base Content { get; set; }
+        public required Base Content { get; set; }
     }
 
     [ProtoContract(SkipConstructor = true)]

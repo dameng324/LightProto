@@ -1,16 +1,17 @@
-﻿namespace LightProto;
-
-internal class PackedRepeated
+﻿namespace LightProto
 {
-    public static bool Support<TItem>()
+    internal class PackedRepeated
     {
-        return typeof(TItem) == typeof(bool)
-            || typeof(TItem) == typeof(int)
-            || typeof(TItem) == typeof(long)
-            || typeof(TItem) == typeof(uint)
-            || typeof(TItem) == typeof(ulong)
-            || typeof(TItem) == typeof(float)
-            || typeof(TItem) == typeof(double)
-            || typeof(TItem).IsEnum;
+        public static bool Support<TItem>()
+        {
+            return typeof(TItem) == typeof(bool)
+                || typeof(TItem) == typeof(int)
+                || typeof(TItem) == typeof(long)
+                || typeof(TItem) == typeof(uint)
+                || typeof(TItem) == typeof(ulong)
+                || typeof(TItem) == typeof(float)
+                || typeof(TItem) == typeof(double)
+                || typeof(TItem).IsEnum;
+        }
     }
 }

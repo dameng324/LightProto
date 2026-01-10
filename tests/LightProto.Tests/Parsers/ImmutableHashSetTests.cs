@@ -46,7 +46,7 @@ public partial class ImmutableHashSetTests
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert.That(clone.Property).IsEquivalentTo(message.Property);
+        await Assert.That((ISet<int>)clone.Property).IsEquivalentTo(message.Property);
     }
 
     [Test]

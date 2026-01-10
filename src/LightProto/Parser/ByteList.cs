@@ -1,56 +1,60 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LightProto.Parser;
-
-public sealed class ByteListProtoParser : IProtoParser<List<byte>>
+namespace LightProto.Parser
 {
-    public static IProtoReader<List<byte>> ProtoReader { get; } = new ByteListProtoReader();
-    public static IProtoWriter<List<byte>> ProtoWriter { get; } = new ByteListProtoWriter();
-
-    sealed class ByteListProtoReader : IProtoReader, IProtoReader<List<byte>>
+    public sealed class ByteListProtoParser : IProtoParser<List<byte>>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<List<byte>> ProtoReader { get; } = new ByteListProtoReader();
+        public static IProtoWriter<List<byte>> ProtoWriter { get; } = new ByteListProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public List<byte> ParseFrom(ref ReaderContext input)
+        sealed class ByteListProtoReader : IProtoReader, IProtoReader<List<byte>>
         {
-            var length = input.ReadLength();
-            return [.. ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length)];
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class ByteListProtoWriter : IProtoWriter, IProtoWriter<List<byte>>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((List<byte>)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (List<byte>)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int CalculateSize(List<byte> value)
-        {
-            return CodedOutputStream.ComputeLengthSize(value.Count) + value.Count;
+            public List<byte> ParseFrom(ref ReaderContext input)
+            {
+                var length = input.ReadLength();
+                return
+                [
+                    .. ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length),
+                ];
+            }
         }
 
-        public void WriteTo(ref WriterContext output, List<byte> value)
+        sealed class ByteListProtoWriter : IProtoWriter, IProtoWriter<List<byte>>
         {
-            output.WriteLength(value.Count);
-            WritingPrimitives.WriteRawBytes(
-                ref output.buffer,
-                ref output.state,
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((List<byte>)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (List<byte>)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public int CalculateSize(List<byte> value)
+            {
+                return CodedOutputStream.ComputeLengthSize(value.Count) + value.Count;
+            }
+
+            public void WriteTo(ref WriterContext output, List<byte> value)
+            {
+                output.WriteLength(value.Count);
+                WritingPrimitives.WriteRawBytes(
+                    ref output.buffer,
+                    ref output.state,
 #if NET5_0_OR_GREATER
-                CollectionsMarshal.AsSpan(value)
+                    CollectionsMarshal.AsSpan(value)
 #else
-                value.ToArray()
+                    value.ToArray()
 #endif
-            );
+                );
+            }
         }
     }
 }

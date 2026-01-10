@@ -148,6 +148,7 @@ public abstract class BaseProtoBufTestsWithParser<
 
     [Test]
     [MethodDataSource(nameof(GetMessages))]
+    [RequiresDynamicCode("Uses dynamic code generation for serialization.")]
     public async Task LightProto_Serialize_Deserialize_Dynamically(Message message)
     {
         var bytes = Serializer.SerializeToArrayDynamically<Message>(message);
@@ -160,12 +161,13 @@ public abstract class BaseProtoBufTestsWithParser<
 
     [Test]
     [MethodDataSource(nameof(GetMessages))]
+    [RequiresDynamicCode("Uses dynamic code generation for serialization.")]
     public async Task LightProto_Serialize_Deserialize_NonGeneric(Message message)
     {
         var bytes = Serializer.SerializeToArrayNonGeneric(message!);
         if (BaseTestsConfig.WriteDebugInfo)
             Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
-        var clone = (Message)Serializer.DeserializeNonGeneric(bytes, typeof(Message));
+        var clone = (Message)Serializer.DeserializeNonGeneric(typeof(Message), bytes);
         await AssertResult(clone, message);
     }
 

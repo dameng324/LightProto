@@ -1,45 +1,46 @@
 ﻿using System.Buffers.Binary;
 using System.Globalization;
 
-namespace LightProto.Parser;
-
-public sealed class CultureInfoProtoParser : IProtoParser<CultureInfo>
+namespace LightProto.Parser
 {
-    public static IProtoReader<CultureInfo> ProtoReader { get; } = new CultureInfoProtoReader();
-    public static IProtoWriter<CultureInfo> ProtoWriter { get; } = new CultureInfoProtoWriter();
-
-    sealed class CultureInfoProtoReader : IProtoReader, IProtoReader<CultureInfo>
+    public sealed class CultureInfoProtoParser : IProtoParser<CultureInfo>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<CultureInfo> ProtoReader { get; } = new CultureInfoProtoReader();
+        public static IProtoWriter<CultureInfo> ProtoWriter { get; } = new CultureInfoProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public CultureInfo ParseFrom(ref ReaderContext input)
+        sealed class CultureInfoProtoReader : IProtoReader, IProtoReader<CultureInfo>
         {
-            var name = input.ReadString();
-            return new CultureInfo(name);
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class CultureInfoProtoWriter : IProtoWriter, IProtoWriter<CultureInfo>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((CultureInfo)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (CultureInfo)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public int CalculateSize(CultureInfo value)
-        {
-            return CodedOutputStream.ComputeStringSize(value.Name);
+            public CultureInfo ParseFrom(ref ReaderContext input)
+            {
+                var name = input.ReadString();
+                return new CultureInfo(name);
+            }
         }
 
-        public void WriteTo(ref WriterContext output, CultureInfo value)
+        sealed class CultureInfoProtoWriter : IProtoWriter, IProtoWriter<CultureInfo>
         {
-            output.WriteString(value.Name);
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((CultureInfo)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (CultureInfo)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            public int CalculateSize(CultureInfo value)
+            {
+                return CodedOutputStream.ComputeStringSize(value.Name);
+            }
+
+            public void WriteTo(ref WriterContext output, CultureInfo value)
+            {
+                output.WriteString(value.Name);
+            }
         }
     }
 }

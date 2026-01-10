@@ -1,45 +1,46 @@
 ﻿using System.Buffers.Binary;
 using System.Globalization;
 
-namespace LightProto.Parser;
-
-public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
+namespace LightProto.Parser
 {
-    public static IProtoReader<Decimal> ProtoReader { get; } = new Decimal300ProtoReader();
-    public static IProtoWriter<Decimal> ProtoWriter { get; } = new Decimal300ProtoWriter();
-
-    sealed class Decimal300ProtoReader : IProtoReader, IProtoReader<Decimal>
+    public sealed class Decimal300ProtoParser : IProtoParser<Decimal>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<Decimal> ProtoReader { get; } = new Decimal300ProtoReader();
+        public static IProtoWriter<Decimal> ProtoWriter { get; } = new Decimal300ProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public Decimal ParseFrom(ref ReaderContext input)
+        sealed class Decimal300ProtoReader : IProtoReader, IProtoReader<Decimal>
         {
-            var str = input.ReadString();
-            return Decimal.Parse(str);
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class Decimal300ProtoWriter : IProtoWriter, IProtoWriter<Decimal>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((Decimal)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (Decimal)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
-
-        public int CalculateSize(Decimal value)
-        {
-            return CodedOutputStream.ComputeStringSize(value.ToString("G"));
+            public Decimal ParseFrom(ref ReaderContext input)
+            {
+                var str = input.ReadString();
+                return Decimal.Parse(str);
+            }
         }
 
-        public void WriteTo(ref WriterContext output, Decimal value)
+        sealed class Decimal300ProtoWriter : IProtoWriter, IProtoWriter<Decimal>
         {
-            output.WriteString(value.ToString("G"));
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((Decimal)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (Decimal)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            public int CalculateSize(Decimal value)
+            {
+                return CodedOutputStream.ComputeStringSize(value.ToString("G"));
+            }
+
+            public void WriteTo(ref WriterContext output, Decimal value)
+            {
+                output.WriteString(value.ToString("G"));
+            }
         }
     }
 }

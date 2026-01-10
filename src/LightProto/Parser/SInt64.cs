@@ -1,50 +1,51 @@
-﻿namespace LightProto.Parser;
-
-public sealed class SInt64ProtoParser : IProtoParser<Int64>
+﻿namespace LightProto.Parser
 {
-    public static IProtoReader<Int64> ProtoReader { get; } = new SInt64ProtoReader();
-    public static IProtoWriter<Int64> ProtoWriter { get; } = new SInt64ProtoWriter();
-
-    sealed class SInt64ProtoReader : IProtoReader, IProtoReader<Int64>
+    public sealed class SInt64ProtoParser : IProtoParser<Int64>
     {
-        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+        public static IProtoReader<Int64> ProtoReader { get; } = new SInt64ProtoReader();
+        public static IProtoWriter<Int64> ProtoWriter { get; } = new SInt64ProtoWriter();
 
-        public WireFormat.WireType WireType => WireFormat.WireType.Varint;
-        public bool IsMessage => false;
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public Int64 ParseFrom(ref ReaderContext input)
+        sealed class SInt64ProtoReader : IProtoReader, IProtoReader<Int64>
         {
-            return input.ReadSInt64();
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class SInt64ProtoWriter : IProtoWriter, IProtoWriter<Int64>
-    {
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((Int64)value);
+            public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+            public bool IsMessage => false;
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (Int64)value);
-
-        public WireFormat.WireType WireType => WireFormat.WireType.Varint;
-        public bool IsMessage => false;
-
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int CalculateSize(Int64 value)
-        {
-            return CodedOutputStream.ComputeSInt64Size(value);
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public Int64 ParseFrom(ref ReaderContext input)
+            {
+                return input.ReadSInt64();
+            }
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public void WriteTo(ref WriterContext output, Int64 value)
+        sealed class SInt64ProtoWriter : IProtoWriter, IProtoWriter<Int64>
         {
-            output.WriteSInt64(value);
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((Int64)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (Int64)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+            public bool IsMessage => false;
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public int CalculateSize(Int64 value)
+            {
+                return CodedOutputStream.ComputeSInt64Size(value);
+            }
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public void WriteTo(ref WriterContext output, Int64 value)
+            {
+                output.WriteSInt64(value);
+            }
         }
     }
 }

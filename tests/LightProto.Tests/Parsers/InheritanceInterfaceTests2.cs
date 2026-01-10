@@ -9,7 +9,7 @@ public partial class InheritanceInterfaceTests2
     public partial class Message
     {
         [ProtoMember(1)]
-        public Base Content { get; set; }
+        public required Base Content { get; set; }
     }
 
     [ProtoContract(SkipConstructor = true)]
