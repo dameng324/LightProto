@@ -6,6 +6,7 @@
 ![Build](https://github.com/dameng324/LightProto/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/github/dameng324/lightproto/graph/badge.svg)](https://codecov.io/github/dameng324/lightproto)
 [![CodeQL Advanced](https://github.com/dameng324/LightProto/actions/workflows/codeql.yml/badge.svg)](https://github.com/dameng324/LightProto/actions/workflows/codeql.yml)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/27764c82699649fba67d9fc903a0d9d5)](https://app.codacy.com/gh/dameng324/LightProto/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ![GitHub Repo stars](https://img.shields.io/github/stars/dameng324/LightProto.svg?style=flat)
 ![Size](https://img.shields.io/github/repo-size/dameng324/LightProto.svg)
 [![License](https://img.shields.io/github/license/dameng324/LightProto.svg)](LICENSE)
