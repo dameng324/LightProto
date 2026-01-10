@@ -26,14 +26,7 @@ namespace LightProto
         public static int CalculateMessageSize<T>(this IProtoWriter<T> writer, T value)
         {
             var size = writer.CalculateSize(value);
-            if (writer.IsMessage)
-            {
-                return CodedOutputStream.ComputeLengthSize(size) + size;
-            }
-            else
-            {
-                return size;
-            }
+            return writer.IsMessage ? CodedOutputStream.ComputeLengthSize(size) + size : size;
         }
 
         public static void WriteMessageTo<T>(

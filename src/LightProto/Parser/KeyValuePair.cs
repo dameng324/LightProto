@@ -28,7 +28,6 @@
             else
             {
                 _keyTag = WireFormat.MakeTag(1, keyReader.WireType);
-                ;
                 _keyTag2 = _keyTag;
             }
 
@@ -40,7 +39,6 @@
             else
             {
                 _valueTag = WireFormat.MakeTag(2, valueReader.WireType);
-                ;
                 _valueTag2 = _valueTag;
             }
         }
@@ -59,25 +57,17 @@
 
                 if (tag == _keyTag || tag == _keyTag2)
                 {
-                    if (_keyReader is ICollectionReader)
-                    {
-                        key = _keyReader.ParseFrom(ref ctx);
-                    }
-                    else
-                    {
-                        key = _keyReader.ParseMessageFrom(ref ctx);
-                    }
+                    key =
+                        _keyReader is ICollectionReader
+                            ? _keyReader.ParseFrom(ref ctx)
+                            : _keyReader.ParseMessageFrom(ref ctx);
                 }
                 else if (tag == _valueTag || tag == _valueTag2)
                 {
-                    if (_valueReader is ICollectionReader)
-                    {
-                        value = _valueReader.ParseFrom(ref ctx);
-                    }
-                    else
-                    {
-                        value = _valueReader.ParseMessageFrom(ref ctx);
-                    }
+                    value =
+                        _valueReader is ICollectionReader
+                            ? _valueReader.ParseFrom(ref ctx)
+                            : _valueReader.ParseMessageFrom(ref ctx);
                 }
                 else
                 {
