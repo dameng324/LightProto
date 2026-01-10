@@ -32,13 +32,11 @@ namespace LightProto.Parser
         object ICollectionReader.Empty => Empty;
 
         public IProtoReader<TItem> ItemReader { get; }
-        public int ItemFixedSize { get; }
 
         public ReadOnlyCollectionProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
         {
             _listReader = new ListProtoReader<TItem>(itemReader, itemFixedSize);
             ItemReader = itemReader;
-            ItemFixedSize = itemFixedSize;
         }
 
         public ReadOnlyCollectionProtoReader(

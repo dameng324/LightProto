@@ -34,7 +34,6 @@ namespace LightProto.Parser
         object ICollectionReader.Empty => Empty;
 
         public IProtoReader<TItem> ItemReader { get; }
-        public int ItemFixedSize { get; }
 
         public ReadOnlyObservableCollectionProtoReader(
             IProtoReader<TItem> itemReader,
@@ -53,7 +52,6 @@ namespace LightProto.Parser
                 itemFixedSize
             );
             ItemReader = itemReader;
-            ItemFixedSize = itemFixedSize;
         }
 
 #if NET7_0_OR_GREATER

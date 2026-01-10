@@ -26,13 +26,11 @@ namespace LightProto.Parser
         object ICollectionReader.Empty => Empty;
 
         public IProtoReader<TItem> ItemReader { get; }
-        public int ItemFixedSize { get; }
 
         public ImmutableArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
         {
             _arrayReader = new ArrayProtoReader<TItem>(itemReader, itemFixedSize);
             ItemReader = itemReader;
-            ItemFixedSize = itemFixedSize;
         }
 
         public ImmutableArrayProtoReader(

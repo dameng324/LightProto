@@ -20,7 +20,7 @@ namespace LightProto.Parser
 
         public IProtoReader<TItem> ItemReader { get; }
         public TItem[] Empty => Array.Empty<TItem>();
-        public int ItemFixedSize { get; }
+        int ItemFixedSize { get; }
 
         private readonly SimpleObjectPool<List<TItem>> _listPool = new(
             static () => new(),

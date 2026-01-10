@@ -19,7 +19,7 @@ namespace LightProto.Parser
         public IProtoWriter<TItem> ItemWriter { get; }
         public uint Tag { get; set; }
         public Func<TCollection, int> GetCount { get; }
-        public int ItemFixedSize { get; }
+        int ItemFixedSize { get; }
 
         public IEnumerableProtoWriter(
             IProtoWriter<TItem> itemWriter,

@@ -35,7 +35,7 @@
         public Func<int, TCollection> CreateWithCapacity { get; }
         public TCollection Empty => CreateWithCapacity(0);
         public Func<TCollection, TItem, TCollection> AddItem { get; }
-        public int ItemFixedSize { get; }
+        int ItemFixedSize { get; }
         public WireFormat.WireType ItemWireType => ItemReader.WireType;
         object ICollectionReader.Empty => Empty;
 

@@ -476,6 +476,13 @@ public partial class NonGenericSerializerTests
         Serializer.SerializeNonGeneric(ms, original);
         var bytes = ms.ToArray();
         await Assert.That(bytes.Length).IsEqualTo(0);
+
+        ArrayBufferWriter<byte> bufferWriter = new();
+        Serializer.SerializeNonGeneric(bufferWriter, original);
+        await Assert.That(bufferWriter.WrittenCount).IsEqualTo(0);
+
+        bytes = Serializer.SerializeToArrayNonGeneric(original);
+        await Assert.That(bytes.Length).IsEqualTo(0);
     }
 
     [Test]
@@ -661,7 +668,6 @@ public partial class NonGenericSerializerTests
     public static IEnumerable<Func<object>> GetAotUnsupportedValues()
     {
         yield return () => new Lazy<int>(() => 123);
-        yield return () => new Nullable<int>(123);
         yield return () => new List<int>() { 1, 2, 3 };
         yield return () => new Queue<int>([1, 2, 3]);
         yield return () => new Stack<int>([1, 2, 3]);
@@ -694,8 +700,8 @@ public partial class NonGenericSerializerTests
     [Test]
     [MethodDataSource(nameof(GetAotUnsupportedValues))]
     [SkipAot]
-    public async Task LightProto_SerializeDeserialize_NonGeneric2(object value) =>
-        await LightProto_SerializeDeserialize_NonGeneric(value);
+    public async Task LightProto_SerializeDeserialize_NonGeneric_NoAOT(object value) =>
+        await LightProto_SerializeDeserialize_NonGeneric_AOT(value);
 
     public static IEnumerable<Func<object>> GetAotSupportedValues()
     {
@@ -748,7 +754,7 @@ public partial class NonGenericSerializerTests
 
     [Test]
     [MethodDataSource(nameof(GetAotSupportedValues))]
-    public async Task LightProto_SerializeDeserialize_NonGeneric(object value)
+    public async Task LightProto_SerializeDeserialize_NonGeneric_AOT(object value)
     {
         var type = value.GetType();
         var bytes1 = SerializeToArray();
@@ -767,6 +773,12 @@ public partial class NonGenericSerializerTests
 
         deserialized = DeserializedFromSpan(bytes1);
         await AssertEquivalentTo(type, deserialized, value);
+
+        var reader = Serializer.GetProtoReader(type);
+        if (reader is ICollectionReader collectionReader)
+        {
+            Assert.NotNull(collectionReader.Empty);
+        }
 
         static async Task AssertEquivalentTo(Type type, object deserialized, object original)
         {
@@ -831,6 +843,18 @@ public partial class NonGenericSerializerTests
         Func<(object, IProtoReader, IProtoWriter)>
     > GetValuesWithReadersWriters()
     {
+        yield return () =>
+            (
+                (int?)456,
+                new NullableProtoReader<int>(Int32ProtoParser.ProtoReader),
+                new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter)
+            );
+        yield return () =>
+            (
+                456,
+                MessageWrapper<int>.ProtoReader.From(Int32ProtoParser.ProtoReader),
+                MessageWrapper<int>.ProtoWriter.From(Int32ProtoParser.ProtoWriter)
+            );
         yield return () =>
             (
                 DateTime.Now,
@@ -901,13 +925,43 @@ public partial class NonGenericSerializerTests
 
     [Test]
     [MethodDataSource(nameof(GetValuesWithReadersWriters))]
-    public async Task LightProto_SerializeDeserialize_NonGeneric3(
+    public async Task LightProto_SerializeDeserialize_NonGeneric_With_Reader_Writer(
         object value,
         IProtoReader reader,
         IProtoWriter writer
     )
     {
         var type = value.GetType();
+        await LightProto_SerializeDeserialize_NonGeneric_WithType_Reader_Writer(
+            value,
+            type,
+            reader,
+            writer
+        );
+    }
+
+    public static IEnumerable<
+        Func<(object?, Type, IProtoReader, IProtoWriter)>
+    > GetValuesWithTypeReadersWriters()
+    {
+        yield return () =>
+            (
+                (int?)null,
+                typeof(int?),
+                new NullableProtoReader<int>(Int32ProtoParser.ProtoReader),
+                new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter)
+            );
+    }
+
+    [Test]
+    [MethodDataSource(nameof(GetValuesWithTypeReadersWriters))]
+    public async Task LightProto_SerializeDeserialize_NonGeneric_WithType_Reader_Writer(
+        object? value,
+        Type type,
+        IProtoReader reader,
+        IProtoWriter writer
+    )
+    {
         var bytes1 = SerializeToArray();
         var bytes2 = SerializeToIBufferWriter();
         var bytes3 = SerializeToStream();

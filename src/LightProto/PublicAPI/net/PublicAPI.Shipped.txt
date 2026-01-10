@@ -45,7 +45,6 @@ LightProto.Parser.ArrayProtoReader<TItem>
 LightProto.Parser.ArrayProtoReader<TItem>.ArrayProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
 LightProto.Parser.ArrayProtoReader<TItem>.Empty.get -> TItem[]!
 LightProto.Parser.ArrayProtoReader<TItem>.IsMessage.get -> bool
-LightProto.Parser.ArrayProtoReader<TItem>.ItemFixedSize.get -> int
 LightProto.Parser.ArrayProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.ArrayProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ArrayProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext ctx) -> TItem[]!
@@ -144,7 +143,6 @@ LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.CreateWithCapacity.
 LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.Empty.get -> TCollection
 LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.IEnumerableProtoReader(LightProto.IProtoReader<TItem>! itemReader, System.Func<int, TCollection>! createWithCapacity, System.Func<TCollection, TItem, TCollection>! addItem, int itemFixedSize, System.Func<TCollection, TCollection>? completeAction = null) -> void
 LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.IsMessage.get -> bool
-LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.ItemFixedSize.get -> int
 LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.IEnumerableProtoReader<TCollection, TItem>.ParseFrom(ref LightProto.ReaderContext ctx) -> TCollection
@@ -155,7 +153,6 @@ LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.GetCount.get -> Sys
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.IEnumerableProtoWriter(LightProto.IProtoWriter<TItem>! itemWriter, uint tag, System.Func<TCollection, int>! getCount, int itemFixedSize) -> void
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.IsMessage.get -> bool
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.IsPacked.get -> bool
-LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.ItemFixedSize.get -> int
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.ItemWriter.get -> LightProto.IProtoWriter<TItem>!
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.Tag.get -> uint
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.Tag.set -> void
@@ -166,7 +163,6 @@ LightProto.Parser.ImmutableArrayProtoReader<TItem>.Empty.get -> System.Collectio
 LightProto.Parser.ImmutableArrayProtoReader<TItem>.ImmutableArrayProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
 LightProto.Parser.ImmutableArrayProtoReader<TItem>.ImmutableArrayProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
 LightProto.Parser.ImmutableArrayProtoReader<TItem>.IsMessage.get -> bool
-LightProto.Parser.ImmutableArrayProtoReader<TItem>.ItemFixedSize.get -> int
 LightProto.Parser.ImmutableArrayProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.ImmutableArrayProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ImmutableArrayProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Immutable.ImmutableArray<TItem>
@@ -187,7 +183,6 @@ LightProto.Parser.ImmutableHashSetProtoReader<TItem>.Empty.get -> System.Collect
 LightProto.Parser.ImmutableHashSetProtoReader<TItem>.ImmutableHashSetProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
 LightProto.Parser.ImmutableHashSetProtoReader<TItem>.ImmutableHashSetProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
 LightProto.Parser.ImmutableHashSetProtoReader<TItem>.IsMessage.get -> bool
-LightProto.Parser.ImmutableHashSetProtoReader<TItem>.ItemFixedSize.get -> int
 LightProto.Parser.ImmutableHashSetProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.ImmutableHashSetProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ImmutableHashSetProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Immutable.ImmutableHashSet<TItem>!
@@ -199,7 +194,6 @@ LightProto.Parser.ImmutableListProtoReader<TItem>.Empty.get -> System.Collection
 LightProto.Parser.ImmutableListProtoReader<TItem>.ImmutableListProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
 LightProto.Parser.ImmutableListProtoReader<TItem>.ImmutableListProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
 LightProto.Parser.ImmutableListProtoReader<TItem>.IsMessage.get -> bool
-LightProto.Parser.ImmutableListProtoReader<TItem>.ItemFixedSize.get -> int
 LightProto.Parser.ImmutableListProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.ImmutableListProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ImmutableListProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Immutable.ImmutableList<TItem>!
@@ -282,7 +276,6 @@ LightProto.Parser.QueueProtoWriter<T>.QueueProtoWriter(LightProto.IProtoWriter<T
 LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>
 LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>.Empty.get -> System.Collections.ObjectModel.ReadOnlyCollection<TItem>!
 LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>.IsMessage.get -> bool
-LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>.ItemFixedSize.get -> int
 LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ReadOnlyCollectionProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.ObjectModel.ReadOnlyCollection<TItem>!
@@ -303,7 +296,6 @@ LightProto.Parser.ReadOnlyDictionaryProtoWriter<TKey, TValue>.ReadOnlyDictionary
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.Empty.get -> System.Collections.ObjectModel.ReadOnlyObservableCollection<TItem>!
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.IsMessage.get -> bool
-LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.ItemFixedSize.get -> int
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.ObjectModel.ReadOnlyObservableCollection<TItem>!
