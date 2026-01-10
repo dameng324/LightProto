@@ -1920,16 +1920,19 @@ public class LightProtoGenerator : IIncrementalGenerator
             or "System.Collections.Generic.ICollection<T>"
             or "System.Collections.Generic.IReadOnlyCollection<T>" => compilation
                 .GetTypeByMetadataName("System.Collections.Generic.List`1")
-                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+                ?.Construct(type.TypeArguments.ToArray())
+                ?? type,
 
             "System.Collections.Generic.IDictionary<TKey, TValue>"
             or "System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>" => compilation
                 .GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
-                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+                ?.Construct(type.TypeArguments.ToArray())
+                ?? type,
 
             "System.Collections.Generic.ISet<T>" => compilation
                 .GetTypeByMetadataName("System.Collections.Generic.HashSet`1")
-                ?.Construct(type.TypeArguments.ToArray()) ?? type,
+                ?.Construct(type.TypeArguments.ToArray())
+                ?? type,
 
             _ => type, // 如果本身就是具体类，就直接返回
         };
