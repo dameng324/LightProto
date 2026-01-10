@@ -9,6 +9,7 @@
     <File Path=".github/workflows/publish.yml" />
   </Folder>
   <Folder Name="/items/">
+    <File Path=".codacy.yml" />
     <File Path=".codecov.yml" />
     <File Path=".gitattributes" />
     <File Path=".gitignore" />

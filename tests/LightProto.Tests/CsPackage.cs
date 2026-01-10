@@ -230,24 +230,23 @@ namespace LightProto.Tests
                 (
                     (this.Int32ArrayFields?.Count ?? 0) != 0
                     && (other.Int32ArrayFields?.Count ?? 0) != 0
-                )
-                && this.Int32ArrayFields.SequenceEqual(other.Int32ArrayFields) == false
+                ) && !this.Int32ArrayFields.SequenceEqual(other.Int32ArrayFields)
             )
                 return false;
 
             if (
                 ((this.BytesField?.Length ?? 0) != 0 && (other.BytesField?.Length ?? 0) != 0)
-                && this.BytesField.SequenceEqual(other.BytesField) == false
+                && !this.BytesField.SequenceEqual(other.BytesField)
             )
                 return false;
 
             if (this.BoolField != other.BoolField)
                 return false;
 
-            if (Math.Abs(this.DoubleField - other.DoubleField) < 0.001 == false)
+            if (!(Math.Abs(this.DoubleField - other.DoubleField) < 0.001))
                 return false;
 
-            if (Math.Abs(this.FloatField - other.FloatField) < 0.001 == false)
+            if (!(Math.Abs(this.FloatField - other.FloatField) < 0.001))
                 return false;
 
             if (this.Int64Field != other.Int64Field)
@@ -283,9 +282,7 @@ namespace LightProto.Tests
                 (
                     (this.NestedMessageArrayFields?.Count ?? 0) != 0
                     && (other.NestedMessageArrayFields?.Count ?? 0) != 0
-                )
-                && this.NestedMessageArrayFields.SequenceEqual(other.NestedMessageArrayFields)
-                    == false
+                ) && !this.NestedMessageArrayFields.SequenceEqual(other.NestedMessageArrayFields)
             )
                 return false;
 
@@ -310,29 +307,29 @@ namespace LightProto.Tests
             if (this.RequiredIntField != other.RequiredIntField)
                 return false;
 
-            if (this.StringQueueFieldTests.SequenceEqual(other.StringQueueFieldTests) == false)
+            if (!this.StringQueueFieldTests.SequenceEqual(other.StringQueueFieldTests))
                 return false;
 
-            if (this.StringStackFieldTests.SequenceEqual(other.StringStackFieldTests) == false)
+            if (!this.StringStackFieldTests.SequenceEqual(other.StringStackFieldTests))
                 return false;
 
             if (
-                this.ConcurrentStringQueueFieldTests.SequenceEqual(
+                !this.ConcurrentStringQueueFieldTests.SequenceEqual(
                     other.ConcurrentStringQueueFieldTests
-                ) == false
+                )
             )
                 return false;
 
             if (
-                this.ConcurrentStringStackFieldTests.SequenceEqual(
+                !this.ConcurrentStringStackFieldTests.SequenceEqual(
                     other.ConcurrentStringStackFieldTests
-                ) == false
+                )
             )
                 return false;
 
             if (
                 ((this.IntLists?.Length ?? 0) != 0 && (other.IntLists?.Length ?? 0) != 0)
-                && this.IntLists.SequenceEqual(other.IntLists) == false
+                && !this.IntLists.SequenceEqual(other.IntLists)
             )
                 return false;
 
@@ -354,19 +351,19 @@ namespace LightProto.Tests
             if (this.MapFields.Count != other.MapFields.Count)
                 return false;
 
-            if (this.EnumArrayFields.SequenceEqual(other.EnumArrayFields) == false)
+            if (!this.EnumArrayFields.SequenceEqual(other.EnumArrayFields))
                 return false;
             if (this.MapField2s.Count != other.MapField2s.Count)
                 return false;
 
             if (this.MapField4s.Count != other.MapField4s.Count)
                 return false;
-            if (this.StringArrayFields.SequenceEqual(other.StringArrayFields) == false)
+            if (!this.StringArrayFields.SequenceEqual(other.StringArrayFields))
                 return false;
-            if (this.StringListFieldTests.SequenceEqual(other.StringListFieldTests) == false)
+            if (!this.StringListFieldTests.SequenceEqual(other.StringListFieldTests))
                 return false;
 
-            if (this.StringArrayFieldTests.SequenceEqual(other.StringArrayFieldTests) == false)
+            if (!this.StringArrayFieldTests.SequenceEqual(other.StringArrayFieldTests))
                 return false;
 
             if (this.MapField5s.Count != other.MapField5s.Count)
@@ -378,9 +375,9 @@ namespace LightProto.Tests
             if (this.MapField7s.Count != other.MapField7s.Count)
                 return false;
 
-            if (this.StringSetFieldTests.SequenceEqual(other.StringSetFieldTests) == false)
+            if (!this.StringSetFieldTests.SequenceEqual(other.StringSetFieldTests))
                 return false;
-            if (this.StringISets.SequenceEqual(other.StringISets) == false)
+            if (!this.StringISets.SequenceEqual(other.StringISets))
                 return false;
             return true;
         }

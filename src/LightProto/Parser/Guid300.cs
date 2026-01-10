@@ -1,37 +1,45 @@
 ﻿using System.Buffers.Binary;
 
-namespace LightProto.Parser;
-
-public sealed class Guid300ProtoParser : IProtoParser<Guid>
+namespace LightProto.Parser
 {
-    public static IProtoReader<Guid> ProtoReader { get; } = new Guid300ProtoReader();
-    public static IProtoWriter<Guid> ProtoWriter { get; } = new Guid300ProtoWriter();
-
-    sealed class Guid300ProtoReader : IProtoReader<Guid>
+    public sealed class Guid300ProtoParser : IProtoParser<Guid>
     {
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
+        public static IProtoReader<Guid> ProtoReader { get; } = new Guid300ProtoReader();
+        public static IProtoWriter<Guid> ProtoWriter { get; } = new Guid300ProtoWriter();
 
-        public Guid ParseFrom(ref ReaderContext input)
+        sealed class Guid300ProtoReader : IProtoReader, IProtoReader<Guid>
         {
-            var str = input.ReadString();
-            return Guid.Parse(str);
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class Guid300ProtoWriter : IProtoWriter<Guid>
-    {
-        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
-        public bool IsMessage => false;
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
 
-        public int CalculateSize(Guid value)
-        {
-            return CodedOutputStream.ComputeStringSize(value.ToString());
+            public Guid ParseFrom(ref ReaderContext input)
+            {
+                var str = input.ReadString();
+                return Guid.Parse(str);
+            }
         }
 
-        public void WriteTo(ref WriterContext output, Guid value)
+        sealed class Guid300ProtoWriter : IProtoWriter, IProtoWriter<Guid>
         {
-            output.WriteString(value.ToString());
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((Guid)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (Guid)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
+            public bool IsMessage => false;
+
+            public int CalculateSize(Guid value)
+            {
+                return CodedOutputStream.ComputeStringSize(value.ToString());
+            }
+
+            public void WriteTo(ref WriterContext output, Guid value)
+            {
+                output.WriteString(value.ToString());
+            }
         }
     }
 }

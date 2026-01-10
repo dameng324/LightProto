@@ -146,6 +146,31 @@ public abstract class BaseProtoBufTestsWithParser<
         await AssertResult(clone, message);
     }
 
+    [Test]
+    [MethodDataSource(nameof(GetMessages))]
+    [RequiresDynamicCode("Uses dynamic code generation for serialization.")]
+    public async Task LightProto_Serialize_Deserialize_Dynamically(Message message)
+    {
+        var bytes = Serializer.SerializeToArrayDynamically<Message>(message);
+        if (BaseTestsConfig.WriteDebugInfo)
+            Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
+
+        var clone = Serializer.DeserializeDynamically<Message>(bytes);
+        await AssertResult(clone, message);
+    }
+
+    [Test]
+    [MethodDataSource(nameof(GetMessages))]
+    [RequiresDynamicCode("Uses dynamic code generation for serialization.")]
+    public async Task LightProto_Serialize_Deserialize_NonGeneric(Message message)
+    {
+        var bytes = Serializer.SerializeToArrayNonGeneric(message!);
+        if (BaseTestsConfig.WriteDebugInfo)
+            Console.WriteLine($"LightProto_Serialize bytes: {string.Join(",", bytes)}");
+        var clone = (Message)Serializer.DeserializeNonGeneric(typeof(Message), bytes);
+        await AssertResult(clone, message);
+    }
+
     protected virtual bool ProtoBuf_net_Serialize_Disabled => false;
     protected virtual bool ProtoBuf_net_Deserialize_Disabled => false;
 

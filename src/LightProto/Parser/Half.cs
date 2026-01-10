@@ -6,8 +6,10 @@ public sealed class HalfProtoParser : IProtoParser<Half>
     public static IProtoReader<Half> ProtoReader { get; } = new HalfProtoReader();
     public static IProtoWriter<Half> ProtoWriter { get; } = new HalfProtoWriter();
 
-    sealed class HalfProtoReader : IProtoReader<Half>
+    sealed class HalfProtoReader : IProtoReader, IProtoReader<Half>
     {
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 
@@ -20,8 +22,13 @@ public sealed class HalfProtoParser : IProtoParser<Half>
         }
     }
 
-    sealed class HalfProtoWriter : IProtoWriter<Half>
+    sealed class HalfProtoWriter : IProtoWriter, IProtoWriter<Half>
     {
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((Half)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (Half)value);
+
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 

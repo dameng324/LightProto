@@ -1,43 +1,44 @@
 ﻿#if NET7_0_OR_GREATER
 using System.Numerics;
 
-namespace LightProto.Parser;
-
-[ProtoContract]
-[ProtoSurrogateFor<Quaternion>]
-public partial struct QuaternionProtoParser
+namespace LightProto.Parser
 {
-    [ProtoMember(1, IsPacked = true)]
-    internal float[] Floats { get; set; }
-
-    public static implicit operator Quaternion(QuaternionProtoParser protoParser)
+    [ProtoContract]
+    [ProtoSurrogateFor<Quaternion>]
+    public partial struct QuaternionProtoParser
     {
-        if (protoParser.Floats is null)
-        {
-            return default;
-        }
+        [ProtoMember(1, IsPacked = true)]
+        internal float[] Floats { get; set; }
 
-        if (protoParser.Floats.Length != 4)
+        public static implicit operator Quaternion(QuaternionProtoParser protoParser)
         {
-            throw new ArgumentException(
-                "Input array must contain 4 elements for Quaternion conversion.",
-                nameof(protoParser)
+            if (protoParser.Floats is null)
+            {
+                return default;
+            }
+
+            if (protoParser.Floats.Length != 4)
+            {
+                throw new ArgumentException(
+                    "Input array must contain 4 elements for Quaternion conversion.",
+                    nameof(protoParser)
+                );
+            }
+            return new Quaternion(
+                protoParser.Floats[0],
+                protoParser.Floats[1],
+                protoParser.Floats[2],
+                protoParser.Floats[3]
             );
         }
-        return new Quaternion(
-            protoParser.Floats[0],
-            protoParser.Floats[1],
-            protoParser.Floats[2],
-            protoParser.Floats[3]
-        );
-    }
 
-    public static implicit operator QuaternionProtoParser(Quaternion value)
-    {
-        return new QuaternionProtoParser()
+        public static implicit operator QuaternionProtoParser(Quaternion value)
         {
-            Floats = new[] { value.X, value.Y, value.Z, value.W },
-        };
+            return new QuaternionProtoParser()
+            {
+                Floats = new[] { value.X, value.Y, value.Z, value.W },
+            };
+        }
     }
 }
 #endif

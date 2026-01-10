@@ -1,62 +1,71 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace LightProto.Parser;
-
-public sealed class LazyProtoReader<
-#if NET7_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    T
-> : IProtoReader<Lazy<T>>
+namespace LightProto.Parser
 {
-    public bool IsMessage => ValueReader.IsMessage;
-    public IProtoReader<T> ValueReader { get; }
-    public WireFormat.WireType WireType => ValueReader.WireType;
-
-    public LazyProtoReader(IProtoReader<T> valueReader)
-    {
-        ValueReader = valueReader;
-    }
-
-    [System.Runtime.CompilerServices.MethodImpl(
-        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-    )]
-    public Lazy<T> ParseFrom(ref ReaderContext input)
-    {
-        var t = ValueReader.ParseMessageFrom(ref input);
-        return new Lazy<T>(() => t);
-    }
-}
-
-public sealed class LazyProtoWriter<
+    public sealed class LazyProtoReader<
 #if NET7_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-    T
-> : IProtoWriter<Lazy<T>>
-{
-    public IProtoWriter<T> ValueWriter { get; }
-    public WireFormat.WireType WireType => ValueWriter.WireType;
-    public bool IsMessage => ValueWriter.IsMessage;
-
-    public LazyProtoWriter(IProtoWriter<T> valueWriter)
+        T
+    > : IProtoReader, IProtoReader<Lazy<T>>
     {
-        ValueWriter = valueWriter;
+        public bool IsMessage => ValueReader.IsMessage;
+
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
+        public IProtoReader<T> ValueReader { get; }
+        public WireFormat.WireType WireType => ValueReader.WireType;
+
+        public LazyProtoReader(IProtoReader<T> valueReader)
+        {
+            ValueReader = valueReader;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(
+            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+        )]
+        public Lazy<T> ParseFrom(ref ReaderContext input)
+        {
+            var t = ValueReader.ParseMessageFrom(ref input);
+            return new Lazy<T>(() => t);
+        }
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(
-        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-    )]
-    public int CalculateSize(Lazy<T> value)
+    public sealed class LazyProtoWriter<
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
+        T
+    > : IProtoWriter, IProtoWriter<Lazy<T>>
     {
-        return ValueWriter.CalculateMessageSize(value.Value);
-    }
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((Lazy<T>)value);
 
-    [System.Runtime.CompilerServices.MethodImpl(
-        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-    )]
-    public void WriteTo(ref WriterContext output, Lazy<T> value)
-    {
-        ValueWriter.WriteMessageTo(ref output, value.Value);
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+            WriteTo(ref output, (Lazy<T>)value);
+
+        public IProtoWriter<T> ValueWriter { get; }
+        public WireFormat.WireType WireType => ValueWriter.WireType;
+        public bool IsMessage => ValueWriter.IsMessage;
+
+        public LazyProtoWriter(IProtoWriter<T> valueWriter)
+        {
+            ValueWriter = valueWriter;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(
+            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+        )]
+        public int CalculateSize(Lazy<T> value)
+        {
+            return ValueWriter.CalculateMessageSize(value.Value);
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(
+            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+        )]
+        public void WriteTo(ref WriterContext output, Lazy<T> value)
+        {
+            ValueWriter.WriteMessageTo(ref output, value.Value);
+        }
     }
 }

@@ -1,34 +1,42 @@
-﻿namespace LightProto.Parser;
-
-public sealed class BooleanProtoParser : IProtoParser<bool>
+﻿namespace LightProto.Parser
 {
-    public static IProtoReader<bool> ProtoReader { get; } = new BooleanProtoReader();
-    public static IProtoWriter<bool> ProtoWriter { get; } = new BooleanProtoWriter();
-
-    sealed class BooleanProtoReader : IProtoReader<bool>
+    public sealed class BooleanProtoParser : IProtoParser<bool>
     {
-        public WireFormat.WireType WireType => WireFormat.WireType.Varint;
-        public bool IsMessage => false;
+        public static IProtoReader<bool> ProtoReader { get; } = new BooleanProtoReader();
+        public static IProtoWriter<bool> ProtoWriter { get; } = new BooleanProtoWriter();
 
-        public bool ParseFrom(ref ReaderContext input)
+        sealed class BooleanProtoReader : IProtoReader, IProtoReader<bool>
         {
-            return input.ReadBool();
-        }
-    }
+            public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+            public bool IsMessage => false;
 
-    sealed class BooleanProtoWriter : IProtoWriter<bool>
-    {
-        public WireFormat.WireType WireType => WireFormat.WireType.Varint;
-        public bool IsMessage => false;
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-        public int CalculateSize(bool value)
-        {
-            return CodedOutputStream.ComputeBoolSize(value);
+            public bool ParseFrom(ref ReaderContext input)
+            {
+                return input.ReadBool();
+            }
         }
 
-        public void WriteTo(ref WriterContext output, bool value)
+        sealed class BooleanProtoWriter : IProtoWriter, IProtoWriter<bool>
         {
-            output.WriteBool(value);
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((bool)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (bool)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+            public bool IsMessage => false;
+
+            public int CalculateSize(bool value)
+            {
+                return CodedOutputStream.ComputeBoolSize(value);
+            }
+
+            public void WriteTo(ref WriterContext output, bool value)
+            {
+                output.WriteBool(value);
+            }
         }
     }
 }

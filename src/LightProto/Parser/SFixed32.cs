@@ -1,43 +1,51 @@
-﻿namespace LightProto.Parser;
-
-public sealed class SFixed32ProtoParser : IProtoParser<int>
+﻿namespace LightProto.Parser
 {
-    public static IProtoReader<int> ProtoReader { get; } = new SFixed32ProtoReader();
-    public static IProtoWriter<int> ProtoWriter { get; } = new SFixed32ProtoWriter();
-
-    sealed class SFixed32ProtoReader : IProtoReader<int>
+    public sealed class SFixed32ProtoParser : IProtoParser<int>
     {
-        public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
-        public bool IsMessage => false;
+        public static IProtoReader<int> ProtoReader { get; } = new SFixed32ProtoReader();
+        public static IProtoWriter<int> ProtoWriter { get; } = new SFixed32ProtoWriter();
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int ParseFrom(ref ReaderContext input)
+        sealed class SFixed32ProtoReader : IProtoReader, IProtoReader<int>
         {
-            return input.ReadSFixed32();
-        }
-    }
+            object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-    sealed class SFixed32ProtoWriter : IProtoWriter<int>
-    {
-        public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
-        public bool IsMessage => false;
+            public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
+            public bool IsMessage => false;
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public int CalculateSize(int value)
-        {
-            return CodedOutputStream.ComputeSFixed32Size(value);
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public int ParseFrom(ref ReaderContext input)
+            {
+                return input.ReadSFixed32();
+            }
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
-        public void WriteTo(ref WriterContext output, int value)
+        sealed class SFixed32ProtoWriter : IProtoWriter, IProtoWriter<int>
         {
-            output.WriteSFixed32(value);
+            int IProtoWriter.CalculateSize(object value) => CalculateSize((int)value);
+
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
+                WriteTo(ref output, (int)value);
+
+            public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
+            public bool IsMessage => false;
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public int CalculateSize(int value)
+            {
+                return CodedOutputStream.ComputeSFixed32Size(value);
+            }
+
+            [System.Runtime.CompilerServices.MethodImpl(
+                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
+            )]
+            public void WriteTo(ref WriterContext output, int value)
+            {
+                output.WriteSFixed32(value);
+            }
         }
     }
 }

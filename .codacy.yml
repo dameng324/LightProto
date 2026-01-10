@@ -1,0 +1,9 @@
+﻿---
+exclude_paths:
+  - "tests/**/*"
+engines:
+  roslyn:
+    enabled: true
+    checks:
+      CA1066:
+        enabled: false
