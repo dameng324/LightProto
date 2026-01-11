@@ -318,16 +318,33 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           }
                                           else
                                           {
-                                              if (skipConstructor && net8OrGreater)
+                                              if (skipConstructor)
                                               {
-                                                  yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                                                  if (net8OrGreater)
+                                                  {
+                                                      yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                                                  }
+                                                  else
+                                                  {
+                                                      yield return $"    var parsed = ({className})System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof({className}));";
+                                                  }
                                                   foreach (var member in protoMembers)
                                                   {
                                                       if (member.IsReadOnly || member.IsInitOnly)
                                                       {
-                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, member.Name))
+                                                          if (net8OrGreater)
                                                           {
-                                                              yield return $"    {line}";
+                                                              foreach (var line in AssignReadonlyMemberInToMessage(contract, member, member.Name))
+                                                              {
+                                                                  yield return $"    {line}";
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              throw LightProtoGeneratorException.InitOnlyOrReadOnlyWhenSkipConstructor(
+                                                                  member.Name,
+                                                                  member.DeclarationSyntax.GetLocation()
+                                                              );
                                                           }
                                                       }
                                                       else
@@ -384,16 +401,33 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               
                                           derivedLevelTypes.Reverse();
                                           
-                                          if (skipConstructor && net8OrGreater)
+                                          if (skipConstructor)
                                           {
-                                              yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                                              if (net8OrGreater)
+                                              {
+                                                  yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
+                                              }
+                                              else
+                                              {
+                                                  yield return $"    var parsed = ({className})System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof({className}));";
+                                              }
                                               foreach(var member in protoMembers)
                                               {
                                                   if (member.IsReadOnly || member.IsInitOnly)
                                                   {
-                                                      foreach (var line in AssignReadonlyMemberInToMessage(contract, member, $"memberStruct.{member.Name}"))
+                                                      if (net8OrGreater)
                                                       {
-                                                          yield return $"    {line}";
+                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, $"memberStruct.{member.Name}"))
+                                                          {
+                                                              yield return $"    {line}";
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          throw LightProtoGeneratorException.InitOnlyOrReadOnlyWhenSkipConstructor(
+                                                              member.Name,
+                                                              member.DeclarationSyntax.GetLocation()
+                                                          );
                                                       }
                                                   }
                                                   else
@@ -418,9 +452,19 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   {
                                                       if (member.IsReadOnly || member.IsInitOnly)
                                                       {
-                                                          foreach (var line in AssignReadonlyMemberInToMessage(baseContract, member, $"{memberStructName}.{member.Name}"))
+                                                          if (net8OrGreater)
                                                           {
-                                                              yield return $"    {line}";
+                                                              foreach (var line in AssignReadonlyMemberInToMessage(baseContract, member, $"{memberStructName}.{member.Name}"))
+                                                              {
+                                                                  yield return $"    {line}";
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              throw LightProtoGeneratorException.InitOnlyOrReadOnlyWhenSkipConstructor(
+                                                                  member.Name,
+                                                                  member.DeclarationSyntax.GetLocation()
+                                                              );
                                                           }
                                                       }
                                                       else
