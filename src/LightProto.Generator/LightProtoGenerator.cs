@@ -323,7 +323,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
                                                   foreach (var member in protoMembers)
                                                   {
-                                                      yield return $"    parsed.{member.Name}={member.Name};";
+                                                      if (member.IsReadOnly || member.IsInitOnly)
+                                                      {
+                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, member.Name))
+                                                          {
+                                                              yield return $"    {line}";
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          yield return $"    parsed.{member.Name}={member.Name};";
+                                                      }
                                                   }
                                                   yield return "    return parsed;";
                                                   yield return "}";
@@ -379,7 +389,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               yield return $"    var parsed = ({className})System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof({className}));";
                                               foreach(var member in protoMembers)
                                               {
-                                                  yield return $"    parsed.{member.Name}=memberStruct.{member.Name};";
+                                                  if (member.IsReadOnly || member.IsInitOnly)
+                                                  {
+                                                      foreach (var line in AssignReadonlyMemberInToMessage(contract, member, $"memberStruct.{member.Name}"))
+                                                      {
+                                                          yield return $"    {line}";
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+                                                      yield return $"    parsed.{member.Name}=memberStruct.{member.Name};";
+                                                  }
                                               }
                                               
                                               var memberStructName = "rootMemberStruct";
@@ -393,9 +413,20 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   }
                                                       
                                                   var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
+                                                  var baseContract = GetProtoContract(compilation, derivedType, spc)!;
                                                   foreach(var member in baseProtoMembers)
                                                   {
-                                                      yield return $"    parsed.{member.Name}={memberStructName}.{member.Name};";
+                                                      if (member.IsReadOnly || member.IsInitOnly)
+                                                      {
+                                                          foreach (var line in AssignReadonlyMemberInToMessage(baseContract, member, $"{memberStructName}.{member.Name}"))
+                                                          {
+                                                              yield return $"    {line}";
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          yield return $"    parsed.{member.Name}={memberStructName}.{member.Name};";
+                                                      }
                                                   }
                                               }
                                               
@@ -990,6 +1021,35 @@ public class LightProtoGenerator : IIncrementalGenerator
             sourceBuilder.Append(@"}");
         }
         return sourceBuilder.ToString();
+    }
+
+    private static IEnumerable<string> AssignReadonlyMemberInToMessage(
+        ProtoContract contract,
+        ProtoMember member,
+        string sourceValue
+    )
+    {
+        var fieldName = $"<{member.Name}>k__BackingField";
+        if (contract.Type.GetMembers(fieldName).Length > 0)
+        {
+            // OK
+        }
+        else if (contract.Type.GetMembers(member.Name).OfType<IFieldSymbol>().Any())
+        {
+            fieldName = member.Name;
+        }
+        else
+        {
+            throw LightProtoGeneratorException.CannotFindReadonlyMemberFieldName(
+                $"{contract.Type}.{member.Name}",
+                contract.TypeDeclaration.GetLocation()
+            );
+        }
+
+        yield return $"[System.Runtime.CompilerServices.UnsafeAccessor(System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = \"{fieldName}\")]";
+        yield return $"static extern ref {member.Type} Get_{member.Name}_Field({contract.Type} message);";
+        yield return $"ref var ref_{member.Name} = ref Get_{member.Name}_Field(parsed);";
+        yield return $"ref_{member.Name} = {sourceValue};";
     }
 
     private static IEnumerable<string> AssignReadonlyMemberByUnsafeAccessor(
