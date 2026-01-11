@@ -277,7 +277,10 @@ public class LightProtoGenerator : IIncrementalGenerator
                       internal new struct MemberStruct
                       {
                           {{string.Join(NewLine + GetIntendedSpace(1),
-                              protoMembers.Select(member => $"public {member.Type} {member.Name};"))
+                              protoMembers.Select(member => {
+                                  var nullableSuffix = member.Type.IsValueType ? "?" : "";
+                                  return $"public {member.Type}{nullableSuffix} {member.Name};";
+                              }))
                           }}
                           {{string.Join(NewLine + GetIntendedSpace(1),
                               derivedTypes.Select(member => $"public {member.Contract.Type}.MemberStruct? {member.Contract.Type.Name}_MemberStruct;"))
@@ -330,13 +333,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   }
                                                   foreach (var member in protoMembers)
                                                   {
+                                                      var nullCheck = member.Type.IsValueType ? $"{member.Name}.HasValue" : $"{member.Name} != null";
+                                                      var valueAccess = member.Type.IsValueType ? $"{member.Name}.Value" : member.Name;
+                                                      yield return $"    if ({nullCheck})";
+                                                      yield return "    {";
                                                       if (member.IsReadOnly || member.IsInitOnly)
                                                       {
                                                           if (net8OrGreater)
                                                           {
-                                                              foreach (var line in AssignReadonlyMemberInToMessage(contract, member, member.Name))
+                                                              foreach (var line in AssignReadonlyMemberInToMessage(contract, member, valueAccess))
                                                               {
-                                                                  yield return $"    {line}";
+                                                                  yield return $"        {line}";
                                                               }
                                                           }
                                                           else
@@ -349,8 +356,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                       }
                                                       else
                                                       {
-                                                          yield return $"    parsed.{member.Name}={member.Name};";
+                                                          yield return $"        parsed.{member.Name}={valueAccess};";
                                                       }
+                                                      yield return "    }";
                                                   }
                                                   yield return "    return parsed;";
                                                   yield return "}";
@@ -361,7 +369,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   yield return "    {";
                                                   foreach (var member in protoMembers)
                                                   {
-                                                      yield return $"        {member.Name}={member.Name},";
+                                                      yield return $"        {member.Name}={member.Name} ?? {member.Initializer},";
                                                   }
                                                   yield return "    };";
                                                   yield return "    return parsed;";
@@ -413,13 +421,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               }
                                               foreach(var member in protoMembers)
                                               {
+                                                  var nullCheck = member.Type.IsValueType ? $"memberStruct.{member.Name}.HasValue" : $"memberStruct.{member.Name} != null";
+                                                  var valueAccess = member.Type.IsValueType ? $"memberStruct.{member.Name}.Value" : $"memberStruct.{member.Name}";
+                                                  yield return $"    if ({nullCheck})";
+                                                  yield return "    {";
                                                   if (member.IsReadOnly || member.IsInitOnly)
                                                   {
                                                       if (net8OrGreater)
                                                       {
-                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, $"memberStruct.{member.Name}"))
+                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, valueAccess))
                                                           {
-                                                              yield return $"    {line}";
+                                                              yield return $"        {line}";
                                                           }
                                                       }
                                                       else
@@ -432,8 +444,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   }
                                                   else
                                                   {
-                                                      yield return $"    parsed.{member.Name}=memberStruct.{member.Name};";
+                                                      yield return $"        parsed.{member.Name}={valueAccess};";
                                                   }
+                                                  yield return "    }";
                                               }
                                               
                                               var memberStructName = "rootMemberStruct";
@@ -450,13 +463,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   var baseContract = GetProtoContract(compilation, derivedType, spc)!;
                                                   foreach(var member in baseProtoMembers)
                                                   {
+                                                      var nullCheck = member.Type.IsValueType ? $"{memberStructName}.{member.Name}.HasValue" : $"{memberStructName}.{member.Name} != null";
+                                                      var valueAccess = member.Type.IsValueType ? $"{memberStructName}.{member.Name}.Value" : $"{memberStructName}.{member.Name}";
+                                                      yield return $"    if ({nullCheck})";
+                                                      yield return "    {";
                                                       if (member.IsReadOnly || member.IsInitOnly)
                                                       {
                                                           if (net8OrGreater)
                                                           {
-                                                              foreach (var line in AssignReadonlyMemberInToMessage(baseContract, member, $"{memberStructName}.{member.Name}"))
+                                                              foreach (var line in AssignReadonlyMemberInToMessage(baseContract, member, valueAccess))
                                                               {
-                                                                  yield return $"    {line}";
+                                                                  yield return $"        {line}";
                                                               }
                                                           }
                                                           else
@@ -469,8 +486,9 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                       }
                                                       else
                                                       {
-                                                          yield return $"    parsed.{member.Name}={memberStructName}.{member.Name};";
+                                                          yield return $"        parsed.{member.Name}={valueAccess};";
                                                       }
+                                                      yield return "    }";
                                                   }
                                               }
                                               
@@ -483,7 +501,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               yield return "    {";
                                               foreach(var member in protoMembers)
                                               {
-                                                  yield return $"        {member.Name}=memberStruct.{member.Name},";
+                                                  yield return $"        {member.Name}=memberStruct.{member.Name} ?? {member.Initializer},";
                                               }
 
                                               var memberStructName = "rootMemberStruct";
@@ -499,7 +517,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
                                                   foreach(var member in baseProtoMembers)
                                                   {
-                                                      yield return $"        {member.Name}={memberStructName}.{member.Name},";
+                                                      yield return $"        {member.Name}={memberStructName}.{member.Name} ?? {member.Initializer},";
                                                   }
                                               }
 
@@ -535,23 +553,24 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       return Gen();
                                       IEnumerable<string> Gen()
                                       {
-                                          var checkIfNotEmpty = GetCheckIfNotEmpty(member,"message");
+                                          var memberAccess = member.Type.IsValueType ? $"message.{member.Name}.Value" : $"message.{member.Name}";
+                                          var nullCheck = member.Type.IsValueType ? $"message.{member.Name}.HasValue" : $"message.{member.Name} != null";
 
-                                          yield return $"if({checkIfNotEmpty})";
+                                          yield return $"if({nullCheck})";
                                           yield return $"{{";
                                           if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
                                           {
-                                              yield return $"    {member.Name}_ProtoWriter.WriteTo(ref output, message.{member.Name});";
+                                              yield return $"    {member.Name}_ProtoWriter.WriteTo(ref output, {memberAccess});";
                                           }
                                           else if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                           {
                                               yield return $"    output.WriteTag({member.RawTag}); ";
-                                              yield return $"    output.Write{name}(message.{member.Name});";
+                                              yield return $"    output.Write{name}({memberAccess});";
                                           }
                                           else
                                           {
                                               yield return $"    output.WriteTag({member.RawTag}); ";
-                                              yield return $"    {member.Name}_ProtoWriter.WriteMessageTo(ref output, message.{member.Name});";
+                                              yield return $"    {member.Name}_ProtoWriter.WriteMessageTo(ref output, {memberAccess});";
                                           }   
                                           yield return $"}}";
                                       }
@@ -571,22 +590,23 @@ public class LightProtoGenerator : IIncrementalGenerator
                                       IEnumerable<string> Gen()
                                       {
                                           var tagSize = member.RawTagSize;
-                                          var checkIfNotEmpty = GetCheckIfNotEmpty(member,"message");
+                                          var memberAccess = member.Type.IsValueType ? $"message.{member.Name}.Value" : $"message.{member.Name}";
+                                          var nullCheck = member.Type.IsValueType ? $"message.{member.Name}.HasValue" : $"message.{member.Name} != null";
 
                                           if (IsCollectionType(compilation, member.Type) || IsDictionaryType(compilation, member.Type))
                                           {
-                                              yield return $"if(message.{member.Name}!=null)";
-                                              yield return $"    size += {member.Name}_ProtoWriter.CalculateSize(message.{member.Name}); ";
+                                              yield return $"if({nullCheck})";
+                                              yield return $"    size += {member.Name}_ProtoWriter.CalculateSize({memberAccess}); ";
                                           }
                                           else if (TryGetInternalTypeName(member.Type, member.DataFormat,member.StringIntern, out var name))
                                           {
-                                              yield return $"if({checkIfNotEmpty})";
-                                              yield return $"    size += {tagSize} + CodedOutputStream.Compute{name}Size(message.{member.Name});";
+                                              yield return $"if({nullCheck})";
+                                              yield return $"    size += {tagSize} + CodedOutputStream.Compute{name}Size({memberAccess});";
                                           }
                                           else
                                           {
-                                              yield return $"if({checkIfNotEmpty})";
-                                              yield return $"    size += {tagSize} + {member.Name}_ProtoWriter.CalculateMessageSize(message.{member.Name});";
+                                              yield return $"if({nullCheck})";
+                                              yield return $"    size += {tagSize} + {member.Name}_ProtoWriter.CalculateMessageSize({memberAccess});";
                                           }
                                       }
                                   }))
@@ -618,7 +638,10 @@ public class LightProtoGenerator : IIncrementalGenerator
                           public MemberStruct ParseFrom(ref ReaderContext input)
                           {
                               {{string.Join(NewLine + GetIntendedSpace(3),
-                                  protoMembers.Select(member => $"{member.Type} _{member.Name} = {member.Initializer};"))
+                                  protoMembers.Select(member => {
+                                      var nullableSuffix = member.Type.IsValueType ? "?" : "";
+                                      return $"{member.Type}{nullableSuffix} _{member.Name} = null;";
+                                  }))
                               }}
                               {{string.Join(NewLine + GetIntendedSpace(3),
                                   derivedTypes.Select(member => $"{member.Contract.Type}.MemberStruct? _{member.Contract.Type.Name}_memberStruct = null;"))
