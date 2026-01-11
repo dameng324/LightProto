@@ -1,7 +1,8 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class InheritanceSkipConstructorTests : BaseProtoBufTests<InheritanceSkipConstructorTests.Base>
+public partial class InheritanceSkipConstructorTests
+    : BaseProtoBufTests<InheritanceSkipConstructorTests.Base>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
@@ -52,7 +53,7 @@ public partial class InheritanceSkipConstructorTests : BaseProtoBufTests<Inherit
     public override async Task AssertResult(Base clone, Base message)
     {
         await Assert.That(clone.GetType()).IsEqualTo(message.GetType());
-        
+
         if (message is Message1 message1)
         {
             await Assert.That(clone is Message1).IsTrue();
@@ -61,7 +62,7 @@ public partial class InheritanceSkipConstructorTests : BaseProtoBufTests<Inherit
             // When SkipConstructor=true, the constructor should not run, so IgnoredProperty should be 0
             await Assert.That(cloneMessage.IgnoredProperty).IsEqualTo(0);
         }
-        
+
         if (message is Message2 message2)
         {
             await Assert.That(clone is Message2).IsTrue();
