@@ -443,15 +443,17 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   yield return "    }";
                                               }
                                               
-                                              var memberStructName = "rootMemberStruct";
+                                              var memberStructNameBuilder = new System.Text.StringBuilder("rootMemberStruct");
                                               for (var index = 0; index < derivedLevelTypes.Count; index++)
                                               {
                                                   var derivedType = derivedLevelTypes[index];
                                                   
                                                   if (index > 0)
                                                   {
-                                                      memberStructName += $".{derivedType.Name}_MemberStruct.Value";
+                                                      memberStructNameBuilder.Append($".{derivedType.Name}_MemberStruct.Value");
                                                   }
+                                                  
+                                                  var memberStructName = memberStructNameBuilder.ToString();
                                                       
                                                   var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
                                                   var baseContract = GetProtoContract(compilation, derivedType, spc)!;
@@ -498,23 +500,23 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               foreach(var member in protoMembers)
                                               {
                                                   allMembers.Add((member,$"memberStruct.{member.Name}"));
-                                                  //yield return $"        {member.Name}=memberStruct.{member.Name} ?? {member.Initializer},";
                                               }
 
-                                              var memberStructName = "rootMemberStruct";
+                                              var memberStructNameBuilder = new System.Text.StringBuilder("rootMemberStruct");
                                               for (var index = 0; index < derivedLevelTypes.Count; index++)
                                               {
                                                   var derivedType = derivedLevelTypes[index];
                                                   
                                                   if (index > 0)
                                                   {
-                                                      memberStructName += $".{derivedType.Name}_MemberStruct.Value";
+                                                      memberStructNameBuilder.Append($".{derivedType.Name}_MemberStruct.Value");
                                                   }
+                                                  
+                                                  var memberStructName = memberStructNameBuilder.ToString();
                                                       
                                                   var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
                                                   foreach(var member in baseProtoMembers)
                                                   {
-                                                      //yield return $"        {member.Name}={memberStructName}.{member.Name} ?? {member.Initializer},";
                                                       allMembers.Add((member,$"{memberStructName}.{member.Name}"));
                                                   }
                                               }
@@ -529,14 +531,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               foreach (var (member,valueAccess) in allMembers.Where(x=>!x.member.IsInitOnly))
                                               {
                                                   var nullCheck = member.Type.IsValueType ? $"{valueAccess}.HasValue" : $"{valueAccess} != null";
-                                                  var valueAccess1 = member.Type.IsValueType ? $"{valueAccess}.Value" : valueAccess;
+                                                  var unwrappedValue = member.Type.IsValueType ? $"{valueAccess}.Value" : valueAccess;
                                                   yield return $"    if ({nullCheck})";
                                                   yield return "    {";
                                                   if (member.IsReadOnly)
                                                   {
                                                       if (net8OrGreater)
                                                       {
-                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, valueAccess1))
+                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, unwrappedValue))
                                                           {
                                                               yield return $"        {line}";
                                                           }
@@ -551,7 +553,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   }
                                                   else
                                                   {
-                                                      yield return $"        parsed.{member.Name}={valueAccess1};";
+                                                      yield return $"        parsed.{member.Name}={unwrappedValue};";
                                                   }
                                                   yield return "    }";
                                               }
@@ -1141,20 +1143,18 @@ public class LightProtoGenerator : IIncrementalGenerator
         yield return "}";
     }
 
-    private static IEnumerable<string> AssignReadonlyMemberInToMessage(
-        ProtoContract contract,
-        ProtoMember member,
-        string sourceValue
-    )
+    private static string GetReadonlyMemberFieldName(ProtoContract contract, ProtoMember member)
     {
-        var fieldName = $"<{member.Name}>k__BackingField";
-        if (contract.Type.GetMembers(fieldName).Length > 0)
+        // Check for compiler-generated backing field for auto-properties
+        var backingFieldName = $"<{member.Name}>k__BackingField";
+        if (contract.Type.GetMembers(backingFieldName).Length > 0)
         {
-            // OK
+            return backingFieldName;
         }
+        // Check for explicit readonly field
         else if (contract.Type.GetMembers(member.Name).OfType<IFieldSymbol>().Any())
         {
-            fieldName = member.Name;
+            return member.Name;
         }
         else
         {
@@ -1163,6 +1163,15 @@ public class LightProtoGenerator : IIncrementalGenerator
                 contract.TypeDeclaration.GetLocation()
             );
         }
+    }
+
+    private static IEnumerable<string> AssignReadonlyMemberInToMessage(
+        ProtoContract contract,
+        ProtoMember member,
+        string sourceValue
+    )
+    {
+        var fieldName = GetReadonlyMemberFieldName(contract, member);
 
         yield return $"[System.Runtime.CompilerServices.UnsafeAccessor(System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = \"{fieldName}\")]";
         yield return $"static extern ref {member.Type} Get_{member.Name}_Field({contract.Type} message);";
@@ -1175,22 +1184,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         ProtoMember member
     )
     {
-        var fieldName = $"<{member.Name}>k__BackingField";
-        if (contract.Type.GetMembers(fieldName).Length > 0)
-        {
-            // OK
-        }
-        else if (contract.Type.GetMembers(member.Name).OfType<IFieldSymbol>().Any())
-        {
-            fieldName = member.Name;
-        }
-        else
-        {
-            throw LightProtoGeneratorException.CannotFindReadonlyMemberFieldName(
-                $"{contract.Type}.{member.Name}",
-                contract.TypeDeclaration.GetLocation()
-            );
-        }
+        var fieldName = GetReadonlyMemberFieldName(contract, member);
 
         yield return $"if (_{member.Name}HasValue) {{";
         yield return $"    [System.Runtime.CompilerServices.UnsafeAccessor(System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = \"{fieldName}\")]";
