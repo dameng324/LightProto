@@ -20,13 +20,17 @@ public partial class InheritanceAbstractTests : BaseProtoBufTests<InheritanceAbs
         public string Value { get; set; } = "";
     }
 
-    [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract(SkipConstructor = true)]
+    [ProtoContract()]
+    [ProtoBuf.ProtoContract()]
     public partial class Message2 : Base
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
         public string Value { get; set; } = "";
+
+        [ProtoMember(2)]
+        [ProtoBuf.ProtoMember(2)]
+        public int IntValue { get; set; }
     }
 
     public override IEnumerable<Base> GetMessages()
@@ -49,6 +53,7 @@ public partial class InheritanceAbstractTests : BaseProtoBufTests<InheritanceAbs
             await Assert.That(clone is Message2).IsTrue();
             var cloneMessage = (Message2)(clone);
             await Assert.That(message2.Value).IsEqualTo(cloneMessage.Value);
+            await Assert.That(message2.IntValue).IsEqualTo(cloneMessage.IntValue);
         }
     }
 }

@@ -235,43 +235,8 @@ public class LightProtoGenerator : IIncrementalGenerator
                       
                       {{
                           Invoke(baseType is null, 
-                              () => {
-                                  return string.Join(NewLine+GetIntendedSpace(1), Gen());
-                                  IEnumerable<string> Gen()
-                                  {
-                                      yield return $"internal sealed class LightProtoWriter: IProtoWriter, IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
-                                      yield return "{";
-                                      yield return $"    void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyFor?.ToDisplayString() ?? className})message);";
-                                      yield return $"    int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyFor?.ToDisplayString() ?? className})message);";
-                                      yield return $"    public bool IsMessage => true;";
-                                      yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
-                                      yield return $"    public void WriteTo(ref WriterContext output, {className} message) => MemberStructWriter.WriteTo(ref output, MemberStruct.FromMessage(message));";
-                                      yield return $"    public int CalculateSize({className} message) => MemberStructWriter.CalculateSize(MemberStruct.FromMessage(message));";
-                                      yield return "}";
-                                  }
-                              }, 
-                              () => {
-                                  if (targetType.TypeKind is TypeKind.Struct)
-                                  {
-                                      return string.Join(NewLine+GetIntendedSpace(1), Gen());
-                                      IEnumerable<string> Gen()
-                                      {
-                                          yield return $"internal sealed class LightProtoWriter: IProtoWriter, IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
-                                          yield return "{";
-                                          yield return $"    void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyFor?.ToDisplayString() ?? className})message);";
-                                          yield return $"    int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyFor?.ToDisplayString() ?? className})message);";
-                                          yield return $"    public bool IsMessage => true;";
-                                          yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
-                                          yield return $"    public void WriteTo(ref WriterContext output, {className} message) => {baseParserTypeName}.ProtoWriter.WriteTo(ref output, message);";
-                                          yield return $"    public int CalculateSize({className} message) => {baseParserTypeName}.ProtoWriter.CalculateSize(message);";
-                                          yield return "}";
-                                      }
-                                  }
-                                  else
-                                  {
-                                      return string.Empty;
-                                  }
-                              })
+                              () => string.Join(NewLine+GetIntendedSpace(1), GenDerivedLightProtoWriter(proxyFor,className, "MemberStructWriter","MemberStruct.FromMessage(message)")), 
+                              () => targetType.TypeKind is TypeKind.Struct ? string.Join(NewLine+GetIntendedSpace(1), GenDerivedLightProtoWriter(proxyFor,className,$"{baseParserTypeName}.ProtoWriter","message")) : string.Empty)
                       }}
                       
                       internal new struct MemberStruct
@@ -367,11 +332,40 @@ public class LightProtoGenerator : IIncrementalGenerator
                                               {
                                                   yield return $"    var parsed = new {className}()";
                                                   yield return "    {";
-                                                  foreach (var member in protoMembers)
+                                                  foreach (var member in protoMembers.Where(x=>x.IsInitOnly))
                                                   {
-                                                      yield return $"        {member.Name}={member.Name} ?? {member.Initializer},";
+                                                       yield return $"        {member.Name}={member.Name} ?? {member.Initializer},";
                                                   }
                                                   yield return "    };";
+                                                  foreach (var member in protoMembers.Where(x=>!x.IsInitOnly))
+                                                  {
+                                                      var nullCheck = member.Type.IsValueType ? $"{member.Name}.HasValue" : $"{member.Name} != null";
+                                                      var valueAccess = member.Type.IsValueType ? $"{member.Name}.Value" : member.Name;
+                                                      yield return $"    if ({nullCheck})";
+                                                      yield return "    {";
+                                                      if (member.IsReadOnly)
+                                                      {
+                                                          if (net8OrGreater)
+                                                          {
+                                                              foreach (var line in AssignReadonlyMemberInToMessage(contract, member, valueAccess))
+                                                              {
+                                                                  yield return $"        {line}";
+                                                              }
+                                                          }
+                                                          else
+                                                          {
+                                                              throw LightProtoGeneratorException.InitOnlyOrReadOnlyWhenSkipConstructor(
+                                                                  member.Name,
+                                                                  member.DeclarationSyntax.GetLocation()
+                                                              );
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          yield return $"        parsed.{member.Name}={valueAccess};";
+                                                      }
+                                                      yield return "    }";
+                                                  }
                                                   yield return "    return parsed;";
                                                   yield return "}";
                                               }
@@ -499,9 +493,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                                           {
                                               yield return $"    var parsed = new {className}()";
                                               yield return "    {";
+                                              
+                                              List<(ProtoMember member,string valueAccess)> allMembers = new();
                                               foreach(var member in protoMembers)
                                               {
-                                                  yield return $"        {member.Name}=memberStruct.{member.Name} ?? {member.Initializer},";
+                                                  allMembers.Add((member,$"memberStruct.{member.Name}"));
+                                                  //yield return $"        {member.Name}=memberStruct.{member.Name} ?? {member.Initializer},";
                                               }
 
                                               var memberStructName = "rootMemberStruct";
@@ -517,11 +514,47 @@ public class LightProtoGenerator : IIncrementalGenerator
                                                   var baseProtoMembers = GetProtoContract(compilation, derivedType, spc)!.Members;
                                                   foreach(var member in baseProtoMembers)
                                                   {
-                                                      yield return $"        {member.Name}={memberStructName}.{member.Name} ?? {member.Initializer},";
+                                                      //yield return $"        {member.Name}={memberStructName}.{member.Name} ?? {member.Initializer},";
+                                                      allMembers.Add((member,$"{memberStructName}.{member.Name}"));
                                                   }
                                               }
 
+                                              foreach (var (member,valueAccess) in allMembers.Where(x=>x.member.IsInitOnly))
+                                              {
+                                                  yield return $"        {member.Name}={valueAccess} ?? {member.Initializer},";
+                                              }
+
                                               yield return "    };";
+                                              
+                                              foreach (var (member,valueAccess) in allMembers.Where(x=>!x.member.IsInitOnly))
+                                              {
+                                                  var nullCheck = member.Type.IsValueType ? $"{valueAccess}.HasValue" : $"{valueAccess} != null";
+                                                  var valueAccess1 = member.Type.IsValueType ? $"{valueAccess}.Value" : valueAccess;
+                                                  yield return $"    if ({nullCheck})";
+                                                  yield return "    {";
+                                                  if (member.IsReadOnly)
+                                                  {
+                                                      if (net8OrGreater)
+                                                      {
+                                                          foreach (var line in AssignReadonlyMemberInToMessage(contract, member, valueAccess1))
+                                                          {
+                                                              yield return $"        {line}";
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          throw LightProtoGeneratorException.InitOnlyOrReadOnlyWhenSkipConstructor(
+                                                              member.Name,
+                                                              member.DeclarationSyntax.GetLocation()
+                                                          );
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+                                                      yield return $"        parsed.{member.Name}={valueAccess1};";
+                                                  }
+                                                  yield return "    }";
+                                              }
                                               yield return "    return parsed;";
                                               yield return "}";
                                           }
@@ -1088,6 +1121,24 @@ public class LightProtoGenerator : IIncrementalGenerator
             sourceBuilder.Append(@"}");
         }
         return sourceBuilder.ToString();
+    }
+
+    static IEnumerable<string> GenDerivedLightProtoWriter(
+        ITypeSymbol? proxyFor,
+        string className,
+        string writerName,
+        string message
+    )
+    {
+        yield return $"internal sealed class LightProtoWriter: IProtoWriter, IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
+        yield return "{";
+        yield return $"    void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyFor?.ToDisplayString() ?? className})message);";
+        yield return $"    int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyFor?.ToDisplayString() ?? className})message);";
+        yield return $"    public bool IsMessage => true;";
+        yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
+        yield return $"    public void WriteTo(ref WriterContext output, {className} message) => {writerName}.WriteTo(ref output, {message});";
+        yield return $"    public int CalculateSize({className} message) => {writerName}.CalculateSize({message});";
+        yield return "}";
     }
 
     private static IEnumerable<string> AssignReadonlyMemberInToMessage(

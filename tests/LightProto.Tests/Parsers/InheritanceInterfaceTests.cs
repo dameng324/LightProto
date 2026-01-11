@@ -7,8 +7,8 @@ public partial class InheritanceInterfaceTests
         InheritanceInterfaceTests.BaseProtoParser
     >
 {
-    [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract(SkipConstructor = true)]
+    [ProtoContract()]
+    [ProtoBuf.ProtoContract()]
     [ProtoInclude(3, typeof(StructMessage))]
     [ProtoBuf.ProtoInclude(3, typeof(StructMessage))]
     [ProtoInclude(4, typeof(ClassMessage))]
@@ -17,8 +17,8 @@ public partial class InheritanceInterfaceTests
 
     public partial class BaseProtoParser { }
 
-    [ProtoContract(SkipConstructor = true)]
-    [ProtoBuf.ProtoContract(SkipConstructor = true)]
+    [ProtoContract()]
+    [ProtoBuf.ProtoContract()]
     public partial record ClassMessage : Base
     {
         [ProtoMember(1)]
