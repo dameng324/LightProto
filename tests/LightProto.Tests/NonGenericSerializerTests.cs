@@ -946,7 +946,7 @@ public partial class NonGenericSerializerTests
     {
         yield return () =>
             (
-                (int?)null,
+                null,
                 typeof(int?),
                 new NullableProtoReader<int>(Int32ProtoParser.ProtoReader),
                 new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter)
@@ -971,13 +971,13 @@ public partial class NonGenericSerializerTests
 
         // Deserialize
         var deserialized = DeserializedFromSequence(bytes1);
-        await AssertEquivalentTo(type, deserialized, value);
+        await AssertEquivalentTo(type, deserialized, value!);
 
         deserialized = DeserializedFromStream(bytes1);
-        await AssertEquivalentTo(type, deserialized, value);
+        await AssertEquivalentTo(type, deserialized, value!);
 
         deserialized = DeserializedFromSpan(bytes1);
-        await AssertEquivalentTo(type, deserialized, value);
+        await AssertEquivalentTo(type, deserialized, value!);
 
         static async Task AssertEquivalentTo(Type type, object deserialized, object original)
         {
