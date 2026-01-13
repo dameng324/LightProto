@@ -648,8 +648,8 @@ static LightProto.Serializer.GetProtoReader(System.Type! type) -> LightProto.IPr
 static LightProto.Serializer.GetProtoReader<T>() -> LightProto.IProtoReader<T>!
 static LightProto.Serializer.GetProtoWriter(System.Type! type) -> LightProto.IProtoWriter!
 static LightProto.Serializer.GetProtoWriter<T>() -> LightProto.IProtoWriter<T>!
-static LightProto.Serializer.RegisterGenericParser(System.Type! type, System.Type! readerType, System.Type! writerType) -> void
 static LightProto.Serializer.RegisterParser<T>(LightProto.IProtoReader<T>! reader, LightProto.IProtoWriter<T>! writer) -> void
+static LightProto.Serializer.RegisterGenericParser(System.Type! type, System.Type! readerType, System.Type! writerType) -> void
 static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object? instance) -> void
 static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object? instance, LightProto.IProtoWriter! writer) -> void
 static LightProto.Serializer.SerializeNonGeneric(System.IO.Stream! destination, object? instance) -> void
