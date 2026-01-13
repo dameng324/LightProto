@@ -804,7 +804,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                   {{showFiledNumber}}
                   /// </summary>
                   {{debuggerDisplay}}
-                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>")}}
+                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>")}}
                   {
                       public static IProtoReader<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}}> ProtoReader {get; } = new LightProtoReader();
                       public static IProtoWriter<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}}> ProtoWriter {get; } = new LightProtoWriter();
@@ -1452,7 +1452,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         {
             return memberType.TypeKind is TypeKind.Interface
                 ? $"{memberType.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}ProtoParser.Proto{readerOrWriter}"
-                : $"{memberType.WithNullableAnnotation(NullableAnnotation.None)}.Proto{readerOrWriter}";
+                : $"{memberType.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.Proto{readerOrWriter}";
         }
 
         var fieldNumber = GetFieldNumber(rawTag);
@@ -1560,7 +1560,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
                 if (namedType.TypeKind == TypeKind.Enum)
                 {
-                    return $"global::LightProto.Parser.EnumProtoParser<{namedType}>.Proto{readerOrWriter}";
+                    return $"global::LightProto.Parser.EnumProtoParser<{namedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>.Proto{readerOrWriter}";
                 }
 
                 var name = namedType.SpecialType switch
