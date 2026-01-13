@@ -151,7 +151,13 @@ namespace LightProto
             Writers.TryAdd(typeof(T), writer);
         }
 
-        static void RegisterGenericParser(Type type, Type readerType, Type writerType)
+        /// <summary>
+        /// Registers a custom generic ProtoReader and ProtoWriter for a generic type definition
+        /// </summary>
+        /// <param name="type"> The generic type definition, e.g. typeof(List&lt;&gt;), typeof(Dictionary&lt;,&gt;), etc. </param>
+        /// <param name="readerType"> The generic ProtoReader type, e.g. typeof(ListProtoReader&lt;&gt;), typeof(DictionaryProtoReader&lt;,&gt;), etc. </param>
+        /// <param name="writerType"> The generic ProtoWriter type, e.g. typeof(ListProtoWriter&lt;&gt;), typeof(DictionaryProtoWriter&lt;,&gt;), etc. </param>
+        public static void RegisterGenericParser(Type type, Type readerType, Type writerType)
         {
             GenericReaderTypes.TryAdd(type, readerType);
             GenericWriterTypes.TryAdd(type, writerType);
