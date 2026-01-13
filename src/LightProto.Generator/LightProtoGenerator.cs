@@ -165,8 +165,10 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             string baseParserTypeName =
                 baseType?.TypeKind is TypeKind.Interface
-                    ? baseType.ToDisplayString() + "ProtoParser"
-                    : baseType?.ToDisplayString() ?? targetType.ToDisplayString();
+                    ? baseType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                        + "ProtoParser"
+                    : baseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                        ?? targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
             classBody = (
                 $$"""
@@ -175,7 +177,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                   {{showFiledNumber}}
                   /// </summary>
                   {{debuggerDisplay}}
-                  {{typeDeclarationString}} {{className}}{{(targetType.TypeKind is TypeKind.Interface?"ProtoParser":"")}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
+                  {{typeDeclarationString}} {{className}}{{(targetType.TypeKind is TypeKind.Interface?"ProtoParser":"")}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>")}}
                   {
                       {{
                           Invoke(targetType.TypeKind is TypeKind.Interface, 
@@ -194,11 +196,11 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   return string.Empty;
                               })
                       }}
-                      public static new IProtoReader<{{proxyFor?.ToDisplayString() ?? className}}> ProtoReader {get;} = new LightProtoReader();
+                      public static new IProtoReader<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}}> ProtoReader {get;} = new LightProtoReader();
                       {{
                           Invoke(baseType is null||targetType.TypeKind is TypeKind.Struct, // Structs do not support contravariance/covariance and cannot use the base class/interface's Writer, so a separate implementation is required
-                              () => $"public static IProtoWriter<{proxyFor?.ToDisplayString() ?? className}> ProtoWriter {{get;}} = new LightProtoWriter();", 
-                              () => $"public static new IProtoWriter<{proxyFor?.ToDisplayString()??className}> ProtoWriter => {baseParserTypeName}.ProtoWriter;")
+                              () => $"public static IProtoWriter<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}> ProtoWriter {{get;}} = new LightProtoWriter();", 
+                              () => $"public static new IProtoWriter<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}> ProtoWriter => {baseParserTypeName}.ProtoWriter;")
                       }}
                       internal static new IProtoReader<MemberStruct> MemberStructReader {get; } = new MemberStructLightProtoReader();
                       internal static new IProtoWriter<MemberStruct> MemberStructWriter {get; } = new MemberStructLightProtoWriter();
@@ -209,12 +211,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"internal sealed class LightProtoReader: IProtoReader, IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return $"internal sealed class LightProtoReader: IProtoReader, IProtoReader<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}>";
                                       yield return "{";
                                       yield return "    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);";
                                       yield return "    public bool IsMessage => true;";
                                       yield return "    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
-                                      yield return $"    public {proxyFor?.ToDisplayString() ?? className} ParseFrom(ref ReaderContext input)=>MemberStructReader.ParseFrom(ref input).ToMessage();";
+                                      yield return $"    public {proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className} ParseFrom(ref ReaderContext input)=>MemberStructReader.ParseFrom(ref input).ToMessage();";
                                       yield return "}";
                                   }
                               }, 
@@ -222,12 +224,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   return string.Join(NewLine+GetIntendedSpace(1), Gen());
                                   IEnumerable<string> Gen()
                                   {
-                                      yield return $"internal sealed new class LightProtoReader: IProtoReader, IProtoReader<{proxyFor?.ToDisplayString() ?? className}>";
+                                      yield return $"internal sealed new class LightProtoReader: IProtoReader, IProtoReader<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}>";
                                       yield return "{";
                                       yield return "    object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);";
                                       yield return "    public bool IsMessage => true;";
                                       yield return "    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
-                                      yield return $"    public {proxyFor?.ToDisplayString() ?? className} ParseFrom(ref ReaderContext input)=>({proxyFor?.ToDisplayString() ?? className}){baseParserTypeName}.ProtoReader.ParseFrom(ref input);";
+                                      yield return $"    public {proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className} ParseFrom(ref ReaderContext input)=>({proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}){baseParserTypeName}.ProtoReader.ParseFrom(ref input);";
                                       yield return "}";
                                   }
                               })
@@ -802,15 +804,15 @@ public class LightProtoGenerator : IIncrementalGenerator
                   {{showFiledNumber}}
                   /// </summary>
                   {{debuggerDisplay}}
-                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor.ToDisplayString()}>")}}
+                  {{typeDeclarationString}} {{className}} :{{(proxyFor is null ?$"IProtoParser<{className}>":$"IProtoParser<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}>")}}
                   {
-                      public static IProtoReader<{{proxyFor?.ToDisplayString()??className}}> ProtoReader {get; } = new LightProtoReader();
-                      public static IProtoWriter<{{proxyFor?.ToDisplayString()??className}}> ProtoWriter {get; } = new LightProtoWriter();
+                      public static IProtoReader<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}}> ProtoReader {get; } = new LightProtoReader();
+                      public static IProtoWriter<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}}> ProtoWriter {get; } = new LightProtoWriter();
 
-                      internal sealed class LightProtoWriter:IProtoWriter,IProtoWriter<{{proxyFor?.ToDisplayString()??className}}>
+                      internal sealed class LightProtoWriter:IProtoWriter,IProtoWriter<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}}>
                       {
-                          void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({{proxyFor?.ToDisplayString() ?? className}})message);
-                          int IProtoWriter.CalculateSize(object message) => CalculateSize(({{proxyFor?.ToDisplayString() ?? className}})message);
+                          void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}})message);
+                          int IProtoWriter.CalculateSize(object message) => CalculateSize(({{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}})message);
                           public bool IsMessage => true;
                           public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
                           {{string.Join(NewLine + GetIntendedSpace(2),
@@ -826,7 +828,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }
                               }))
                           }}
-                          public void WriteTo(ref WriterContext output, {{proxyFor?.ToDisplayString()??className}} value)
+                          public void WriteTo(ref WriterContext output, {{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}} value)
                           {
                               {{className}} message = value;
                               {{string.Join(NewLine + GetIntendedSpace(3),
@@ -859,7 +861,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                               }}
                           }
                           
-                          public int CalculateSize({{proxyFor?.ToDisplayString()??className}} value) {
+                          public int CalculateSize({{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}} value) {
                               {{className}} message = value;
                               int size=0;
                               {{string.Join(NewLine + GetIntendedSpace(3),
@@ -893,7 +895,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                           }
                       }
                       
-                      internal sealed class LightProtoReader: IProtoReader, IProtoReader<{{proxyFor?.ToDisplayString()??className}}>
+                      internal sealed class LightProtoReader: IProtoReader, IProtoReader<{{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}}>
                       {
                           object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
                           public bool IsMessage => true;
@@ -910,7 +912,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                   }
                               }))
                           }}
-                          public {{proxyFor?.ToDisplayString()??className}} ParseFrom(ref ReaderContext input)
+                          public {{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)??className}} ParseFrom(ref ReaderContext input)
                           {
                               {{string.Join(NewLine + GetIntendedSpace(3),
                                   protoMembers.Select(member => $"{member.Type} _{member.Name} = default;"))
@@ -1132,10 +1134,10 @@ public class LightProtoGenerator : IIncrementalGenerator
         string message
     )
     {
-        yield return $"internal sealed class LightProtoWriter: IProtoWriter, IProtoWriter<{proxyFor?.ToDisplayString() ?? className}>";
+        yield return $"internal sealed class LightProtoWriter: IProtoWriter, IProtoWriter<{proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className}>";
         yield return "{";
-        yield return $"    void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyFor?.ToDisplayString() ?? className})message);";
-        yield return $"    int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyFor?.ToDisplayString() ?? className})message);";
+        yield return $"    void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className})message);";
+        yield return $"    int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyFor?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? className})message);";
         yield return $"    public bool IsMessage => true;";
         yield return $"    public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;";
         yield return $"    public void WriteTo(ref WriterContext output, {className} message) => {writerName}.WriteTo(ref output, {message});";
@@ -1449,7 +1451,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         if (IsProtoBufMessage(memberType))
         {
             return memberType.TypeKind is TypeKind.Interface
-                ? $"{memberType.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString()}ProtoParser.Proto{readerOrWriter}"
+                ? $"{memberType.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}ProtoParser.Proto{readerOrWriter}"
                 : $"{memberType.WithNullableAnnotation(NullableAnnotation.None)}.Proto{readerOrWriter}";
         }
 
@@ -1464,7 +1466,7 @@ public class LightProtoGenerator : IIncrementalGenerator
             var elementType = arrayType.ElementType;
             if (elementType.SpecialType == SpecialType.System_Byte)
             {
-                return $"LightProto.Parser.ByteArrayProtoParser.Proto{readerOrWriter}";
+                return $"global::LightProto.Parser.ByteArrayProtoParser.Proto{readerOrWriter}";
             }
 
             if (!isPacked)
@@ -1558,7 +1560,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
                 if (namedType.TypeKind == TypeKind.Enum)
                 {
-                    return $"LightProto.Parser.EnumProtoParser<{namedType}>.Proto{readerOrWriter}";
+                    return $"global::LightProto.Parser.EnumProtoParser<{namedType}>.Proto{readerOrWriter}";
                 }
 
                 var name = namedType.SpecialType switch
@@ -1597,7 +1599,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     name = "InternedString";
                 }
 
-                return $"LightProto.Parser.{name}ProtoParser.Proto{readerOrWriter}";
+                return $"global::LightProto.Parser.{name}ProtoParser.Proto{readerOrWriter}";
             }
 
             if (typeArguments.Length == 1)
@@ -1634,7 +1636,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                     var elementType = typeArguments[0];
                     if (elementType.SpecialType == SpecialType.System_Byte)
                     {
-                        return $"LightProto.Parser.ByteListProtoParser.Proto{readerOrWriter}";
+                        return $"global::LightProto.Parser.ByteListProtoParser.Proto{readerOrWriter}";
                     }
                     var elementParser = GetProtoParser(
                         compilation,
