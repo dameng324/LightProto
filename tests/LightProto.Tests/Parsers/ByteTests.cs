@@ -42,18 +42,13 @@ public partial class ByteTests
     [Test]
     public async Task ByteRoundTripTest()
     {
-        for (byte i = 0; i < 255; i++)
+        // Test all byte values from 0 to 255
+        for (int i = 0; i <= 255; i++)
         {
-            var message = new ByteMessage { Data = i };
+            var message = new ByteMessage { Data = (byte)i };
             var bytes = message.ToByteArray(ByteMessage.ProtoWriter);
             var deserialized = Serializer.Deserialize(bytes, ByteMessage.ProtoReader);
-            await Assert.That(deserialized.Data).IsEqualTo(i);
+            await Assert.That(deserialized.Data).IsEqualTo((byte)i);
         }
-
-        // Test max value (255)
-        var maxMessage = new ByteMessage { Data = 255 };
-        var maxBytes = maxMessage.ToByteArray(ByteMessage.ProtoWriter);
-        var maxDeserialized = Serializer.Deserialize(maxBytes, ByteMessage.ProtoReader);
-        await Assert.That(maxDeserialized.Data).IsEqualTo((byte)255);
     }
 }
