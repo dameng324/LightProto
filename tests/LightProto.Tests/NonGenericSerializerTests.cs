@@ -915,6 +915,36 @@ public partial class NonGenericSerializerTests
             );
         yield return () =>
             (
+                (byte)123,
+                (IProtoReader)SByteProtoParser.ProtoReader,
+                (IProtoWriter)SByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (byte)123,
+                (IProtoReader)FixedByteProtoParser.ProtoReader,
+                (IProtoWriter)FixedByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (sbyte)123,
+                (IProtoReader)SSByteProtoParser.ProtoReader,
+                (IProtoWriter)SSByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (sbyte)123,
+                (IProtoReader)SFixedByteProtoParser.ProtoReader,
+                (IProtoWriter)SFixedByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (sbyte)123,
+                (IProtoReader)SByteProtoParser.ProtoReader,
+                (IProtoWriter)SByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
                 Guid.NewGuid(),
                 (IProtoReader)Guid300ProtoParser.ProtoReader,
                 (IProtoWriter)Guid300ProtoParser.ProtoWriter
