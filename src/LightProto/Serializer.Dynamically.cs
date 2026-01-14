@@ -11,7 +11,7 @@ namespace LightProto
     public static partial class Serializer
     {
 #if NET7_0_OR_GREATER
-        const string AOTWarning =
+        internal const string AOTWarning =
             "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it is not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for AOT safety and to remove IL warnings.";
 #endif
         /// <summary>
@@ -339,7 +339,7 @@ namespace LightProto
         }
 
 #if NET7_0_OR_GREATER
-        private const DynamicallyAccessedMemberTypes LightProtoRequiredMembers =
+        internal const DynamicallyAccessedMemberTypes LightProtoRequiredMembers =
             DynamicallyAccessedMemberTypes.PublicProperties;
 #endif
 
