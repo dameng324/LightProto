@@ -710,6 +710,9 @@ public partial class NonGenericSerializerTests
         yield return () => true;
         yield return () => false;
         yield return () => (long)123;
+        yield return () => (byte)123;
+        yield return () => (sbyte)123;
+        yield return () => (sbyte)-123;
         yield return () => (long)-123;
         yield return () => (uint)123;
         yield return () => (ulong)123;
@@ -726,6 +729,7 @@ public partial class NonGenericSerializerTests
         yield return () => new TestContract() { Name = "Test" };
         yield return () => new byte[] { 1, 2, 3, 4, 5 };
         yield return () => new List<byte>() { 1, 2, 3, 4, 5 };
+        yield return () => new List<sbyte>() { -1, 2, -3, 4, -5 };
         yield return () => new BitArray([1, 2, 3, 4, 5]);
         yield return () => new Complex(1, 2);
         yield return () => new CultureInfo("en-US");

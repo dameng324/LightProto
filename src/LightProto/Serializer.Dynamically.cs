@@ -197,6 +197,8 @@ namespace LightProto
                 TimeZoneInfoProtoParser.ProtoWriter
             );
             RegisterParser(VersionProtoParser.ProtoReader, VersionProtoParser.ProtoWriter);
+            RegisterParser(ByteProtoParser.ProtoReader, ByteProtoParser.ProtoWriter);
+            RegisterParser(SByteProtoParser.ProtoReader, SByteProtoParser.ProtoWriter);
 #if NET6_0_OR_GREATER
             RegisterParser(DateOnlyProtoParser.ProtoReader, DateOnlyProtoParser.ProtoWriter);
             RegisterParser(TimeOnlyProtoParser.ProtoReader, TimeOnlyProtoParser.ProtoWriter);
