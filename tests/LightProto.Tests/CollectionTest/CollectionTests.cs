@@ -182,22 +182,6 @@ public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayPro
     }
 }
 
-[InheritsTests]
-public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProtoParser, List<byte>>
-{
-    protected override IEqualityComparer<List<byte>> Comparer { get; } =
-        StructuralEqualityComparer<List<byte>>.Instance;
-
-    public override IEnumerable<List<byte>[]> GetCollection()
-    {
-        yield return new List<byte>[]
-        {
-            new List<byte> { 1, 2, 3 },
-            new List<byte> { 4, 5, 6 },
-        };
-    }
-}
-
 #if NET6_0_OR_GREATER
 [InheritsTests]
 public class TimeOnlyCollectionTest : BaseCollectionTestWithParser<TimeOnlyProtoParser, TimeOnly>

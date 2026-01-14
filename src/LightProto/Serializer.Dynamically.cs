@@ -169,7 +169,6 @@ namespace LightProto
             RegisterParser(BitArrayProtoParser.ProtoReader, BitArrayProtoParser.ProtoWriter);
             RegisterParser(BooleanProtoParser.ProtoReader, BooleanProtoParser.ProtoWriter);
             RegisterParser(ByteArrayProtoParser.ProtoReader, ByteArrayProtoParser.ProtoWriter);
-            RegisterParser(ByteListProtoParser.ProtoReader, ByteListProtoParser.ProtoWriter);
             RegisterParser(ComplexProtoParser.ProtoReader, ComplexProtoParser.ProtoWriter);
             RegisterParser(CultureInfoProtoParser.ProtoReader, CultureInfoProtoParser.ProtoWriter);
             RegisterParser(DateTimeProtoParser.ProtoReader, DateTimeProtoParser.ProtoWriter);

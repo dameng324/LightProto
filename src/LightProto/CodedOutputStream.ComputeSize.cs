@@ -137,6 +137,46 @@ namespace LightProto
 
         /// <summary>
         /// Computes the number of bytes that would be needed to encode a
+        /// sint32 field, including the tag.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ComputeSByteSize(sbyte value)
+        {
+            return ComputeInt32Size(value);
+        }
+
+        /// <summary>
+        /// Computes the number of bytes that would be needed to encode a
+        /// sint32 field, including the tag.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ComputeSSByteSize(sbyte value)
+        {
+            return ComputeSInt32Size(value);
+        }
+
+        /// <summary>
+        /// Computes the number of bytes that would be needed to encode a
+        /// fixed32 field, including the tag.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ComputeFixedByteSize(byte value)
+        {
+            return ComputeFixed32Size(value);
+        }
+
+        /// <summary>
+        /// Computes the number of bytes that would be needed to encode a
+        /// fixed32 field, including the tag.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ComputeSFixedByteSize(sbyte value)
+        {
+            return ComputeSFixed32Size(value);
+        }
+
+        /// <summary>
+        /// Computes the number of bytes that would be needed to encode a
         /// string field, including the tag.
         /// </summary>
         [System.Runtime.CompilerServices.MethodImpl(

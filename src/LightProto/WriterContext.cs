@@ -124,11 +124,39 @@ namespace LightProto
             WritingPrimitives.WriteBool(ref buffer, ref state, value);
 
         /// <summary>
-        /// Writes a byte field value, without a tag.
+        /// Writes a byte field value as uint32, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
         public void WriteByte(byte value) =>
             WritingPrimitives.WriteUInt32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as sint32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteSByte(sbyte value) =>
+            WritingPrimitives.WriteInt32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as sint32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteSSByte(sbyte value) =>
+            WritingPrimitives.WriteSInt32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as fixed32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteFixedByte(byte value) =>
+            WritingPrimitives.WriteFixed32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as fixed32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteSFixedByte(sbyte value) =>
+            WritingPrimitives.WriteSFixed32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a string field value, without a tag.

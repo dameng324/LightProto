@@ -1,8 +1,1 @@
 ﻿#nullable enable
-LightProto.Parser.ByteProtoParser
-LightProto.Parser.ByteProtoParser.ByteProtoParser() -> void
-static LightProto.Parser.ByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<byte>!
-static LightProto.Parser.ByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<byte>!
-static LightProto.CodedOutputStream.ComputeByteSize(byte value) -> int
-LightProto.ReaderContext.ReadByte() -> byte
-LightProto.WriterContext.WriteByte(byte value) -> void

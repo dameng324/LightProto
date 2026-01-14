@@ -14,7 +14,7 @@ namespace LightProto.Parser
 
             public byte ParseFrom(ref ReaderContext input)
             {
-                return input.ReadByte();
+                return (byte)input.ReadUInt32();
             }
         }
 
@@ -30,12 +30,12 @@ namespace LightProto.Parser
 
             public int CalculateSize(byte value)
             {
-                return CodedOutputStream.ComputeByteSize(value);
+                return CodedOutputStream.ComputeUInt32Size(value);
             }
 
             public void WriteTo(ref WriterContext output, byte value)
             {
-                output.WriteByte(value);
+                output.WriteUInt32(value);
             }
         }
     }

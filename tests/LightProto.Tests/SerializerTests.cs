@@ -148,11 +148,11 @@ public partial class SerializerTests
     [Test]
     public async Task TestReadRawBytesSlow()
     {
-        var obj = Enumerable.Range(0, 1000).Select(o => (byte)o).ToList();
-        var bytes = obj.ToByteArray(ByteListProtoParser.ProtoWriter);
+        var obj = Enumerable.Range(0, 1000).Select(o => (byte)o).ToArray();
+        var bytes = obj.ToByteArray(ByteArrayProtoParser.ProtoWriter);
         byte[][] bytesArray = bytes.Chunk(1).ToArray();
         var sequence = GetReadonlySequence(bytesArray);
-        var parsed = Serializer.Deserialize(sequence, ByteListProtoParser.ProtoReader);
+        var parsed = Serializer.Deserialize(sequence, ByteArrayProtoParser.ProtoReader);
         await Assert.That(parsed).IsEquivalentTo(obj);
     }
 
