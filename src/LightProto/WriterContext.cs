@@ -124,6 +124,13 @@ namespace LightProto
             WritingPrimitives.WriteBool(ref buffer, ref state, value);
 
         /// <summary>
+        /// Writes a byte field value, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteByte(byte value) =>
+            WritingPrimitives.WriteUInt32(ref buffer, ref state, value);
+
+        /// <summary>
         /// Writes a string field value, without a tag.
         /// The data is length-prefixed.
         /// </summary>
