@@ -61,8 +61,6 @@ LightProto.Parser.BooleanProtoParser
 LightProto.Parser.BooleanProtoParser.BooleanProtoParser() -> void
 LightProto.Parser.ByteArrayProtoParser
 LightProto.Parser.ByteArrayProtoParser.ByteArrayProtoParser() -> void
-LightProto.Parser.ByteListProtoParser
-LightProto.Parser.ByteListProtoParser.ByteListProtoParser() -> void
 LightProto.Parser.CollectionProtoReader<T>
 LightProto.Parser.CollectionProtoReader<T>.CollectionProtoReader(LightProto.IProtoReader<T>! itemReader, uint tag, int itemFixedSize) -> void
 LightProto.Parser.CollectionProtoWriter<T>
@@ -462,8 +460,6 @@ static LightProto.Parser.BooleanProtoParser.ProtoReader.get -> LightProto.IProto
 static LightProto.Parser.BooleanProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<bool>!
 static LightProto.Parser.ByteArrayProtoParser.ProtoReader.get -> LightProto.IProtoReader<byte[]!>!
 static LightProto.Parser.ByteArrayProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<byte[]!>!
-static LightProto.Parser.ByteListProtoParser.ProtoReader.get -> LightProto.IProtoReader<System.Collections.Generic.List<byte>!>!
-static LightProto.Parser.ByteListProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<System.Collections.Generic.List<byte>!>!
 static LightProto.Parser.ComplexProtoParser.implicit operator LightProto.Parser.ComplexProtoParser(System.Numerics.Complex dt) -> LightProto.Parser.ComplexProtoParser
 static LightProto.Parser.ComplexProtoParser.implicit operator System.Numerics.Complex(LightProto.Parser.ComplexProtoParser proxy) -> System.Numerics.Complex
 static LightProto.Parser.CultureInfoProtoParser.ProtoReader.get -> LightProto.IProtoReader<System.Globalization.CultureInfo!>!
