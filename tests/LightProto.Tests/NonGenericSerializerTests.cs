@@ -916,8 +916,8 @@ public partial class NonGenericSerializerTests
         yield return () =>
             (
                 (byte)123,
-                (IProtoReader)SByteProtoParser.ProtoReader,
-                (IProtoWriter)SByteProtoParser.ProtoWriter
+                (IProtoReader)ByteProtoParser.ProtoReader,
+                (IProtoWriter)ByteProtoParser.ProtoWriter
             );
         yield return () =>
             (
