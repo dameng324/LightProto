@@ -154,6 +154,36 @@ namespace LightProto
         public bool ReadBool() => ParsingPrimitives.ParseRawVarint64(ref buffer, ref state) != 0;
 
         /// <summary>
+        /// Reads int32 field value as byte from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadByte() => (byte)ReadUInt32();
+
+        /// <summary>
+        /// Reads sint32 field value as byte from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte ReadSByte() => (sbyte)ReadInt32();
+
+        /// <summary>
+        /// Reads sint32 field value as byte from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte ReadSSByte() => (sbyte)ReadSInt32();
+
+        /// <summary>
+        /// Reads a fixed32 field value as byte from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadFixedByte() => (byte)ReadFixed32();
+
+        /// <summary>
+        /// Reads a fixed32 field value as byte from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte ReadSFixedByte() => (sbyte)ReadSFixed32();
+
+        /// <summary>
         /// Reads a string field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -61,6 +61,26 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         [ProtoMember(13)]
         [ProtoBuf.ProtoMember(13)]
         public uint UInt32Value { get; set; }
+
+        [ProtoMember(14)]
+        [ProtoBuf.ProtoMember(14)]
+        public byte ByteValue { get; set; } //uint32
+
+        [ProtoMember(15, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(15, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public byte FixedByteValue { get; set; } //fixed32
+
+        [ProtoMember(16)]
+        [ProtoBuf.ProtoMember(16)]
+        public sbyte SByteValue { get; set; } //int32
+
+        [ProtoMember(17, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(17, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public sbyte SSByteValue { get; set; } //sint32
+
+        [ProtoMember(18, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(18, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public sbyte SFixedByteValue { get; set; } //sfixed32
     }
 
     [Test]
@@ -92,6 +112,11 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
                 SingleValue = (float)(baseValue * 1.1),
                 UInt64Value = baseValue,
                 UInt32Value = (uint)baseValue,
+                ByteValue = (byte)(baseValue % 256),
+                FixedByteValue = (byte)(baseValue % 256),
+                SByteValue = (sbyte)(baseValue % 256 - 128),
+                SSByteValue = (sbyte)(baseValue % 256 - 128),
+                SFixedByteValue = (sbyte)(baseValue % 256 - 128),
             };
         }
     }
@@ -114,6 +139,11 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
                 SingleValue = o.SingleValue,
                 UInt64Value = o.UInt64Value,
                 UInt32Value = o.UInt32Value,
+                ByteValue = o.ByteValue,
+                FixedByteValue = o.FixedByteValue,
+                SByteValue = o.SByteValue,
+                SSByteValue = o.SSByteValue,
+                SFixedByteValue = o.SFixedByteValue,
             });
     }
 
@@ -132,6 +162,11 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         await Assert.That(clone.SingleValue).IsEquivalentTo(message.SingleValue);
         await Assert.That(clone.UInt64Value).IsEquivalentTo(message.UInt64Value);
         await Assert.That(clone.UInt32Value).IsEquivalentTo(message.UInt32Value);
+        await Assert.That((byte)clone.ByteValue).IsEquivalentTo(message.ByteValue);
+        await Assert.That((byte)clone.FixedByteValue).IsEquivalentTo(message.FixedByteValue);
+        await Assert.That((sbyte)clone.SByteValue).IsEquivalentTo(message.SByteValue);
+        await Assert.That((sbyte)clone.SSByteValue).IsEquivalentTo(message.SSByteValue);
+        await Assert.That((sbyte)clone.SFixedByteValue).IsEquivalentTo(message.SFixedByteValue);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -149,5 +184,10 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         await Assert.That(clone.SingleValue).IsEquivalentTo(message.SingleValue);
         await Assert.That(clone.UInt64Value).IsEquivalentTo(message.UInt64Value);
         await Assert.That(clone.UInt32Value).IsEquivalentTo(message.UInt32Value);
+        await Assert.That(clone.ByteValue).IsEquivalentTo(message.ByteValue);
+        await Assert.That(clone.FixedByteValue).IsEquivalentTo(message.FixedByteValue);
+        await Assert.That(clone.SByteValue).IsEquivalentTo(message.SByteValue);
+        await Assert.That(clone.SSByteValue).IsEquivalentTo(message.SSByteValue);
+        await Assert.That(clone.SFixedByteValue).IsEquivalentTo(message.SFixedByteValue);
     }
 }

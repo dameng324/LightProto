@@ -17,6 +17,51 @@ public class Int32CollectionTest : BaseCollectionTestWithParser<Int32ProtoParser
 }
 
 [InheritsTests]
+public class SByteCollectionTest : BaseCollectionTestWithParser<SByteProtoParser, sbyte>
+{
+    public override IEnumerable<sbyte[]> GetCollection()
+    {
+        yield return new sbyte[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SSByteCollectionTest : BaseCollectionTestWithParser<SSByteProtoParser, sbyte>
+{
+    public override IEnumerable<sbyte[]> GetCollection()
+    {
+        yield return new sbyte[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SFixedByteCollectionTest : BaseCollectionTestWithParser<SFixedByteProtoParser, sbyte>
+{
+    public override IEnumerable<sbyte[]> GetCollection()
+    {
+        yield return new sbyte[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class ByteCollectionTest : BaseCollectionTestWithParser<ByteProtoParser, byte>
+{
+    public override IEnumerable<byte[]> GetCollection()
+    {
+        yield return new byte[] { 1, byte.MinValue, byte.MaxValue };
+    }
+}
+
+[InheritsTests]
+public class FixedByteCollectionTest : BaseCollectionTestWithParser<FixedByteProtoParser, byte>
+{
+    public override IEnumerable<byte[]> GetCollection()
+    {
+        yield return new byte[] { 1, byte.MinValue, byte.MaxValue };
+    }
+}
+
+[InheritsTests]
 public class Int64CollectionTest : BaseCollectionTestWithParser<Int64ProtoParser, long>
 {
     public override IEnumerable<long[]> GetCollection()
@@ -179,22 +224,6 @@ public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayPro
     public override IEnumerable<byte[][]> GetCollection()
     {
         yield return new byte[][] { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
-    }
-}
-
-[InheritsTests]
-public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProtoParser, List<byte>>
-{
-    protected override IEqualityComparer<List<byte>> Comparer { get; } =
-        StructuralEqualityComparer<List<byte>>.Instance;
-
-    public override IEnumerable<List<byte>[]> GetCollection()
-    {
-        yield return new List<byte>[]
-        {
-            new List<byte> { 1, 2, 3 },
-            new List<byte> { 4, 5, 6 },
-        };
     }
 }
 

@@ -1271,6 +1271,10 @@ public class LightProtoGenerator : IIncrementalGenerator
         name = memberType.SpecialType switch
         {
             SpecialType.System_Boolean => "Bool",
+            SpecialType.System_Byte => format == DataFormat.FixedSize ? "FixedByte" : "Byte",
+            SpecialType.System_SByte => format == DataFormat.FixedSize ? "SFixedByte"
+            : format == DataFormat.ZigZag ? "SSByte"
+            : "SByte",
             SpecialType.System_Int32 => format == DataFormat.FixedSize ? "SFixed32"
             : format == DataFormat.ZigZag ? "SInt32"
             : "Int32",
@@ -1400,8 +1404,8 @@ public class LightProtoGenerator : IIncrementalGenerator
 
         var memberType = member.Type.WithNullableAnnotation(NullableAnnotation.None);
 
-        yield return $"private IProto{readOrWriter}<{memberType}> _{member.Name}_Proto{readOrWriter};";
-        yield return $"internal IProto{readOrWriter}<{memberType}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
+        yield return $"private IProto{readOrWriter}<{memberType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}> _{member.Name}_Proto{readOrWriter};";
+        yield return $"internal IProto{readOrWriter}<{memberType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}> {member.Name}_Proto{readOrWriter} {{ get => _{member.Name}_Proto{readOrWriter} ??= {protoParser};}}";
     }
 
     public uint GetFieldNumber(uint rawTag)
@@ -1555,7 +1559,7 @@ public class LightProtoGenerator : IIncrementalGenerator
 
                 if (parserType is not null)
                 {
-                    return $"{parserType}.Proto{readerOrWriter}";
+                    return $"{parserType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.Proto{readerOrWriter}";
                 }
 
                 if (namedType.TypeKind == TypeKind.Enum)
@@ -1565,10 +1569,13 @@ public class LightProtoGenerator : IIncrementalGenerator
 
                 var name = namedType.SpecialType switch
                 {
+                    SpecialType.System_SByte when format is DataFormat.ZigZag => "SSByte",
+                    SpecialType.System_SByte when format is DataFormat.FixedSize => "SFixedByte",
                     SpecialType.System_Int32 when format is DataFormat.ZigZag => "SInt32",
                     SpecialType.System_Int64 when format is DataFormat.ZigZag => "SInt64",
                     SpecialType.System_Int32 when format is DataFormat.FixedSize => "SFixed32",
                     SpecialType.System_Int64 when format is DataFormat.FixedSize => "SFixed64",
+                    SpecialType.System_Byte when format is DataFormat.FixedSize => "FixedByte",
                     SpecialType.System_UInt32 when format is DataFormat.FixedSize => "Fixed32",
                     SpecialType.System_UInt64 when format is DataFormat.FixedSize => "Fixed64",
                     _ => namedType.Name,
@@ -1624,7 +1631,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         stringIntern,
                         member
                     );
-                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
+                    return $"new global::LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser})";
                 }
                 else
                 {
@@ -1634,10 +1641,6 @@ public class LightProtoGenerator : IIncrementalGenerator
                     }
 
                     var elementType = typeArguments[0];
-                    if (elementType.SpecialType == SpecialType.System_Byte)
-                    {
-                        return $"global::LightProto.Parser.ByteListProtoParser.Proto{readerOrWriter}";
-                    }
                     var elementParser = GetProtoParser(
                         compilation,
                         elementType,
@@ -1667,12 +1670,12 @@ public class LightProtoGenerator : IIncrementalGenerator
                         {
                             if (IsListType(compilation, namedType))
                             {
-                                return $"new LightProto.Parser.ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                                return $"new global::LightProto.Parser.ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                             }
 
                             if (IsSetType(compilation, namedType))
                             {
-                                return $"new LightProto.Parser.HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                                return $"new global::LightProto.Parser.HashSetProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                             }
                         }
                         else if (readerOrWriter == "Writer")
@@ -1688,7 +1691,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                                 {
                                     count = "Length";
                                 }
-                                return $"new LightProto.Parser.IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
+                                return $"new global::LightProto.Parser.IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
                             }
                         }
                     }
@@ -1698,7 +1701,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         || namedType.TypeKind == TypeKind.Struct
                     )
                     {
-                        return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                        return $"new global::LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
                     }
                 }
             }
@@ -1758,7 +1761,7 @@ public class LightProtoGenerator : IIncrementalGenerator
                         var conversion = compilation.ClassifyConversion(mapType, namedType);
                         if (conversion.IsImplicit)
                         {
-                            return $"new LightProto.Parser.DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
+                            return $"new global::LightProto.Parser.DictionaryProto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                         }
                     }
                     else if (readerOrWriter == "Writer")
@@ -1771,14 +1774,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                             {
                                 count = "Count";
                             }
-                            return $"new LightProto.Parser.IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},static (d)=>d.{count})";
+                            return $"new global::LightProto.Parser.IEnumerableKeyValuePairProto{readerOrWriter}<{memberType},{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag},static (d)=>d.{count})";
                         }
                     }
                 }
 
                 if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
                 {
-                    return $"new LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
+                    return $"new global::LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                 }
             }
         }
@@ -1924,7 +1927,7 @@ public class LightProtoGenerator : IIncrementalGenerator
         ITypeSymbol type
     )
     {
-        if (elementType.SpecialType == SpecialType.System_Byte)
+        if (elementType.SpecialType == SpecialType.System_Byte && IsArrayType(type))
             return false;
         var baseCollectionType = compilation
             .GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")
@@ -2008,7 +2011,8 @@ public class LightProtoGenerator : IIncrementalGenerator
         {
             SpecialType.System_Boolean => 1,
             SpecialType.System_Int32
-            or SpecialType.System_UInt32 when dataFormat is DataFormat.FixedSize => 4,
+            or SpecialType.System_UInt32
+            or SpecialType.System_Byte when dataFormat is DataFormat.FixedSize => 4,
             SpecialType.System_Int64
             or SpecialType.System_UInt64 when dataFormat is DataFormat.FixedSize => 8,
             SpecialType.System_Single => 4,
@@ -2844,13 +2848,9 @@ public class LightProtoGenerator : IIncrementalGenerator
 
             switch (Type.SpecialType)
             {
-                case SpecialType.System_Boolean:
+                case SpecialType.System_Byte:
+                case SpecialType.System_SByte:
                 case SpecialType.System_Int32:
-                {
-                    return DataFormat == DataFormat.FixedSize
-                        ? PbWireType.Fixed32
-                        : PbWireType.Varint;
-                }
                 case SpecialType.System_UInt32:
                 {
                     return DataFormat == DataFormat.FixedSize
@@ -2858,17 +2858,13 @@ public class LightProtoGenerator : IIncrementalGenerator
                         : PbWireType.Varint;
                 }
                 case SpecialType.System_Int64:
-                {
-                    return DataFormat == DataFormat.FixedSize
-                        ? PbWireType.Fixed64
-                        : PbWireType.Varint;
-                }
                 case SpecialType.System_UInt64:
                 {
                     return DataFormat == DataFormat.FixedSize
                         ? PbWireType.Fixed64
                         : PbWireType.Varint;
                 }
+                case SpecialType.System_Boolean:
                 case SpecialType.System_Enum:
                     return PbWireType.Varint;
                 case SpecialType.System_Single:

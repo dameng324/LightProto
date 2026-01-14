@@ -31,7 +31,7 @@ A high‑performance, Native AOT–friendly, production ready Protocol Buffers i
 
 ## Rich built-in type support
 
-- .NET primitives (`byte`, `int`, `bool`, `char`, `double`, etc.)
+- .NET primitives (`byte`,`sbyte`, `int`,`uint`,`long`,`ulong`, `bool`, `char`, `double`, etc.)
 - `string`, `decimal`, `Half`, `Int128`, `UInt128`, `Guid`, `Rune`, `BigInteger`
 - `TimeSpan`, `DateTime`, `DateTimeOffset`, `TimeOnly`, `DateOnly`, `TimeZoneInfo`
 - `Complex`, `Plane`, `Quaternion`, `Matrix3x2`, `Matrix4x4`, `Vector2`, `Vector3`, `Vector4`

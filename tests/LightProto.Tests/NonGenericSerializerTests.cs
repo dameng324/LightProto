@@ -667,6 +667,8 @@ public partial class NonGenericSerializerTests
 
     public static IEnumerable<Func<object>> GetAotUnsupportedValues()
     {
+        yield return () => new List<byte>() { 1, 2, 3, 4, 5 };
+        yield return () => new List<sbyte>() { -1, 2, -3, 4, -5 };
         yield return () => new Lazy<int>(() => 123);
         yield return () => new List<int>() { 1, 2, 3 };
         yield return () => new Queue<int>([1, 2, 3]);
@@ -710,6 +712,9 @@ public partial class NonGenericSerializerTests
         yield return () => true;
         yield return () => false;
         yield return () => (long)123;
+        yield return () => (byte)123;
+        yield return () => (sbyte)123;
+        yield return () => (sbyte)-123;
         yield return () => (long)-123;
         yield return () => (uint)123;
         yield return () => (ulong)123;
@@ -725,7 +730,6 @@ public partial class NonGenericSerializerTests
         yield return () => new StringBuilder("Hello, StringBuilder!");
         yield return () => new TestContract() { Name = "Test" };
         yield return () => new byte[] { 1, 2, 3, 4, 5 };
-        yield return () => new List<byte>() { 1, 2, 3, 4, 5 };
         yield return () => new BitArray([1, 2, 3, 4, 5]);
         yield return () => new Complex(1, 2);
         yield return () => new CultureInfo("en-US");
@@ -908,6 +912,36 @@ public partial class NonGenericSerializerTests
                 (long)123,
                 (IProtoReader)SInt64ProtoParser.ProtoReader,
                 (IProtoWriter)SInt64ProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (byte)123,
+                (IProtoReader)ByteProtoParser.ProtoReader,
+                (IProtoWriter)ByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (byte)123,
+                (IProtoReader)FixedByteProtoParser.ProtoReader,
+                (IProtoWriter)FixedByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (sbyte)123,
+                (IProtoReader)SSByteProtoParser.ProtoReader,
+                (IProtoWriter)SSByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (sbyte)123,
+                (IProtoReader)SFixedByteProtoParser.ProtoReader,
+                (IProtoWriter)SFixedByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (sbyte)123,
+                (IProtoReader)SByteProtoParser.ProtoReader,
+                (IProtoWriter)SByteProtoParser.ProtoWriter
             );
         yield return () =>
             (

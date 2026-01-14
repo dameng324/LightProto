@@ -163,6 +163,11 @@ message PrimitiveTestMessage {
   float SingleValue = 11;
   uint64 UInt64Value = 12;
   uint32 UInt32Value = 13;
+  uint32 ByteValue = 14;
+  fixed32 FixedByteValue = 15;
+  int32 SByteValue = 16;
+  sint32 SSByteValue = 17;
+  sfixed32 SFixedByteValue = 18;
 }
 
 message PrimitiveArrayTestMessage {
@@ -179,6 +184,16 @@ message PrimitiveArrayTestMessage {
   repeated float SingleValues = 11 [packed = false];
   repeated uint64 UInt64Values = 12 [packed = false];
   repeated uint32 UInt32Values = 13 [packed = false];
+  repeated uint32 ByteValues = 14[packed = false];
+  repeated fixed32 FixedByteValues = 15[packed = false];
+  repeated int32 SByteValues = 16[packed = false];
+  repeated sint32 SSByteValues = 17[packed = false];
+  repeated sfixed32 SFixedByteValues = 18[packed = false];
+  repeated uint32 PackedByteValues = 19[packed = true];
+  repeated fixed32 PackedFixedByteValues = 20[packed = true];
+  repeated int32 PackedSByteValues = 21[packed = true];
+  repeated sint32 PackedSSByteValues = 22[packed = true];
+  repeated sfixed32 PackedSFixedByteValues = 23[packed = true];
 }
 message BclVersion
 {

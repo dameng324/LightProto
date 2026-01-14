@@ -169,7 +169,6 @@ namespace LightProto
             RegisterParser(BitArrayProtoParser.ProtoReader, BitArrayProtoParser.ProtoWriter);
             RegisterParser(BooleanProtoParser.ProtoReader, BooleanProtoParser.ProtoWriter);
             RegisterParser(ByteArrayProtoParser.ProtoReader, ByteArrayProtoParser.ProtoWriter);
-            RegisterParser(ByteListProtoParser.ProtoReader, ByteListProtoParser.ProtoWriter);
             RegisterParser(ComplexProtoParser.ProtoReader, ComplexProtoParser.ProtoWriter);
             RegisterParser(CultureInfoProtoParser.ProtoReader, CultureInfoProtoParser.ProtoWriter);
             RegisterParser(DateTimeProtoParser.ProtoReader, DateTimeProtoParser.ProtoWriter);
@@ -198,6 +197,8 @@ namespace LightProto
                 TimeZoneInfoProtoParser.ProtoWriter
             );
             RegisterParser(VersionProtoParser.ProtoReader, VersionProtoParser.ProtoWriter);
+            RegisterParser(ByteProtoParser.ProtoReader, ByteProtoParser.ProtoWriter);
+            RegisterParser(SByteProtoParser.ProtoReader, SByteProtoParser.ProtoWriter);
 #if NET6_0_OR_GREATER
             RegisterParser(DateOnlyProtoParser.ProtoReader, DateOnlyProtoParser.ProtoWriter);
             RegisterParser(TimeOnlyProtoParser.ProtoReader, TimeOnlyProtoParser.ProtoWriter);
