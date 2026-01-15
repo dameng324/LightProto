@@ -1,5 +1,25 @@
 ﻿#nullable enable
 LightProto.Parser.CharProtoParser
 LightProto.Parser.CharProtoParser.CharProtoParser() -> void
+LightProto.Parser.Fixed16ProtoParser
+LightProto.Parser.Fixed16ProtoParser.Fixed16ProtoParser() -> void
+LightProto.Parser.Int16ProtoParser
+LightProto.Parser.Int16ProtoParser.Int16ProtoParser() -> void
+LightProto.Parser.SFixed16ProtoParser
+LightProto.Parser.SFixed16ProtoParser.SFixed16ProtoParser() -> void
+LightProto.Parser.SInt16ProtoParser
+LightProto.Parser.SInt16ProtoParser.SInt16ProtoParser() -> void
+LightProto.Parser.UInt16ProtoParser
+LightProto.Parser.UInt16ProtoParser.UInt16ProtoParser() -> void
 static LightProto.Parser.CharProtoParser.ProtoReader.get -> LightProto.IProtoReader<char>!
 static LightProto.Parser.CharProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<char>!
+static LightProto.Parser.Fixed16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
+static LightProto.Parser.Fixed16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!
+static LightProto.Parser.Int16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.Int16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.SFixed16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.SFixed16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.SInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.SInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.UInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
+static LightProto.Parser.UInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!

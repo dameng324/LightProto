@@ -5,6 +5,8 @@
         public static bool Support<TItem>()
         {
             return typeof(TItem) == typeof(bool)
+                || typeof(TItem) == typeof(short)
+                || typeof(TItem) == typeof(ushort)
                 || typeof(TItem) == typeof(int)
                 || typeof(TItem) == typeof(byte)
                 || typeof(TItem) == typeof(char)

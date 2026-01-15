@@ -1571,11 +1571,14 @@ public class LightProtoGenerator : IIncrementalGenerator
                 {
                     SpecialType.System_SByte when format is DataFormat.ZigZag => "SSByte",
                     SpecialType.System_SByte when format is DataFormat.FixedSize => "SFixedByte",
+                    SpecialType.System_Int16 when format is DataFormat.ZigZag => "SInt16",
                     SpecialType.System_Int32 when format is DataFormat.ZigZag => "SInt32",
                     SpecialType.System_Int64 when format is DataFormat.ZigZag => "SInt64",
                     SpecialType.System_Int32 when format is DataFormat.FixedSize => "SFixed32",
+                    SpecialType.System_Int16 when format is DataFormat.FixedSize => "SFixed16",
                     SpecialType.System_Int64 when format is DataFormat.FixedSize => "SFixed64",
                     SpecialType.System_Byte when format is DataFormat.FixedSize => "FixedByte",
+                    SpecialType.System_UInt16 when format is DataFormat.FixedSize => "Fixed16",
                     SpecialType.System_UInt32 when format is DataFormat.FixedSize => "Fixed32",
                     SpecialType.System_UInt64 when format is DataFormat.FixedSize => "Fixed64",
                     _ => namedType.Name,
@@ -2012,6 +2015,8 @@ public class LightProtoGenerator : IIncrementalGenerator
             SpecialType.System_Boolean => 1,
             SpecialType.System_Int32
             or SpecialType.System_UInt32
+            or SpecialType.System_Int16
+            or SpecialType.System_UInt16
             or SpecialType.System_Byte when dataFormat is DataFormat.FixedSize => 4,
             SpecialType.System_Int64
             or SpecialType.System_UInt64 when dataFormat is DataFormat.FixedSize => 8,
@@ -2850,6 +2855,8 @@ public class LightProtoGenerator : IIncrementalGenerator
             {
                 case SpecialType.System_Byte:
                 case SpecialType.System_SByte:
+                case SpecialType.System_Int16:
+                case SpecialType.System_UInt16:
                 case SpecialType.System_Int32:
                 case SpecialType.System_UInt32:
                 {
