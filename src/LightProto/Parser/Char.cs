@@ -2,11 +2,6 @@
 {
     public sealed class CharProtoParser : IProtoParser<Char>
     {
-        /// <summary>
-        /// Private constructor to prevent instantiation.
-        /// </summary>
-        CharProtoParser() { }
-
         public static IProtoReader<Char> ProtoReader { get; } = new CharProtoReader();
         public static IProtoWriter<Char> ProtoWriter { get; } = new CharProtoWriter();
 
