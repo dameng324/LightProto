@@ -138,7 +138,7 @@ message InheritanceTestsBaseMessage
 {
   string BaseValue = 1;
   oneof Inheritance {
- InheritanceTestsMessage Derived = 2;
+    InheritanceTestsMessage Derived = 2;
   }
 }
 message InheritanceTestsMessage
@@ -174,6 +174,12 @@ message PrimitiveTestMessage {
   sfixed32 SFixedByteValue = 18;
   uint32 CharValue = 19;
   uint32 FixedCharValue = 20;
+
+  uint32 UShortValue = 21;
+  fixed32 FixedUShortValue = 22;
+  int32 ShortValue = 23;
+  sint32 SShortValue = 24;
+  sfixed32 SFixedShortValue = 25;
 }
 
 message PrimitiveArrayTestMessage {
@@ -204,6 +210,16 @@ message PrimitiveArrayTestMessage {
   repeated uint32 FixedCharValues = 25[packed = false];
   repeated uint32 PackedCharValues = 26[packed = true];
   repeated uint32 PackedFixedCharValues = 27[packed = true];
+  repeated uint32 UShortValues = 28[packed=false];
+  repeated fixed32 FixedUShortValues = 29[packed=false];
+  repeated int32 ShortValues = 30[packed=false];
+  repeated sint32 SShortValues = 31[packed=false];
+  repeated sfixed32 SFixedShortValues = 32[packed=false];
+  repeated uint32 PackedUShortValues = 33[packed=true];
+  repeated fixed32 PackedFixedUShortValues = 34[packed=true];
+  repeated int32 PackedShortValues = 35[packed=true];
+  repeated sint32 PackedSShortValues = 36[packed=true];
+  repeated sfixed32 PackedSFixedShortValues = 37[packed=true];
 }
 message BclVersion
 {
@@ -226,8 +242,8 @@ message RuneTestsMessage
 }
 message Int128Message
 {
-  uint64 Upper=1;
-  uint64 Lower=2;
+  uint64 Upper = 1;
+  uint64 Lower = 2;
 }
 message Int128TestsMessage
 {

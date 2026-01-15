@@ -89,6 +89,26 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         [ProtoMember(20, DataFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(20, DataFormat = ProtoBuf.DataFormat.FixedSize)]
         public char FixedCharValue { get; set; } //fixed32
+
+        [ProtoMember(21)]
+        [ProtoBuf.ProtoMember(21)]
+        public ushort UShortValue { get; set; } //uint32
+
+        [ProtoMember(22, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(22, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public ushort FixedUShortValue { get; set; } //fixed32
+
+        [ProtoMember(23)]
+        [ProtoBuf.ProtoMember(23)]
+        public short ShortValue { get; set; } //int32
+
+        [ProtoMember(24, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(24, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public short SShortValue { get; set; } //sint32
+
+        [ProtoMember(25, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(25, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public short SFixedShortValue { get; set; } //sfixed32
     }
 
     [Test]
@@ -127,6 +147,11 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
                 SFixedByteValue = (sbyte)(baseValue % 256 - 128),
                 CharValue = (char)(baseValue % char.MaxValue),
                 FixedCharValue = (char)(baseValue % char.MaxValue),
+                UShortValue = (ushort)baseValue,
+                FixedUShortValue = (ushort)baseValue,
+                ShortValue = (short)baseValue,
+                SShortValue = (short)baseValue,
+                SFixedShortValue = (short)baseValue,
             };
         }
     }
@@ -156,6 +181,11 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
                 SFixedByteValue = o.SFixedByteValue,
                 CharValue = o.CharValue,
                 FixedCharValue = o.FixedCharValue,
+                UShortValue = o.UShortValue,
+                FixedUShortValue = o.FixedUShortValue,
+                ShortValue = o.ShortValue,
+                SShortValue = o.SShortValue,
+                SFixedShortValue = o.SFixedShortValue,
             });
     }
 
@@ -181,6 +211,11 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         await Assert.That((sbyte)clone.SFixedByteValue).IsEquivalentTo(message.SFixedByteValue);
         await Assert.That((char)clone.CharValue).IsEquivalentTo(message.CharValue);
         await Assert.That((char)clone.FixedCharValue).IsEquivalentTo(message.FixedCharValue);
+        await Assert.That((ushort)clone.UShortValue).IsEquivalentTo(message.UShortValue);
+        await Assert.That((ushort)clone.FixedUShortValue).IsEquivalentTo(message.FixedUShortValue);
+        await Assert.That((short)clone.ShortValue).IsEquivalentTo(message.ShortValue);
+        await Assert.That((short)clone.SShortValue).IsEquivalentTo(message.SShortValue);
+        await Assert.That((short)clone.SFixedShortValue).IsEquivalentTo(message.SFixedShortValue);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -205,5 +240,10 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         await Assert.That(clone.SFixedByteValue).IsEquivalentTo(message.SFixedByteValue);
         await Assert.That(clone.CharValue).IsEquivalentTo(message.CharValue);
         await Assert.That(clone.FixedCharValue).IsEquivalentTo(message.FixedCharValue);
+        await Assert.That(clone.UShortValue).IsEquivalentTo(message.UShortValue);
+        await Assert.That(clone.FixedUShortValue).IsEquivalentTo(message.FixedUShortValue);
+        await Assert.That(clone.ShortValue).IsEquivalentTo(message.ShortValue);
+        await Assert.That(clone.SShortValue).IsEquivalentTo(message.SShortValue);
+        await Assert.That(clone.SFixedShortValue).IsEquivalentTo(message.SFixedShortValue);
     }
 }

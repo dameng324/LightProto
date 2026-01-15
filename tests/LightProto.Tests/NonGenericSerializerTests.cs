@@ -962,6 +962,36 @@ public partial class NonGenericSerializerTests
                 (IProtoReader)InternedStringProtoParser.ProtoReader,
                 (IProtoWriter)InternedStringProtoParser.ProtoWriter
             );
+        yield return () =>
+            (
+                (ushort)123,
+                (IProtoReader)UInt16ProtoParser.ProtoReader,
+                (IProtoWriter)UInt16ProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (ushort)123,
+                (IProtoReader)Fixed16ProtoParser.ProtoReader,
+                (IProtoWriter)Fixed16ProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (short)123,
+                (IProtoReader)Int16ProtoParser.ProtoReader,
+                (IProtoWriter)Int16ProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (short)123,
+                (IProtoReader)SInt16ProtoParser.ProtoReader,
+                (IProtoWriter)SInt16ProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (short)123,
+                (IProtoReader)SFixed16ProtoParser.ProtoReader,
+                (IProtoWriter)SFixed16ProtoParser.ProtoWriter
+            );
     }
 
     [Test]

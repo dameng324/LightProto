@@ -119,6 +119,46 @@ public partial class PrimitiveArrayTests
         [ProtoMember(27, IsPacked = true, DataFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(27, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
         public char[] PackedFixedCharValues { get; set; } = [];
+
+        [ProtoMember(28)]
+        [ProtoBuf.ProtoMember(28)]
+        public ushort[] UShortValues { get; set; } = []; //uint32
+
+        [ProtoMember(29, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(29, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public ushort[] FixedUShortValues { get; set; } = []; //fixed32
+
+        [ProtoMember(30)]
+        [ProtoBuf.ProtoMember(30)]
+        public short[] ShortValues { get; set; } = []; //int32
+
+        [ProtoMember(31, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(31, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public short[] SShortValues { get; set; } = []; //sint32
+
+        [ProtoMember(32, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(32, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public short[] SFixedShortValues { get; set; } = []; //sfixed32
+
+        [ProtoMember(33, IsPacked = true)]
+        [ProtoBuf.ProtoMember(33, IsPacked = true)]
+        public ushort[] PackedUShortValues { get; set; } = []; //uint32
+
+        [ProtoMember(34, IsPacked = true, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(34, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public ushort[] PackedFixedUShortValues { get; set; } = []; //fixed32
+
+        [ProtoMember(35, IsPacked = true)]
+        [ProtoBuf.ProtoMember(35, IsPacked = true)]
+        public short[] PackedShortValues { get; set; } = []; //int32
+
+        [ProtoMember(36, IsPacked = true, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(36, IsPacked = true, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public short[] PackedSShortValues { get; set; } = []; //sint32
+
+        [ProtoMember(37, IsPacked = true, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(37, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public short[] PackedSFixedShortValues { get; set; } = []; //sfixed32
     }
 
     [Test]
@@ -244,6 +284,46 @@ public partial class PrimitiveArrayTests
                     .Range(0, 100)
                     .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
                     .ToArray(),
+                UShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
+                    .ToArray(),
+                FixedUShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
+                    .ToArray(),
+                ShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
+                    .ToArray(),
+                SShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
+                    .ToArray(),
+                SFixedShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
+                    .ToArray(),
+                PackedUShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
+                    .ToArray(),
+                PackedFixedUShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
+                    .ToArray(),
+                PackedShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
+                    .ToArray(),
+                PackedSShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
+                    .ToArray(),
+                PackedSFixedShortValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
+                    .ToArray(),
             };
         }
     }
@@ -280,6 +360,16 @@ public partial class PrimitiveArrayTests
                 FixedCharValues = { o.FixedCharValues.Select(x => (uint)x) },
                 PackedCharValues = { o.PackedCharValues.Select(x => (uint)x) },
                 PackedFixedCharValues = { o.PackedFixedCharValues.Select(x => (uint)x) },
+                UShortValues = { o.UShortValues.Select(x => (uint)x) },
+                FixedUShortValues = { o.FixedUShortValues.Select(x => (uint)x) },
+                ShortValues = { o.ShortValues.Select(x => (int)x) },
+                SShortValues = { o.SShortValues.Select(x => (int)x) },
+                SFixedShortValues = { o.SFixedShortValues.Select(x => (int)x) },
+                PackedUShortValues = { o.PackedUShortValues.Select(x => (uint)x) },
+                PackedFixedUShortValues = { o.PackedFixedUShortValues.Select(x => (uint)x) },
+                PackedShortValues = { o.PackedShortValues.Select(x => (int)x) },
+                PackedSShortValues = { o.PackedSShortValues.Select(x => (int)x) },
+                PackedSFixedShortValues = { o.PackedSFixedShortValues.Select(x => (int)x) },
             });
     }
 
@@ -331,6 +421,38 @@ public partial class PrimitiveArrayTests
         await Assert
             .That(clone.PackedFixedCharValues.Select(x => (char)x).ToArray())
             .IsEquivalentTo(message.PackedFixedCharValues);
+
+        await Assert
+            .That(clone.UShortValues.Select(x => (ushort)x).ToArray())
+            .IsEquivalentTo(message.UShortValues);
+        await Assert
+            .That(clone.FixedUShortValues.Select(x => (ushort)x).ToArray())
+            .IsEquivalentTo(message.FixedUShortValues);
+        await Assert
+            .That(clone.ShortValues.Select(x => (short)x).ToArray())
+            .IsEquivalentTo(message.ShortValues);
+        await Assert
+            .That(clone.SShortValues.Select(x => (short)x).ToArray())
+            .IsEquivalentTo(message.SShortValues);
+        await Assert
+            .That(clone.SFixedShortValues.Select(x => (short)x).ToArray())
+            .IsEquivalentTo(message.SFixedShortValues);
+
+        await Assert
+            .That(clone.PackedUShortValues.Select(x => (ushort)x).ToArray())
+            .IsEquivalentTo(message.PackedUShortValues);
+        await Assert
+            .That(clone.PackedFixedUShortValues.Select(x => (ushort)x).ToArray())
+            .IsEquivalentTo(message.PackedFixedUShortValues);
+        await Assert
+            .That(clone.PackedShortValues.Select(x => (short)x).ToArray())
+            .IsEquivalentTo(message.PackedShortValues);
+        await Assert
+            .That(clone.PackedSShortValues.Select(x => (short)x).ToArray())
+            .IsEquivalentTo(message.PackedSShortValues);
+        await Assert
+            .That(clone.PackedSFixedShortValues.Select(x => (short)x).ToArray())
+            .IsEquivalentTo(message.PackedSFixedShortValues);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -363,5 +485,21 @@ public partial class PrimitiveArrayTests
         await Assert
             .That(clone.PackedFixedCharValues)
             .IsEquivalentTo(message.PackedFixedCharValues);
+
+        await Assert.That(clone.UShortValues).IsEquivalentTo(message.UShortValues);
+        await Assert.That(clone.FixedUShortValues).IsEquivalentTo(message.FixedUShortValues);
+        await Assert.That(clone.ShortValues).IsEquivalentTo(message.ShortValues);
+        await Assert.That(clone.SShortValues).IsEquivalentTo(message.SShortValues);
+        await Assert.That(clone.SFixedShortValues).IsEquivalentTo(message.SFixedShortValues);
+
+        await Assert.That(clone.PackedUShortValues).IsEquivalentTo(message.PackedUShortValues);
+        await Assert
+            .That(clone.PackedFixedUShortValues)
+            .IsEquivalentTo(message.PackedFixedUShortValues);
+        await Assert.That(clone.PackedShortValues).IsEquivalentTo(message.PackedShortValues);
+        await Assert.That(clone.PackedSShortValues).IsEquivalentTo(message.PackedSShortValues);
+        await Assert
+            .That(clone.PackedSFixedShortValues)
+            .IsEquivalentTo(message.PackedSFixedShortValues);
     }
 }
