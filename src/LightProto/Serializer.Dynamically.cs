@@ -199,6 +199,7 @@ namespace LightProto
             RegisterParser(VersionProtoParser.ProtoReader, VersionProtoParser.ProtoWriter);
             RegisterParser(ByteProtoParser.ProtoReader, ByteProtoParser.ProtoWriter);
             RegisterParser(SByteProtoParser.ProtoReader, SByteProtoParser.ProtoWriter);
+            RegisterParser(CharProtoParser.ProtoReader, CharProtoParser.ProtoWriter);
 #if NET6_0_OR_GREATER
             RegisterParser(DateOnlyProtoParser.ProtoReader, DateOnlyProtoParser.ProtoWriter);
             RegisterParser(TimeOnlyProtoParser.ProtoReader, TimeOnlyProtoParser.ProtoWriter);

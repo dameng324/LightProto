@@ -81,6 +81,14 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         [ProtoMember(18, DataFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(18, DataFormat = ProtoBuf.DataFormat.FixedSize)]
         public sbyte SFixedByteValue { get; set; } //sfixed32
+
+        [ProtoMember(19)]
+        [ProtoBuf.ProtoMember(19)]
+        public char CharValue { get; set; } //uint32
+
+        [ProtoMember(20, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(20, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public char FixedCharValue { get; set; } //fixed32
     }
 
     [Test]
@@ -117,6 +125,8 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
                 SByteValue = (sbyte)(baseValue % 256 - 128),
                 SSByteValue = (sbyte)(baseValue % 256 - 128),
                 SFixedByteValue = (sbyte)(baseValue % 256 - 128),
+                CharValue = (char)(baseValue % char.MaxValue),
+                FixedCharValue = (char)(baseValue % char.MaxValue),
             };
         }
     }
@@ -144,6 +154,8 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
                 SByteValue = o.SByteValue,
                 SSByteValue = o.SSByteValue,
                 SFixedByteValue = o.SFixedByteValue,
+                CharValue = o.CharValue,
+                FixedCharValue = o.FixedCharValue,
             });
     }
 
@@ -167,6 +179,8 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         await Assert.That((sbyte)clone.SByteValue).IsEquivalentTo(message.SByteValue);
         await Assert.That((sbyte)clone.SSByteValue).IsEquivalentTo(message.SSByteValue);
         await Assert.That((sbyte)clone.SFixedByteValue).IsEquivalentTo(message.SFixedByteValue);
+        await Assert.That((char)clone.CharValue).IsEquivalentTo(message.CharValue);
+        await Assert.That((char)clone.FixedCharValue).IsEquivalentTo(message.FixedCharValue);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -189,5 +203,7 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
         await Assert.That(clone.SByteValue).IsEquivalentTo(message.SByteValue);
         await Assert.That(clone.SSByteValue).IsEquivalentTo(message.SSByteValue);
         await Assert.That(clone.SFixedByteValue).IsEquivalentTo(message.SFixedByteValue);
+        await Assert.That(clone.CharValue).IsEquivalentTo(message.CharValue);
+        await Assert.That(clone.FixedCharValue).IsEquivalentTo(message.FixedCharValue);
     }
 }

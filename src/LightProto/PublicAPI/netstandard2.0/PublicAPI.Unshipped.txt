@@ -1,1 +1,4 @@
 ﻿#nullable enable
+LightProto.Parser.CharProtoParser
+static LightProto.Parser.CharProtoParser.ProtoReader.get -> LightProto.IProtoReader<char>!
+static LightProto.Parser.CharProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<char>!

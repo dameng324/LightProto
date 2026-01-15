@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <LangVersion>preview</LangVersion>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <NoWarn>$(NoWarn);TUnit0059;NU1504;TUnit0046</NoWarn>
     <PublishAot
       Condition="$(Configuration)=='Release' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))"
@@ -18,7 +18,7 @@
     <PackageReference Include="Google.Protobuf" Version="3.30.2" />
     <!-- above 3.31 cause aot issue see: https://github.com/protocolbuffers/protobuf/issues/21824 -->
     <PackageReference Include="protobuf-net" Version="3.2.56" />
-    <PackageReference Include="TUnit" Version="1.9.45" />
+    <PackageReference Include="TUnit" Version="1.11.16" />
     <PackageReference Include="Polyfill" Version="8.9.0" />
   </ItemGroup>
   <ItemGroup>

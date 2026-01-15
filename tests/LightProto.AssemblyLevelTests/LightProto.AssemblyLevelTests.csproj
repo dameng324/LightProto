@@ -11,9 +11,6 @@
     <TargetFrameworks>$(TargetFrameworks);net48</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="TUnit" Version="1.9.45" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\LightProto.Tests\LightProto.Tests.csproj" />
     <ProjectReference Include="..\..\src\LightProto\LightProto.csproj" />
     <ProjectReference

@@ -7,6 +7,7 @@
             return typeof(TItem) == typeof(bool)
                 || typeof(TItem) == typeof(int)
                 || typeof(TItem) == typeof(byte)
+                || typeof(TItem) == typeof(char)
                 || typeof(TItem) == typeof(sbyte)
                 || typeof(TItem) == typeof(long)
                 || typeof(TItem) == typeof(uint)

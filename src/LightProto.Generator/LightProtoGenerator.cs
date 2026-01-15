@@ -2857,6 +2857,10 @@ public class LightProtoGenerator : IIncrementalGenerator
                         ? PbWireType.Fixed32
                         : PbWireType.Varint;
                 }
+                case SpecialType.System_Char:
+                {
+                    return PbWireType.Varint;
+                }
                 case SpecialType.System_Int64:
                 case SpecialType.System_UInt64:
                 {
