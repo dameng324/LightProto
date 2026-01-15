@@ -103,6 +103,22 @@ public partial class PrimitiveArrayTests
         [ProtoMember(23, DataFormat = DataFormat.FixedSize, IsPacked = true)]
         [ProtoBuf.ProtoMember(23, DataFormat = ProtoBuf.DataFormat.FixedSize)]
         public List<sbyte> PackedSFixedByteValues { get; set; } = []; //sfixed32
+
+        [ProtoMember(24)]
+        [ProtoBuf.ProtoMember(24)]
+        public char[] CharValues { get; set; } = [];
+
+        [ProtoMember(25, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(25, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public char[] FixedCharValues { get; set; } = [];
+
+        [ProtoMember(26, IsPacked = true)]
+        [ProtoBuf.ProtoMember(26, IsPacked = true)]
+        public char[] PackedCharValues { get; set; } = [];
+
+        [ProtoMember(27, IsPacked = true, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(27, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public char[] PackedFixedCharValues { get; set; } = [];
     }
 
     [Test]
@@ -212,6 +228,22 @@ public partial class PrimitiveArrayTests
                     .Range(0, 100)
                     .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
                     .ToList(),
+                CharValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
+                    .ToArray(),
+                FixedCharValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
+                    .ToArray(),
+                PackedCharValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
+                    .ToArray(),
+                PackedFixedCharValues = Enumerable
+                    .Range(0, 100)
+                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
+                    .ToArray(),
             };
         }
     }
@@ -234,16 +266,20 @@ public partial class PrimitiveArrayTests
                 SingleValues = { o.SingleValues },
                 UInt64Values = { o.UInt64Values },
                 UInt32Values = { o.UInt32Values },
-                ByteValues = { o.ByteValues.Select(x => (uint)x).ToArray() },
-                FixedByteValues = { o.FixedByteValues.Select(x => (uint)x).ToArray() },
-                SByteValues = { o.SByteValues.Select(x => (int)x).ToArray() },
-                SSByteValues = { o.SSByteValues.Select(x => (int)x).ToArray() },
-                SFixedByteValues = { o.SFixedByteValues.Select(x => (int)x).ToArray() },
-                PackedByteValues = { o.PackedByteValues.Select(x => (uint)x).ToArray() },
-                PackedFixedByteValues = { o.PackedFixedByteValues.Select(x => (uint)x).ToArray() },
-                PackedSByteValues = { o.PackedSByteValues.Select(x => (int)x).ToArray() },
-                PackedSSByteValues = { o.PackedSSByteValues.Select(x => (int)x).ToArray() },
-                PackedSFixedByteValues = { o.PackedSFixedByteValues.Select(x => (int)x).ToArray() },
+                ByteValues = { o.ByteValues.Select(x => (uint)x) },
+                FixedByteValues = { o.FixedByteValues.Select(x => (uint)x) },
+                SByteValues = { o.SByteValues.Select(x => (int)x) },
+                SSByteValues = { o.SSByteValues.Select(x => (int)x) },
+                SFixedByteValues = { o.SFixedByteValues.Select(x => (int)x) },
+                PackedByteValues = { o.PackedByteValues.Select(x => (uint)x) },
+                PackedFixedByteValues = { o.PackedFixedByteValues.Select(x => (uint)x) },
+                PackedSByteValues = { o.PackedSByteValues.Select(x => (int)x) },
+                PackedSSByteValues = { o.PackedSSByteValues.Select(x => (int)x) },
+                PackedSFixedByteValues = { o.PackedSFixedByteValues.Select(x => (int)x) },
+                CharValues = { o.CharValues.Select(x => (uint)x) },
+                FixedCharValues = { o.FixedCharValues.Select(x => (uint)x) },
+                PackedCharValues = { o.PackedCharValues.Select(x => (uint)x) },
+                PackedFixedCharValues = { o.PackedFixedCharValues.Select(x => (uint)x) },
             });
     }
 
@@ -262,12 +298,39 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.SingleValues).IsEquivalentTo(message.SingleValues);
         await Assert.That(clone.UInt64Values).IsEquivalentTo(message.UInt64Values);
         await Assert.That(clone.UInt32Values).IsEquivalentTo(message.UInt32Values);
-        // await Assert.That(clone.ByteValues).IsEquivalentTo(message.ByteValues);
-        // await Assert.That(clone.SByteValues).IsEquivalentTo(message.SByteValues);
-        // await Assert.That(clone.FixedByteValues).IsEquivalentTo(message.FixedByteValues);
-        // await Assert.That(clone.PackedByteValues).IsEquivalentTo(message.PackedByteValues);
-        //  await Assert.That(clone.PackedSByteValues).IsEquivalentTo(message.PackedSByteValues);
-        // await Assert.That(clone.PackedFixedByteValues).IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert
+            .That(clone.ByteValues.Select(x => (byte)x).ToArray())
+            .IsEquivalentTo(message.ByteValues);
+        await Assert
+            .That(clone.SByteValues.Select(x => (sbyte)x).ToArray())
+            .IsEquivalentTo(message.SByteValues);
+        await Assert
+            .That(clone.FixedByteValues.Select(x => (byte)x).ToArray())
+            .IsEquivalentTo(message.FixedByteValues);
+        await Assert
+            .That(clone.PackedByteValues.Select(x => (byte)x).ToArray())
+            .IsEquivalentTo(message.PackedByteValues);
+        await Assert
+            .That(clone.PackedSByteValues.Select(x => (sbyte)x).ToArray())
+            .IsEquivalentTo(message.PackedSByteValues);
+        await Assert
+            .That(clone.PackedSSByteValues.Select(x => (sbyte)x).ToArray())
+            .IsEquivalentTo(message.PackedSSByteValues);
+        await Assert
+            .That(clone.PackedFixedByteValues.Select(x => (byte)x).ToArray())
+            .IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert
+            .That(clone.CharValues.Select(x => (char)x).ToArray())
+            .IsEquivalentTo(message.CharValues);
+        await Assert
+            .That(clone.FixedCharValues.Select(x => (char)x).ToArray())
+            .IsEquivalentTo(message.FixedCharValues);
+        await Assert
+            .That(clone.PackedCharValues.Select(x => (char)x).ToArray())
+            .IsEquivalentTo(message.PackedCharValues);
+        await Assert
+            .That(clone.PackedFixedCharValues.Select(x => (char)x).ToArray())
+            .IsEquivalentTo(message.PackedFixedCharValues);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -285,11 +348,20 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.SingleValues).IsEquivalentTo(message.SingleValues);
         await Assert.That(clone.UInt64Values).IsEquivalentTo(message.UInt64Values);
         await Assert.That(clone.UInt32Values).IsEquivalentTo(message.UInt32Values);
-        // await Assert.That(clone.ByteValues).IsEquivalentTo(message.ByteValues);
-        // await Assert.That(clone.SByteValues).IsEquivalentTo(message.SByteValues);
-        // await Assert.That(clone.FixedByteValues).IsEquivalentTo(message.FixedByteValues);
-        // await Assert.That(clone.PackedByteValues).IsEquivalentTo(message.PackedByteValues);
-        // // await Assert.That(clone.PackedSByteValues).IsEquivalentTo(message.PackedSByteValues);
-        // await Assert.That(clone.PackedFixedByteValues).IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert.That(clone.ByteValues).IsEquivalentTo(message.ByteValues);
+        await Assert.That(clone.SByteValues).IsEquivalentTo(message.SByteValues);
+        await Assert.That(clone.FixedByteValues).IsEquivalentTo(message.FixedByteValues);
+        await Assert.That(clone.PackedByteValues).IsEquivalentTo(message.PackedByteValues);
+        await Assert.That(clone.PackedSByteValues).IsEquivalentTo(message.PackedSByteValues);
+        await Assert.That(clone.PackedSSByteValues).IsEquivalentTo(message.PackedSSByteValues);
+        await Assert
+            .That(clone.PackedFixedByteValues)
+            .IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert.That(clone.CharValues).IsEquivalentTo(message.CharValues);
+        await Assert.That(clone.FixedCharValues).IsEquivalentTo(message.FixedCharValues);
+        await Assert.That(clone.PackedCharValues).IsEquivalentTo(message.PackedCharValues);
+        await Assert
+            .That(clone.PackedFixedCharValues)
+            .IsEquivalentTo(message.PackedFixedCharValues);
     }
 }

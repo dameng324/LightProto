@@ -80,6 +80,15 @@ public class SInt32CollectionTest : BaseCollectionTestWithParser<SInt32ProtoPars
 }
 
 [InheritsTests]
+public class CharCollectionTest : BaseCollectionTestWithParser<CharProtoParser, char>
+{
+    public override IEnumerable<char[]> GetCollection()
+    {
+        yield return new char[] { char.MinValue, char.MaxValue, 'a', 'Z', '中' };
+    }
+}
+
+[InheritsTests]
 public class SInt64CollectionTest : BaseCollectionTestWithParser<SInt64ProtoParser, long>
 {
     public override IEnumerable<long[]> GetCollection()

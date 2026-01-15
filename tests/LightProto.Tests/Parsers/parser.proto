@@ -22,6 +22,10 @@ message DateOnlyTestsMessage
 {
   int32 Property = 1;
 }
+message Fixed32TestsMessage
+{
+  fixed32 Property = 1;
+}
 message TimeOnlyTestsMessage
 {
   int64 Property = 1;
@@ -168,6 +172,8 @@ message PrimitiveTestMessage {
   int32 SByteValue = 16;
   sint32 SSByteValue = 17;
   sfixed32 SFixedByteValue = 18;
+  uint32 CharValue = 19;
+  uint32 FixedCharValue = 20;
 }
 
 message PrimitiveArrayTestMessage {
@@ -194,6 +200,10 @@ message PrimitiveArrayTestMessage {
   repeated int32 PackedSByteValues = 21[packed = true];
   repeated sint32 PackedSSByteValues = 22[packed = true];
   repeated sfixed32 PackedSFixedByteValues = 23[packed = true];
+  repeated uint32 CharValues = 24[packed = false];
+  repeated uint32 FixedCharValues = 25[packed = false];
+  repeated uint32 PackedCharValues = 26[packed = true];
+  repeated uint32 PackedFixedCharValues = 27[packed = true];
 }
 message BclVersion
 {

@@ -727,6 +727,7 @@ public partial class NonGenericSerializerTests
         yield return () => 123;
         yield return () => 123;
         yield return () => "Hello, World!";
+        yield return () => 'H';
         yield return () => new StringBuilder("Hello, StringBuilder!");
         yield return () => new TestContract() { Name = "Test" };
         yield return () => new byte[] { 1, 2, 3, 4, 5 };
@@ -942,6 +943,12 @@ public partial class NonGenericSerializerTests
                 (sbyte)123,
                 (IProtoReader)SByteProtoParser.ProtoReader,
                 (IProtoWriter)SByteProtoParser.ProtoWriter
+            );
+        yield return () =>
+            (
+                (char)'a',
+                (IProtoReader)CharProtoParser.ProtoReader,
+                (IProtoWriter)CharProtoParser.ProtoWriter
             );
         yield return () =>
             (
