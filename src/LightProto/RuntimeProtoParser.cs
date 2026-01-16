@@ -51,15 +51,8 @@ internal class RuntimeProtoParser<T> : IProtoReader, IProtoWriter, IProtoReader<
 #if NET7_0_OR_GREATER
         [DynamicallyAccessedMembers(Serializer.LightProtoRequiredMembers)]
 #endif
-        TValue
-    >(int fieldNumber, Func<T, TValue> getter, Action<T, TValue> setter) =>
-        AddMember(
-            fieldNumber,
-            getter,
-            setter,
-            Serializer.GetProtoReader<TValue>(),
-            Serializer.GetProtoWriter<TValue>()
-        );
+        TValue>(int fieldNumber, Func<T, TValue> getter, Action<T, TValue> setter) =>
+        AddMember(fieldNumber, getter, setter, Serializer.GetProtoReader<TValue>(), Serializer.GetProtoWriter<TValue>());
 
     public void AddMember<TValue>(
         int fieldNumber,
@@ -157,9 +150,7 @@ internal class RuntimeProtoParser<T> : IProtoReader, IProtoWriter, IProtoReader<
 
     int IProtoWriter.CalculateSize(object value) => CalculateSize((T)value);
 
-    void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-        WriteTo(ref output, (T)value);
+    void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (T)value);
 
-    object IProtoReader.ParseFrom(ref ReaderContext input) =>
-        ((IProtoReader<T>)this).ParseFrom(ref input)!;
+    object IProtoReader.ParseFrom(ref ReaderContext input) => ((IProtoReader<T>)this).ParseFrom(ref input)!;
 }

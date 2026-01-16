@@ -19,21 +19,9 @@ public partial class RuntimeParserTests
     public async Task Test()
     {
         var runtimeParser = new RuntimeProtoParser<TestMessage>(() => new());
-        runtimeParser.AddMember(
-            1,
-            message => message.Value,
-            (message, value) => message.Value = value
-        );
-        runtimeParser.AddMember(
-            2,
-            message => message.StringValue,
-            (message, value) => message.StringValue = value
-        );
-        runtimeParser.AddMember(
-            3,
-            message => message.IntArray,
-            (message, value) => message.IntArray = value
-        );
+        runtimeParser.AddMember(1, message => message.Value, (message, value) => message.Value = value);
+        runtimeParser.AddMember(2, message => message.StringValue, (message, value) => message.StringValue = value);
+        runtimeParser.AddMember(3, message => message.IntArray, (message, value) => message.IntArray = value);
 
         var message = new TestMessage
         {
@@ -63,21 +51,9 @@ public partial class RuntimeParserTests
     public async Task Test2()
     {
         var runtimeParser = new RuntimeProtoParser<TestMessage2<int>>(() => new());
-        runtimeParser.AddMember(
-            1,
-            message => message.Value,
-            (message, value) => message.Value = value
-        );
-        runtimeParser.AddMember(
-            2,
-            message => message.StringValue,
-            (message, value) => message.StringValue = value
-        );
-        runtimeParser.AddMember(
-            3,
-            message => message.IntArray,
-            (message, value) => message.IntArray = value
-        );
+        runtimeParser.AddMember(1, message => message.Value, (message, value) => message.Value = value);
+        runtimeParser.AddMember(2, message => message.StringValue, (message, value) => message.StringValue = value);
+        runtimeParser.AddMember(3, message => message.IntArray, (message, value) => message.IntArray = value);
 
         var message = new TestMessage
         {
