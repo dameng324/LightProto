@@ -319,16 +319,13 @@ internal static class Helper
             );
         }
 
-        if (isAssembly)
+        if (isAssembly && SymbolEqualityComparer.Default.Equals(memberType.ContainingAssembly, parser.ContainingAssembly))
         {
-            if (SymbolEqualityComparer.Default.Equals(memberType.ContainingAssembly, parser.ContainingAssembly))
-            {
-                throw LightProtoGeneratorException.MessageTypeAndParserTypeCannotInSameAssemblyWhenUsingAssemblyLevelProtoParserMapAttribute(
-                    memberType.ToDisplayString(),
-                    parser.ToDisplayString(),
-                    attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
-                );
-            }
+            throw LightProtoGeneratorException.MessageTypeAndParserTypeCannotInSameAssemblyWhenUsingAssemblyLevelProtoParserMapAttribute(
+                memberType.ToDisplayString(),
+                parser.ToDisplayString(),
+                attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+            );
         }
 
         return parser;
@@ -554,13 +551,10 @@ internal static class Helper
                             .Value as INamedTypeSymbol;
                 }
 
-                if (parserType is null)
+                if (parserType is null && namedType.AllInterfaces.Any(o => o.ToDisplayString() == $"LightProto.IProtoParser<{namedType}>"))
                 {
                     // use self implemented parser type
-                    if (namedType.AllInterfaces.Any(o => o.ToDisplayString() == $"LightProto.IProtoParser<{namedType}>"))
-                    {
-                        parserType = namedType;
-                    }
+                    parserType = namedType;
                 }
 
                 if (parserType is not null)
@@ -589,20 +583,20 @@ internal static class Helper
                     SpecialType.System_UInt64 when format is DataFormat.FixedSize => "Fixed64",
                     _ => namedType.Name,
                 };
-                if (compatibilityLevel >= CompatibilityLevel.Level240)
+                if (
+                    compatibilityLevel >= CompatibilityLevel.Level240
+                    && (namedType.SpecialType is SpecialType.System_DateTime || IsTimeSpanType(namedType))
+                )
                 {
-                    if (namedType.SpecialType is SpecialType.System_DateTime || IsTimeSpanType(namedType))
-                    {
-                        name = $"{name}240";
-                    }
+                    name = $"{name}240";
                 }
 
-                if (compatibilityLevel >= CompatibilityLevel.Level300)
+                if (
+                    compatibilityLevel >= CompatibilityLevel.Level300
+                    && (IsGuidType(namedType) || namedType.SpecialType == SpecialType.System_Decimal)
+                )
                 {
-                    if (IsGuidType(namedType) || namedType.SpecialType == SpecialType.System_Decimal)
-                    {
-                        name = $"{name}300";
-                    }
+                    name = $"{name}300";
                 }
                 if (namedType.SpecialType == SpecialType.System_String && stringIntern)
                 {
@@ -682,15 +676,13 @@ internal static class Helper
                         {
                             if (IsCollectionType(compilation, elementType, namedType))
                             {
-                                var count = "Count()";
+                                string count;
                                 if (HasCountProperty(memberType))
-                                {
                                     count = "Count";
-                                }
-                                if (HasLengthProperty(memberType))
-                                {
+                                else if (HasLengthProperty(memberType))
                                     count = "Length";
-                                }
+                                else
+                                    count = "Count()";
                                 return $"new global::LightProto.Parser.IEnumerableProto{readerOrWriter}<{memberType},{elementType}>({elementParser},{rawTag},static (d)=>d.{count},{fixedSize})";
                             }
                         }
@@ -770,7 +762,7 @@ internal static class Helper
                     }
                 }
 
-                if (namedType.TypeKind == TypeKind.Class || namedType.TypeKind == TypeKind.Struct)
+                if (namedType.TypeKind is TypeKind.Class or TypeKind.Struct)
                 {
                     return $"new global::LightProto.Parser.{memberType.Name}Proto{readerOrWriter}<{keyType},{valueType}>({keyWriter},{valueWriter},{rawTag})";
                 }

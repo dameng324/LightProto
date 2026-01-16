@@ -396,12 +396,11 @@ public partial class LightProtoGenerator : IIncrementalGenerator
         string readerOrWriter
     )
     {
-        foreach (var member in protoMembers)
+        foreach (
+            var member in protoMembers.Where(member => !TryGetInternalTypeName(member.Type, member.DataFormat, member.StringIntern, out _))
+        )
         {
-            if (!TryGetInternalTypeName(member.Type, member.DataFormat, member.StringIntern, out _))
-            {
-                Helper.GetProtoParserMember(writer, compilation, member, readerOrWriter, targetType);
-            }
+            Helper.GetProtoParserMember(writer, compilation, member, readerOrWriter, targetType);
         }
     }
 
@@ -524,36 +523,35 @@ public partial class LightProtoGenerator : IIncrementalGenerator
     {
         if (net8OrGreater)
             return;
-        foreach (var member in protoMembers)
-        {
-            if (
+        foreach (
+            var member in protoMembers.Where(member =>
                 member.IsReadOnly
                 && (Helper.IsCollectionType(member.Compilation, member.Type) || Helper.IsDictionaryType(member.Compilation, member.Type))
             )
+        )
+        {
+            writer.WriteLine($"if(parsed.{member.Name}!=null)");
+            using (writer.IndentScope())
             {
-                writer.WriteLine($"if(parsed.{member.Name}!=null)");
+                writer.WriteLine($"parsed.{member.Name}.Clear();");
+                writer.WriteLine($"if(_{member.Name}!=null)");
                 using (writer.IndentScope())
                 {
-                    writer.WriteLine($"parsed.{member.Name}.Clear();");
-                    writer.WriteLine($"if(_{member.Name}!=null)");
+                    if (Helper.IsStackType(member.Type))
+                        writer.WriteLine($"foreach(var v in _{member.Name}.Reverse())");
+                    else
+                        writer.WriteLine($"foreach(var v in _{member.Name})");
+
                     using (writer.IndentScope())
                     {
                         if (Helper.IsStackType(member.Type))
-                            writer.WriteLine($"foreach(var v in _{member.Name}.Reverse())");
+                            writer.WriteLine($"parsed.{member.Name}.Push(v);");
+                        else if (Helper.IsQueueType(member.Type))
+                            writer.WriteLine($"parsed.{member.Name}.Enqueue(v);");
+                        else if (Helper.IsDictionaryType(member.Compilation, member.Type))
+                            writer.WriteLine($"parsed.{member.Name}[v.Key]=v.Value;");
                         else
-                            writer.WriteLine($"foreach(var v in _{member.Name})");
-
-                        using (writer.IndentScope())
-                        {
-                            if (Helper.IsStackType(member.Type))
-                                writer.WriteLine($"parsed.{member.Name}.Push(v);");
-                            else if (Helper.IsQueueType(member.Type))
-                                writer.WriteLine($"parsed.{member.Name}.Enqueue(v);");
-                            else if (Helper.IsDictionaryType(member.Compilation, member.Type))
-                                writer.WriteLine($"parsed.{member.Name}[v.Key]=v.Value;");
-                            else
-                                writer.WriteLine($"parsed.{member.Name}.Add(v);");
-                        }
+                            writer.WriteLine($"parsed.{member.Name}.Add(v);");
                     }
                 }
             }
