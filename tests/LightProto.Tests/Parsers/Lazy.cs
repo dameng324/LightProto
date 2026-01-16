@@ -20,31 +20,14 @@ public partial class LazyTests : BaseTests<LazyTests.Message, LazyTestsMessage>
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new()
-        {
-            Property = new Lazy<int>(() => 1),
-            Property2 = new Lazy<string>(() => "test"),
-        };
-        yield return new()
-        {
-            Property = new Lazy<int>(() => 0),
-            Property2 = new Lazy<string>(() => ""),
-        };
-        yield return new()
-        {
-            Property = new Lazy<int>(() => -1),
-            Property2 = new Lazy<string>(() => " "),
-        };
+        yield return new() { Property = new Lazy<int>(() => 1), Property2 = new Lazy<string>(() => "test") };
+        yield return new() { Property = new Lazy<int>(() => 0), Property2 = new Lazy<string>(() => "") };
+        yield return new() { Property = new Lazy<int>(() => -1), Property2 = new Lazy<string>(() => " ") };
     }
 
     public override IEnumerable<LazyTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new LazyTestsMessage()
-            {
-                Property = o.Property.Value,
-                Property2 = o.Property2.Value,
-            });
+        return GetMessages().Select(o => new LazyTestsMessage() { Property = o.Property.Value, Property2 = o.Property2.Value });
     }
 
     public override async Task AssertResult(Message clone, Message message)

@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class NullableDateTimeTests
-    : BaseTests<NullableDateTimeTests.Message, DateTimeTestsMessage>
+public partial class NullableDateTimeTests : BaseTests<NullableDateTimeTests.Message, DateTimeTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -26,17 +25,14 @@ public partial class NullableDateTimeTests
 
     public override IEnumerable<DateTimeTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new DateTimeTestsMessage() { Property = o.Property?.ToProtobuf() });
+        return GetMessages().Select(o => new DateTimeTestsMessage() { Property = o.Property?.ToProtobuf() });
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
         await Assert.That(clone.Property.HasValue).IsEquivalentTo(message.Property.HasValue);
         if (clone.Property.HasValue && message.Property.HasValue)
-            await Assert
-                .That(clone.Property.Value.Ticks)
-                .IsEquivalentTo(message.Property.Value.Ticks);
+            await Assert.That(clone.Property.Value.Ticks).IsEquivalentTo(message.Property.Value.Ticks);
         //await Assert.That(clone.Property.Kind).IsEquivalentTo(message.Property.Kind); // Kind is not include by default in protobuf-net
     }
 
@@ -96,19 +92,10 @@ file static class Extension
                 else if (proxy.Value == 1)
                     return DateTime.MaxValue;
                 else
-                    throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Value),
-                        $"Invalid ticks for MINMAX scale: {proxy.Value}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Value), $"Invalid ticks for MINMAX scale: {proxy.Value}");
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(proxy.Scale),
-                    $"Unknown scale: {proxy.Scale}"
-                );
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
         }
-        return new DateTime(
-            ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-            kind: (System.DateTimeKind)proxy.Kind
-        );
+        return new DateTime(ticks: ticks + EpochOriginsTicks[(int)proxy.Kind], kind: (System.DateTimeKind)proxy.Kind);
     }
 }

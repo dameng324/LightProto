@@ -68,27 +68,13 @@ namespace LightProto
         /// returned object is disposed.</param>
         /// <param name="maxSize"></param>
         internal CodedInputStream(Stream input, bool leaveOpen, long maxSize = long.MaxValue)
-            : this(
-                ProtoPreconditions.CheckNotNull(input, "input"),
-                new byte[BufferSize],
-                0,
-                0,
-                leaveOpen,
-                maxSize
-            ) { }
+            : this(ProtoPreconditions.CheckNotNull(input, "input"), new byte[BufferSize], 0, 0, leaveOpen, maxSize) { }
 
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(
-            Stream input,
-            byte[] buffer,
-            int bufferPos,
-            int bufferSize,
-            bool leaveOpen,
-            long maxSize
-        )
+        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen, long maxSize)
         {
             this.input = input;
             this.buffer = buffer;

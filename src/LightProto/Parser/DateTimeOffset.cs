@@ -12,18 +12,12 @@
 
         public static implicit operator DateTimeOffset(DateTimeOffsetProtoParser proxy)
         {
-            return new DateTimeOffset(proxy.DateTimeTicks, TimeSpan.Zero).ToOffset(
-                new TimeSpan(proxy.OffsetTicks)
-            );
+            return new DateTimeOffset(proxy.DateTimeTicks, TimeSpan.Zero).ToOffset(new TimeSpan(proxy.OffsetTicks));
         }
 
         public static implicit operator DateTimeOffsetProtoParser(DateTimeOffset dt)
         {
-            return new DateTimeOffsetProtoParser
-            {
-                DateTimeTicks = dt.UtcTicks,
-                OffsetTicks = dt.Offset.Ticks,
-            };
+            return new DateTimeOffsetProtoParser { DateTimeTicks = dt.UtcTicks, OffsetTicks = dt.Offset.Ticks };
         }
     }
 }

@@ -52,26 +52,11 @@ public partial class Matrix4x4Tests : BaseTests<Matrix4x4Tests.Message, Matrix4x
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new()
-        {
-            Property = new Matrix4x4(-1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
-        };
-        yield return new()
-        {
-            Property = new Matrix4x4(1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
-        };
-        yield return new()
-        {
-            Property = new Matrix4x4(-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
-        };
-        yield return new()
-        {
-            Property = new Matrix4x4(1, 2, -3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
-        };
-        yield return new()
-        {
-            Property = new Matrix4x4(0, 0, 0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16),
-        };
+        yield return new() { Property = new Matrix4x4(-1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16) };
+        yield return new() { Property = new Matrix4x4(1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16) };
+        yield return new() { Property = new Matrix4x4(-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16) };
+        yield return new() { Property = new Matrix4x4(1, 2, -3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16) };
+        yield return new() { Property = new Matrix4x4(0, 0, 0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16) };
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -126,9 +111,7 @@ public partial class Matrix4x4Tests : BaseTests<Matrix4x4Tests.Message, Matrix4x
                 Matrix4x4 result = protoParser;
             })
             .Throws<ArgumentException>();
-        await Assert
-            .That(exception!.Message)
-            .Contains("Input array must contain 16 elements for Matrix4x4 conversion.");
+        await Assert.That(exception!.Message).Contains("Input array must contain 16 elements for Matrix4x4 conversion.");
     }
 }
 #endif

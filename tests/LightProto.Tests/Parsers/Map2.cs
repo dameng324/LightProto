@@ -51,9 +51,7 @@ public partial class Map2Tests : BaseTests<Map2Tests.Message, Map2TestsMessage>
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert
-            .That(clone.Property.Keys.ToArray())
-            .IsEquivalentTo(message.Property.Keys.ToArray());
+        await Assert.That(clone.Property.Keys.ToArray()).IsEquivalentTo(message.Property.Keys.ToArray());
         foreach (var kv in message.Property)
         {
             await Assert.That(clone.Property[kv.Key]).IsEquivalentTo(kv.Value);
@@ -69,9 +67,7 @@ public partial class Map2Tests : BaseTests<Map2Tests.Message, Map2TestsMessage>
 
                 foreach (var kv in o.Property)
                 {
-                    map2TestsMessage.Property.Add(
-                        new Map2NestMessage() { Key = kv.Key, Value = { kv.Value } }
-                    );
+                    map2TestsMessage.Property.Add(new Map2NestMessage() { Key = kv.Key, Value = { kv.Value } });
                 }
 
                 return map2TestsMessage;
@@ -83,9 +79,7 @@ public partial class Map2Tests : BaseTests<Map2Tests.Message, Map2TestsMessage>
         await Assert.That(clone.Property.Count).IsEqualTo(message.Property.Count);
         foreach (var kv in message.Property)
         {
-            await Assert
-                .That(clone.Property.First(o => o.Key == kv.Key).Value)
-                .IsEquivalentTo(kv.Value);
+            await Assert.That(clone.Property.First(o => o.Key == kv.Key).Value).IsEquivalentTo(kv.Value);
         }
     }
 }

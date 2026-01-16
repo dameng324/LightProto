@@ -2,10 +2,7 @@
 
 [InheritsTests]
 public partial class ImplicitFieldsAllPublicTests
-    : BaseEquivalentTypeTests<
-        ImplicitFieldsAllPublicTests.LightProtoMessage,
-        ImplicitFieldsAllPublicTests.ProtoBufMessage
-    >
+    : BaseEquivalentTypeTests<ImplicitFieldsAllPublicTests.LightProtoMessage, ImplicitFieldsAllPublicTests.ProtoBufMessage>
 {
     /// <summary>
     /// Represents a test message with all public fields and properties included for serialization.
@@ -113,11 +110,7 @@ public partial class ImplicitFieldsAllPublicTests
         return ProtoBufMessage.GetMessages();
     }
 
-    public override async Task AssertResult(
-        LightProtoMessage lightProto,
-        ProtoBufMessage protobuf,
-        bool lightProtoToProtoBuf
-    )
+    public override async Task AssertResult(LightProtoMessage lightProto, ProtoBufMessage protobuf, bool lightProtoToProtoBuf)
     {
         await Assert.That(lightProto.Property1).IsEqualTo(protobuf.Property1);
         await Assert.That(lightProto.Property2).IsEqualTo(protobuf.Property2);

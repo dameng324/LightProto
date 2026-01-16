@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class BlockingCollectionTests
-    : BaseTests<BlockingCollectionTests.Message, ArrayTestsMessage>
+public partial class BlockingCollectionTests : BaseTests<BlockingCollectionTests.Message, ArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

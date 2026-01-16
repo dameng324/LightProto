@@ -13,9 +13,7 @@
 
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public Double ParseFrom(ref ReaderContext input)
             {
                 return input.ReadDouble();
@@ -26,24 +24,19 @@
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((Double)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (Double)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (Double)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.Fixed64;
 
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public int CalculateSize(Double value)
             {
                 return CodedOutputStream.ComputeDoubleSize(value);
             }
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void WriteTo(ref WriterContext output, Double value)
             {
                 output.WriteDouble(value);

@@ -33,8 +33,7 @@ public partial class RuneTests : BaseTests<RuneTests.Message, RuneTestsMessage>
 
     public override IEnumerable<RuneTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(m => new RuneTestsMessage { Property = (uint)m.Property.Value });
+        return GetMessages().Select(m => new RuneTestsMessage { Property = (uint)m.Property.Value });
     }
 
     public override async Task AssertResult(Message clone, Message message)

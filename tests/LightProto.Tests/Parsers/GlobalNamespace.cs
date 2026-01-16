@@ -26,21 +26,13 @@ public partial class GlobalNamespaceTests : BaseTests<GlobalNamespaceMessage, St
         yield return new() { Property = Guid.NewGuid().ToString("N") };
     }
 
-    public override async Task AssertResult(
-        GlobalNamespaceMessage clone,
-        GlobalNamespaceMessage message
-    )
+    public override async Task AssertResult(GlobalNamespaceMessage clone, GlobalNamespaceMessage message)
     {
         await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property);
     }
 
-    public override async Task AssertGoogleResult(
-        StructTestsMessage clone,
-        GlobalNamespaceMessage message
-    )
+    public override async Task AssertGoogleResult(StructTestsMessage clone, GlobalNamespaceMessage message)
     {
-        await Assert
-            .That(clone.Property ?? string.Empty)
-            .IsEquivalentTo(message.Property ?? string.Empty);
+        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property ?? string.Empty);
     }
 }

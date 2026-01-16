@@ -26,8 +26,7 @@ namespace LightProto.Parser
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((CultureInfo)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (CultureInfo)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (CultureInfo)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;

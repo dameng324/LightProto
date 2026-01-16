@@ -7,31 +7,16 @@ namespace LightProto
 {
     public static partial class Serializer
     {
-        public static IEnumerable<T> DeserializeItems<T>(
-            Stream source,
-            PrefixStyle style,
-            IProtoReader<T> reader
-        )
+        public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style, IProtoReader<T> reader)
         {
             return DeserializeItems(source, style, 0, reader);
         }
 
-        public static IEnumerable<T> DeserializeItems<T>(
-            Stream source,
-            PrefixStyle style,
-            int fieldNumber,
-            IProtoReader<T> reader
-        )
+        public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style, int fieldNumber, IProtoReader<T> reader)
         {
             while (true)
             {
-                var result = DeserializeWithLengthPrefixInternal(
-                    source,
-                    style,
-                    fieldNumber,
-                    reader,
-                    out var instance
-                );
+                var result = DeserializeWithLengthPrefixInternal(source, style, fieldNumber, reader, out var instance);
                 switch (result)
                 {
                     case DeserializeWithLengthPrefixResult.NoMoreData:
@@ -49,11 +34,7 @@ namespace LightProto
             }
         }
 
-        public static T DeserializeWithLengthPrefix<T>(
-            Stream source,
-            PrefixStyle style,
-            IProtoReader<T> reader
-        )
+        public static T DeserializeWithLengthPrefix<T>(Stream source, PrefixStyle style, IProtoReader<T> reader)
         {
             return DeserializeWithLengthPrefix(source, style, 0, reader);
         }
@@ -164,11 +145,7 @@ namespace LightProto
                 {
                     throw new ArgumentOutOfRangeException(nameof(style));
                 }
-                using var codedStream = new CodedInputStream(
-                    source,
-                    leaveOpen: true,
-                    maxSize: length
-                );
+                using var codedStream = new CodedInputStream(source, leaveOpen: true, maxSize: length);
                 ReaderContext.Initialize(codedStream, out var ctx);
                 result = reader.ParseFrom(ref ctx);
                 return DeserializeWithLengthPrefixResult.Success;
@@ -261,20 +238,9 @@ namespace LightProto
 #endif
         }
 
-        public static T DeserializeWithLengthPrefix<T>(
-            Stream source,
-            PrefixStyle style,
-            int fieldNumber,
-            IProtoReader<T> reader
-        )
+        public static T DeserializeWithLengthPrefix<T>(Stream source, PrefixStyle style, int fieldNumber, IProtoReader<T> reader)
         {
-            _ = DeserializeWithLengthPrefixInternal(
-                source,
-                style,
-                fieldNumber,
-                reader,
-                out var instance
-            );
+            _ = DeserializeWithLengthPrefixInternal(source, style, fieldNumber, reader, out var instance);
             return instance;
         }
 
@@ -300,9 +266,7 @@ namespace LightProto
                     if (fieldNumber > 0)
                     {
                         //write tag
-                        ctx.WriteTag(
-                            WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited)
-                        );
+                        ctx.WriteTag(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited));
                     }
                     ctx.WriteInt32(length);
                 }
@@ -326,22 +290,13 @@ namespace LightProto
             Serialize(destination, instance, writer);
         }
 
-        public static void SerializeWithLengthPrefix<T>(
-            Stream destination,
-            T instance,
-            PrefixStyle style,
-            IProtoWriter<T> writer
-        )
+        public static void SerializeWithLengthPrefix<T>(Stream destination, T instance, PrefixStyle style, IProtoWriter<T> writer)
         {
             SerializeWithLengthPrefix(destination, instance, style, 0, writer);
         }
 
 #if NET7_0_OR_GREATER
-        public static IEnumerable<T> DeserializeItems<T>(
-            Stream source,
-            PrefixStyle style,
-            int fieldNumber
-        )
+        public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style, int fieldNumber)
             where T : IProtoParser<T>
         {
             return DeserializeItems(source, style, fieldNumber, T.ProtoReader);
@@ -359,32 +314,19 @@ namespace LightProto
             return DeserializeWithLengthPrefix(source, style, T.ProtoReader);
         }
 
-        public static T DeserializeWithLengthPrefix<T>(
-            Stream source,
-            PrefixStyle style,
-            int fieldNumber
-        )
+        public static T DeserializeWithLengthPrefix<T>(Stream source, PrefixStyle style, int fieldNumber)
             where T : IProtoParser<T>
         {
             return DeserializeWithLengthPrefix(source, style, fieldNumber, T.ProtoReader);
         }
 
-        public static void SerializeWithLengthPrefix<T>(
-            Stream destination,
-            T instance,
-            PrefixStyle style,
-            int fieldNumber
-        )
+        public static void SerializeWithLengthPrefix<T>(Stream destination, T instance, PrefixStyle style, int fieldNumber)
             where T : IProtoParser<T>
         {
             SerializeWithLengthPrefix(destination, instance, style, fieldNumber, T.ProtoWriter);
         }
 
-        public static void SerializeWithLengthPrefix<T>(
-            Stream destination,
-            T instance,
-            PrefixStyle style
-        )
+        public static void SerializeWithLengthPrefix<T>(Stream destination, T instance, PrefixStyle style)
             where T : IProtoParser<T>
         {
             SerializeWithLengthPrefix(destination, instance, style, T.ProtoWriter);

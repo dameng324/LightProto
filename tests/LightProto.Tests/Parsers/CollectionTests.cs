@@ -49,10 +49,7 @@ public partial class CollectionTests : BaseTests<CollectionTests.Message, ArrayT
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            Int32ProtoParser.ProtoReader.GetCollectionReader()
-        );
+        var deserialized = Serializer.Deserialize(bytes, Int32ProtoParser.ProtoReader.GetCollectionReader());
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }

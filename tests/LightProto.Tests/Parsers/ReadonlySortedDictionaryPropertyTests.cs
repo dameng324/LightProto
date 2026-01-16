@@ -4,8 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadonlySortedDictionaryPropertyTests
-    : BaseTests<ReadonlySortedDictionaryPropertyTests.Message, MapTestsMessage>
+public partial class ReadonlySortedDictionaryPropertyTests : BaseTests<ReadonlySortedDictionaryPropertyTests.Message, MapTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

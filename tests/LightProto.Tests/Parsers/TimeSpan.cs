@@ -22,17 +22,10 @@ public partial class TimeSpanTests : BaseTests<TimeSpanTests.Message, TimeSpanTe
         yield return new() { Property = DateTime.Now.TimeOfDay };
         yield return new() { Property = TimeSpan.FromDays(1) };
         yield return new() { Property = TimeSpan.FromDays(1).Add(TimeSpan.FromHours(1)) };
+        yield return new() { Property = TimeSpan.FromDays(1).Add(TimeSpan.FromHours(1)).Add(TimeSpan.FromMinutes(1)) };
         yield return new()
         {
-            Property = TimeSpan.FromDays(1).Add(TimeSpan.FromHours(1)).Add(TimeSpan.FromMinutes(1)),
-        };
-        yield return new()
-        {
-            Property = TimeSpan
-                .FromDays(1)
-                .Add(TimeSpan.FromHours(1))
-                .Add(TimeSpan.FromMinutes(1))
-                .Add(TimeSpan.FromSeconds(1)),
+            Property = TimeSpan.FromDays(1).Add(TimeSpan.FromHours(1)).Add(TimeSpan.FromMinutes(1)).Add(TimeSpan.FromSeconds(1)),
         };
         yield return new()
         {
@@ -47,8 +40,7 @@ public partial class TimeSpanTests : BaseTests<TimeSpanTests.Message, TimeSpanTe
 
     public override IEnumerable<TimeSpanTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new TimeSpanTestsMessage() { Property = o.Property.ToProtobuf() });
+        return GetMessages().Select(o => new TimeSpanTestsMessage() { Property = o.Property.ToProtobuf() });
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -66,11 +58,7 @@ file static class Extension
 {
     public static ProtoBuf.Bcl.TimeSpan ToProtobuf(this TimeSpan value)
     {
-        return new ProtoBuf.Bcl.TimeSpan
-        {
-            Value = value.Ticks,
-            Scale = ProtoBuf.Bcl.TimeSpan.Types.TimeSpanScale.Ticks,
-        };
+        return new ProtoBuf.Bcl.TimeSpan { Value = value.Ticks, Scale = ProtoBuf.Bcl.TimeSpan.Types.TimeSpanScale.Ticks };
     }
 
     public static TimeSpan ToTimeSpan(this ProtoBuf.Bcl.TimeSpan proxy)
@@ -102,15 +90,9 @@ file static class Extension
                 else if (proxy.Value == 1)
                     return TimeSpan.MaxValue;
                 else
-                    throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Value),
-                        $"Invalid ticks for MINMAX scale: {proxy.Value}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Value), $"Invalid ticks for MINMAX scale: {proxy.Value}");
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(proxy.Scale),
-                    $"Unknown scale: {proxy.Scale}"
-                );
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
         }
         return new TimeSpan(ticks);
     }

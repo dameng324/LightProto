@@ -80,10 +80,7 @@ public partial class SerializerTests
 
         public BufferSegment Append(byte[] memory)
         {
-            var segment = new BufferSegment(memory)
-            {
-                RunningIndex = this.RunningIndex + this.Memory.Length,
-            };
+            var segment = new BufferSegment(memory) { RunningIndex = this.RunningIndex + this.Memory.Length };
             this.Next = segment;
             return segment;
         }
@@ -97,12 +94,7 @@ public partial class SerializerTests
         {
             lastBufferSegment = lastBufferSegment.Append(bytesArray[i]);
         }
-        return new ReadOnlySequence<byte>(
-            firstBufferSegment,
-            0,
-            lastBufferSegment,
-            lastBufferSegment.Memory.Length
-        );
+        return new ReadOnlySequence<byte>(firstBufferSegment, 0, lastBufferSegment, lastBufferSegment.Memory.Length);
     }
 
     [Test]
@@ -175,10 +167,7 @@ public partial class SerializerTests
 
         Serializer.Serialize(ms, original, TestContract.ProtoWriter.GetCollectionWriter());
         ms.Position = 0;
-        var parsed = Serializer.Deserialize<List<TestContract>>(
-            ms,
-            TestContract.ProtoReader.GetListReader()
-        );
+        var parsed = Serializer.Deserialize<List<TestContract>>(ms, TestContract.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -200,11 +189,7 @@ public partial class SerializerTests
 #if NET6_0_OR_GREATER
         var parsed = Serializer.DeepClone(original);
 #else
-        var parsed = Serializer.DeepClone(
-            original,
-            TestContract.ProtoReader,
-            TestContract.ProtoWriter
-        );
+        var parsed = Serializer.DeepClone(original, TestContract.ProtoReader, TestContract.ProtoWriter);
 #endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
@@ -223,11 +208,7 @@ public partial class SerializerTests
 #if NET6_0_OR_GREATER
         var parsed = Serializer.DeepClone(original);
 #else
-        var parsed = Serializer.DeepClone(
-            original,
-            TestContract.ProtoReader,
-            TestContract.ProtoWriter
-        );
+        var parsed = Serializer.DeepClone(original, TestContract.ProtoReader, TestContract.ProtoWriter);
 #endif
         await Assert.That(parsed).IsEquivalentTo(original);
     }
@@ -262,10 +243,7 @@ public partial class SerializerTests
         string[] original = ["", "123"];
         original.SerializeTo(bufferWriter, StringProtoParser.ProtoWriter.GetCollectionWriter());
 
-        var parsed = Serializer.Deserialize(
-            bufferWriter.WrittenMemory.Span,
-            StringProtoParser.ProtoReader.GetListReader()
-        );
+        var parsed = Serializer.Deserialize(bufferWriter.WrittenMemory.Span, StringProtoParser.ProtoReader.GetListReader());
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
@@ -363,22 +341,11 @@ public partial class SerializerTests
     public async Task DictionaryTest()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
-        Dictionary<int, TestContract> original = new()
-        {
-            [1] = CreateTestContract(),
-            [2] = CreateTestContract(),
-        };
-        original.SerializeTo(
-            bufferWriter,
-            Int32ProtoParser.ProtoWriter.GetDictionaryWriter(TestContract.ProtoWriter)
-        );
+        Dictionary<int, TestContract> original = new() { [1] = CreateTestContract(), [2] = CreateTestContract() };
+        original.SerializeTo(bufferWriter, Int32ProtoParser.ProtoWriter.GetDictionaryWriter(TestContract.ProtoWriter));
         var parsed = Serializer.Deserialize(
             GetReadonlySequence(bufferWriter.WrittenMemory.ToArray().Chunk(2).ToArray()),
-            Int32ProtoParser.ProtoReader.GetDictionaryReader<
-                Dictionary<int, TestContract>,
-                int,
-                TestContract
-            >(TestContract.ProtoReader)
+            Int32ProtoParser.ProtoReader.GetDictionaryReader<Dictionary<int, TestContract>, int, TestContract>(TestContract.ProtoReader)
         );
         await Assert.That(parsed).IsEquivalentTo(original);
     }
@@ -387,23 +354,12 @@ public partial class SerializerTests
     public async Task DictionaryTest2()
     {
         using var ms = new MemoryStream();
-        Dictionary<int, TestContract> original = new()
-        {
-            [1] = CreateTestContract(),
-            [2] = CreateTestContract(),
-        };
-        original.SerializeTo(
-            ms,
-            Int32ProtoParser.ProtoWriter.GetDictionaryWriter(TestContract.ProtoWriter)
-        );
+        Dictionary<int, TestContract> original = new() { [1] = CreateTestContract(), [2] = CreateTestContract() };
+        original.SerializeTo(ms, Int32ProtoParser.ProtoWriter.GetDictionaryWriter(TestContract.ProtoWriter));
         ms.Position = 0;
         var parsed = Serializer.Deserialize(
             ms,
-            Int32ProtoParser.ProtoReader.GetDictionaryReader<
-                Dictionary<int, TestContract>,
-                int,
-                TestContract
-            >(TestContract.ProtoReader)
+            Int32ProtoParser.ProtoReader.GetDictionaryReader<Dictionary<int, TestContract>, int, TestContract>(TestContract.ProtoReader)
         );
         await Assert.That(parsed).IsEquivalentTo(original);
     }
@@ -412,11 +368,7 @@ public partial class SerializerTests
     public async Task DictionaryTest3()
     {
         using var ms = new MemoryStream();
-        Dictionary<List<int>, TestContract> original = new()
-        {
-            [[1, 3]] = CreateTestContract(),
-            [[2, 3]] = CreateTestContract(),
-        };
+        Dictionary<List<int>, TestContract> original = new() { [[1, 3]] = CreateTestContract(), [[2, 3]] = CreateTestContract() };
         IProtoWriter<List<int>> keyWriter = Int32ProtoParser.ProtoWriter.GetCollectionWriter();
         original.SerializeTo(ms, keyWriter.GetDictionaryWriter(TestContract.ProtoWriter));
         ms.Position = 0;
@@ -425,18 +377,12 @@ public partial class SerializerTests
 
         var parsed = Serializer.Deserialize(
             ms,
-            keyReader.GetDictionaryReader<
-                Dictionary<List<int>, TestContract>,
-                List<int>,
-                TestContract
-            >(TestContract.ProtoReader)
+            keyReader.GetDictionaryReader<Dictionary<List<int>, TestContract>, List<int>, TestContract>(TestContract.ProtoReader)
         );
         await Assert.That(parsed.Count).IsEquivalentTo(original.Count);
         foreach (var kv in original)
         {
-            await Assert
-                .That(parsed.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value)
-                .IsEquivalentTo(kv.Value);
+            await Assert.That(parsed.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value).IsEquivalentTo(kv.Value);
         }
     }
 
@@ -444,15 +390,11 @@ public partial class SerializerTests
     public async Task DictionaryTest4()
     {
         var map = new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
-        var bytes = map.ToByteArray(
-            StringProtoParser.ProtoWriter.GetDictionaryWriter(Int32ProtoParser.ProtoWriter)
-        );
+        var bytes = map.ToByteArray(StringProtoParser.ProtoWriter.GetDictionaryWriter(Int32ProtoParser.ProtoWriter));
 
         var clone = Serializer.Deserialize(
             bytes.AsSpan(),
-            StringProtoParser.ProtoReader.GetDictionaryReader<Dictionary<string, int>, string, int>(
-                Int32ProtoParser.ProtoReader
-            )
+            StringProtoParser.ProtoReader.GetDictionaryReader<Dictionary<string, int>, string, int>(Int32ProtoParser.ProtoReader)
         );
         await Assert.That(clone).IsEquivalentTo(map);
     }
@@ -556,38 +498,17 @@ public partial class SerializerTests
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
 #else
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            prefixStyle,
-            TestContract.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            prefixStyle,
-            TestContract.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            prefixStyle,
-            TestContract.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle, TestContract.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle, TestContract.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle, TestContract.ProtoWriter);
 #endif
         ms.Position = 0;
 #if NET6_0_OR_GREATER
         var cloned1 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, prefixStyle);
         var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle).ToList();
 #else
-        var cloned1 = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            prefixStyle,
-            TestContract.ProtoReader
-        );
-        var cloned = Serializer
-            .DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader)
-            .ToList();
+        var cloned1 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, prefixStyle, TestContract.ProtoReader);
+        var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader).ToList();
 #endif
         await Assert.That(cloned1).IsNotNull();
         await Assert.That(cloned.Count).IsEqualTo(2);
@@ -601,20 +522,13 @@ public partial class SerializerTests
 #if NET6_0_OR_GREATER
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
 #else
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            prefixStyle,
-            TestContract.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle, TestContract.ProtoWriter);
 #endif
         ms.Position = 0;
 #if NET6_0_OR_GREATER
         var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle).ToList();
 #else
-        var cloned = Serializer
-            .DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader)
-            .ToList();
+        var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader).ToList();
 #endif
         await Assert.That(cloned.Count).IsEqualTo(0);
     }
@@ -629,12 +543,7 @@ public partial class SerializerTests
 #if NET6_0_OR_GREATER
             Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle);
 #else
-            Serializer.SerializeWithLengthPrefix(
-                ms,
-                CreateTestContract(),
-                prefixStyle,
-                TestContract.ProtoWriter
-            );
+            Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), prefixStyle, TestContract.ProtoWriter);
 #endif
         });
         var ex2 = Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -643,9 +552,7 @@ public partial class SerializerTests
 #if NET6_0_OR_GREATER
             var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle).ToList();
 #else
-            var cloned = Serializer
-                .DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader)
-                .ToList();
+            var cloned = Serializer.DeserializeItems<TestContract>(ms, prefixStyle, TestContract.ProtoReader).ToList();
 #endif
         });
     }
@@ -655,46 +562,16 @@ public partial class SerializerTests
     {
         var ms = new MemoryStream();
 #if NET6_0_OR_GREATER
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.Base128,
-            fieldNumber: 2
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.Base128,
-            fieldNumber: 2
-        );
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128, fieldNumber: 2);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128, fieldNumber: 2);
 #else
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.Base128,
-            fieldNumber: 2,
-            TestContract.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.Base128,
-            fieldNumber: 2,
-            TestContract.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128, fieldNumber: 2, TestContract.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128, fieldNumber: 2, TestContract.ProtoWriter);
 #endif
         ms.Position = 0;
 #if NET6_0_OR_GREATER
-        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            PrefixStyle.Base128,
-            fieldNumber: 2
-        );
-        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            PrefixStyle.Base128,
-            fieldNumber: 3
-        );
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128, fieldNumber: 2);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128, fieldNumber: 3);
 #else
         var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
             ms,
@@ -721,34 +598,16 @@ public partial class SerializerTests
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128);
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128);
 #else
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.Base128,
-            TestContract.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.Base128,
-            TestContract.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128, TestContract.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.Base128, TestContract.ProtoWriter);
 #endif
         ms.Position = 0;
 #if NET6_0_OR_GREATER
         var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128);
         var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128);
 #else
-        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            PrefixStyle.Base128,
-            TestContract.ProtoReader
-        );
-        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            PrefixStyle.Base128,
-            TestContract.ProtoReader
-        );
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128, TestContract.ProtoReader);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.Base128, TestContract.ProtoReader);
 #endif
         await Assert.That(cloned).IsNotNull();
         await Assert.That(cloned2).IsNotNull();
@@ -762,34 +621,16 @@ public partial class SerializerTests
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.None);
         Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.None);
 #else
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.None,
-            TestContract.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            CreateTestContract(),
-            PrefixStyle.None,
-            TestContract.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.None, TestContract.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, CreateTestContract(), PrefixStyle.None, TestContract.ProtoWriter);
 #endif
         ms.Position = 0;
 #if NET6_0_OR_GREATER
         var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.None);
         var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.None);
 #else
-        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            PrefixStyle.None,
-            TestContract.ProtoReader
-        );
-        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(
-            ms,
-            PrefixStyle.None,
-            TestContract.ProtoReader
-        );
+        var cloned = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.None, TestContract.ProtoReader);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<TestContract>(ms, PrefixStyle.None, TestContract.ProtoReader);
 #endif
         await Assert.That(cloned).IsNotNull();
         await Assert.That(cloned2).IsNotNull();
@@ -801,55 +642,19 @@ public partial class SerializerTests
         var ms = new MemoryStream();
         int number = 10;
 #if NET6_0_OR_GREATER
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            number,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            number,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, number, PrefixStyle.Base128, Int32ProtoParser.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, number, PrefixStyle.Base128, Int32ProtoParser.ProtoWriter);
 #else
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            number,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoWriter
-        );
-        Serializer.SerializeWithLengthPrefix(
-            ms,
-            number,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoWriter
-        );
+        Serializer.SerializeWithLengthPrefix(ms, number, PrefixStyle.Base128, Int32ProtoParser.ProtoWriter);
+        Serializer.SerializeWithLengthPrefix(ms, number, PrefixStyle.Base128, Int32ProtoParser.ProtoWriter);
 #endif
         ms.Position = 0;
 #if NET6_0_OR_GREATER
-        var cloned = Serializer.DeserializeWithLengthPrefix<int>(
-            ms,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoReader
-        );
-        var cloned2 = Serializer.DeserializeWithLengthPrefix<int>(
-            ms,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoReader
-        );
+        var cloned = Serializer.DeserializeWithLengthPrefix<int>(ms, PrefixStyle.Base128, Int32ProtoParser.ProtoReader);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<int>(ms, PrefixStyle.Base128, Int32ProtoParser.ProtoReader);
 #else
-        var cloned = Serializer.DeserializeWithLengthPrefix<int>(
-            ms,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoReader
-        );
-        var cloned2 = Serializer.DeserializeWithLengthPrefix<int>(
-            ms,
-            PrefixStyle.Base128,
-            Int32ProtoParser.ProtoReader
-        );
+        var cloned = Serializer.DeserializeWithLengthPrefix<int>(ms, PrefixStyle.Base128, Int32ProtoParser.ProtoReader);
+        var cloned2 = Serializer.DeserializeWithLengthPrefix<int>(ms, PrefixStyle.Base128, Int32ProtoParser.ProtoReader);
 #endif
         await Assert.That(cloned).IsEqualTo(number);
         await Assert.That(cloned2).IsEqualTo(number);

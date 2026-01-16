@@ -8,8 +8,7 @@ namespace LightProto.Parser
             : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
     }
 
-    public sealed class ImmutableListProtoReader<TItem>
-        : ICollectionReader<ImmutableList<TItem>, TItem>
+    public sealed class ImmutableListProtoReader<TItem> : ICollectionReader<ImmutableList<TItem>, TItem>
     {
         private readonly ArrayProtoReader<TItem> _arrayReader;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;

@@ -24,8 +24,7 @@ public partial class ProxyTests
     [ProtoParserType(typeof(InstrumentProtoParser))]
     public class Instrument
     {
-        public static Instrument FromNameValue(string name, int value) =>
-            new Instrument { Name = name, Value = value };
+        public static Instrument FromNameValue(string name, int value) => new Instrument { Name = name, Value = value };
 
         private Instrument() { }
 
@@ -43,8 +42,7 @@ public partial class ProxyTests
         [ProtoMember(12)]
         public int Value { get; set; }
 
-        public static implicit operator Instrument(InstrumentProtoParser proxy) =>
-            Instrument.FromNameValue(proxy.Name, proxy.Value);
+        public static implicit operator Instrument(InstrumentProtoParser proxy) => Instrument.FromNameValue(proxy.Name, proxy.Value);
 
         public static implicit operator InstrumentProtoParser(Instrument instrument) =>
             new InstrumentProtoParser { Name = instrument.Name, Value = instrument.Value };

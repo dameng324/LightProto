@@ -52,10 +52,7 @@ public partial class ImmutableListTests : BaseTests<ImmutableListTests.Message, 
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            new ImmutableListProtoReader<int>(Int32ProtoParser.ProtoReader, 0)
-        );
+        var deserialized = Serializer.Deserialize(bytes, new ImmutableListProtoReader<int>(Int32ProtoParser.ProtoReader, 0));
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }

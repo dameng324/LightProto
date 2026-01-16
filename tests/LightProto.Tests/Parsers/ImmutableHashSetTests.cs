@@ -6,8 +6,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ImmutableHashSetTests
-    : BaseTests<ImmutableHashSetTests.Message, ArrayTestsMessage>
+public partial class ImmutableHashSetTests : BaseTests<ImmutableHashSetTests.Message, ArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -53,10 +52,7 @@ public partial class ImmutableHashSetTests
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            new ImmutableHashSetProtoReader<int>(Int32ProtoParser.ProtoReader, 0)
-        );
+        var deserialized = Serializer.Deserialize(bytes, new ImmutableHashSetProtoReader<int>(Int32ProtoParser.ProtoReader, 0));
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }

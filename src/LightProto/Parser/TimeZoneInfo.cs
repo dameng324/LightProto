@@ -5,10 +5,8 @@ namespace LightProto.Parser
 {
     public sealed class TimeZoneInfoProtoParser : IProtoParser<TimeZoneInfo>
     {
-        public static IProtoReader<TimeZoneInfo> ProtoReader { get; } =
-            new TimeZoneInfoProtoReader();
-        public static IProtoWriter<TimeZoneInfo> ProtoWriter { get; } =
-            new TimeZoneInfoProtoWriter();
+        public static IProtoReader<TimeZoneInfo> ProtoReader { get; } = new TimeZoneInfoProtoReader();
+        public static IProtoWriter<TimeZoneInfo> ProtoWriter { get; } = new TimeZoneInfoProtoWriter();
 
         sealed class TimeZoneInfoProtoReader : IProtoReader, IProtoReader<TimeZoneInfo>
         {
@@ -28,8 +26,7 @@ namespace LightProto.Parser
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((TimeZoneInfo)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (TimeZoneInfo)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (TimeZoneInfo)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;

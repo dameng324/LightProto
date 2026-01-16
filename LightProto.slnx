@@ -14,6 +14,7 @@
   <Folder Name="/items/">
     <File Path=".codacy.yml" />
     <File Path=".codecov.yml" />
+    <File Path=".csharpierrc.json" />
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
     <File Path="global.json" />

@@ -12,9 +12,7 @@
             public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public byte ParseFrom(ref ReaderContext input)
             {
                 return (byte)input.ReadFixed32();
@@ -25,23 +23,18 @@
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((byte)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (byte)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (byte)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public int CalculateSize(byte value)
             {
                 return CodedOutputStream.ComputeFixed32Size(value);
             }
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void WriteTo(ref WriterContext output, byte value)
             {
                 output.WriteFixed32(value);

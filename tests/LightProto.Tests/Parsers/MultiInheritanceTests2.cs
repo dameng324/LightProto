@@ -92,23 +92,17 @@ public partial class MultiInheritanceTests2 : BaseProtoBufTests<MultiInheritance
 
         if (clone is Base4)
         {
-            await Assert
-                .That((clone as Base4)!.Base4Value)
-                .IsEqualTo((message as Base4)!.Base4Value);
+            await Assert.That((clone as Base4)!.Base4Value).IsEqualTo((message as Base4)!.Base4Value);
         }
 
         if (clone is Base3)
         {
-            await Assert
-                .That((clone as Base3)!.Base3Value)
-                .IsEqualTo((message as Base3)!.Base3Value);
+            await Assert.That((clone as Base3)!.Base3Value).IsEqualTo((message as Base3)!.Base3Value);
         }
 
         if (clone is Base2)
         {
-            await Assert
-                .That((clone as Base2)!.Base2Value)
-                .IsEqualTo((message as Base2)!.Base2Value);
+            await Assert.That((clone as Base2)!.Base2Value).IsEqualTo((message as Base2)!.Base2Value);
         }
     }
 }

@@ -37,9 +37,7 @@
         {
             checked
             {
-                long ticks =
-                    protoParser.Seconds * TimeSpan.TicksPerSecond
-                    + protoParser.Nanos / NanosecondsPerTick;
+                long ticks = protoParser.Seconds * TimeSpan.TicksPerSecond + protoParser.Nanos / NanosecondsPerTick;
                 return TimeSpan.FromTicks(ticks);
             }
         }

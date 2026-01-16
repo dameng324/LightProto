@@ -23,9 +23,7 @@ namespace LightProto
 
         internal static InvalidProtocolBufferException MoreDataAvailable()
         {
-            return new InvalidProtocolBufferException(
-                "Completed reading a message while more data was available in the stream."
-            );
+            return new InvalidProtocolBufferException("Completed reading a message while more data was available in the stream.");
         }
 
         internal static InvalidProtocolBufferException TruncatedMessage()
@@ -41,16 +39,13 @@ namespace LightProto
         internal static InvalidProtocolBufferException NegativeSize()
         {
             return new InvalidProtocolBufferException(
-                "CodedInputStream encountered an embedded string or message "
-                    + "which claimed to have negative size."
+                "CodedInputStream encountered an embedded string or message " + "which claimed to have negative size."
             );
         }
 
         internal static InvalidProtocolBufferException MalformedVarint()
         {
-            return new InvalidProtocolBufferException(
-                "CodedInputStream encountered a malformed varint."
-            );
+            return new InvalidProtocolBufferException("CodedInputStream encountered a malformed varint.");
         }
 
         /// <summary>
@@ -58,9 +53,7 @@ namespace LightProto
         /// </summary>
         internal static InvalidProtocolBufferException InvalidTag()
         {
-            return new InvalidProtocolBufferException(
-                "Protocol message contained an invalid tag (zero)."
-            );
+            return new InvalidProtocolBufferException("Protocol message contained an invalid tag (zero).");
         }
 
         internal static InvalidProtocolBufferException InvalidUtf8(Exception innerException)
@@ -79,8 +72,7 @@ namespace LightProto
         internal static InvalidProtocolBufferException SizeLimitExceeded()
         {
             return new InvalidProtocolBufferException(
-                "Protocol message was too large.  May be malicious.  "
-                    + "Use CodedInputStream.SetSizeLimit() to increase the size limit."
+                "Protocol message was too large.  May be malicious.  " + "Use CodedInputStream.SetSizeLimit() to increase the size limit."
             );
         }
     }

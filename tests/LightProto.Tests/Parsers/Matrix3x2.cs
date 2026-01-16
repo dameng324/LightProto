@@ -24,15 +24,7 @@ public partial class Matrix3x2Tests : BaseTests<Matrix3x2Tests.Message, Matrix3x
             {
                 Property = new Matrix3x2Message()
                 {
-                    M =
-                    {
-                        x.Property.M11,
-                        x.Property.M12,
-                        x.Property.M21,
-                        x.Property.M22,
-                        x.Property.M31,
-                        x.Property.M32,
-                    },
+                    M = { x.Property.M11, x.Property.M12, x.Property.M21, x.Property.M22, x.Property.M31, x.Property.M32 },
                 },
             });
     }
@@ -91,9 +83,7 @@ public partial class Matrix3x2Tests : BaseTests<Matrix3x2Tests.Message, Matrix3x
                 Matrix3x2 result = protoParser;
             })
             .Throws<ArgumentException>();
-        await Assert
-            .That(exception!.Message)
-            .Contains("Input array must contain 6 elements for Matrix3x2 conversion.");
+        await Assert.That(exception!.Message).Contains("Input array must contain 6 elements for Matrix3x2 conversion.");
     }
 }
 #endif

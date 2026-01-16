@@ -35,11 +35,7 @@ namespace LightProto.Cs9Tests
                 SFixed64Field = random.Next(),
                 EnumField = CsTestEnum.OptionB,
                 EnumArrayFields = { CsTestEnum.OptionB, CsTestEnum.None, CsTestEnum.OptionA },
-                NestedMessageField = new CsTestMessage()
-                {
-                    RequiredIntField = 20,
-                    StringField = "hello",
-                },
+                NestedMessageField = new CsTestMessage() { RequiredIntField = 20, StringField = "hello" },
                 NestedMessageArrayFields = new List<CsTestMessage>
                 {
                     new CsTestMessage() { RequiredIntField = 20, StringField = "hello" },
@@ -55,12 +51,8 @@ namespace LightProto.Cs9Tests
                 StringSetFieldTests = { "hello", "hello2" },
                 StringQueueFieldTests = new(new List<string> { "hello", "hello" }.AsReadOnly()),
                 StringStackFieldTests = new(new List<string> { "hello", "hello" }.AsReadOnly()),
-                ConcurrentStringQueueFieldTests = new(
-                    new List<string> { "hello", "hello" }.AsReadOnly()
-                ),
-                ConcurrentStringStackFieldTests = new(
-                    new List<string> { "hello", "hello" }.AsReadOnly()
-                ),
+                ConcurrentStringQueueFieldTests = new(new List<string> { "hello", "hello" }.AsReadOnly()),
+                ConcurrentStringStackFieldTests = new(new List<string> { "hello", "hello" }.AsReadOnly()),
                 NullableIntField = 10,
                 IntLists = new[] { 20, 20 },
                 StringISets = { "hello", "hello2" },
@@ -86,16 +78,8 @@ namespace LightProto.Cs9Tests
                 MapField6s = { ["hello"] = "hello", ["hello2"] = "hello" },
                 MapField7s =
                 {
-                    ["hello"] = new CsTestMessage()
-                    {
-                        RequiredIntField = 20,
-                        StringField = "hello",
-                    },
-                    ["hello2"] = new CsTestMessage()
-                    {
-                        RequiredIntField = 20,
-                        StringField = "hello",
-                    },
+                    ["hello"] = new CsTestMessage() { RequiredIntField = 20, StringField = "hello" },
+                    ["hello2"] = new CsTestMessage() { RequiredIntField = 20, StringField = "hello" },
                 },
             };
 
@@ -103,11 +87,7 @@ namespace LightProto.Cs9Tests
         public void CsMessageDeepCloneTest()
         {
             var origin = NewCsMessage();
-            var clone = Serializer.DeepClone(
-                origin,
-                CsTestMessage.ProtoReader,
-                CsTestMessage.ProtoWriter
-            );
+            var clone = Serializer.DeepClone(origin, CsTestMessage.ProtoReader, CsTestMessage.ProtoWriter);
             Assert.AreEqual(origin, clone);
         }
     }

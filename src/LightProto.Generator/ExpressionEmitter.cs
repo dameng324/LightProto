@@ -47,10 +47,7 @@ internal sealed class ExpressionEmitter
             return EmitImplicitArrayCreation(implicitArrayNew);
         }
 
-        if (
-            expr is InvocationExpressionSyntax invocation
-            && invocation.Expression is IdentifierNameSyntax id
-        )
+        if (expr is InvocationExpressionSyntax invocation && invocation.Expression is IdentifierNameSyntax id)
         {
             return $"{id}{EmitArgumentsExpression(invocation.ArgumentList)}";
         }
@@ -66,9 +63,7 @@ internal sealed class ExpressionEmitter
 
     private string EmitArgumentsExpression(ArgumentListSyntax? argumentListSyntax)
     {
-        return argumentListSyntax is null
-            ? "()"
-            : EmitArgumentsExpression(argumentListSyntax.Arguments.Select(x => x.Expression));
+        return argumentListSyntax is null ? "()" : EmitArgumentsExpression(argumentListSyntax.Arguments.Select(x => x.Expression));
     }
 
     private string EmitArgumentsExpression(IEnumerable<ExpressionSyntax> expressionSyntaxes)
@@ -76,15 +71,11 @@ internal sealed class ExpressionEmitter
         return $"({string.Join(",", expressionSyntaxes.Select(Emit))})";
     }
 
-    private string EmitInitializerExpression(
-        InitializerExpressionSyntax? initializerExpressionSyntax
-    )
+    private string EmitInitializerExpression(InitializerExpressionSyntax? initializerExpressionSyntax)
     {
         return initializerExpressionSyntax is null
             ? ""
-            : "{"
-                + string.Join(",", initializerExpressionSyntax.Expressions.Select(x => Emit(x)))
-                + "}";
+            : "{" + string.Join(",", initializerExpressionSyntax.Expressions.Select(x => Emit(x))) + "}";
     }
 
     private string EmitObjectCreation(ObjectCreationExpressionSyntax creation)
@@ -166,23 +157,14 @@ internal sealed class ExpressionEmitter
                 }
 
                 var name = reducedMethod.IsStatic
-                    ? reducedMethod.ContainingType.ToDisplayString(
-                        SymbolDisplayFormat.FullyQualifiedFormat
-                    )
-                        + "."
-                        + reducedMethod.Name
+                    ? reducedMethod.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + "." + reducedMethod.Name
                     : reducedMethod.Name;
 
                 if (method.IsGenericMethod)
                 {
                     name +=
                         "<"
-                        + string.Join(
-                            ", ",
-                            method.TypeArguments.Select(t =>
-                                t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
-                            )
-                        )
+                        + string.Join(", ", method.TypeArguments.Select(t => t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)))
                         + ">";
                 }
                 string args;

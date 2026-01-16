@@ -27,14 +27,8 @@ public partial class DateTime240Tests : BaseTests<DateTime240Tests.Message, Date
 
     public override IEnumerable<DateTime240TestsMessage> GetGoogleMessages()
     {
-        yield return new DateTime240TestsMessage()
-        {
-            Property = DateTime.MaxValue.ToUniversalTime().ToTimestamp(),
-        };
-        yield return new DateTime240TestsMessage()
-        {
-            Property = DateTime.MinValue.ToUniversalTime().ToTimestamp(),
-        };
+        yield return new DateTime240TestsMessage() { Property = DateTime.MaxValue.ToUniversalTime().ToTimestamp() };
+        yield return new DateTime240TestsMessage() { Property = DateTime.MinValue.ToUniversalTime().ToTimestamp() };
         yield return new DateTime240TestsMessage() { Property = DateTime.UtcNow.ToTimestamp() };
     }
 

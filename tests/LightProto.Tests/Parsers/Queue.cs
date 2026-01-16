@@ -35,8 +35,7 @@ public partial class QueuePackedTests : BaseTests<QueuePackedTests.Message, Queu
 
     public override IEnumerable<QueuePackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new QueuePackedTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new QueuePackedTestsMessage() { Property = { o.Property } });
     }
 
     public override async Task AssertGoogleResult(QueuePackedTestsMessage clone, Message message)

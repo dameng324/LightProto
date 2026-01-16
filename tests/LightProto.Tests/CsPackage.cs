@@ -17,13 +17,8 @@ namespace LightProto.Tests
     {
         private global::LightProto.IExtension __pbn__extensionData;
 
-        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(
-            bool createIfMissing
-        ) =>
-            global::LightProto.Extensible.GetExtensionObject(
-                ref __pbn__extensionData,
-                createIfMissing
-            );
+        global::LightProto.IExtension global::LightProto.IExtensible.GetExtensionObject(bool createIfMissing) =>
+            global::LightProto.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
         [global::LightProto.ProtoMember(1)]
         [global::System.ComponentModel.DefaultValue("")]
@@ -79,10 +74,7 @@ namespace LightProto.Tests
 
         [global::LightProto.ProtoMember(18, Name = @"MapField")]
         [global::LightProto.ProtoMap]
-        public global::System.Collections.Generic.Dictionary<
-            string,
-            CsTestMessage
-        > MapFields { get; } =
+        public global::System.Collections.Generic.Dictionary<string, CsTestMessage> MapFields { get; } =
             new global::System.Collections.Generic.Dictionary<string, CsTestMessage>();
 
         [global::LightProto.ProtoMember(19)]
@@ -132,12 +124,10 @@ namespace LightProto.Tests
         public int[] IntArrayFieldTests { get; set; } = Array.Empty<int>();
 
         [global::LightProto.ProtoMember(54, Name = @"StringListFieldTest")]
-        public global::System.Collections.Generic.List<string> StringListFieldTests { get; } =
-            new();
+        public global::System.Collections.Generic.List<string> StringListFieldTests { get; } = new();
 
         [global::LightProto.ProtoMember(55, Name = @"StringArrayFieldTest")]
-        public global::System.Collections.Generic.List<string> StringArrayFieldTests { get; } =
-            new();
+        public global::System.Collections.Generic.List<string> StringArrayFieldTests { get; } = new();
 
         [global::LightProto.ProtoMember(56, Name = @"IntListFieldTest", IsPacked = true)]
         public int[] IntListFieldTests { get; set; } = Array.Empty<int>();
@@ -157,23 +147,17 @@ namespace LightProto.Tests
 
         [global::LightProto.ProtoMember(60, Name = @"MapField7")]
         [global::LightProto.ProtoMap]
-        public global::System.Collections.Generic.Dictionary<
-            string,
-            CsTestMessage
-        > MapField7s { get; } =
+        public global::System.Collections.Generic.Dictionary<string, CsTestMessage> MapField7s { get; } =
             new global::System.Collections.Generic.Dictionary<string, CsTestMessage>();
 
         [global::LightProto.ProtoMember(61, Name = @"StringSetFieldTest")]
-        public global::System.Collections.Generic.HashSet<string> StringSetFieldTests { get; } =
-            new();
+        public global::System.Collections.Generic.HashSet<string> StringSetFieldTests { get; } = new();
 
         [global::LightProto.ProtoMember(62, Name = @"StringQueueFieldTest")]
-        public global::System.Collections.Generic.Queue<string> StringQueueFieldTests { get; set; } =
-            new();
+        public global::System.Collections.Generic.Queue<string> StringQueueFieldTests { get; set; } = new();
 
         [global::LightProto.ProtoMember(63, Name = @"StringStackFieldTest")]
-        public global::System.Collections.Generic.Stack<string> StringStackFieldTests { get; set; } =
-            new();
+        public global::System.Collections.Generic.Stack<string> StringStackFieldTests { get; set; } = new();
 
         [global::LightProto.ProtoMember(64, Name = @"ConcurrentStringQueueFieldTest")]
         public ConcurrentQueue<string> ConcurrentStringQueueFieldTests { get; set; } = new();
@@ -227,10 +211,8 @@ namespace LightProto.Tests
                 return false;
 
             if (
-                (
-                    (this.Int32ArrayFields?.Count ?? 0) != 0
-                    && (other.Int32ArrayFields?.Count ?? 0) != 0
-                ) && !this.Int32ArrayFields.SequenceEqual(other.Int32ArrayFields)
+                ((this.Int32ArrayFields?.Count ?? 0) != 0 && (other.Int32ArrayFields?.Count ?? 0) != 0)
+                && !this.Int32ArrayFields.SequenceEqual(other.Int32ArrayFields)
             )
                 return false;
 
@@ -279,10 +261,8 @@ namespace LightProto.Tests
                 return false;
 
             if (
-                (
-                    (this.NestedMessageArrayFields?.Count ?? 0) != 0
-                    && (other.NestedMessageArrayFields?.Count ?? 0) != 0
-                ) && !this.NestedMessageArrayFields.SequenceEqual(other.NestedMessageArrayFields)
+                ((this.NestedMessageArrayFields?.Count ?? 0) != 0 && (other.NestedMessageArrayFields?.Count ?? 0) != 0)
+                && !this.NestedMessageArrayFields.SequenceEqual(other.NestedMessageArrayFields)
             )
                 return false;
 
@@ -313,24 +293,13 @@ namespace LightProto.Tests
             if (!this.StringStackFieldTests.SequenceEqual(other.StringStackFieldTests))
                 return false;
 
-            if (
-                !this.ConcurrentStringQueueFieldTests.SequenceEqual(
-                    other.ConcurrentStringQueueFieldTests
-                )
-            )
+            if (!this.ConcurrentStringQueueFieldTests.SequenceEqual(other.ConcurrentStringQueueFieldTests))
                 return false;
 
-            if (
-                !this.ConcurrentStringStackFieldTests.SequenceEqual(
-                    other.ConcurrentStringStackFieldTests
-                )
-            )
+            if (!this.ConcurrentStringStackFieldTests.SequenceEqual(other.ConcurrentStringStackFieldTests))
                 return false;
 
-            if (
-                ((this.IntLists?.Length ?? 0) != 0 && (other.IntLists?.Length ?? 0) != 0)
-                && !this.IntLists.SequenceEqual(other.IntLists)
-            )
+            if (((this.IntLists?.Length ?? 0) != 0 && (other.IntLists?.Length ?? 0) != 0) && !this.IntLists.SequenceEqual(other.IntLists))
                 return false;
 
             if (this.TimeSpanField != other.TimeSpanField)

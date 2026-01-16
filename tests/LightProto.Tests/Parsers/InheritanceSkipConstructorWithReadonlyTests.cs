@@ -2,8 +2,7 @@ namespace LightProto.Tests.Parsers;
 
 #if NET8_0_OR_GREATER
 [InheritsTests]
-public partial class InheritanceSkipConstructorWithReadonlyTests
-    : BaseProtoBufTests<InheritanceSkipConstructorWithReadonlyTests.Base>
+public partial class InheritanceSkipConstructorWithReadonlyTests : BaseProtoBufTests<InheritanceSkipConstructorWithReadonlyTests.Base>
 {
     // protobuf-net doesn't support SkipConstructor on abstract classes with readonly members
     protected override bool ProtoBuf_net_Serialize_Disabled => true;

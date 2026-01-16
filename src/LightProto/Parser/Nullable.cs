@@ -15,9 +15,7 @@
             ValueReader = valueReader;
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public T? ParseFrom(ref ReaderContext input)
         {
             return ValueReader.ParseMessageFrom(ref input);
@@ -33,25 +31,20 @@
 
         int IProtoWriter.CalculateSize(object value) => CalculateSize((T?)value);
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (T?)value);
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (T?)value);
 
         public NullableProtoWriter(IProtoWriter<T> valueWriter)
         {
             ValueWriter = valueWriter;
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(T? value)
         {
             return !value.HasValue ? 0 : ValueWriter.CalculateMessageSize(value.Value);
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public void WriteTo(ref WriterContext output, T? value)
         {
             if (value.HasValue)

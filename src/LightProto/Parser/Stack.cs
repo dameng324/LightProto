@@ -50,24 +50,14 @@ namespace LightProto.Parser
         {
             var stackType = typeof(Stack<T>);
 
-            var arrayField = stackType.GetField(
-                "_array",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-            var sizeField = stackType.GetField(
-                "_size",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
+            var arrayField = stackType.GetField("_array", BindingFlags.NonPublic | BindingFlags.Instance);
+            var sizeField = stackType.GetField("_size", BindingFlags.NonPublic | BindingFlags.Instance);
 
             var param = Expression.Parameter(stackType, "stack");
 
-            _getArray = Expression
-                .Lambda<Func<Stack<T>, T[]>>(Expression.Field(param, arrayField!), param)
-                .Compile();
+            _getArray = Expression.Lambda<Func<Stack<T>, T[]>>(Expression.Field(param, arrayField!), param).Compile();
 
-            _getSize = Expression
-                .Lambda<Func<Stack<T>, int>>(Expression.Field(param, sizeField!), param)
-                .Compile();
+            _getSize = Expression.Lambda<Func<Stack<T>, int>>(Expression.Field(param, sizeField!), param).Compile();
         }
 
         static Stack<T> ReverseStack(Stack<T> stack)

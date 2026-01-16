@@ -2,16 +2,12 @@ namespace LightProto.Parser
 {
     public interface ICollectionWriter { }
 
-    public class IEnumerableProtoWriter<TCollection, TItem>
-        : IProtoWriter,
-            IProtoWriter<TCollection>,
-            ICollectionWriter
+    public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter, IProtoWriter<TCollection>, ICollectionWriter
         where TCollection : IEnumerable<TItem>
     {
         int IProtoWriter.CalculateSize(object value) => CalculateSize((TCollection)value);
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (TCollection)value);
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (TCollection)value);
 
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
@@ -21,12 +17,7 @@ namespace LightProto.Parser
         public Func<TCollection, int> GetCount { get; }
         int ItemFixedSize { get; }
 
-        public IEnumerableProtoWriter(
-            IProtoWriter<TItem> itemWriter,
-            uint tag,
-            Func<TCollection, int> getCount,
-            int itemFixedSize
-        )
+        public IEnumerableProtoWriter(IProtoWriter<TItem> itemWriter, uint tag, Func<TCollection, int> getCount, int itemFixedSize)
         {
             ItemWriter = itemWriter;
             Tag = tag;
@@ -84,19 +75,15 @@ namespace LightProto.Parser
             if (IsPacked && PackedRepeated.Support<TItem>())
             {
                 var dataSize = CalculatePackedDataSize(value, count);
-                return CodedOutputStream.ComputeRawVarint32Size(Tag)
-                    + CodedOutputStream.ComputeLengthSize(dataSize)
-                    + dataSize;
+                return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLengthSize(dataSize) + dataSize;
             }
             else
             {
-                return CodedOutputStream.ComputeRawVarint32Size(Tag) * count
-                    + GetAllItemSize(value);
+                return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + GetAllItemSize(value);
             }
         }
 
-        public bool IsPacked =>
-            WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
+        public bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
 
         public void WriteTo(ref WriterContext output, TCollection collection)
         {

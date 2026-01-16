@@ -4,8 +4,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class DateTimeOffsetTests
-    : BaseTests<DateTimeOffsetTests.Message, DateTimeOffsetTestsMessage>
+public partial class DateTimeOffsetTests : BaseTests<DateTimeOffsetTests.Message, DateTimeOffsetTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -22,22 +21,10 @@ public partial class DateTimeOffsetTests
         yield return new() { Property = DateTimeOffset.MaxValue };
         yield return new() { Property = DateTimeOffset.UtcNow };
         yield return new() { Property = DateTimeOffset.Now };
-        yield return new()
-        {
-            Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(1)),
-        };
-        yield return new()
-        {
-            Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(-1)),
-        };
-        yield return new()
-        {
-            Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromMinutes(-1)),
-        };
-        yield return new()
-        {
-            Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromMinutes(1)),
-        };
+        yield return new() { Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(1)) };
+        yield return new() { Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromHours(-1)) };
+        yield return new() { Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromMinutes(-1)) };
+        yield return new() { Property = new DateTimeOffset(DateTime.UtcNow.Ticks, TimeSpan.FromMinutes(1)) };
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
@@ -48,11 +35,7 @@ public partial class DateTimeOffsetTests
         return GetMessages()
             .Select(o => new DateTimeOffsetTestsMessage()
             {
-                Property = new DateTimeOffsetMessage()
-                {
-                    Ticks = o.Property.UtcTicks,
-                    OffsetTicks = o.Property.Offset.Ticks,
-                },
+                Property = new DateTimeOffsetMessage() { Ticks = o.Property.UtcTicks, OffsetTicks = o.Property.Offset.Ticks },
             });
     }
 
@@ -64,9 +47,7 @@ public partial class DateTimeOffsetTests
     public override async Task AssertGoogleResult(DateTimeOffsetTestsMessage clone, Message message)
     {
         clone.Property ??= new DateTimeOffsetMessage();
-        var dateTimeOffset = new DateTimeOffset(clone.Property.Ticks, TimeSpan.Zero).ToOffset(
-            new TimeSpan(clone.Property.OffsetTicks)
-        );
+        var dateTimeOffset = new DateTimeOffset(clone.Property.Ticks, TimeSpan.Zero).ToOffset(new TimeSpan(clone.Property.OffsetTicks));
         await Assert.That(dateTimeOffset).IsEquivalentTo(message.Property);
     }
 }

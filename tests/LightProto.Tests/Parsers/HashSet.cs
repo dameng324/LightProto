@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class HashSetPackedTests
-    : BaseTests<HashSetPackedTests.Message, HashSetPackedTestsMessage>
+public partial class HashSetPackedTests : BaseTests<HashSetPackedTests.Message, HashSetPackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -41,8 +40,7 @@ public partial class HashSetPackedTests
 
     public override IEnumerable<HashSetPackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new HashSetPackedTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new HashSetPackedTestsMessage() { Property = { o.Property } });
     }
 
     public override async Task AssertGoogleResult(HashSetPackedTestsMessage clone, Message message)

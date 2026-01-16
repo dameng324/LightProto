@@ -28,11 +28,7 @@ namespace LightProto
         /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
         /// <param name="destination">The destination to write to.</param>
         /// <param name="writer"> The proto-writer to use for serialization, must be IProtoWriter of InstanceType. Can get from <see cref="GetProtoWriter"/> </param>
-        public static void SerializeNonGeneric(
-            Stream destination,
-            object? instance,
-            IProtoWriter writer
-        )
+        public static void SerializeNonGeneric(Stream destination, object? instance, IProtoWriter writer)
         {
             if (instance is null)
                 return;
@@ -68,11 +64,7 @@ namespace LightProto
         /// <param name="instance">The existing instance to be serialized (cannot be null).</param>
         /// <param name="destination">The destination to write to.</param>
         /// <param name="writer"> The proto-writer to use for serialization, must be IProtoWriter of InstanceType. Can get from <see cref="GetProtoWriter"/> </param>
-        public static void SerializeNonGeneric(
-            IBufferWriter<byte> destination,
-            object? instance,
-            IProtoWriter writer
-        )
+        public static void SerializeNonGeneric(IBufferWriter<byte> destination, object? instance, IProtoWriter writer)
         {
             if (instance is null)
                 return;
@@ -137,9 +129,7 @@ namespace LightProto
 #if NET7_0_OR_GREATER
             [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
-            Type type,
-            Stream source
-        ) => DeserializeNonGeneric(source, GetProtoReader(type));
+            Type type, Stream source) => DeserializeNonGeneric(source, GetProtoReader(type));
 
         /// <summary>
         /// Creates a new instance from a protocol-buffer stream
@@ -181,10 +171,7 @@ namespace LightProto
         /// <param name="reader"> The proto-reader to use for deserialization, must be IProtoReader of type. Can get from <see cref="GetProtoReader"/> </param>
         /// <param name="source"> The binary stream to apply to the new instance (cannot be null). </param>
         /// <returns>A new, initialized instance.</returns>
-        public static object DeserializeNonGeneric(
-            ReadOnlySequence<byte> source,
-            IProtoReader reader
-        )
+        public static object DeserializeNonGeneric(ReadOnlySequence<byte> source, IProtoReader reader)
         {
             if (!reader.IsMessage)
             {
@@ -239,8 +226,7 @@ namespace LightProto
 #if NET7_0_OR_GREATER
             [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
-            Type type
-        ) => (IProtoReader)GetProtoParser(type, isReader: true);
+            Type type) => (IProtoReader)GetProtoParser(type, isReader: true);
 
         /// <summary>
         /// Gets the non-generic proto-writer for the given type.
@@ -254,7 +240,6 @@ namespace LightProto
 #if NET7_0_OR_GREATER
             [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
-            Type type
-        ) => (IProtoWriter)GetProtoParser(type, isReader: false);
+            Type type) => (IProtoWriter)GetProtoParser(type, isReader: false);
     }
 }

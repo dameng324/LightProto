@@ -26,8 +26,7 @@ namespace LightProto.Parser
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((Decimal)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (Decimal)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (Decimal)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;

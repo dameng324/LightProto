@@ -4,10 +4,8 @@ namespace LightProto.Parser
 {
     public sealed class StringBuilderProtoParser : IProtoParser<StringBuilder>
     {
-        public static IProtoReader<StringBuilder> ProtoReader { get; } =
-            new StringBuilderProtoReader();
-        public static IProtoWriter<StringBuilder> ProtoWriter { get; } =
-            new StringBuilderProtoWriter();
+        public static IProtoReader<StringBuilder> ProtoReader { get; } = new StringBuilderProtoReader();
+        public static IProtoWriter<StringBuilder> ProtoWriter { get; } = new StringBuilderProtoWriter();
 
         sealed class StringBuilderProtoReader : IProtoReader, IProtoReader<StringBuilder>
         {
@@ -26,8 +24,7 @@ namespace LightProto.Parser
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((StringBuilder)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (StringBuilder)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (StringBuilder)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
@@ -38,9 +35,7 @@ namespace LightProto.Parser
                 int size = 0;
                 foreach (var readOnlyMemory in value.GetChunks())
                 {
-                    int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(
-                        readOnlyMemory.Span
-                    );
+                    int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(readOnlyMemory.Span);
                     size += CodedOutputStream.ComputeLengthSize(byteArraySize) + byteArraySize;
                 }
                 return size;

@@ -1,8 +1,7 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class InheritanceAbstractTests2
-    : BaseProtoBufTests<InheritanceAbstractTests2.Message>
+public partial class InheritanceAbstractTests2 : BaseProtoBufTests<InheritanceAbstractTests2.Message>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]

@@ -17,11 +17,7 @@ namespace LightProto.Parser
             public BigInteger ParseFrom(ref ReaderContext input)
             {
                 var length = input.ReadLength();
-                var bytes = ParsingPrimitives.ReadRawBytes(
-                    ref input.buffer,
-                    ref input.state,
-                    length
-                );
+                var bytes = ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
                 return new BigInteger(bytes);
             }
         }
@@ -33,12 +29,9 @@ namespace LightProto.Parser
 
             public int CalculateSize(object value) => CalculateSize((BigInteger)value);
 
-            public void WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (BigInteger)value);
+            public void WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (BigInteger)value);
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public int CalculateSize(BigInteger value)
             {
 #if NET7_0_OR_GREATER

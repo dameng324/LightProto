@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class RecordStructTests
-    : BaseTests<RecordStructTests.Message, RecordStructTestsMessage>
+public partial class RecordStructTests : BaseTests<RecordStructTests.Message, RecordStructTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -34,8 +33,6 @@ public partial class RecordStructTests
 
     public override async Task AssertGoogleResult(RecordStructTestsMessage clone, Message message)
     {
-        await Assert
-            .That(clone.Property ?? string.Empty)
-            .IsEquivalentTo(message.Property ?? string.Empty);
+        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property ?? string.Empty);
     }
 }

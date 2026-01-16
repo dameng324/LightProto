@@ -4,12 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace LightProto
 {
     [ExcludeFromCodeCoverage]
-    [AttributeUsage(
-        AttributeTargets.Class
-            | AttributeTargets.Struct
-            | AttributeTargets.Interface
-            | AttributeTargets.Enum
-    )]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum)]
     public class ProtoContractAttribute : Attribute
     {
         /// <summary>
@@ -115,11 +110,7 @@ namespace LightProto
     /// <param name="tag">The unique index (within the type) that will identify this data.</param>
     /// <param name="knownType">The additional type to serialize/deserialize.</param>
     /// </summary>
-    [AttributeUsage(
-        AttributeTargets.Class | AttributeTargets.Interface,
-        AllowMultiple = true,
-        Inherited = false
-    )]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = true, Inherited = false)]
     [ExcludeFromCodeCoverage]
     public sealed class ProtoIncludeAttribute(uint tag, Type knownType) : Attribute
     {
@@ -145,10 +136,7 @@ namespace LightProto
     /// </summary>
     [ExcludeFromCodeCoverage]
     [AttributeUsage(
-        AttributeTargets.Assembly
-            | AttributeTargets.Module
-            | AttributeTargets.Class
-            | AttributeTargets.Struct,
+        AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class | AttributeTargets.Struct,
         AllowMultiple = true
     )]
     public sealed class ProtoParserTypeMapAttribute(Type messageType, Type parserType) : Attribute

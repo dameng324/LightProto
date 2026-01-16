@@ -26,12 +26,9 @@
 
             public int CalculateSize(object value) => CalculateSize((byte[])value);
 
-            public void WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (byte[])value);
+            public void WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (byte[])value);
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public int CalculateSize(byte[] value)
             {
                 return CodedOutputStream.ComputeLengthSize(value.Length) + value.Length;

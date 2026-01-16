@@ -25,11 +25,7 @@ public partial class ComplexTests : BaseTests<ComplexTests.Message, ComplexTests
         return GetMessages()
             .Select(x => new ComplexTestsMessage()
             {
-                Property = new ComplexMessage()
-                {
-                    Real = x.Property.Real,
-                    Imaginary = x.Property.Imaginary,
-                },
+                Property = new ComplexMessage() { Real = x.Property.Real, Imaginary = x.Property.Imaginary },
             });
     }
 

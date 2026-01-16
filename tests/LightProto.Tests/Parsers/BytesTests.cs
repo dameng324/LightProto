@@ -30,11 +30,7 @@ public partial class BytesTests : BaseTests<BytesTests.Message, ByteArrayTestsMe
 
     public override IEnumerable<ByteArrayTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new ByteArrayTestsMessage()
-            {
-                Property = ByteString.CopyFrom(o.Property),
-            });
+        return GetMessages().Select(o => new ByteArrayTestsMessage() { Property = ByteString.CopyFrom(o.Property) });
     }
 
     public override async Task AssertGoogleResult(ByteArrayTestsMessage clone, Message message)

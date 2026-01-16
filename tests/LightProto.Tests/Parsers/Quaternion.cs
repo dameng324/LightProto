@@ -22,10 +22,7 @@ public partial class QuaternionTests : BaseTests<QuaternionTests.Message, Quater
         return GetMessages()
             .Select(x => new QuaternionTestsMessage()
             {
-                Property = new QuaternionMessage()
-                {
-                    M = { x.Property.X, x.Property.Y, x.Property.Z, x.Property.W },
-                },
+                Property = new QuaternionMessage() { M = { x.Property.X, x.Property.Y, x.Property.Z, x.Property.W } },
             });
     }
 
@@ -81,9 +78,7 @@ public partial class QuaternionTests : BaseTests<QuaternionTests.Message, Quater
                 Quaternion result = protoParser;
             })
             .Throws<ArgumentException>();
-        await Assert
-            .That(exception!.Message)
-            .Contains("Input array must contain 4 elements for Quaternion conversion.");
+        await Assert.That(exception!.Message).Contains("Input array must contain 4 elements for Quaternion conversion.");
     }
 }
 #endif

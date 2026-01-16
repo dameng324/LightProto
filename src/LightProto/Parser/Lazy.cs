@@ -6,8 +6,7 @@ namespace LightProto.Parser
 #if NET7_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-        T
-    > : IProtoReader, IProtoReader<Lazy<T>>
+        T> : IProtoReader, IProtoReader<Lazy<T>>
     {
         public bool IsMessage => ValueReader.IsMessage;
 
@@ -21,9 +20,7 @@ namespace LightProto.Parser
             ValueReader = valueReader;
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public Lazy<T> ParseFrom(ref ReaderContext input)
         {
             var t = ValueReader.ParseMessageFrom(ref input);
@@ -35,13 +32,11 @@ namespace LightProto.Parser
 #if NET7_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-        T
-    > : IProtoWriter, IProtoWriter<Lazy<T>>
+        T> : IProtoWriter, IProtoWriter<Lazy<T>>
     {
         int IProtoWriter.CalculateSize(object value) => CalculateSize((Lazy<T>)value);
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (Lazy<T>)value);
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (Lazy<T>)value);
 
         public IProtoWriter<T> ValueWriter { get; }
         public WireFormat.WireType WireType => ValueWriter.WireType;
@@ -52,17 +47,13 @@ namespace LightProto.Parser
             ValueWriter = valueWriter;
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(Lazy<T> value)
         {
             return ValueWriter.CalculateMessageSize(value.Value);
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public void WriteTo(ref WriterContext output, Lazy<T> value)
         {
             ValueWriter.WriteMessageTo(ref output, value.Value);

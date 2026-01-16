@@ -15,17 +15,11 @@ public class WireFormatTest
     [Test]
     public async Task KeyValuePairParserShouldBeMessage()
     {
-        var reader = new KeyValuePairProtoReader<int, int>(
-            Int32ProtoParser.ProtoReader,
-            Int32ProtoParser.ProtoReader
-        );
+        var reader = new KeyValuePairProtoReader<int, int>(Int32ProtoParser.ProtoReader, Int32ProtoParser.ProtoReader);
         await Assert.That(reader.IsMessage).IsTrue();
         await Assert.That(reader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
 
-        var writer = new KeyValuePairProtoWriter<int, int>(
-            Int32ProtoParser.ProtoWriter,
-            Int32ProtoParser.ProtoWriter
-        );
+        var writer = new KeyValuePairProtoWriter<int, int>(Int32ProtoParser.ProtoWriter, Int32ProtoParser.ProtoWriter);
         await Assert.That(writer.IsMessage).IsTrue();
         await Assert.That(writer.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
     }
@@ -67,22 +61,14 @@ public class WireFormatTest
     public async Task DateOnlyTimeOnlyParserShouldNotBeMessage()
     {
         await Assert.That(DateOnlyProtoParser.ProtoReader.IsMessage).IsFalse();
-        await Assert
-            .That(DateOnlyProtoParser.ProtoReader.WireType)
-            .IsEqualTo(WireFormat.WireType.Varint);
+        await Assert.That(DateOnlyProtoParser.ProtoReader.WireType).IsEqualTo(WireFormat.WireType.Varint);
         await Assert.That(DateOnlyProtoParser.ProtoWriter.IsMessage).IsFalse();
-        await Assert
-            .That(DateOnlyProtoParser.ProtoWriter.WireType)
-            .IsEqualTo(WireFormat.WireType.Varint);
+        await Assert.That(DateOnlyProtoParser.ProtoWriter.WireType).IsEqualTo(WireFormat.WireType.Varint);
 
         await Assert.That(TimeOnlyProtoParser.ProtoReader.IsMessage).IsFalse();
-        await Assert
-            .That(TimeOnlyProtoParser.ProtoReader.WireType)
-            .IsEqualTo(WireFormat.WireType.Varint);
+        await Assert.That(TimeOnlyProtoParser.ProtoReader.WireType).IsEqualTo(WireFormat.WireType.Varint);
         await Assert.That(TimeOnlyProtoParser.ProtoWriter.IsMessage).IsFalse();
-        await Assert
-            .That(TimeOnlyProtoParser.ProtoWriter.WireType)
-            .IsEqualTo(WireFormat.WireType.Varint);
+        await Assert.That(TimeOnlyProtoParser.ProtoWriter.WireType).IsEqualTo(WireFormat.WireType.Varint);
     }
 #endif
 }

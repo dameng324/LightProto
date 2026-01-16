@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class FixedSizePackedArrayTests
-    : BaseTests<FixedSizePackedArrayTests.Message, FixedSizeArrayTestsMessage>
+public partial class FixedSizePackedArrayTests : BaseTests<FixedSizePackedArrayTests.Message, FixedSizeArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -31,8 +30,7 @@ public partial class FixedSizePackedArrayTests
 
     public override IEnumerable<FixedSizeArrayTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new FixedSizeArrayTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new FixedSizeArrayTestsMessage() { Property = { o.Property } });
     }
 
     public override async Task AssertGoogleResult(FixedSizeArrayTestsMessage clone, Message message)
