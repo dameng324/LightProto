@@ -246,7 +246,7 @@ internal static class LightProtoGeneratorWarning
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
-                helpLinkUri: "https://github.com/dameng324/LightProto/blob/main/docs/Diagnostics.md#light_proto_w012"
+                helpLinkUri: "https://github.com/dameng324/LightProto/blob/main/docs/Diagnostics.md#light_proto_w013"
             ),
             memberLocations.FirstOrDefault() ?? Location.None,
             additionalLocations: memberLocations.Skip(1),

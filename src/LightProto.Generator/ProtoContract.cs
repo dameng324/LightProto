@@ -390,7 +390,7 @@ class ProtoContract
             {
                 if (Helper.IsCollectionType(compilation, memberType, out var itemType))
                 {
-                    if (Helper.SupportsPackedEncoding(compilation, itemType) == false)
+                    if (!Helper.SupportsPackedEncoding(compilation, itemType))
                     {
                         spc.ReportDiagnostic(
                             LightProtoGeneratorWarning.MemberIsPackedButItemNotSupportPacked(
@@ -575,7 +575,7 @@ class ProtoContract
                 .GetAttributes()
                 .FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoMapAttribute");
 
-            if (protoMapAttr is not null && Helper.IsDictionaryType(compilation, memberType) == false)
+            if (protoMapAttr is not null && !Helper.IsDictionaryType(compilation, memberType))
             {
                 spc.ReportDiagnostic(
                     LightProtoGeneratorWarning.Member_ProtoMapAttribute_But_Not_Dictionary($"{targetType}.{member.Name}", member.Locations)
