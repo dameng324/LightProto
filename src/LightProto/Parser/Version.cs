@@ -20,12 +20,7 @@
         {
             if (protoParser.Revision != -1)
             {
-                return new Version(
-                    protoParser.Major,
-                    protoParser.Minor,
-                    protoParser.Build,
-                    protoParser.Revision
-                );
+                return new Version(protoParser.Major, protoParser.Minor, protoParser.Build, protoParser.Revision);
             }
 
             if (protoParser.Build != -1)

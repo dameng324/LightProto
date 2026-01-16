@@ -1,28 +1,25 @@
 #nullable enable
-LightProto.IProtoReader
-LightProto.IProtoReader.IsMessage.get -> bool
-LightProto.IProtoReader.ParseFrom(ref LightProto.ReaderContext input) -> object!
-LightProto.IProtoReader.WireType.get -> LightProto.WireFormat.WireType
-LightProto.IProtoWriter
-LightProto.IProtoWriter.CalculateSize(object! value) -> int
-LightProto.IProtoWriter.IsMessage.get -> bool
-LightProto.IProtoWriter.WireType.get -> LightProto.WireFormat.WireType
-LightProto.IProtoWriter.WriteTo(ref LightProto.WriterContext output, object! value) -> void
-static LightProto.Serializer.DeserializeNonGeneric(System.Buffers.ReadOnlySequence<byte> source, LightProto.IProtoReader! reader) -> object!
-static LightProto.Serializer.DeserializeNonGeneric(System.IO.Stream! source, LightProto.IProtoReader! reader) -> object!
-static LightProto.Serializer.DeserializeNonGeneric(System.ReadOnlySpan<byte> source, LightProto.IProtoReader! reader) -> object!
-static LightProto.Serializer.DeserializeNonGeneric(System.Type! type, System.Buffers.ReadOnlySequence<byte> source) -> object!
-static LightProto.Serializer.DeserializeNonGeneric(System.Type! type, System.IO.Stream! source) -> object!
-static LightProto.Serializer.DeserializeNonGeneric(System.Type! type, System.ReadOnlySpan<byte> source) -> object!
-static LightProto.Serializer.GetProtoReader(System.Type! type) -> LightProto.IProtoReader!
-static LightProto.Serializer.GetProtoReader<T>() -> LightProto.IProtoReader<T>!
-static LightProto.Serializer.GetProtoWriter(System.Type! type) -> LightProto.IProtoWriter!
-static LightProto.Serializer.GetProtoWriter<T>() -> LightProto.IProtoWriter<T>!
-static LightProto.Serializer.RegisterParser<T>(LightProto.IProtoReader<T>! reader, LightProto.IProtoWriter<T>! writer) -> void
-static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object? instance) -> void
-static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object? instance, LightProto.IProtoWriter! writer) -> void
-static LightProto.Serializer.SerializeNonGeneric(System.IO.Stream! destination, object? instance) -> void
-static LightProto.Serializer.SerializeNonGeneric(System.IO.Stream! destination, object? instance, LightProto.IProtoWriter! writer) -> void
-static LightProto.Serializer.SerializeToArrayDynamically<T>(T message) -> byte[]!
-static LightProto.Serializer.SerializeToArrayNonGeneric(object? instance) -> byte[]!
-static LightProto.Serializer.SerializeToArrayNonGeneric(object? instance, LightProto.IProtoWriter! writer) -> byte[]!
+LightProto.Parser.CharProtoParser
+LightProto.Parser.CharProtoParser.CharProtoParser() -> void
+LightProto.Parser.Fixed16ProtoParser
+LightProto.Parser.Fixed16ProtoParser.Fixed16ProtoParser() -> void
+LightProto.Parser.Int16ProtoParser
+LightProto.Parser.Int16ProtoParser.Int16ProtoParser() -> void
+LightProto.Parser.SFixed16ProtoParser
+LightProto.Parser.SFixed16ProtoParser.SFixed16ProtoParser() -> void
+LightProto.Parser.SInt16ProtoParser
+LightProto.Parser.SInt16ProtoParser.SInt16ProtoParser() -> void
+LightProto.Parser.UInt16ProtoParser
+LightProto.Parser.UInt16ProtoParser.UInt16ProtoParser() -> void
+static LightProto.Parser.CharProtoParser.ProtoReader.get -> LightProto.IProtoReader<char>!
+static LightProto.Parser.CharProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<char>!
+static LightProto.Parser.Fixed16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
+static LightProto.Parser.Fixed16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!
+static LightProto.Parser.Int16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.Int16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.SFixed16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.SFixed16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.SInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.SInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.UInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
+static LightProto.Parser.UInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!

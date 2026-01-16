@@ -5,7 +5,12 @@
         public static bool Support<TItem>()
         {
             return typeof(TItem) == typeof(bool)
+                || typeof(TItem) == typeof(short)
+                || typeof(TItem) == typeof(ushort)
                 || typeof(TItem) == typeof(int)
+                || typeof(TItem) == typeof(byte)
+                || typeof(TItem) == typeof(char)
+                || typeof(TItem) == typeof(sbyte)
                 || typeof(TItem) == typeof(long)
                 || typeof(TItem) == typeof(uint)
                 || typeof(TItem) == typeof(ulong)

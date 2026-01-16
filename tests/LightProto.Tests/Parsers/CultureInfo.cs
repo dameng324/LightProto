@@ -11,8 +11,7 @@ public partial class CultureInfoTests : BaseTests<CultureInfoTests.Message, Cult
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public CultureInfo Property { get; set; } =
-            System.Globalization.CultureInfo.InvariantCulture;
+        public CultureInfo Property { get; set; } = System.Globalization.CultureInfo.InvariantCulture;
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
@@ -27,8 +26,7 @@ public partial class CultureInfoTests : BaseTests<CultureInfoTests.Message, Cult
 
     public override IEnumerable<CultureInfoTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new CultureInfoTestsMessage() { Property = o.Property.Name });
+        return GetMessages().Select(o => new CultureInfoTestsMessage() { Property = o.Property.Name });
     }
 
     public override async Task AssertResult(Message clone, Message message)

@@ -13,10 +13,7 @@
         private readonly uint _valueTag;
         private readonly uint _valueTag2;
 
-        public KeyValuePairProtoReader(
-            IProtoReader<TKey> keyReader,
-            IProtoReader<TValue> valueReader
-        )
+        public KeyValuePairProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader)
         {
             _keyReader = keyReader;
             _valueReader = valueReader;
@@ -57,17 +54,11 @@
 
                 if (tag == _keyTag || tag == _keyTag2)
                 {
-                    key =
-                        _keyReader is ICollectionReader
-                            ? _keyReader.ParseFrom(ref ctx)
-                            : _keyReader.ParseMessageFrom(ref ctx);
+                    key = _keyReader is ICollectionReader ? _keyReader.ParseFrom(ref ctx) : _keyReader.ParseMessageFrom(ref ctx);
                 }
                 else if (tag == _valueTag || tag == _valueTag2)
                 {
-                    value =
-                        _valueReader is ICollectionReader
-                            ? _valueReader.ParseFrom(ref ctx)
-                            : _valueReader.ParseMessageFrom(ref ctx);
+                    value = _valueReader is ICollectionReader ? _valueReader.ParseFrom(ref ctx) : _valueReader.ParseMessageFrom(ref ctx);
                 }
                 else
                 {
@@ -139,10 +130,7 @@
         private readonly uint _keyTag;
         private readonly uint _valueTag;
 
-        public KeyValuePairProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter
-        )
+        public KeyValuePairProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter)
         {
             _keyWriter = keyWriter;
             _valueWriter = valueWriter;

@@ -1,11 +1,11 @@
-﻿using Google.Protobuf;
+﻿using System.Collections.ObjectModel;
+using Google.Protobuf;
 using LightProto;
 
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class PrimitiveArrayTests
-    : BaseTests<PrimitiveArrayTests.Message, PrimitiveArrayTestMessage>
+public partial class PrimitiveArrayTests : BaseTests<PrimitiveArrayTests.Message, PrimitiveArrayTestMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -62,6 +62,102 @@ public partial class PrimitiveArrayTests
         [ProtoMember(13)]
         [ProtoBuf.ProtoMember(13)]
         public uint[] UInt32Values { get; set; } = [];
+
+        [ProtoMember(14)]
+        [ProtoBuf.ProtoMember(14)]
+        public List<byte> ByteValues { get; set; } = []; //uint32
+
+        [ProtoMember(15, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(15, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public List<byte> FixedByteValues { get; set; } = []; //fixed32
+
+        [ProtoMember(16)]
+        [ProtoBuf.ProtoMember(16)]
+        public List<sbyte> SByteValues { get; set; } = []; //int32
+
+        [ProtoMember(17, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(17, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public List<sbyte> SSByteValues { get; set; } = []; //sint32
+
+        [ProtoMember(18, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(18, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public List<sbyte> SFixedByteValues { get; set; } = []; //sfixed32
+
+        [ProtoMember(19, IsPacked = true)]
+        [ProtoBuf.ProtoMember(19, IsPacked = true)]
+        public List<byte> PackedByteValues { get; set; } = []; //uint32
+
+        [ProtoMember(20, DataFormat = DataFormat.FixedSize, IsPacked = true)]
+        [ProtoBuf.ProtoMember(20, DataFormat = ProtoBuf.DataFormat.FixedSize, IsPacked = true)]
+        public List<byte> PackedFixedByteValues { get; set; } = []; //fixed32
+
+        [ProtoMember(21, IsPacked = true)]
+        [ProtoBuf.ProtoMember(21, IsPacked = true)]
+        public List<sbyte> PackedSByteValues { get; set; } = []; //int32
+
+        [ProtoMember(22, DataFormat = DataFormat.ZigZag, IsPacked = true)]
+        [ProtoBuf.ProtoMember(22, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public List<sbyte> PackedSSByteValues { get; set; } = []; //sint32
+
+        [ProtoMember(23, DataFormat = DataFormat.FixedSize, IsPacked = true)]
+        [ProtoBuf.ProtoMember(23, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public List<sbyte> PackedSFixedByteValues { get; set; } = []; //sfixed32
+
+        [ProtoMember(24)]
+        [ProtoBuf.ProtoMember(24)]
+        public char[] CharValues { get; set; } = [];
+
+        [ProtoMember(25, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(25, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public char[] FixedCharValues { get; set; } = [];
+
+        [ProtoMember(26, IsPacked = true)]
+        [ProtoBuf.ProtoMember(26, IsPacked = true)]
+        public char[] PackedCharValues { get; set; } = [];
+
+        [ProtoMember(27, IsPacked = true, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(27, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public char[] PackedFixedCharValues { get; set; } = [];
+
+        [ProtoMember(28)]
+        [ProtoBuf.ProtoMember(28)]
+        public ushort[] UShortValues { get; set; } = []; //uint32
+
+        [ProtoMember(29, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(29, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public ushort[] FixedUShortValues { get; set; } = []; //fixed32
+
+        [ProtoMember(30)]
+        [ProtoBuf.ProtoMember(30)]
+        public short[] ShortValues { get; set; } = []; //int32
+
+        [ProtoMember(31, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(31, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public short[] SShortValues { get; set; } = []; //sint32
+
+        [ProtoMember(32, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(32, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public short[] SFixedShortValues { get; set; } = []; //sfixed32
+
+        [ProtoMember(33, IsPacked = true)]
+        [ProtoBuf.ProtoMember(33, IsPacked = true)]
+        public ushort[] PackedUShortValues { get; set; } = []; //uint32
+
+        [ProtoMember(34, IsPacked = true, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(34, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public ushort[] PackedFixedUShortValues { get; set; } = []; //fixed32
+
+        [ProtoMember(35, IsPacked = true)]
+        [ProtoBuf.ProtoMember(35, IsPacked = true)]
+        public short[] PackedShortValues { get; set; } = []; //int32
+
+        [ProtoMember(36, IsPacked = true, DataFormat = DataFormat.ZigZag)]
+        [ProtoBuf.ProtoMember(36, IsPacked = true, DataFormat = ProtoBuf.DataFormat.ZigZag)]
+        public short[] PackedSShortValues { get; set; } = []; //sint32
+
+        [ProtoMember(37, IsPacked = true, DataFormat = DataFormat.FixedSize)]
+        [ProtoBuf.ProtoMember(37, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public short[] PackedSFixedShortValues { get; set; } = []; //sfixed32
     }
 
     [Test]
@@ -79,57 +175,48 @@ public partial class PrimitiveArrayTests
             var random = new Random();
             yield return new()
             {
-                BooleanValues = Enumerable
+                BooleanValues = Enumerable.Range(0, 100).Select(_ => random.Next() % 2 == 0).ToArray(),
+                DoubleValues = Enumerable.Range(0, 100).Select(_ => random.NextDouble() * 1000 - 500).ToArray(),
+                Int32Values = Enumerable.Range(0, 100).Select(_ => random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SFixed32Values = Enumerable.Range(0, 100).Select(_ => random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                Fixed32Values = Enumerable.Range(0, 100).Select(_ => (uint)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SFixed64Values = Enumerable.Range(0, 100).Select(_ => (long)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                Fixed64Values = Enumerable.Range(0, 100).Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                Int64Values = Enumerable.Range(0, 100).Select(_ => (long)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SInt64Values = Enumerable.Range(0, 100).Select(_ => (long)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SInt32Values = Enumerable.Range(0, 100).Select(_ => random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SingleValues = Enumerable.Range(0, 100).Select(_ => (float)(random.NextDouble() * 1000 - 500)).ToArray(),
+                UInt64Values = Enumerable.Range(0, 100).Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                UInt32Values = Enumerable.Range(0, 100).Select(_ => (uint)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                ByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                FixedByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                SByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                SSByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                SFixedByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                PackedByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                PackedFixedByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                PackedSByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                PackedSSByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                PackedSFixedByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                CharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                FixedCharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                PackedCharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                PackedFixedCharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                UShortValues = Enumerable.Range(0, 100).Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue)).ToArray(),
+                FixedUShortValues = Enumerable.Range(0, 100).Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue)).ToArray(),
+                ShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                SShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                SFixedShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                PackedUShortValues = Enumerable.Range(0, 100).Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue)).ToArray(),
+                PackedFixedUShortValues = Enumerable
                     .Range(0, 100)
-                    .Select(_ => random.Next() % 2 == 0)
+                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
                     .ToArray(),
-                DoubleValues = Enumerable
+                PackedShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                PackedSShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                PackedSFixedShortValues = Enumerable
                     .Range(0, 100)
-                    .Select(_ => random.NextDouble() * 1000 - 500)
-                    .ToArray(),
-                Int32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SFixed32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                Fixed32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (uint)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SFixed64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                Fixed64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                Int64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SInt64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SInt32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SingleValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (float)(random.NextDouble() * 1000 - 500))
-                    .ToArray(),
-                UInt64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                UInt32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (uint)random.Next(int.MinValue, int.MaxValue))
+                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
                     .ToArray(),
             };
         }
@@ -153,6 +240,30 @@ public partial class PrimitiveArrayTests
                 SingleValues = { o.SingleValues },
                 UInt64Values = { o.UInt64Values },
                 UInt32Values = { o.UInt32Values },
+                ByteValues = { o.ByteValues.Select(x => (uint)x) },
+                FixedByteValues = { o.FixedByteValues.Select(x => (uint)x) },
+                SByteValues = { o.SByteValues.Select(x => (int)x) },
+                SSByteValues = { o.SSByteValues.Select(x => (int)x) },
+                SFixedByteValues = { o.SFixedByteValues.Select(x => (int)x) },
+                PackedByteValues = { o.PackedByteValues.Select(x => (uint)x) },
+                PackedFixedByteValues = { o.PackedFixedByteValues.Select(x => (uint)x) },
+                PackedSByteValues = { o.PackedSByteValues.Select(x => (int)x) },
+                PackedSSByteValues = { o.PackedSSByteValues.Select(x => (int)x) },
+                PackedSFixedByteValues = { o.PackedSFixedByteValues.Select(x => (int)x) },
+                CharValues = { o.CharValues.Select(x => (uint)x) },
+                FixedCharValues = { o.FixedCharValues.Select(x => (uint)x) },
+                PackedCharValues = { o.PackedCharValues.Select(x => (uint)x) },
+                PackedFixedCharValues = { o.PackedFixedCharValues.Select(x => (uint)x) },
+                UShortValues = { o.UShortValues.Select(x => (uint)x) },
+                FixedUShortValues = { o.FixedUShortValues.Select(x => (uint)x) },
+                ShortValues = { o.ShortValues.Select(x => (int)x) },
+                SShortValues = { o.SShortValues.Select(x => (int)x) },
+                SFixedShortValues = { o.SFixedShortValues.Select(x => (int)x) },
+                PackedUShortValues = { o.PackedUShortValues.Select(x => (uint)x) },
+                PackedFixedUShortValues = { o.PackedFixedUShortValues.Select(x => (uint)x) },
+                PackedShortValues = { o.PackedShortValues.Select(x => (int)x) },
+                PackedSShortValues = { o.PackedSShortValues.Select(x => (int)x) },
+                PackedSFixedShortValues = { o.PackedSFixedShortValues.Select(x => (int)x) },
             });
     }
 
@@ -171,6 +282,29 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.SingleValues).IsEquivalentTo(message.SingleValues);
         await Assert.That(clone.UInt64Values).IsEquivalentTo(message.UInt64Values);
         await Assert.That(clone.UInt32Values).IsEquivalentTo(message.UInt32Values);
+        await Assert.That(clone.ByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.ByteValues);
+        await Assert.That(clone.SByteValues.Select(x => (sbyte)x).ToArray()).IsEquivalentTo(message.SByteValues);
+        await Assert.That(clone.FixedByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.FixedByteValues);
+        await Assert.That(clone.PackedByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.PackedByteValues);
+        await Assert.That(clone.PackedSByteValues.Select(x => (sbyte)x).ToArray()).IsEquivalentTo(message.PackedSByteValues);
+        await Assert.That(clone.PackedSSByteValues.Select(x => (sbyte)x).ToArray()).IsEquivalentTo(message.PackedSSByteValues);
+        await Assert.That(clone.PackedFixedByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert.That(clone.CharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.CharValues);
+        await Assert.That(clone.FixedCharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.FixedCharValues);
+        await Assert.That(clone.PackedCharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.PackedCharValues);
+        await Assert.That(clone.PackedFixedCharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.PackedFixedCharValues);
+
+        await Assert.That(clone.UShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.UShortValues);
+        await Assert.That(clone.FixedUShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.FixedUShortValues);
+        await Assert.That(clone.ShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.ShortValues);
+        await Assert.That(clone.SShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.SShortValues);
+        await Assert.That(clone.SFixedShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.SFixedShortValues);
+
+        await Assert.That(clone.PackedUShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.PackedUShortValues);
+        await Assert.That(clone.PackedFixedUShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.PackedFixedUShortValues);
+        await Assert.That(clone.PackedShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.PackedShortValues);
+        await Assert.That(clone.PackedSShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.PackedSShortValues);
+        await Assert.That(clone.PackedSFixedShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.PackedSFixedShortValues);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -188,5 +322,28 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.SingleValues).IsEquivalentTo(message.SingleValues);
         await Assert.That(clone.UInt64Values).IsEquivalentTo(message.UInt64Values);
         await Assert.That(clone.UInt32Values).IsEquivalentTo(message.UInt32Values);
+        await Assert.That(clone.ByteValues).IsEquivalentTo(message.ByteValues);
+        await Assert.That(clone.SByteValues).IsEquivalentTo(message.SByteValues);
+        await Assert.That(clone.FixedByteValues).IsEquivalentTo(message.FixedByteValues);
+        await Assert.That(clone.PackedByteValues).IsEquivalentTo(message.PackedByteValues);
+        await Assert.That(clone.PackedSByteValues).IsEquivalentTo(message.PackedSByteValues);
+        await Assert.That(clone.PackedSSByteValues).IsEquivalentTo(message.PackedSSByteValues);
+        await Assert.That(clone.PackedFixedByteValues).IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert.That(clone.CharValues).IsEquivalentTo(message.CharValues);
+        await Assert.That(clone.FixedCharValues).IsEquivalentTo(message.FixedCharValues);
+        await Assert.That(clone.PackedCharValues).IsEquivalentTo(message.PackedCharValues);
+        await Assert.That(clone.PackedFixedCharValues).IsEquivalentTo(message.PackedFixedCharValues);
+
+        await Assert.That(clone.UShortValues).IsEquivalentTo(message.UShortValues);
+        await Assert.That(clone.FixedUShortValues).IsEquivalentTo(message.FixedUShortValues);
+        await Assert.That(clone.ShortValues).IsEquivalentTo(message.ShortValues);
+        await Assert.That(clone.SShortValues).IsEquivalentTo(message.SShortValues);
+        await Assert.That(clone.SFixedShortValues).IsEquivalentTo(message.SFixedShortValues);
+
+        await Assert.That(clone.PackedUShortValues).IsEquivalentTo(message.PackedUShortValues);
+        await Assert.That(clone.PackedFixedUShortValues).IsEquivalentTo(message.PackedFixedUShortValues);
+        await Assert.That(clone.PackedShortValues).IsEquivalentTo(message.PackedShortValues);
+        await Assert.That(clone.PackedSShortValues).IsEquivalentTo(message.PackedSShortValues);
+        await Assert.That(clone.PackedSFixedShortValues).IsEquivalentTo(message.PackedSFixedShortValues);
     }
 }

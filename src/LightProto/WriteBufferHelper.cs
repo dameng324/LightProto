@@ -28,10 +28,7 @@ namespace LightProto
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(
-            CodedOutputStream codedOutputStream,
-            out WriteBufferHelper instance
-        )
+        public static void Initialize(CodedOutputStream codedOutputStream, out WriteBufferHelper instance)
         {
             instance.bufferWriter = null;
             instance.codedOutputStream = codedOutputStream;
@@ -43,11 +40,7 @@ namespace LightProto
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(
-            IBufferWriter<byte> bufferWriter,
-            out WriteBufferHelper instance,
-            out Span<byte> buffer
-        )
+        public static void Initialize(IBufferWriter<byte> bufferWriter, out WriteBufferHelper instance, out Span<byte> buffer)
         {
             instance.bufferWriter = bufferWriter;
             instance.codedOutputStream = null;

@@ -52,10 +52,7 @@ public partial class ImmutableArrayTests : BaseTests<ImmutableArrayTests.Message
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            new ImmutableArrayProtoReader<int>(Int32ProtoParser.ProtoReader, 0)
-        );
+        var deserialized = Serializer.Deserialize(bytes, new ImmutableArrayProtoReader<int>(Int32ProtoParser.ProtoReader, 0));
         await Assert.That(deserialized.IsDefaultOrEmpty).IsTrue();
     }
 }

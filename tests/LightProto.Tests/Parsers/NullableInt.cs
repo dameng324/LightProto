@@ -25,8 +25,7 @@ public partial class NullableIntTests : BaseTests<NullableIntTests.Message, Null
 
     public override IEnumerable<NullableIntTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new NullableIntTestsMessage() { Property = o.Property ?? 0 });
+        return GetMessages().Select(o => new NullableIntTestsMessage() { Property = o.Property ?? 0 });
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -92,19 +91,10 @@ file static class Extension
                 else if (proxy.Value == 1)
                     return DateTime.MaxValue;
                 else
-                    throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Value),
-                        $"Invalid ticks for MINMAX scale: {proxy.Value}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Value), $"Invalid ticks for MINMAX scale: {proxy.Value}");
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(proxy.Scale),
-                    $"Unknown scale: {proxy.Scale}"
-                );
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
         }
-        return new DateTime(
-            ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-            kind: (System.DateTimeKind)proxy.Kind
-        );
+        return new DateTime(ticks: ticks + EpochOriginsTicks[(int)proxy.Kind], kind: (System.DateTimeKind)proxy.Kind);
     }
 }

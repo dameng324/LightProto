@@ -41,8 +41,6 @@ public partial class Decimal300Tests : BaseTests<Decimal300Tests.Message, Decima
 
     public override async Task AssertGoogleResult(Decimal300TestsMessage clone, Message message)
     {
-        await Assert
-            .That(decimal.TryParse(clone.Property, out var result) ? result : 0)
-            .IsEquivalentTo(message.Property);
+        await Assert.That(decimal.TryParse(clone.Property, out var result) ? result : 0).IsEquivalentTo(message.Property);
     }
 }

@@ -108,11 +108,7 @@ namespace LightProto
         /// the tag is consumed and the method returns <c>true</c>; otherwise, the
         /// stream is left in the original position and the method returns <c>false</c>.
         /// </summary>
-        public static bool MaybeConsumeTag(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            uint tag
-        )
+        public static bool MaybeConsumeTag(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, uint tag)
         {
             if (PeekTag(ref buffer, ref state) == tag)
             {
@@ -144,10 +140,7 @@ namespace LightProto
         /// <summary>
         /// Parses a raw varint.
         /// </summary>
-        public static ulong ParseRawVarint64(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static ulong ParseRawVarint64(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.bufferPos + 10 > state.bufferSize)
             {
@@ -175,10 +168,7 @@ namespace LightProto
             throw InvalidProtocolBufferException.MalformedVarint();
         }
 
-        private static ulong ParseRawVarint64SlowPath(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        private static ulong ParseRawVarint64SlowPath(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             int shift = 0;
             ulong result = 0;
@@ -202,10 +192,7 @@ namespace LightProto
         /// That means we can check the size just once, then just read directly from the buffer
         /// without constant rechecking of the buffer length.
         /// </summary>
-        public static uint ParseRawVarint32(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static uint ParseRawVarint32(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.bufferPos + 5 > state.bufferSize)
             {
@@ -261,10 +248,7 @@ namespace LightProto
             return (uint)result;
         }
 
-        private static uint ParseRawVarint32SlowPath(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        private static uint ParseRawVarint32SlowPath(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             int tmp = ReadRawByte(ref buffer, ref state);
             if (tmp < 128)
@@ -315,10 +299,7 @@ namespace LightProto
         /// <summary>
         /// Parses a 32-bit little-endian integer.
         /// </summary>
-        public static uint ParseRawLittleEndian32(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static uint ParseRawLittleEndian32(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             const int uintLength = sizeof(uint);
             const int ulongLength = sizeof(ulong);
@@ -328,16 +309,12 @@ namespace LightProto
             }
             // ReadUInt32LittleEndian is many times slower than ReadUInt64LittleEndian (at least on some runtimes)
             // so it's faster better to use ReadUInt64LittleEndian and truncate the result.
-            uint result = (uint)
-                BinaryPrimitives.ReadUInt64LittleEndian(buffer.Slice(state.bufferPos, ulongLength));
+            uint result = (uint)BinaryPrimitives.ReadUInt64LittleEndian(buffer.Slice(state.bufferPos, ulongLength));
             state.bufferPos += uintLength;
             return result;
         }
 
-        private static uint ParseRawLittleEndian32SlowPath(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        private static uint ParseRawLittleEndian32SlowPath(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             uint b1 = ReadRawByte(ref buffer, ref state);
             uint b2 = ReadRawByte(ref buffer, ref state);
@@ -349,27 +326,19 @@ namespace LightProto
         /// <summary>
         /// Parses a 64-bit little-endian integer.
         /// </summary>
-        public static ulong ParseRawLittleEndian64(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static ulong ParseRawLittleEndian64(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             const int length = sizeof(ulong);
             if (state.bufferPos + length > state.bufferSize)
             {
                 return ParseRawLittleEndian64SlowPath(ref buffer, ref state);
             }
-            ulong result = BinaryPrimitives.ReadUInt64LittleEndian(
-                buffer.Slice(state.bufferPos, length)
-            );
+            ulong result = BinaryPrimitives.ReadUInt64LittleEndian(buffer.Slice(state.bufferPos, length));
             state.bufferPos += length;
             return result;
         }
 
-        private static ulong ParseRawLittleEndian64SlowPath(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        private static ulong ParseRawLittleEndian64SlowPath(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             ulong b1 = ReadRawByte(ref buffer, ref state);
             ulong b2 = ReadRawByte(ref buffer, ref state);
@@ -379,35 +348,21 @@ namespace LightProto
             ulong b6 = ReadRawByte(ref buffer, ref state);
             ulong b7 = ReadRawByte(ref buffer, ref state);
             ulong b8 = ReadRawByte(ref buffer, ref state);
-            return b1
-                | (b2 << 8)
-                | (b3 << 16)
-                | (b4 << 24)
-                | (b5 << 32)
-                | (b6 << 40)
-                | (b7 << 48)
-                | (b8 << 56);
+            return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24) | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
         }
 
         /// <summary>
         /// Parses a double value.
         /// </summary>
-        public static double ParseDouble(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static double ParseDouble(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             const int length = sizeof(double);
             if (!BitConverter.IsLittleEndian || state.bufferPos + length > state.bufferSize)
             {
-                return BitConverter.Int64BitsToDouble(
-                    (long)ParseRawLittleEndian64(ref buffer, ref state)
-                );
+                return BitConverter.Int64BitsToDouble((long)ParseRawLittleEndian64(ref buffer, ref state));
             }
             // ReadUnaligned uses processor architecture for endianness.
-            double result = Unsafe.ReadUnaligned<double>(
-                ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length))
-            );
+            double result = Unsafe.ReadUnaligned<double>(ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length)));
             state.bufferPos += length;
             return result;
         }
@@ -423,17 +378,12 @@ namespace LightProto
                 return ParseFloatSlow(ref buffer, ref state);
             }
             // ReadUnaligned uses processor architecture for endianness.
-            float result = Unsafe.ReadUnaligned<float>(
-                ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length))
-            );
+            float result = Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length)));
             state.bufferPos += length;
             return result;
         }
 
-        private static unsafe float ParseFloatSlow(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        private static unsafe float ParseFloatSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             const int length = sizeof(float);
             byte* stackBuffer = stackalloc byte[length];
@@ -457,11 +407,7 @@ namespace LightProto
         /// <exception cref="InvalidProtocolBufferException">
         /// the end of the stream or the current limit was reached
         /// </exception>
-        public static byte[] ReadRawBytes(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            long size
-        )
+        public static byte[] ReadRawBytes(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, long size)
         {
             if (size < 0)
             {
@@ -480,18 +426,11 @@ namespace LightProto
             return ReadRawBytesSlow(ref buffer, ref state, size);
         }
 
-        private static byte[] ReadRawBytesSlow(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            long size
-        )
+        private static byte[] ReadRawBytesSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, long size)
         {
             ValidateCurrentLimit(ref buffer, ref state, size);
 
-            if (
-                (!state.segmentedBufferHelper.TotalLength.HasValue && size < buffer.Length)
-                || IsDataAvailableInSource(ref state, size)
-            )
+            if ((!state.segmentedBufferHelper.TotalLength.HasValue && size < buffer.Length) || IsDataAvailableInSource(ref state, size))
             {
                 // Reading more bytes than are in the buffer, but not an excessive number
                 // of bytes.  We can safely allocate the resulting array ahead of time.
@@ -550,11 +489,7 @@ namespace LightProto
         /// </summary>
         /// <exception cref="InvalidProtocolBufferException">the end of the stream
         /// or the current limit was reached</exception>
-        public static void SkipRawBytes(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            long size
-        )
+        public static void SkipRawBytes(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, long size)
         {
             if (size < 0)
             {
@@ -594,10 +529,7 @@ namespace LightProto
         /// Reads a string field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string ReadString(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static string ReadString(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             int length = ParsingPrimitives.ParseLength(ref buffer, ref state);
             return ParsingPrimitives.ReadRawString(ref buffer, ref state, length);
@@ -610,11 +542,7 @@ namespace LightProto
         /// the end of the stream or the current limit was reached
         /// </exception>
         [SecuritySafeCritical]
-        public static string ReadRawString(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            int length
-        )
+        public static string ReadRawString(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int length)
         {
             // No need to read any data for an empty string.
             if (length == 0)
@@ -658,11 +586,7 @@ namespace LightProto
         /// <summary>
         /// Reads a string assuming that it is spread across multiple spans in a <see cref="ReadOnlySequence{T}"/>.
         /// </summary>
-        private static string ReadStringSlow(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            int length
-        )
+        private static string ReadStringSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int length)
         {
             ValidateCurrentLimit(ref buffer, ref state, length);
 
@@ -673,9 +597,7 @@ namespace LightProto
 
                 byte[]? byteArray = null;
                 Span<byte> byteSpan =
-                    length <= StackallocThreshold
-                        ? stackalloc byte[length]
-                        : (byteArray = ArrayPool<byte>.Shared.Rent(length));
+                    length <= StackallocThreshold ? stackalloc byte[length] : (byteArray = ArrayPool<byte>.Shared.Rent(length));
 
                 try
                 {
@@ -728,30 +650,19 @@ namespace LightProto
         /// Validates that the specified size doesn't exceed the current limit. If it does then remaining bytes
         /// are skipped and an error is thrown.
         /// </summary>
-        private static void ValidateCurrentLimit(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state,
-            long size
-        )
+        private static void ValidateCurrentLimit(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, long size)
         {
             if (state.totalBytesRetired + state.bufferPos + size > state.currentLimit)
             {
                 // Read to the end of the stream (up to the current limit) anyway.
-                SkipRawBytes(
-                    ref buffer,
-                    ref state,
-                    state.currentLimit - state.totalBytesRetired - state.bufferPos
-                );
+                SkipRawBytes(ref buffer, ref state, state.currentLimit - state.totalBytesRetired - state.bufferPos);
                 // Then fail.
                 throw InvalidProtocolBufferException.TruncatedMessage();
             }
         }
 
         [SecuritySafeCritical]
-        private static byte ReadRawByte(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        private static byte ReadRawByte(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.bufferPos == state.bufferSize)
             {
@@ -814,10 +725,7 @@ namespace LightProto
         {
             // Data fits in remaining source data.
             // Note that this will never be true when reading from a stream as the total length is unknown.
-            return size
-                <= state.segmentedBufferHelper.TotalLength
-                    - state.totalBytesRetired
-                    - state.bufferPos;
+            return size <= state.segmentedBufferHelper.TotalLength - state.totalBytesRetired - state.bufferPos;
         }
 
         /// <summary>
@@ -850,16 +758,11 @@ namespace LightProto
             }
         }
 
-        public static void SkipLastField(
-            ref ReadOnlySpan<byte> buffer,
-            ref ParserInternalState state
-        )
+        public static void SkipLastField(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.lastTag == 0)
             {
-                throw new InvalidOperationException(
-                    "SkipLastField cannot be called at the end of a stream"
-                );
+                throw new InvalidOperationException("SkipLastField cannot be called at the end of a stream");
             }
             switch (WireFormat.GetTagWireType(state.lastTag))
             {

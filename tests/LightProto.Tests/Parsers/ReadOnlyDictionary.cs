@@ -13,8 +13,7 @@ public partial class ReadOnlyMapTests : BaseTests<ReadOnlyMapTests.Message, MapT
     {
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
-        public required ReadOnlyDictionary<int, string> Property { get; set; } =
-            new(new Dictionary<int, string>());
+        public required ReadOnlyDictionary<int, string> Property { get; set; } = new(new Dictionary<int, string>());
 
         public override string ToString()
         {
@@ -26,10 +25,7 @@ public partial class ReadOnlyMapTests : BaseTests<ReadOnlyMapTests.Message, MapT
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new()
-        {
-            Property = new ReadOnlyDictionary<int, string>(new Dictionary<int, string>()),
-        };
+        yield return new() { Property = new ReadOnlyDictionary<int, string>(new Dictionary<int, string>()) };
         yield return new()
         {
             Property = new ReadOnlyDictionary<int, string>(
@@ -64,11 +60,7 @@ public partial class ReadOnlyMapTests : BaseTests<ReadOnlyMapTests.Message, MapT
         byte[] bytes = [];
         var deserialized = Serializer.Deserialize(
             bytes,
-            new ReadOnlyDictionaryProtoReader<int, string>(
-                Int32ProtoParser.ProtoReader,
-                StringProtoParser.ProtoReader,
-                0
-            )
+            new ReadOnlyDictionaryProtoReader<int, string>(Int32ProtoParser.ProtoReader, StringProtoParser.ProtoReader, 0)
         );
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }

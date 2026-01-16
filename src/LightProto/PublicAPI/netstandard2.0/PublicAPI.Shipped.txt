@@ -61,8 +61,6 @@ LightProto.Parser.BooleanProtoParser
 LightProto.Parser.BooleanProtoParser.BooleanProtoParser() -> void
 LightProto.Parser.ByteArrayProtoParser
 LightProto.Parser.ByteArrayProtoParser.ByteArrayProtoParser() -> void
-LightProto.Parser.ByteListProtoParser
-LightProto.Parser.ByteListProtoParser.ByteListProtoParser() -> void
 LightProto.Parser.CollectionProtoReader<T>
 LightProto.Parser.CollectionProtoReader<T>.CollectionProtoReader(LightProto.IProtoReader<T>! itemReader, uint tag, int itemFixedSize) -> void
 LightProto.Parser.CollectionProtoWriter<T>
@@ -462,8 +460,6 @@ static LightProto.Parser.BooleanProtoParser.ProtoReader.get -> LightProto.IProto
 static LightProto.Parser.BooleanProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<bool>!
 static LightProto.Parser.ByteArrayProtoParser.ProtoReader.get -> LightProto.IProtoReader<byte[]!>!
 static LightProto.Parser.ByteArrayProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<byte[]!>!
-static LightProto.Parser.ByteListProtoParser.ProtoReader.get -> LightProto.IProtoReader<System.Collections.Generic.List<byte>!>!
-static LightProto.Parser.ByteListProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<System.Collections.Generic.List<byte>!>!
 static LightProto.Parser.ComplexProtoParser.implicit operator LightProto.Parser.ComplexProtoParser(System.Numerics.Complex dt) -> LightProto.Parser.ComplexProtoParser
 static LightProto.Parser.ComplexProtoParser.implicit operator System.Numerics.Complex(LightProto.Parser.ComplexProtoParser proxy) -> System.Numerics.Complex
 static LightProto.Parser.CultureInfoProtoParser.ProtoReader.get -> LightProto.IProtoReader<System.Globalization.CultureInfo!>!
@@ -565,3 +561,66 @@ static LightProto.Serializer.WriteMessageTo<T>(this LightProto.IProtoWriter<T>! 
 static LightProto.WireFormat.GetTagFieldNumber(uint tag) -> int
 static LightProto.WireFormat.GetTagWireType(uint tag) -> LightProto.WireFormat.WireType
 static LightProto.WireFormat.MakeTag(int fieldNumber, LightProto.WireFormat.WireType wireType) -> uint
+LightProto.IProtoReader
+LightProto.IProtoReader.IsMessage.get -> bool
+LightProto.IProtoReader.ParseFrom(ref LightProto.ReaderContext input) -> object!
+LightProto.IProtoReader.WireType.get -> LightProto.WireFormat.WireType
+LightProto.IProtoWriter
+LightProto.IProtoWriter.CalculateSize(object! value) -> int
+LightProto.IProtoWriter.IsMessage.get -> bool
+LightProto.IProtoWriter.WireType.get -> LightProto.WireFormat.WireType
+LightProto.IProtoWriter.WriteTo(ref LightProto.WriterContext output, object! value) -> void
+static LightProto.Serializer.DeserializeNonGeneric(System.Buffers.ReadOnlySequence<byte> source, LightProto.IProtoReader! reader) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.IO.Stream! source, LightProto.IProtoReader! reader) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.ReadOnlySpan<byte> source, LightProto.IProtoReader! reader) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.Type! type, System.Buffers.ReadOnlySequence<byte> source) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.Type! type, System.IO.Stream! source) -> object!
+static LightProto.Serializer.DeserializeNonGeneric(System.Type! type, System.ReadOnlySpan<byte> source) -> object!
+static LightProto.Serializer.GetProtoReader(System.Type! type) -> LightProto.IProtoReader!
+static LightProto.Serializer.GetProtoReader<T>() -> LightProto.IProtoReader<T>!
+static LightProto.Serializer.GetProtoWriter(System.Type! type) -> LightProto.IProtoWriter!
+static LightProto.Serializer.GetProtoWriter<T>() -> LightProto.IProtoWriter<T>!
+static LightProto.Serializer.RegisterParser<T>(LightProto.IProtoReader<T>! reader, LightProto.IProtoWriter<T>! writer) -> void
+static LightProto.Serializer.RegisterGenericParser(System.Type! type, System.Type! readerType, System.Type! writerType) -> void
+static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object? instance) -> void
+static LightProto.Serializer.SerializeNonGeneric(System.Buffers.IBufferWriter<byte>! destination, object? instance, LightProto.IProtoWriter! writer) -> void
+static LightProto.Serializer.SerializeNonGeneric(System.IO.Stream! destination, object? instance) -> void
+static LightProto.Serializer.SerializeNonGeneric(System.IO.Stream! destination, object? instance, LightProto.IProtoWriter! writer) -> void
+static LightProto.Serializer.SerializeToArrayDynamically<T>(T message) -> byte[]!
+static LightProto.Serializer.SerializeToArrayNonGeneric(object? instance) -> byte[]!
+static LightProto.Serializer.SerializeToArrayNonGeneric(object? instance, LightProto.IProtoWriter! writer) -> byte[]!
+LightProto.Parser.ByteProtoParser
+LightProto.Parser.ByteProtoParser.ByteProtoParser() -> void
+LightProto.Parser.FixedByteProtoParser
+LightProto.Parser.FixedByteProtoParser.FixedByteProtoParser() -> void
+LightProto.Parser.SByteProtoParser
+LightProto.Parser.SByteProtoParser.SByteProtoParser() -> void
+LightProto.Parser.SFixedByteProtoParser
+LightProto.Parser.SFixedByteProtoParser.SFixedByteProtoParser() -> void
+LightProto.Parser.SSByteProtoParser
+LightProto.Parser.SSByteProtoParser.SSByteProtoParser() -> void
+LightProto.ReaderContext.ReadFixedByte() -> byte
+LightProto.ReaderContext.ReadSByte() -> sbyte
+LightProto.ReaderContext.ReadSFixedByte() -> sbyte
+LightProto.ReaderContext.ReadSSByte() -> sbyte
+LightProto.WriterContext.WriteFixedByte(byte value) -> void
+LightProto.WriterContext.WriteSByte(sbyte value) -> void
+LightProto.WriterContext.WriteSFixedByte(sbyte value) -> void
+LightProto.WriterContext.WriteSSByte(sbyte value) -> void
+static LightProto.CodedOutputStream.ComputeFixedByteSize(byte value) -> int
+static LightProto.CodedOutputStream.ComputeSByteSize(sbyte value) -> int
+static LightProto.CodedOutputStream.ComputeSFixedByteSize(sbyte value) -> int
+static LightProto.CodedOutputStream.ComputeSSByteSize(sbyte value) -> int
+static LightProto.Parser.ByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<byte>!
+static LightProto.Parser.ByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<byte>!
+static LightProto.CodedOutputStream.ComputeByteSize(byte value) -> int
+LightProto.ReaderContext.ReadByte() -> byte
+LightProto.WriterContext.WriteByte(byte value) -> void
+static LightProto.Parser.FixedByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<byte>!
+static LightProto.Parser.FixedByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<byte>!
+static LightProto.Parser.SByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<sbyte>!
+static LightProto.Parser.SByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<sbyte>!
+static LightProto.Parser.SFixedByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<sbyte>!
+static LightProto.Parser.SFixedByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<sbyte>!
+static LightProto.Parser.SSByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<sbyte>!
+static LightProto.Parser.SSByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<sbyte>!

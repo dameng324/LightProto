@@ -4,10 +4,7 @@ using System.Net;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-[SuppressMessage(
-    "Usage",
-    "LIGHT_PROTO_W001:Member has default value which may break deserialization"
-)]
+[SuppressMessage("Usage", "LIGHT_PROTO_W001:Member has default value which may break deserialization")]
 public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Message>
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
@@ -17,8 +14,7 @@ public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Messa
 
         public string Value2 { get; set; } = string.Empty;
 
-        public string Value3 { get; set; } =
-            new Func<int, string>((int a) => "default" + a.ToString())(1);
+        public string Value3 { get; set; } = new Func<int, string>((int a) => "default" + a.ToString())(1);
 
         public string[] Value4 { get; set; } = new[] { "one", "two" };
 
@@ -28,12 +24,10 @@ public partial class InitializerTests : BaseProtoBufTests<InitializerTests.Messa
         public HttpStatusCode Value8 { get; set; } = default(HttpStatusCode);
         public IEnumerable<int> Value9 { get; set; } = Enumerable.Repeat<int>(0, 10).ToArray();
         public HttpStatusCode[] Value10 { get; set; } = new[] { HttpStatusCode.OK };
-        public List<HttpStatusCode> Value11 { get; set; } =
-            Enumerable.Repeat<HttpStatusCode>(HttpStatusCode.OK, 10).ToList();
+        public List<HttpStatusCode> Value11 { get; set; } = Enumerable.Repeat<HttpStatusCode>(HttpStatusCode.OK, 10).ToList();
         public HttpStatusCode[] Value12 { get; set; } = [HttpStatusCode.OK];
         public List<HttpStatusCode> Value13 { get; set; } = new(10) { HttpStatusCode.OK };
-        public List<HttpStatusCode> Value14 { get; set; } =
-            new List<HttpStatusCode>(10) { HttpStatusCode.OK };
+        public List<HttpStatusCode> Value14 { get; set; } = new List<HttpStatusCode>(10) { HttpStatusCode.OK };
         public List<HttpStatusCode> Value15 { get; set; } = new[] { HttpStatusCode.OK }.ToList();
         public string Value16 { get; set; } = Initializer.GetDefaultValue();
         public string Value17 { get; set; } = Initializer.GetInitializer().ToString()!;

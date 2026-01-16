@@ -23,27 +23,13 @@ public partial class BigIntegerTests : BaseTests<BigIntegerTests.Message, BigInt
     public override IEnumerable<Message> GetMessages()
     {
         yield return new() { Property = BigInteger.Zero };
-        yield return new()
-        {
-            Property = BigInteger.Parse(
-                "1111111111111111111111111111111111111111111111111111111111111111"
-            ),
-        };
-        yield return new()
-        {
-            Property = BigInteger.Parse(
-                "-1111111111111111111111111111111111111111111111111111111111111111"
-            ),
-        };
+        yield return new() { Property = BigInteger.Parse("1111111111111111111111111111111111111111111111111111111111111111") };
+        yield return new() { Property = BigInteger.Parse("-1111111111111111111111111111111111111111111111111111111111111111") };
     }
 
     public override IEnumerable<BigIntegerTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(m => new BigIntegerTestsMessage
-            {
-                Property = ByteString.CopyFrom(m.Property.ToByteArray()),
-            });
+        return GetMessages().Select(m => new BigIntegerTestsMessage { Property = ByteString.CopyFrom(m.Property.ToByteArray()) });
     }
 
     public override async Task AssertResult(Message clone, Message message)

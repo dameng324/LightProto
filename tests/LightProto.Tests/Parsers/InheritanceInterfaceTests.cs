@@ -2,10 +2,7 @@
 
 [InheritsTests]
 public partial class InheritanceInterfaceTests
-    : BaseProtoBufTestsWithParser<
-        InheritanceInterfaceTests.Base,
-        InheritanceInterfaceTests.BaseProtoParser
-    >
+    : BaseProtoBufTestsWithParser<InheritanceInterfaceTests.Base, InheritanceInterfaceTests.BaseProtoParser>
 {
     [ProtoContract()]
     [ProtoBuf.ProtoContract()]
@@ -24,6 +21,18 @@ public partial class InheritanceInterfaceTests
         [ProtoMember(1)]
         [ProtoBuf.ProtoMember(1)]
         public string Value { get; set; } = "";
+
+        [ProtoMember(2)]
+        [ProtoBuf.ProtoMember(2)]
+        public required string Value2 { get; set; } = "";
+
+        [ProtoMember(3)]
+        [ProtoBuf.ProtoMember(3)]
+        public string Value3 { get; init; } = "";
+
+        [ProtoMember(4)]
+        [ProtoBuf.ProtoMember(4)]
+        public int Value4 { get; init; }
     }
 
     [ProtoContract()]
@@ -37,7 +46,13 @@ public partial class InheritanceInterfaceTests
 
     public override IEnumerable<Base> GetMessages()
     {
-        yield return new ClassMessage { Value = Guid.NewGuid().ToString() };
+        yield return new ClassMessage
+        {
+            Value = Guid.NewGuid().ToString(),
+            Value2 = Guid.NewGuid().ToString(),
+            Value3 = Guid.NewGuid().ToString(),
+            Value4 = 42,
+        };
         yield return new StructMessage { Value = Guid.NewGuid().ToString() };
     }
 
@@ -51,6 +66,9 @@ public partial class InheritanceInterfaceTests
             await Assert.That(clone is ClassMessage).IsTrue();
             var cloneMessage = (clone as ClassMessage)!;
             await Assert.That(classMessage.Value).IsEqualTo(cloneMessage.Value);
+            await Assert.That(classMessage.Value2).IsEqualTo(cloneMessage.Value2);
+            await Assert.That(classMessage.Value3).IsEqualTo(cloneMessage.Value3);
+            await Assert.That(classMessage.Value4).IsEqualTo(cloneMessage.Value4);
         }
         if (message is StructMessage structMessage)
         {

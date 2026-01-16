@@ -5,8 +5,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadOnlyCollectionTests
-    : BaseTests<ReadOnlyCollectionTests.Message, ArrayTestsMessage>
+public partial class ReadOnlyCollectionTests : BaseTests<ReadOnlyCollectionTests.Message, ArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -52,10 +51,7 @@ public partial class ReadOnlyCollectionTests
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            Int32ProtoParser.ProtoReader.GetReadOnlyCollectionReader()
-        );
+        var deserialized = Serializer.Deserialize(bytes, Int32ProtoParser.ProtoReader.GetReadOnlyCollectionReader());
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }

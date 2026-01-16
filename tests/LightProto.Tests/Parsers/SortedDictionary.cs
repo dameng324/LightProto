@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class SortedDictionaryTests
-    : BaseTests<SortedDictionaryTests.Message, MapTestsMessage>
+public partial class SortedDictionaryTests : BaseTests<SortedDictionaryTests.Message, MapTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

@@ -1,8 +1,7 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class IntEquivalentTypeTests
-    : BaseEquivalentTypeTests<IntEquivalentTypeTests.Message, int>
+public partial class IntEquivalentTypeTests : BaseEquivalentTypeTests<IntEquivalentTypeTests.Message, int>
 {
     [ProtoContract]
     public partial record Message
@@ -27,11 +26,7 @@ public partial class IntEquivalentTypeTests
         yield return int.MinValue;
     }
 
-    public override async Task AssertResult(
-        Message lightProto,
-        int protobuf,
-        bool lightProtoToProtoBuf
-    )
+    public override async Task AssertResult(Message lightProto, int protobuf, bool lightProtoToProtoBuf)
     {
         await Assert.That(lightProto.Property).IsEquivalentTo(protobuf);
     }

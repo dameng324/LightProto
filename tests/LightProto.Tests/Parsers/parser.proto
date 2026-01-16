@@ -22,6 +22,10 @@ message DateOnlyTestsMessage
 {
   int32 Property = 1;
 }
+message Fixed32TestsMessage
+{
+  fixed32 Property = 1;
+}
 message TimeOnlyTestsMessage
 {
   int64 Property = 1;
@@ -134,7 +138,7 @@ message InheritanceTestsBaseMessage
 {
   string BaseValue = 1;
   oneof Inheritance {
- InheritanceTestsMessage Derived = 2;
+    InheritanceTestsMessage Derived = 2;
   }
 }
 message InheritanceTestsMessage
@@ -163,6 +167,19 @@ message PrimitiveTestMessage {
   float SingleValue = 11;
   uint64 UInt64Value = 12;
   uint32 UInt32Value = 13;
+  uint32 ByteValue = 14;
+  fixed32 FixedByteValue = 15;
+  int32 SByteValue = 16;
+  sint32 SSByteValue = 17;
+  sfixed32 SFixedByteValue = 18;
+  uint32 CharValue = 19;
+  uint32 FixedCharValue = 20;
+
+  uint32 UShortValue = 21;
+  fixed32 FixedUShortValue = 22;
+  int32 ShortValue = 23;
+  sint32 SShortValue = 24;
+  sfixed32 SFixedShortValue = 25;
 }
 
 message PrimitiveArrayTestMessage {
@@ -179,6 +196,30 @@ message PrimitiveArrayTestMessage {
   repeated float SingleValues = 11 [packed = false];
   repeated uint64 UInt64Values = 12 [packed = false];
   repeated uint32 UInt32Values = 13 [packed = false];
+  repeated uint32 ByteValues = 14[packed = false];
+  repeated fixed32 FixedByteValues = 15[packed = false];
+  repeated int32 SByteValues = 16[packed = false];
+  repeated sint32 SSByteValues = 17[packed = false];
+  repeated sfixed32 SFixedByteValues = 18[packed = false];
+  repeated uint32 PackedByteValues = 19[packed = true];
+  repeated fixed32 PackedFixedByteValues = 20[packed = true];
+  repeated int32 PackedSByteValues = 21[packed = true];
+  repeated sint32 PackedSSByteValues = 22[packed = true];
+  repeated sfixed32 PackedSFixedByteValues = 23[packed = true];
+  repeated uint32 CharValues = 24[packed = false];
+  repeated uint32 FixedCharValues = 25[packed = false];
+  repeated uint32 PackedCharValues = 26[packed = true];
+  repeated uint32 PackedFixedCharValues = 27[packed = true];
+  repeated uint32 UShortValues = 28[packed=false];
+  repeated fixed32 FixedUShortValues = 29[packed=false];
+  repeated int32 ShortValues = 30[packed=false];
+  repeated sint32 SShortValues = 31[packed=false];
+  repeated sfixed32 SFixedShortValues = 32[packed=false];
+  repeated uint32 PackedUShortValues = 33[packed=true];
+  repeated fixed32 PackedFixedUShortValues = 34[packed=true];
+  repeated int32 PackedShortValues = 35[packed=true];
+  repeated sint32 PackedSShortValues = 36[packed=true];
+  repeated sfixed32 PackedSFixedShortValues = 37[packed=true];
 }
 message BclVersion
 {
@@ -201,8 +242,8 @@ message RuneTestsMessage
 }
 message Int128Message
 {
-  uint64 Upper=1;
-  uint64 Lower=2;
+  uint64 Upper = 1;
+  uint64 Lower = 2;
 }
 message Int128TestsMessage
 {

@@ -4,8 +4,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class TimeZoneInfoTests
-    : BaseTests<TimeZoneInfoTests.Message, TimeZoneInfoTestsMessage>
+public partial class TimeZoneInfoTests : BaseTests<TimeZoneInfoTests.Message, TimeZoneInfoTestsMessage>
 {
     [ProtoContract]
     public partial record Message
@@ -19,10 +18,7 @@ public partial class TimeZoneInfoTests
         yield return new() { Property = TimeZoneInfo.Utc };
         yield return new() { Property = TimeZoneInfo.Local };
 #if NET48
-        yield return new()
-        {
-            Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"),
-        };
+        yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time") };
 #else
         yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai") };
 #endif
@@ -33,27 +29,17 @@ public partial class TimeZoneInfoTests
 
     public override IEnumerable<TimeZoneInfoTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new TimeZoneInfoTestsMessage()
-            {
-                Property = o.Property.ToSerializedString(),
-            });
+        return GetMessages().Select(o => new TimeZoneInfoTestsMessage() { Property = o.Property.ToSerializedString() });
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
         // https://github.com/dotnet/runtime/issues/19794 :TimeZoneInfo.ToSerializedString/FromSerializedString do not round trip on Unix
-        await Assert
-            .That(clone.Property.BaseUtcOffset)
-            .IsEquivalentTo(message.Property.BaseUtcOffset);
+        await Assert.That(clone.Property.BaseUtcOffset).IsEquivalentTo(message.Property.BaseUtcOffset);
         await Assert.That(clone.Property.Id).IsEquivalentTo(message.Property.Id);
         await Assert.That(clone.Property.DisplayName).IsEquivalentTo(message.Property.DisplayName);
-        await Assert
-            .That(clone.Property.StandardName)
-            .IsEquivalentTo(message.Property.StandardName);
-        await Assert
-            .That(clone.Property.DaylightName)
-            .IsEquivalentTo(message.Property.DaylightName);
+        await Assert.That(clone.Property.StandardName).IsEquivalentTo(message.Property.StandardName);
+        await Assert.That(clone.Property.DaylightName).IsEquivalentTo(message.Property.DaylightName);
     }
 
     public override async Task AssertGoogleResult(TimeZoneInfoTestsMessage clone, Message message)

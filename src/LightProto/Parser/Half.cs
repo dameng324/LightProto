@@ -13,9 +13,7 @@ public sealed class HalfProtoParser : IProtoParser<Half>
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public Half ParseFrom(ref ReaderContext input)
         {
             return (Half)input.ReadFloat();
@@ -26,23 +24,18 @@ public sealed class HalfProtoParser : IProtoParser<Half>
     {
         int IProtoWriter.CalculateSize(object value) => CalculateSize((Half)value);
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (Half)value);
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (Half)value);
 
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(Half value)
         {
             return CodedOutputStream.ComputeFloatSize((float)value);
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public void WriteTo(ref WriterContext output, Half value)
         {
             output.WriteFloat((float)value);

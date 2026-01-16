@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class NullableListTests
-    : BaseTests<NullableListTests.Message, NullableListTestsMessage>
+public partial class NullableListTests : BaseTests<NullableListTests.Message, NullableListTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -33,11 +32,7 @@ public partial class NullableListTests
 
     public override IEnumerable<NullableListTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new NullableListTestsMessage()
-            {
-                Property = { o.Property.Select(p => p ?? 0).ToArray() },
-            });
+        return GetMessages().Select(o => new NullableListTestsMessage() { Property = { o.Property.Select(p => p ?? 0).ToArray() } });
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -113,19 +108,10 @@ file static class Extension
                 else if (proxy.Value == 1)
                     return DateTime.MaxValue;
                 else
-                    throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Value),
-                        $"Invalid ticks for MINMAX scale: {proxy.Value}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Value), $"Invalid ticks for MINMAX scale: {proxy.Value}");
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(proxy.Scale),
-                    $"Unknown scale: {proxy.Scale}"
-                );
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
         }
-        return new DateTime(
-            ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-            kind: (System.DateTimeKind)proxy.Kind
-        );
+        return new DateTime(ticks: ticks + EpochOriginsTicks[(int)proxy.Kind], kind: (System.DateTimeKind)proxy.Kind);
     }
 }

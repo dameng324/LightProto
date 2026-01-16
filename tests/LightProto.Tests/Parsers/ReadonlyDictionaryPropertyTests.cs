@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadonlyDictionaryPropertyTests
-    : BaseTests<ReadonlyDictionaryPropertyTests.Message, MapTestsMessage>
+public partial class ReadonlyDictionaryPropertyTests : BaseTests<ReadonlyDictionaryPropertyTests.Message, MapTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

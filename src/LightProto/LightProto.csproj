@@ -7,9 +7,7 @@
     <IsAotCompatible>true</IsAotCompatible>
     <LangVersion>latest</LangVersion>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
-    <WarningsAsErrors Condition="'$(Configuration)' == 'Release'"
-      >RS0016;RS0017;RS0041</WarningsAsErrors
-    >
+    <WarningsAsErrors Condition="'$(Configuration)' == 'Release'">RS0016;RS0017;RS0041</WarningsAsErrors>
     <!-- NuGet Package Metadata -->
     <PackageId>LightProto</PackageId>
     <Title>LightProto</Title>

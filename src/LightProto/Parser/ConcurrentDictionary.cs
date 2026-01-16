@@ -7,11 +7,7 @@ namespace LightProto.Parser
         : IEnumerableKeyValuePairProtoReader<ConcurrentDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public ConcurrentDictionaryProtoReader(
-            IProtoReader<TKey> keyReader,
-            IProtoReader<TValue> valueReader,
-            uint tag
-        )
+        public ConcurrentDictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader, uint tag)
             : base(
                 keyReader,
                 valueReader,
@@ -28,11 +24,7 @@ namespace LightProto.Parser
         : IEnumerableKeyValuePairProtoWriter<ConcurrentDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public ConcurrentDictionaryProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter,
-            uint tag
-        )
+        public ConcurrentDictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag)
             : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
     }
 }

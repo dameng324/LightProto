@@ -1,8 +1,7 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class MapEquivalentTypeTests
-    : BaseEquivalentTypeTests<MapEquivalentTypeTests.Message, Dictionary<int, string>>
+public partial class MapEquivalentTypeTests : BaseEquivalentTypeTests<MapEquivalentTypeTests.Message, Dictionary<int, string>>
 {
     [ProtoContract]
     public partial record Message
@@ -36,11 +35,7 @@ public partial class MapEquivalentTypeTests
         };
     }
 
-    public override async Task AssertResult(
-        Message lightProto,
-        Dictionary<int, string> protobuf,
-        bool lightProtoToProtoBuf
-    )
+    public override async Task AssertResult(Message lightProto, Dictionary<int, string> protobuf, bool lightProtoToProtoBuf)
     {
         await Assert.That(lightProto.Property).IsEquivalentTo(protobuf);
     }

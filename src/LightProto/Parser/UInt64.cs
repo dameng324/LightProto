@@ -22,8 +22,7 @@
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((UInt64)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (UInt64)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (UInt64)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.Varint;
             public bool IsMessage => false;

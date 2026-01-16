@@ -64,114 +64,128 @@ namespace LightProto
         /// Writes a double field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteDouble(double value) =>
-            WritingPrimitives.WriteDouble(ref buffer, ref state, value);
+        public void WriteDouble(double value) => WritingPrimitives.WriteDouble(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a float field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteFloat(float value) =>
-            WritingPrimitives.WriteFloat(ref buffer, ref state, value);
+        public void WriteFloat(float value) => WritingPrimitives.WriteFloat(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a uint64 field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteUInt64(ulong value) =>
-            WritingPrimitives.WriteUInt64(ref buffer, ref state, value);
+        public void WriteUInt64(ulong value) => WritingPrimitives.WriteUInt64(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an int64 field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteInt64(long value) =>
-            WritingPrimitives.WriteInt64(ref buffer, ref state, value);
+        public void WriteInt64(long value) => WritingPrimitives.WriteInt64(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an int32 field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteInt32(int value) =>
-            WritingPrimitives.WriteInt32(ref buffer, ref state, value);
+        public void WriteInt32(int value) => WritingPrimitives.WriteInt32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a fixed64 field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteFixed64(ulong value) =>
-            WritingPrimitives.WriteFixed64(ref buffer, ref state, value);
+        public void WriteFixed64(ulong value) => WritingPrimitives.WriteFixed64(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a fixed32 field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteFixed32(uint value) =>
-            WritingPrimitives.WriteFixed32(ref buffer, ref state, value);
+        public void WriteFixed32(uint value) => WritingPrimitives.WriteFixed32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a fixed32 field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteFixedBigEndian32(uint value) =>
-            WritingPrimitives.WriteRawBigEndian32(ref buffer, ref state, value);
+        public void WriteFixedBigEndian32(uint value) => WritingPrimitives.WriteRawBigEndian32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a bool field value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteBool(bool value) =>
-            WritingPrimitives.WriteBool(ref buffer, ref state, value);
+        public void WriteBool(bool value) => WritingPrimitives.WriteBool(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as uint32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteByte(byte value) => WritingPrimitives.WriteUInt32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as sint32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteSByte(sbyte value) => WritingPrimitives.WriteInt32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as sint32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteSSByte(sbyte value) => WritingPrimitives.WriteSInt32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as fixed32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteFixedByte(byte value) => WritingPrimitives.WriteFixed32(ref buffer, ref state, value);
+
+        /// <summary>
+        /// Writes a byte field value as fixed32, without a tag.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteSFixedByte(sbyte value) => WritingPrimitives.WriteSFixed32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a string field value, without a tag.
         /// The data is length-prefixed.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteString(string value) =>
-            WritingPrimitives.WriteString(ref buffer, ref state, value);
+        public void WriteString(string value) => WritingPrimitives.WriteString(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a uint32 value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteUInt32(uint value) =>
-            WritingPrimitives.WriteUInt32(ref buffer, ref state, value);
+        public void WriteUInt32(uint value) => WritingPrimitives.WriteUInt32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an enum value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteEnum(int value) =>
-            WritingPrimitives.WriteEnum(ref buffer, ref state, value);
+        public void WriteEnum(int value) => WritingPrimitives.WriteEnum(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an sfixed32 value, without a tag.
         /// </summary>
         /// <param name="value">The value to write.</param>
-        public void WriteSFixed32(int value) =>
-            WritingPrimitives.WriteSFixed32(ref buffer, ref state, value);
+        public void WriteSFixed32(int value) => WritingPrimitives.WriteSFixed32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an sfixed64 value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteSFixed64(long value) =>
-            WritingPrimitives.WriteSFixed64(ref buffer, ref state, value);
+        public void WriteSFixed64(long value) => WritingPrimitives.WriteSFixed64(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an sint32 value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteSInt32(int value) =>
-            WritingPrimitives.WriteSInt32(ref buffer, ref state, value);
+        public void WriteSInt32(int value) => WritingPrimitives.WriteSInt32(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes an sint64 value, without a tag.
         /// </summary>
         /// <param name="value">The value to write</param>
-        public void WriteSInt64(long value) =>
-            WritingPrimitives.WriteSInt64(ref buffer, ref state, value);
+        public void WriteSInt64(long value) => WritingPrimitives.WriteSInt64(ref buffer, ref state, value);
 
         /// <summary>
         /// Writes a length (in bytes) for length-delimited data.
@@ -180,8 +194,7 @@ namespace LightProto
         /// This method simply writes a rawint, but exists for clarity in calling code.
         /// </remarks>
         /// <param name="length">Length value, in bytes.</param>
-        public void WriteLength(int length) =>
-            WritingPrimitives.WriteLength(ref buffer, ref state, length);
+        public void WriteLength(int length) => WritingPrimitives.WriteLength(ref buffer, ref state, length);
 
         /// <summary>
         /// Writes an already-encoded tag.

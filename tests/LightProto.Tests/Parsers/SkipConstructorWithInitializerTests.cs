@@ -1,8 +1,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class SkipConstructorWithInitializerTests
-    : BaseTests<SkipConstructorWithInitializerTests.Message, StructTestsMessage>
+public partial class SkipConstructorWithInitializerTests : BaseTests<SkipConstructorWithInitializerTests.Message, StructTestsMessage>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
@@ -48,8 +47,6 @@ public partial class SkipConstructorWithInitializerTests
 
     public override async Task AssertGoogleResult(StructTestsMessage clone, Message message)
     {
-        await Assert
-            .That(clone.Property ?? string.Empty)
-            .IsEquivalentTo(message.Property ?? string.Empty);
+        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property ?? string.Empty);
     }
 }

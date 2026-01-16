@@ -1,15 +1,10 @@
 ﻿namespace LightProto.Parser
 {
 #pragma warning disable 1591, 0612, 3021, 8981, CS9035
-    public sealed class DictionaryProtoReader<TKey, TValue>
-        : IEnumerableKeyValuePairProtoReader<Dictionary<TKey, TValue>, TKey, TValue>
+    public sealed class DictionaryProtoReader<TKey, TValue> : IEnumerableKeyValuePairProtoReader<Dictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public DictionaryProtoReader(
-            IProtoReader<TKey> keyReader,
-            IProtoReader<TValue> valueReader,
-            uint tag
-        )
+        public DictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader, uint tag)
             : base(
                 keyReader,
                 valueReader,
@@ -22,15 +17,10 @@
             ) { }
     }
 
-    public sealed class DictionaryProtoWriter<TKey, TValue>
-        : IEnumerableKeyValuePairProtoWriter<Dictionary<TKey, TValue>, TKey, TValue>
+    public sealed class DictionaryProtoWriter<TKey, TValue> : IEnumerableKeyValuePairProtoWriter<Dictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public DictionaryProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter,
-            uint tag
-        )
+        public DictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag)
             : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
     }
 }

@@ -40,8 +40,7 @@ public partial class ISetPackedTests : BaseTests<ISetPackedTests.Message, ISetPa
 
     public override IEnumerable<ISetPackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new ISetPackedTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new ISetPackedTestsMessage() { Property = { o.Property } });
     }
 
     public override async Task AssertGoogleResult(ISetPackedTestsMessage clone, Message message)

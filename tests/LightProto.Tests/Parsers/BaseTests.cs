@@ -10,10 +10,8 @@ public static class BaseTestsConfig
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
 [InheritsTests]
-public abstract class BaseTests<
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message,
-    GoogleProtobufMessage
-> : BaseProtoBufTests<Message>
+public abstract class BaseTests<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message, GoogleProtobufMessage>
+    : BaseProtoBufTests<Message>
     where Message : IProtoParser<Message>
     where GoogleProtobufMessage : IMessage<GoogleProtobufMessage>, new()
 {
@@ -119,16 +117,12 @@ public abstract class BaseGoogleProtobufTests<
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
 [InheritsTests]
-public abstract class BaseProtoBufTests<
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message
-> : BaseProtoBufTestsWithParser<Message, Message>
+public abstract class BaseProtoBufTests<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message>
+    : BaseProtoBufTestsWithParser<Message, Message>
     where Message : IProtoParser<Message> { }
 
 [SuppressMessage("Usage", "TUnit0300:Generic type or method may not be AOT-compatible")]
-public abstract class BaseProtoBufTestsWithParser<
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message,
-    Parser
->
+public abstract class BaseProtoBufTestsWithParser<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Message, Parser>
     where Parser : IProtoParser<Message>
 {
     public abstract IEnumerable<Message> GetMessages();
@@ -225,18 +219,9 @@ public abstract class BaseProtoBufTestsWithParser<
         await AssertResult(clone, message);
     }
 
-    public IEnumerable<
-        Func<(PrefixStyle style, int fieldNumber, Message[] messages)>
-    > GetLengthPrefixMessages()
+    public IEnumerable<Func<(PrefixStyle style, int fieldNumber, Message[] messages)>> GetLengthPrefixMessages()
     {
-        foreach (
-            var style in new[]
-            {
-                PrefixStyle.Base128,
-                PrefixStyle.Fixed32,
-                PrefixStyle.Fixed32BigEndian,
-            }
-        )
+        foreach (var style in new[] { PrefixStyle.Base128, PrefixStyle.Fixed32, PrefixStyle.Fixed32BigEndian })
         {
             var messages = GetMessages().ToArray();
             foreach (var fieldNumber in new[] { 0, 1, 1000, 1000_000, 100_000_000 })
@@ -249,11 +234,7 @@ public abstract class BaseProtoBufTestsWithParser<
     [Test]
     [MethodDataSource(nameof(GetLengthPrefixMessages))]
     [SkipAot]
-    public async Task LengthPrefix_ProtoBuf_net_Serialize_LightProto_Deserialize(
-        PrefixStyle style,
-        int fieldNumber,
-        Message[] messages
-    )
+    public async Task LengthPrefix_ProtoBuf_net_Serialize_LightProto_Deserialize(PrefixStyle style, int fieldNumber, Message[] messages)
     {
         if (ProtoBuf_net_Serialize_Disabled)
         {
@@ -263,12 +244,7 @@ public abstract class BaseProtoBufTestsWithParser<
         using var ms = new MemoryStream();
         foreach (var message in messages)
         {
-            ProtoBuf.Serializer.SerializeWithLengthPrefix(
-                ms,
-                message,
-                (ProtoBuf.PrefixStyle)style,
-                fieldNumber
-            );
+            ProtoBuf.Serializer.SerializeWithLengthPrefix(ms, message, (ProtoBuf.PrefixStyle)style, fieldNumber);
         }
         if (BaseTestsConfig.WriteDebugInfo)
         {
@@ -278,12 +254,7 @@ public abstract class BaseProtoBufTestsWithParser<
 
         ms.Position = 0;
         List<Message> clones = Serializer
-            .DeserializeItems<Message>(
-                ms,
-                style,
-                fieldNumber,
-                ProtoParser<Message, Parser>.ProtoReader
-            )
+            .DeserializeItems<Message>(ms, style, fieldNumber, ProtoParser<Message, Parser>.ProtoReader)
             .ToList();
         await Assert.That(clones.Count).IsEqualTo(messages.Length);
         for (int i = 0; i < clones.Count; i++)
@@ -295,23 +266,13 @@ public abstract class BaseProtoBufTestsWithParser<
     [Test]
     [MethodDataSource(nameof(GetLengthPrefixMessages))]
     [SkipAot]
-    public async Task LengthPrefix_LightProto_Serialize_ProtoBuf_net_Deserialize(
-        PrefixStyle style,
-        int fieldNumber,
-        Message[] messages
-    )
+    public async Task LengthPrefix_LightProto_Serialize_ProtoBuf_net_Deserialize(PrefixStyle style, int fieldNumber, Message[] messages)
     {
         if (ProtoBuf_net_Deserialize_Disabled)
             return;
         using var ms = new MemoryStream();
         foreach (var message in messages)
-            Serializer.SerializeWithLengthPrefix(
-                ms,
-                message,
-                style,
-                fieldNumber,
-                ProtoParser<Message, Parser>.ProtoWriter
-            );
+            Serializer.SerializeWithLengthPrefix(ms, message, style, fieldNumber, ProtoParser<Message, Parser>.ProtoWriter);
 
         if (BaseTestsConfig.WriteDebugInfo)
         {
@@ -321,9 +282,7 @@ public abstract class BaseProtoBufTestsWithParser<
 
         ms.Position = 0;
 
-        List<Message> clones = ProtoBuf
-            .Serializer.DeserializeItems<Message>(ms, (ProtoBuf.PrefixStyle)style, fieldNumber)
-            .ToList();
+        List<Message> clones = ProtoBuf.Serializer.DeserializeItems<Message>(ms, (ProtoBuf.PrefixStyle)style, fieldNumber).ToList();
         await Assert.That(clones.Count).IsEqualTo(messages.Length);
         for (int i = 0; i < clones.Count; i++)
         {
@@ -333,21 +292,11 @@ public abstract class BaseProtoBufTestsWithParser<
 
     [Test]
     [MethodDataSource(nameof(GetLengthPrefixMessages))]
-    public async Task LengthPrefix_LightProto_Serialize_LightProto_Deserialize(
-        PrefixStyle style,
-        int fieldNumber,
-        Message[] messages
-    )
+    public async Task LengthPrefix_LightProto_Serialize_LightProto_Deserialize(PrefixStyle style, int fieldNumber, Message[] messages)
     {
         using var ms = new MemoryStream();
         foreach (var message in messages)
-            Serializer.SerializeWithLengthPrefix(
-                ms,
-                message,
-                style,
-                fieldNumber,
-                ProtoParser<Message, Parser>.ProtoWriter
-            );
+            Serializer.SerializeWithLengthPrefix(ms, message, style, fieldNumber, ProtoParser<Message, Parser>.ProtoWriter);
         if (BaseTestsConfig.WriteDebugInfo)
         {
             var bytes = ms.ToArray();
@@ -356,12 +305,7 @@ public abstract class BaseProtoBufTestsWithParser<
 
         ms.Position = 0;
         List<Message> clones = Serializer
-            .DeserializeItems<Message>(
-                ms,
-                style,
-                fieldNumber,
-                ProtoParser<Message, Parser>.ProtoReader
-            )
+            .DeserializeItems<Message>(ms, style, fieldNumber, ProtoParser<Message, Parser>.ProtoReader)
             .ToList();
         await Assert.That(clones.Count).IsEqualTo(messages.Length);
         for (int i = 0; i < clones.Count; i++)
@@ -373,23 +317,14 @@ public abstract class BaseProtoBufTestsWithParser<
     [Test]
     [MethodDataSource(nameof(GetLengthPrefixMessages))]
     [SkipAot]
-    public async Task LengthPrefix_ProtoBuf_net_Serialize_ProtoBuf_net_Deserialize(
-        PrefixStyle style,
-        int fieldNumber,
-        Message[] messages
-    )
+    public async Task LengthPrefix_ProtoBuf_net_Serialize_ProtoBuf_net_Deserialize(PrefixStyle style, int fieldNumber, Message[] messages)
     {
         if (ProtoBuf_net_Serialize_Disabled || ProtoBuf_net_Deserialize_Disabled)
             return;
         using var ms = new MemoryStream();
         foreach (var message in messages)
         {
-            ProtoBuf.Serializer.SerializeWithLengthPrefix(
-                ms,
-                message,
-                (ProtoBuf.PrefixStyle)style,
-                fieldNumber
-            );
+            ProtoBuf.Serializer.SerializeWithLengthPrefix(ms, message, (ProtoBuf.PrefixStyle)style, fieldNumber);
         }
 
         if (BaseTestsConfig.WriteDebugInfo)
@@ -399,9 +334,7 @@ public abstract class BaseProtoBufTestsWithParser<
         }
 
         ms.Position = 0;
-        List<Message> clones = ProtoBuf
-            .Serializer.DeserializeItems<Message>(ms, (ProtoBuf.PrefixStyle)style, fieldNumber)
-            .ToList();
+        List<Message> clones = ProtoBuf.Serializer.DeserializeItems<Message>(ms, (ProtoBuf.PrefixStyle)style, fieldNumber).ToList();
 
         await Assert.That(clones.Count).IsEqualTo(messages.Length);
         for (int i = 0; i < clones.Count; i++)
@@ -421,11 +354,7 @@ public abstract class BaseEquivalentTypeTests<
     public abstract IEnumerable<LightProtoMessage> GetLightProtoMessages();
     public abstract IEnumerable<ProtoNetMessage> GetProtoNetMessages();
 
-    public abstract Task AssertResult(
-        LightProtoMessage lightProto,
-        ProtoNetMessage protobuf,
-        bool lightProtoToProtoBuf
-    );
+    public abstract Task AssertResult(LightProtoMessage lightProto, ProtoNetMessage protobuf, bool lightProtoToProtoBuf);
 
     [Test]
     [MethodDataSource(nameof(GetProtoNetMessages))]
@@ -435,10 +364,7 @@ public abstract class BaseEquivalentTypeTests<
         var ms = new MemoryStream();
         ProtoBuf.Serializer.Serialize(ms, message);
         ms.Position = 0;
-        var clone = Serializer.Deserialize(
-            ms.ToArray(),
-            ProtoParser<LightProtoMessage>.ProtoReader
-        );
+        var clone = Serializer.Deserialize(ms.ToArray(), ProtoParser<LightProtoMessage>.ProtoReader);
         await AssertResult(clone, message, false);
     }
 

@@ -23,11 +23,7 @@ public class MultiPartialTest
 #if NET7_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
 #else
-        var cloned = Serializer.DeepClone(
-            message,
-            MultiPartialTestMessage.ProtoReader,
-            MultiPartialTestMessage.ProtoWriter
-        );
+        var cloned = Serializer.DeepClone(message, MultiPartialTestMessage.ProtoReader, MultiPartialTestMessage.ProtoWriter);
 #endif
         await Assert.That(cloned.Part1).IsEqualTo(message.Part1);
         await Assert.That(cloned.Part2).IsEqualTo(message.Part2);

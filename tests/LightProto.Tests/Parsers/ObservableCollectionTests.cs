@@ -4,8 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ObservableCollectionTests
-    : BaseTests<ObservableCollectionTests.Message, ArrayTestsMessage>
+public partial class ObservableCollectionTests : BaseTests<ObservableCollectionTests.Message, ArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

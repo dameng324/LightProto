@@ -32,11 +32,7 @@ public partial class Int128Tests : BaseTests<Int128Tests.Message, Int128TestsMes
         return GetMessages()
             .Select(m => new Int128TestsMessage
             {
-                Property = new Int128Message()
-                {
-                    Lower = (ulong)m.Property,
-                    Upper = (ulong)(m.Property >> 64),
-                },
+                Property = new Int128Message() { Lower = (ulong)m.Property, Upper = (ulong)(m.Property >> 64) },
             });
     }
 
@@ -48,9 +44,7 @@ public partial class Int128Tests : BaseTests<Int128Tests.Message, Int128TestsMes
     public override async Task AssertGoogleResult(Int128TestsMessage clone, Message message)
     {
         clone.Property ??= new Int128Message();
-        await Assert
-            .That(new Int128(clone.Property.Upper, clone.Property.Lower))
-            .IsEqualTo(message.Property);
+        await Assert.That(new Int128(clone.Property.Upper, clone.Property.Lower)).IsEqualTo(message.Property);
     }
 }
 #endif

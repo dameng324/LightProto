@@ -23,8 +23,7 @@ public sealed class RuneProtoParser : IProtoParser<System.Text.Rune>
     {
         int IProtoWriter.CalculateSize(object value) => CalculateSize((System.Text.Rune)value);
 
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-            WriteTo(ref output, (System.Text.Rune)value);
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (System.Text.Rune)value);
 
         public WireFormat.WireType WireType => WireFormat.WireType.Varint;
         public bool IsMessage => false;

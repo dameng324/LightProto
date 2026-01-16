@@ -23,15 +23,12 @@
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((DateOnly)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (DateOnly)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (DateOnly)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.Varint;
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public int CalculateSize(DateOnly value)
             {
                 return CodedOutputStream.ComputeInt32Size(value.DayNumber);

@@ -4,8 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ConcurrentBagPackedTests
-    : BaseTests<ConcurrentBagPackedTests.Message, ConcurrentBagPackedTestsMessage>
+public partial class ConcurrentBagPackedTests : BaseTests<ConcurrentBagPackedTests.Message, ConcurrentBagPackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -37,24 +36,16 @@ public partial class ConcurrentBagPackedTests
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert
-            .That(clone.Property.OrderBy(x => x).ToArray())
-            .IsEquivalentTo(message.Property.OrderBy(x => x).ToArray());
+        await Assert.That(clone.Property.OrderBy(x => x).ToArray()).IsEquivalentTo(message.Property.OrderBy(x => x).ToArray());
     }
 
     public override IEnumerable<ConcurrentBagPackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new ConcurrentBagPackedTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new ConcurrentBagPackedTestsMessage() { Property = { o.Property } });
     }
 
-    public override async Task AssertGoogleResult(
-        ConcurrentBagPackedTestsMessage clone,
-        Message message
-    )
+    public override async Task AssertGoogleResult(ConcurrentBagPackedTestsMessage clone, Message message)
     {
-        await Assert
-            .That(clone.Property.OrderBy(x => x).ToArray())
-            .IsEquivalentTo(message.Property.OrderBy(x => x).ToArray());
+        await Assert.That(clone.Property.OrderBy(x => x).ToArray()).IsEquivalentTo(message.Property.OrderBy(x => x).ToArray());
     }
 }

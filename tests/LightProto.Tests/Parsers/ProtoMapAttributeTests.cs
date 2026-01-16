@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ProtoMapAttributeTests
-    : BaseTests<ProtoMapAttributeTests.Message, ProtoMapAttributeTestsMessage>
+public partial class ProtoMapAttributeTests : BaseTests<ProtoMapAttributeTests.Message, ProtoMapAttributeTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -13,10 +12,7 @@ public partial class ProtoMapAttributeTests
         [ProtoMember(1)]
         [ProtoMap(KeyFormat = DataFormat.ZigZag, ValueFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(1)]
-        [ProtoBuf.ProtoMap(
-            KeyFormat = ProtoBuf.DataFormat.ZigZag,
-            ValueFormat = ProtoBuf.DataFormat.FixedSize
-        )]
+        [ProtoBuf.ProtoMap(KeyFormat = ProtoBuf.DataFormat.ZigZag, ValueFormat = ProtoBuf.DataFormat.FixedSize)]
         public Dictionary<int, long> Property { get; set; } = [];
 
         public override string ToString()
@@ -46,14 +42,10 @@ public partial class ProtoMapAttributeTests
 
     public override IEnumerable<ProtoMapAttributeTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new ProtoMapAttributeTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new ProtoMapAttributeTestsMessage() { Property = { o.Property } });
     }
 
-    public override async Task AssertGoogleResult(
-        ProtoMapAttributeTestsMessage clone,
-        Message message
-    )
+    public override async Task AssertGoogleResult(ProtoMapAttributeTestsMessage clone, Message message)
     {
         await Assert.That(clone.Property.ToArray()).IsEquivalentTo(message.Property.ToArray());
     }

@@ -12,9 +12,7 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public Uri? ParseFrom(ref ReaderContext input)
             {
                 var uriString = input.ReadString();
@@ -36,23 +34,18 @@ namespace LightProto.Parser
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((Uri?)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (Uri?)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (Uri?)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public int CalculateSize(Uri? value)
             {
                 return CodedOutputStream.ComputeStringSize(value?.OriginalString ?? string.Empty);
             }
 
-            [System.Runtime.CompilerServices.MethodImpl(
-                System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-            )]
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public void WriteTo(ref WriterContext output, Uri? value)
             {
                 output.WriteString(value?.OriginalString ?? string.Empty);

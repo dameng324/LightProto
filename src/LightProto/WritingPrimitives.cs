@@ -36,27 +36,15 @@ namespace LightProto
         /// <summary>
         /// Writes a double field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteDouble(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            double value
-        )
+        public static void WriteDouble(ref Span<byte> buffer, ref WriterInternalState state, double value)
         {
-            WriteRawLittleEndian64(
-                ref buffer,
-                ref state,
-                (ulong)BitConverter.DoubleToInt64Bits(value)
-            );
+            WriteRawLittleEndian64(ref buffer, ref state, (ulong)BitConverter.DoubleToInt64Bits(value));
         }
 
         /// <summary>
         /// Writes a float field value, without a tag, to the stream.
         /// </summary>
-        public static unsafe void WriteFloat(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            float value
-        )
+        public static unsafe void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
         {
             const int length = sizeof(float);
             if (buffer.Length - state.position >= length)
@@ -78,11 +66,7 @@ namespace LightProto
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static unsafe void WriteFloatSlowPath(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            float value
-        )
+        private static unsafe void WriteFloatSlowPath(ref Span<byte> buffer, ref WriterInternalState state, float value)
         {
             const int length = sizeof(float);
 
@@ -103,11 +87,7 @@ namespace LightProto
         /// <summary>
         /// Writes a uint64 field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteUInt64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            ulong value
-        )
+        public static void WriteUInt64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
             WriteRawVarint64(ref buffer, ref state, value);
         }
@@ -115,11 +95,7 @@ namespace LightProto
         /// <summary>
         /// Writes an int64 field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteInt64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            long value
-        )
+        public static void WriteInt64(ref Span<byte> buffer, ref WriterInternalState state, long value)
         {
             WriteRawVarint64(ref buffer, ref state, (ulong)value);
         }
@@ -127,11 +103,7 @@ namespace LightProto
         /// <summary>
         /// Writes an int32 field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteInt32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            int value
-        )
+        public static void WriteInt32(ref Span<byte> buffer, ref WriterInternalState state, int value)
         {
             if (value >= 0)
             {
@@ -147,11 +119,7 @@ namespace LightProto
         /// <summary>
         /// Writes a fixed64 field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteFixed64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            ulong value
-        )
+        public static void WriteFixed64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
             WriteRawLittleEndian64(ref buffer, ref state, value);
         }
@@ -159,11 +127,7 @@ namespace LightProto
         /// <summary>
         /// Writes a fixed32 field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteFixed32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        public static void WriteFixed32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             WriteRawLittleEndian32(ref buffer, ref state, value);
         }
@@ -171,11 +135,7 @@ namespace LightProto
         /// <summary>
         /// Writes a bool field value, without a tag, to the stream.
         /// </summary>
-        public static void WriteBool(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            bool value
-        )
+        public static void WriteBool(ref Span<byte> buffer, ref WriterInternalState state, bool value)
         {
             WriteRawByte(ref buffer, ref state, value ? (byte)1 : (byte)0);
         }
@@ -184,11 +144,7 @@ namespace LightProto
         /// Writes a string field value, without a tag, to the stream.
         /// The data is length-prefixed.
         /// </summary>
-        public static void WriteString(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            string value
-        )
+        public static void WriteString(ref Span<byte> buffer, ref WriterInternalState state, string value)
         {
             const int MaxBytesPerChar = 3;
             const int MaxSmallStringLength = 128 / MaxBytesPerChar;
@@ -197,17 +153,10 @@ namespace LightProto
             // Also there is enough space to write length + bytes to buffer.
             // Write string directly to the buffer, and then write length.
             // This saves calling GetByteCount on the string. We get the string length from GetBytes.
-            if (
-                value.Length <= MaxSmallStringLength
-                && buffer.Length - state.position - 1 >= value.Length * MaxBytesPerChar
-            )
+            if (value.Length <= MaxSmallStringLength && buffer.Length - state.position - 1 >= value.Length * MaxBytesPerChar)
             {
                 int indexOfLengthDelimiter = state.position++;
-                buffer[indexOfLengthDelimiter] = (byte)WriteStringToBuffer(
-                    buffer,
-                    ref state,
-                    value
-                );
+                buffer[indexOfLengthDelimiter] = (byte)WriteStringToBuffer(buffer, ref state, value);
                 return;
             }
 
@@ -240,17 +189,10 @@ namespace LightProto
 
         // Calling this method with non-ASCII content will break.
         // Content must be verified to be all ASCII before using this method.
-        private static void WriteAsciiStringToBuffer(
-            Span<byte> buffer,
-            ref WriterInternalState state,
-            string value,
-            int length
-        )
+        private static void WriteAsciiStringToBuffer(Span<byte> buffer, ref WriterInternalState state, string value, int length)
         {
             ref char sourceChars = ref MemoryMarshal.GetReference(value.AsSpan());
-            ref byte destinationBytes = ref MemoryMarshal.GetReference(
-                buffer.Slice(state.position)
-            );
+            ref byte destinationBytes = ref MemoryMarshal.GetReference(buffer.Slice(state.position));
 
             int currentIndex = 0;
             // If 64bit, process 4 chars at a time.
@@ -269,12 +211,7 @@ namespace LightProto
                     {
                         NarrowFourUtf16CharsToAsciiAndWriteToBuffer(
                             ref Unsafe.AddByteOffset(ref destinationBytes, (IntPtr)currentIndex),
-                            Unsafe.ReadUnaligned<ulong>(
-                                ref Unsafe.AddByteOffset(
-                                    ref sourceBytes,
-                                    (IntPtr)(currentIndex * 2)
-                                )
-                            )
+                            Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref sourceBytes, (IntPtr)(currentIndex * 2)))
                         );
                     } while ((currentIndex += 4) <= lastIndexWhereCanReadFourChars);
                 }
@@ -299,10 +236,7 @@ namespace LightProto
         /// also in machine-endian order.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void NarrowFourUtf16CharsToAsciiAndWriteToBuffer(
-            ref byte outputBuffer,
-            ulong value
-        )
+        private static void NarrowFourUtf16CharsToAsciiAndWriteToBuffer(ref byte outputBuffer, ulong value)
         {
 #if NET5_0_OR_GREATER
             if (Sse2.X64.IsSupported)
@@ -352,11 +286,7 @@ namespace LightProto
             }
         }
 
-        private static int WriteStringToBuffer(
-            Span<byte> buffer,
-            ref WriterInternalState state,
-            string value
-        )
+        private static int WriteStringToBuffer(Span<byte> buffer, ref WriterInternalState state, string value)
         {
             ReadOnlySpan<char> source = value.AsSpan();
             int bytesUsed;
@@ -380,11 +310,7 @@ namespace LightProto
         /// <summary>
         /// Writes a uint32 value, without a tag, to the stream.
         /// </summary>
-        public static void WriteUInt32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        public static void WriteUInt32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             WriteRawVarint32(ref buffer, ref state, value);
         }
@@ -392,11 +318,7 @@ namespace LightProto
         /// <summary>
         /// Writes an enum value, without a tag, to the stream.
         /// </summary>
-        public static void WriteEnum(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            int value
-        )
+        public static void WriteEnum(ref Span<byte> buffer, ref WriterInternalState state, int value)
         {
             WriteInt32(ref buffer, ref state, value);
         }
@@ -404,11 +326,7 @@ namespace LightProto
         /// <summary>
         /// Writes an sfixed32 value, without a tag, to the stream.
         /// </summary>
-        public static void WriteSFixed32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            int value
-        )
+        public static void WriteSFixed32(ref Span<byte> buffer, ref WriterInternalState state, int value)
         {
             WriteRawLittleEndian32(ref buffer, ref state, (uint)value);
         }
@@ -416,11 +334,7 @@ namespace LightProto
         /// <summary>
         /// Writes an sfixed64 value, without a tag, to the stream.
         /// </summary>
-        public static void WriteSFixed64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            long value
-        )
+        public static void WriteSFixed64(ref Span<byte> buffer, ref WriterInternalState state, long value)
         {
             WriteRawLittleEndian64(ref buffer, ref state, (ulong)value);
         }
@@ -428,11 +342,7 @@ namespace LightProto
         /// <summary>
         /// Writes an sint32 value, without a tag, to the stream.
         /// </summary>
-        public static void WriteSInt32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            int value
-        )
+        public static void WriteSInt32(ref Span<byte> buffer, ref WriterInternalState state, int value)
         {
             WriteRawVarint32(ref buffer, ref state, EncodeZigZag32(value));
         }
@@ -440,11 +350,7 @@ namespace LightProto
         /// <summary>
         /// Writes an sint64 value, without a tag, to the stream.
         /// </summary>
-        public static void WriteSInt64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            long value
-        )
+        public static void WriteSInt64(ref Span<byte> buffer, ref WriterInternalState state, long value)
         {
             WriteRawVarint64(ref buffer, ref state, EncodeZigZag64(value));
         }
@@ -455,11 +361,7 @@ namespace LightProto
         /// <remarks>
         /// This method simply writes a rawint, but exists for clarity in calling code.
         /// </remarks>
-        public static void WriteLength(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            int length
-        )
+        public static void WriteLength(ref Span<byte> buffer, ref WriterInternalState state, int length)
         {
             WriteRawVarint32(ref buffer, ref state, (uint)length);
         }
@@ -472,11 +374,7 @@ namespace LightProto
         /// there's enough buffer space left to whizz through without checking
         /// for each byte; otherwise, we resort to calling WriteRawByte each time.
         /// </summary>
-        public static void WriteRawVarint32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        public static void WriteRawVarint32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             // Optimize for the common case of a single byte value
             if (value < 128 && state.position < buffer.Length)
@@ -509,11 +407,7 @@ namespace LightProto
             WriteRawByte(ref buffer, ref state, (byte)value);
         }
 
-        public static void WriteRawVarint64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            ulong value
-        )
+        public static void WriteRawVarint64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
             // Optimize for the common case of a single byte value
             if (value < 128 && state.position < buffer.Length)
@@ -546,11 +440,7 @@ namespace LightProto
             WriteRawByte(ref buffer, ref state, (byte)value);
         }
 
-        public static void WriteRawLittleEndian32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        public static void WriteRawLittleEndian32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             const int length = sizeof(uint);
             if (state.position + length > buffer.Length)
@@ -564,11 +454,7 @@ namespace LightProto
             }
         }
 
-        public static void WriteRawBigEndian32(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        public static void WriteRawBigEndian32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             const int length = sizeof(uint);
             if (state.position + length > buffer.Length)
@@ -583,11 +469,7 @@ namespace LightProto
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void WriteRawBigEndian32SlowPath(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        private static void WriteRawBigEndian32SlowPath(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
             WriteRawByte(ref buffer, ref state, (byte)(value >> 16));
@@ -596,11 +478,7 @@ namespace LightProto
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void WriteRawLittleEndian32SlowPath(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            uint value
-        )
+        private static void WriteRawLittleEndian32SlowPath(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             WriteRawByte(ref buffer, ref state, (byte)value);
             WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
@@ -608,11 +486,7 @@ namespace LightProto
             WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
         }
 
-        public static void WriteRawLittleEndian64(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            ulong value
-        )
+        public static void WriteRawLittleEndian64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
             const int length = sizeof(ulong);
             if (state.position + length > buffer.Length)
@@ -627,11 +501,7 @@ namespace LightProto
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void WriteRawLittleEndian64SlowPath(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            ulong value
-        )
+        public static void WriteRawLittleEndian64SlowPath(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
             WriteRawByte(ref buffer, ref state, (byte)value);
             WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
@@ -643,11 +513,7 @@ namespace LightProto
             WriteRawByte(ref buffer, ref state, (byte)(value >> 56));
         }
 
-        private static void WriteRawByte(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            byte value
-        )
+        private static void WriteRawByte(ref Span<byte> buffer, ref WriterInternalState state, byte value)
         {
             if (state.position == buffer.Length)
             {
@@ -660,11 +526,7 @@ namespace LightProto
         /// <summary>
         /// Writes out an array of bytes.
         /// </summary>
-        public static void WriteRawBytes(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            byte[] value
-        )
+        public static void WriteRawBytes(ref Span<byte> buffer, ref WriterInternalState state, byte[] value)
         {
             WriteRawBytes(ref buffer, ref state, new ReadOnlySpan<byte>(value));
         }
@@ -672,11 +534,7 @@ namespace LightProto
         /// <summary>
         /// Writes out part of an array of bytes.
         /// </summary>
-        public static void WriteRawBytes(
-            ref Span<byte> buffer,
-            ref WriterInternalState state,
-            ReadOnlySpan<byte> value
-        )
+        public static void WriteRawBytes(ref Span<byte> buffer, ref WriterInternalState state, ReadOnlySpan<byte> value)
         {
             if (buffer.Length - state.position >= value.Length)
             {
@@ -704,9 +562,7 @@ namespace LightProto
 
                 // copy the remaining data
                 int remainderLength = value.Length - bytesWritten;
-                value
-                    .Slice(bytesWritten, remainderLength)
-                    .CopyTo(buffer.Slice(state.position, remainderLength));
+                value.Slice(bytesWritten, remainderLength).CopyTo(buffer.Slice(state.position, remainderLength));
                 state.position += remainderLength;
             }
         }

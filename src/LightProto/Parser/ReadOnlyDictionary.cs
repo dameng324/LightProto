@@ -7,11 +7,7 @@ namespace LightProto.Parser
         : IEnumerableKeyValuePairProtoWriter<IReadOnlyDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public IReadOnlyDictionaryProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter,
-            uint tag
-        )
+        public IReadOnlyDictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag)
             : base(keyWriter, valueWriter, tag, static (dic) => dic.Count) { }
     }
 
@@ -19,11 +15,7 @@ namespace LightProto.Parser
         : IEnumerableKeyValuePairProtoWriter<ReadOnlyDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public ReadOnlyDictionaryProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter,
-            uint tag
-        )
+        public ReadOnlyDictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag)
             : base(keyWriter, valueWriter, tag, static (dic) => dic.Count) { }
     }
 
@@ -38,28 +30,18 @@ namespace LightProto.Parser
         object IProtoReader.ParseFrom(ref ReaderContext input) =>
             new ReadOnlyDictionary<TKey, TValue>(_dictionaryReader.ParseFrom(ref input));
 
-        ReadOnlyDictionary<TKey, TValue> IProtoReader<ReadOnlyDictionary<TKey, TValue>>.ParseFrom(
-            ref ReaderContext input
-        ) => new(_dictionaryReader.ParseFrom(ref input));
+        ReadOnlyDictionary<TKey, TValue> IProtoReader<ReadOnlyDictionary<TKey, TValue>>.ParseFrom(ref ReaderContext input) =>
+            new(_dictionaryReader.ParseFrom(ref input));
 
         public WireFormat.WireType ItemWireType => ItemReader.WireType;
         object ICollectionReader.Empty => Empty;
 
-        public ReadOnlyDictionaryProtoReader(
-            IProtoReader<TKey> keyReader,
-            IProtoReader<TValue> valueReader,
-            uint tag
-        )
+        public ReadOnlyDictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader, uint tag)
         {
-            _dictionaryReader = new DictionaryProtoReader<TKey, TValue>(
-                keyReader,
-                valueReader,
-                tag
-            );
+            _dictionaryReader = new DictionaryProtoReader<TKey, TValue>(keyReader, valueReader, tag);
         }
 
-        public ReadOnlyDictionary<TKey, TValue> Empty { get; } =
-            new ReadOnlyDictionary<TKey, TValue>(new Dictionary<TKey, TValue>());
+        public ReadOnlyDictionary<TKey, TValue> Empty { get; } = new ReadOnlyDictionary<TKey, TValue>(new Dictionary<TKey, TValue>());
         public IProtoReader<KeyValuePair<TKey, TValue>> ItemReader => _dictionaryReader.ItemReader;
     }
 }

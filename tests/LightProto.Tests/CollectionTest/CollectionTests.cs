@@ -17,6 +17,51 @@ public class Int32CollectionTest : BaseCollectionTestWithParser<Int32ProtoParser
 }
 
 [InheritsTests]
+public class SByteCollectionTest : BaseCollectionTestWithParser<SByteProtoParser, sbyte>
+{
+    public override IEnumerable<sbyte[]> GetCollection()
+    {
+        yield return new sbyte[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SSByteCollectionTest : BaseCollectionTestWithParser<SSByteProtoParser, sbyte>
+{
+    public override IEnumerable<sbyte[]> GetCollection()
+    {
+        yield return new sbyte[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SFixedByteCollectionTest : BaseCollectionTestWithParser<SFixedByteProtoParser, sbyte>
+{
+    public override IEnumerable<sbyte[]> GetCollection()
+    {
+        yield return new sbyte[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class ByteCollectionTest : BaseCollectionTestWithParser<ByteProtoParser, byte>
+{
+    public override IEnumerable<byte[]> GetCollection()
+    {
+        yield return new byte[] { 1, byte.MinValue, byte.MaxValue };
+    }
+}
+
+[InheritsTests]
+public class FixedByteCollectionTest : BaseCollectionTestWithParser<FixedByteProtoParser, byte>
+{
+    public override IEnumerable<byte[]> GetCollection()
+    {
+        yield return new byte[] { 1, byte.MinValue, byte.MaxValue };
+    }
+}
+
+[InheritsTests]
 public class Int64CollectionTest : BaseCollectionTestWithParser<Int64ProtoParser, long>
 {
     public override IEnumerable<long[]> GetCollection()
@@ -31,6 +76,15 @@ public class SInt32CollectionTest : BaseCollectionTestWithParser<SInt32ProtoPars
     public override IEnumerable<int[]> GetCollection()
     {
         yield return new int[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class CharCollectionTest : BaseCollectionTestWithParser<CharProtoParser, char>
+{
+    public override IEnumerable<char[]> GetCollection()
+    {
+        yield return new char[] { char.MinValue, char.MaxValue, 'a', 'Z', '中' };
     }
 }
 
@@ -152,8 +206,7 @@ public class Guid300CollectionTest : BaseCollectionTestWithParser<Guid300ProtoPa
 }
 
 [InheritsTests]
-public class EnumCollectionTest
-    : BaseCollectionTestWithParser<EnumProtoParser<PlatformID>, PlatformID>
+public class EnumCollectionTest : BaseCollectionTestWithParser<EnumProtoParser<PlatformID>, PlatformID>
 {
     public override IEnumerable<PlatformID[]> GetCollection()
     {
@@ -173,28 +226,11 @@ public class BoolCollectionTest : BaseCollectionTestWithParser<BooleanProtoParse
 [InheritsTests]
 public class ByteArrayCollectionTest : BaseCollectionTestWithParser<ByteArrayProtoParser, byte[]>
 {
-    protected override IEqualityComparer<byte[]> Comparer { get; } =
-        StructuralEqualityComparer<byte[]>.Instance;
+    protected override IEqualityComparer<byte[]> Comparer { get; } = StructuralEqualityComparer<byte[]>.Instance;
 
     public override IEnumerable<byte[][]> GetCollection()
     {
         yield return new byte[][] { new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 } };
-    }
-}
-
-[InheritsTests]
-public class ByteListCollectionTest : BaseCollectionTestWithParser<ByteListProtoParser, List<byte>>
-{
-    protected override IEqualityComparer<List<byte>> Comparer { get; } =
-        StructuralEqualityComparer<List<byte>>.Instance;
-
-    public override IEnumerable<List<byte>[]> GetCollection()
-    {
-        yield return new List<byte>[]
-        {
-            new List<byte> { 1, 2, 3 },
-            new List<byte> { 4, 5, 6 },
-        };
     }
 }
 
@@ -237,8 +273,7 @@ public class TimeSpanCollectionTest : BaseCollectionTestWithParser<TimeSpanProto
 }
 
 [InheritsTests]
-public class DateTime240CollectionTest
-    : BaseCollectionTestWithParser<DateTime240ProtoParser, DateTime>
+public class DateTime240CollectionTest : BaseCollectionTestWithParser<DateTime240ProtoParser, DateTime>
 {
     public override IEnumerable<DateTime[]> GetCollection()
     {
@@ -247,8 +282,7 @@ public class DateTime240CollectionTest
 }
 
 [InheritsTests]
-public class TimeSpan240CollectionTest
-    : BaseCollectionTestWithParser<TimeSpan240ProtoParser, TimeSpan>
+public class TimeSpan240CollectionTest : BaseCollectionTestWithParser<TimeSpan240ProtoParser, TimeSpan>
 {
     public override IEnumerable<TimeSpan[]> GetCollection()
     {
@@ -266,8 +300,7 @@ public class StringCollectionTest : BaseCollectionTestWithParser<StringProtoPars
 }
 
 [InheritsTests]
-public class InternedStringCollectionTest
-    : BaseCollectionTestWithParser<InternedStringProtoParser, string>
+public class InternedStringCollectionTest : BaseCollectionTestWithParser<InternedStringProtoParser, string>
 {
     public override IEnumerable<string[]> GetCollection()
     {
@@ -276,8 +309,7 @@ public class InternedStringCollectionTest
 }
 
 [InheritsTests]
-public class StringBuilderCollectionTest
-    : BaseCollectionTestWithParser<StringBuilderProtoParser, StringBuilder>
+public class StringBuilderCollectionTest : BaseCollectionTestWithParser<StringBuilderProtoParser, StringBuilder>
 {
     public class StringBuilderEqualityComparer : EqualityComparer<StringBuilder>
     {
@@ -296,8 +328,7 @@ public class StringBuilderCollectionTest
         }
     }
 
-    protected override IEqualityComparer<StringBuilder> Comparer { get; } =
-        new StringBuilderEqualityComparer();
+    protected override IEqualityComparer<StringBuilder> Comparer { get; } = new StringBuilderEqualityComparer();
 
     public override IEnumerable<StringBuilder[]> GetCollection()
     {
@@ -308,11 +339,9 @@ public class StringBuilderCollectionTest
 [InheritsTests]
 public class NullableCollectionTest : BaseCollectionTest<int?>
 {
-    public override IProtoWriter<int?> ProtoWriter { get; } =
-        new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter);
+    public override IProtoWriter<int?> ProtoWriter { get; } = new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter);
 
-    public override IProtoReader<int?> ProtoReader { get; } =
-        new NullableProtoReader<int>(Int32ProtoParser.ProtoReader);
+    public override IProtoReader<int?> ProtoReader { get; } = new NullableProtoReader<int>(Int32ProtoParser.ProtoReader);
 
     public override IEnumerable<int?[]> GetCollection()
     {
@@ -321,11 +350,9 @@ public class NullableCollectionTest : BaseCollectionTest<int?>
 }
 
 [InheritsTests]
-public partial class ContractCollectionTest
-    : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
+public partial class ContractCollectionTest : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
 {
-    protected override IEqualityComparer<Message> Comparer { get; } =
-        StructuralEqualityComparer<Message>.Instance;
+    protected override IEqualityComparer<Message> Comparer { get; } = StructuralEqualityComparer<Message>.Instance;
 
     [ProtoContract]
     public partial class Message : IComparable<Message>
@@ -391,14 +418,7 @@ public class Int128CollectionTest : BaseCollectionTestWithParser<Int128ProtoPars
 {
     public override IEnumerable<Int128[]> GetCollection()
     {
-        yield return new Int128[]
-        {
-            Int128.MinValue,
-            Int128.MaxValue,
-            Int128.Zero,
-            1111111111111111111,
-            -1111111111111111111,
-        };
+        yield return new Int128[] { Int128.MinValue, Int128.MaxValue, Int128.Zero, 1111111111111111111, -1111111111111111111 };
     }
 }
 
@@ -416,14 +436,7 @@ public class Vector2CollectionTest : BaseCollectionTestWithParser<Vector2ProtoPa
 {
     public override IEnumerable<Vector2[]> GetCollection()
     {
-        yield return new Vector2[]
-        {
-            new Vector2(-1, -2),
-            new Vector2(1, -2),
-            new Vector2(-1, 2),
-            new Vector2(1, 2),
-            new Vector2(0, 0),
-        };
+        yield return new Vector2[] { new Vector2(-1, -2), new Vector2(1, -2), new Vector2(-1, 2), new Vector2(1, 2), new Vector2(0, 0) };
     }
 }
 
@@ -444,8 +457,7 @@ public class Vector3CollectionTest : BaseCollectionTestWithParser<Vector3ProtoPa
 }
 
 [InheritsTests]
-public class QuaternionCollectionTest
-    : BaseCollectionTestWithParser<QuaternionProtoParser, Quaternion>
+public class QuaternionCollectionTest : BaseCollectionTestWithParser<QuaternionProtoParser, Quaternion>
 {
     public override IEnumerable<Quaternion[]> GetCollection()
     {
@@ -510,8 +522,7 @@ public class Matrix4x4CollectionTest : BaseCollectionTestWithParser<Matrix4x4Pro
 #endif
 
 [InheritsTests]
-public class BigIntegerCollectionTest
-    : BaseCollectionTestWithParser<BigIntegerProtoParser, BigInteger>
+public class BigIntegerCollectionTest : BaseCollectionTestWithParser<BigIntegerProtoParser, BigInteger>
 {
     public override IEnumerable<BigInteger[]> GetCollection()
     {
@@ -526,8 +537,7 @@ public class BigIntegerCollectionTest
 [InheritsTests]
 public class BitArrayCollectionTest : BaseCollectionTestWithParser<BitArrayProtoParser, BitArray>
 {
-    protected override IEqualityComparer<BitArray> Comparer { get; } =
-        StructuralEqualityComparer<BitArray>.Instance;
+    protected override IEqualityComparer<BitArray> Comparer { get; } = StructuralEqualityComparer<BitArray>.Instance;
 
     public override IEnumerable<BitArray[]> GetCollection()
     {
@@ -546,20 +556,12 @@ public class ComplexCollectionTest : BaseCollectionTestWithParser<ComplexProtoPa
 {
     public override IEnumerable<Complex[]> GetCollection()
     {
-        yield return new Complex[]
-        {
-            new Complex(-1, -2),
-            new Complex(1, -2),
-            new Complex(-1, 2),
-            new Complex(1, 2),
-            new Complex(0, 0),
-        };
+        yield return new Complex[] { new Complex(-1, -2), new Complex(1, -2), new Complex(-1, 2), new Complex(1, 2), new Complex(0, 0) };
     }
 }
 
 [InheritsTests]
-public class CultureInfoCollectionTest
-    : BaseCollectionTestWithParser<CultureInfoProtoParser, CultureInfo>
+public class CultureInfoCollectionTest : BaseCollectionTestWithParser<CultureInfoProtoParser, CultureInfo>
 {
     public override IEnumerable<CultureInfo[]> GetCollection()
     {
@@ -574,8 +576,7 @@ public class CultureInfoCollectionTest
 }
 
 [InheritsTests]
-public class DateTimeOffsetCollectionTest
-    : BaseCollectionTestWithParser<DateTimeOffsetProtoParser, DateTimeOffset>
+public class DateTimeOffsetCollectionTest : BaseCollectionTestWithParser<DateTimeOffsetProtoParser, DateTimeOffset>
 {
     public override IEnumerable<DateTimeOffset[]> GetCollection()
     {
@@ -593,11 +594,9 @@ public class DateTimeOffsetCollectionTest
 [InheritsTests]
 public class LazyCollectionTest
 {
-    public IProtoWriter<Lazy<int>> ProtoWriter { get; } =
-        new LazyProtoWriter<int>(Int32ProtoParser.ProtoWriter);
+    public IProtoWriter<Lazy<int>> ProtoWriter { get; } = new LazyProtoWriter<int>(Int32ProtoParser.ProtoWriter);
 
-    public IProtoReader<Lazy<int>> ProtoReader { get; } =
-        new LazyProtoReader<int>(Int32ProtoParser.ProtoReader);
+    public IProtoReader<Lazy<int>> ProtoReader { get; } = new LazyProtoReader<int>(Int32ProtoParser.ProtoReader);
 
     [Test]
     [Category("CollectionTest")]
@@ -616,8 +615,7 @@ public class LazyCollectionTest
 }
 
 [InheritsTests]
-public class TimeZoneInfoCollectionTest
-    : BaseCollectionTestWithParser<TimeZoneInfoProtoParser, TimeZoneInfo>
+public class TimeZoneInfoCollectionTest : BaseCollectionTestWithParser<TimeZoneInfoProtoParser, TimeZoneInfo>
 {
     public override IEnumerable<TimeZoneInfo[]> GetCollection()
     {

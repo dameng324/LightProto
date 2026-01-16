@@ -11,17 +11,11 @@ namespace ProtoBuf
     {
         private global::ProtoBuf.IExtension __pbn__extensionData;
 
-        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(
-            bool createIfMissing
-        ) =>
-            global::ProtoBuf.Extensible.GetExtensionObject(
-                ref __pbn__extensionData,
-                createIfMissing
-            );
+        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing) =>
+            global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
         [global::ProtoBuf.ProtoMember(1)]
-        public global::System.Collections.Generic.List<Order> Orders { get; } =
-            new global::System.Collections.Generic.List<Order>();
+        public global::System.Collections.Generic.List<Order> Orders { get; } = new global::System.Collections.Generic.List<Order>();
     }
 
     [global::ProtoBuf.ProtoContract()]
@@ -29,13 +23,8 @@ namespace ProtoBuf
     {
         private global::ProtoBuf.IExtension __pbn__extensionData;
 
-        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(
-            bool createIfMissing
-        ) =>
-            global::ProtoBuf.Extensible.GetExtensionObject(
-                ref __pbn__extensionData,
-                createIfMissing
-            );
+        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing) =>
+            global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
         [global::ProtoBuf.ProtoMember(1)]
         public int OrderID { get; set; }
@@ -87,8 +76,7 @@ namespace ProtoBuf
         public string ShipCountry { get; set; } = "";
 
         [global::ProtoBuf.ProtoMember(15)]
-        public global::System.Collections.Generic.List<OrderLine> Lines { get; } =
-            new global::System.Collections.Generic.List<OrderLine>();
+        public global::System.Collections.Generic.List<OrderLine> Lines { get; } = new global::System.Collections.Generic.List<OrderLine>();
     }
 
     [global::ProtoBuf.ProtoContract()]
@@ -96,13 +84,8 @@ namespace ProtoBuf
     {
         private global::ProtoBuf.IExtension __pbn__extensionData;
 
-        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(
-            bool createIfMissing
-        ) =>
-            global::ProtoBuf.Extensible.GetExtensionObject(
-                ref __pbn__extensionData,
-                createIfMissing
-            );
+        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing) =>
+            global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
         [global::ProtoBuf.ProtoMember(1)]
         public int OrderID { get; set; }

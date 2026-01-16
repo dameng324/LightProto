@@ -35,25 +35,18 @@ public partial class BitArrayTests : BaseTests<BitArrayTests.Message, BitArrayTe
     public override IEnumerable<BitArrayTestsMessage> GetGoogleMessages()
     {
         return GetMessages()
-            .Select(o => new BitArrayTestsMessage()
-            {
-                Property = new BitArrayMessage() { Bits = { o.Property.ToBoolArray() } },
-            });
+            .Select(o => new BitArrayTestsMessage() { Property = new BitArrayMessage() { Bits = { o.Property.ToBoolArray() } } });
     }
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert
-            .That(clone.Property.ToBoolArray())
-            .IsEquivalentTo(message.Property.ToBoolArray());
+        await Assert.That(clone.Property.ToBoolArray()).IsEquivalentTo(message.Property.ToBoolArray());
     }
 
     public override async Task AssertGoogleResult(BitArrayTestsMessage clone, Message message)
     {
         clone.Property ??= new BitArrayMessage();
-        await Assert
-            .That(clone.Property.Bits.ToArray())
-            .IsEquivalentTo(message.Property.ToBoolArray());
+        await Assert.That(clone.Property.Bits.ToArray()).IsEquivalentTo(message.Property.ToBoolArray());
     }
 
     [Test]

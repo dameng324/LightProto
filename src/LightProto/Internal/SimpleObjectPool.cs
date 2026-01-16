@@ -11,14 +11,9 @@ namespace LightProto.Internal
         private readonly Action<T>? _resetAction;
         private readonly int _maxSize;
 
-        public SimpleObjectPool(
-            Func<T> objectFactory,
-            Action<T>? resetAction = null,
-            int maxSize = 128
-        )
+        public SimpleObjectPool(Func<T> objectFactory, Action<T>? resetAction = null, int maxSize = 128)
         {
-            _objectFactory =
-                objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
+            _objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
             _resetAction = resetAction;
             _maxSize = maxSize;
 
