@@ -5,8 +5,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class PrimitiveArrayTests
-    : BaseTests<PrimitiveArrayTests.Message, PrimitiveArrayTestMessage>
+public partial class PrimitiveArrayTests : BaseTests<PrimitiveArrayTests.Message, PrimitiveArrayTestMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -176,150 +175,45 @@ public partial class PrimitiveArrayTests
             var random = new Random();
             yield return new()
             {
-                BooleanValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next() % 2 == 0)
-                    .ToArray(),
-                DoubleValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.NextDouble() * 1000 - 500)
-                    .ToArray(),
-                Int32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SFixed32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                Fixed32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (uint)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SFixed64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                Fixed64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                Int64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SInt64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (long)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SInt32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                SingleValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (float)(random.NextDouble() * 1000 - 500))
-                    .ToArray(),
-                UInt64Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                UInt32Values = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (uint)random.Next(int.MinValue, int.MaxValue))
-                    .ToArray(),
-                ByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue))
-                    .ToList(),
-                FixedByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue))
-                    .ToList(),
-                SByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
-                    .ToList(),
-                SSByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
-                    .ToList(),
-                SFixedByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
-                    .ToList(),
-                PackedByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue))
-                    .ToList(),
-                PackedFixedByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue))
-                    .ToList(),
-                PackedSByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
-                    .ToList(),
-                PackedSSByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
-                    .ToList(),
-                PackedSFixedByteValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue))
-                    .ToList(),
-                CharValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
-                    .ToArray(),
-                FixedCharValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
-                    .ToArray(),
-                PackedCharValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
-                    .ToArray(),
-                PackedFixedCharValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (char)random.Next(char.MinValue, char.MaxValue))
-                    .ToArray(),
-                UShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
-                    .ToArray(),
-                FixedUShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
-                    .ToArray(),
-                ShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
-                    .ToArray(),
-                SShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
-                    .ToArray(),
-                SFixedShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
-                    .ToArray(),
-                PackedUShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
-                    .ToArray(),
+                BooleanValues = Enumerable.Range(0, 100).Select(_ => random.Next() % 2 == 0).ToArray(),
+                DoubleValues = Enumerable.Range(0, 100).Select(_ => random.NextDouble() * 1000 - 500).ToArray(),
+                Int32Values = Enumerable.Range(0, 100).Select(_ => random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SFixed32Values = Enumerable.Range(0, 100).Select(_ => random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                Fixed32Values = Enumerable.Range(0, 100).Select(_ => (uint)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SFixed64Values = Enumerable.Range(0, 100).Select(_ => (long)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                Fixed64Values = Enumerable.Range(0, 100).Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                Int64Values = Enumerable.Range(0, 100).Select(_ => (long)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SInt64Values = Enumerable.Range(0, 100).Select(_ => (long)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SInt32Values = Enumerable.Range(0, 100).Select(_ => random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                SingleValues = Enumerable.Range(0, 100).Select(_ => (float)(random.NextDouble() * 1000 - 500)).ToArray(),
+                UInt64Values = Enumerable.Range(0, 100).Select(_ => (ulong)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                UInt32Values = Enumerable.Range(0, 100).Select(_ => (uint)random.Next(int.MinValue, int.MaxValue)).ToArray(),
+                ByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                FixedByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                SByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                SSByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                SFixedByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                PackedByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                PackedFixedByteValues = Enumerable.Range(0, 100).Select(_ => (byte)random.Next(byte.MinValue, byte.MaxValue)).ToList(),
+                PackedSByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                PackedSSByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                PackedSFixedByteValues = Enumerable.Range(0, 100).Select(_ => (sbyte)random.Next(sbyte.MinValue, sbyte.MaxValue)).ToList(),
+                CharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                FixedCharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                PackedCharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                PackedFixedCharValues = Enumerable.Range(0, 100).Select(_ => (char)random.Next(char.MinValue, char.MaxValue)).ToArray(),
+                UShortValues = Enumerable.Range(0, 100).Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue)).ToArray(),
+                FixedUShortValues = Enumerable.Range(0, 100).Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue)).ToArray(),
+                ShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                SShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                SFixedShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                PackedUShortValues = Enumerable.Range(0, 100).Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue)).ToArray(),
                 PackedFixedUShortValues = Enumerable
                     .Range(0, 100)
                     .Select(_ => (ushort)random.Next(ushort.MinValue, ushort.MaxValue))
                     .ToArray(),
-                PackedShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
-                    .ToArray(),
-                PackedSShortValues = Enumerable
-                    .Range(0, 100)
-                    .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
-                    .ToArray(),
+                PackedShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
+                PackedSShortValues = Enumerable.Range(0, 100).Select(_ => (short)random.Next(short.MinValue, short.MaxValue)).ToArray(),
                 PackedSFixedShortValues = Enumerable
                     .Range(0, 100)
                     .Select(_ => (short)random.Next(short.MinValue, short.MaxValue))
@@ -388,71 +282,29 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.SingleValues).IsEquivalentTo(message.SingleValues);
         await Assert.That(clone.UInt64Values).IsEquivalentTo(message.UInt64Values);
         await Assert.That(clone.UInt32Values).IsEquivalentTo(message.UInt32Values);
-        await Assert
-            .That(clone.ByteValues.Select(x => (byte)x).ToArray())
-            .IsEquivalentTo(message.ByteValues);
-        await Assert
-            .That(clone.SByteValues.Select(x => (sbyte)x).ToArray())
-            .IsEquivalentTo(message.SByteValues);
-        await Assert
-            .That(clone.FixedByteValues.Select(x => (byte)x).ToArray())
-            .IsEquivalentTo(message.FixedByteValues);
-        await Assert
-            .That(clone.PackedByteValues.Select(x => (byte)x).ToArray())
-            .IsEquivalentTo(message.PackedByteValues);
-        await Assert
-            .That(clone.PackedSByteValues.Select(x => (sbyte)x).ToArray())
-            .IsEquivalentTo(message.PackedSByteValues);
-        await Assert
-            .That(clone.PackedSSByteValues.Select(x => (sbyte)x).ToArray())
-            .IsEquivalentTo(message.PackedSSByteValues);
-        await Assert
-            .That(clone.PackedFixedByteValues.Select(x => (byte)x).ToArray())
-            .IsEquivalentTo(message.PackedFixedByteValues);
-        await Assert
-            .That(clone.CharValues.Select(x => (char)x).ToArray())
-            .IsEquivalentTo(message.CharValues);
-        await Assert
-            .That(clone.FixedCharValues.Select(x => (char)x).ToArray())
-            .IsEquivalentTo(message.FixedCharValues);
-        await Assert
-            .That(clone.PackedCharValues.Select(x => (char)x).ToArray())
-            .IsEquivalentTo(message.PackedCharValues);
-        await Assert
-            .That(clone.PackedFixedCharValues.Select(x => (char)x).ToArray())
-            .IsEquivalentTo(message.PackedFixedCharValues);
+        await Assert.That(clone.ByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.ByteValues);
+        await Assert.That(clone.SByteValues.Select(x => (sbyte)x).ToArray()).IsEquivalentTo(message.SByteValues);
+        await Assert.That(clone.FixedByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.FixedByteValues);
+        await Assert.That(clone.PackedByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.PackedByteValues);
+        await Assert.That(clone.PackedSByteValues.Select(x => (sbyte)x).ToArray()).IsEquivalentTo(message.PackedSByteValues);
+        await Assert.That(clone.PackedSSByteValues.Select(x => (sbyte)x).ToArray()).IsEquivalentTo(message.PackedSSByteValues);
+        await Assert.That(clone.PackedFixedByteValues.Select(x => (byte)x).ToArray()).IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert.That(clone.CharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.CharValues);
+        await Assert.That(clone.FixedCharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.FixedCharValues);
+        await Assert.That(clone.PackedCharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.PackedCharValues);
+        await Assert.That(clone.PackedFixedCharValues.Select(x => (char)x).ToArray()).IsEquivalentTo(message.PackedFixedCharValues);
 
-        await Assert
-            .That(clone.UShortValues.Select(x => (ushort)x).ToArray())
-            .IsEquivalentTo(message.UShortValues);
-        await Assert
-            .That(clone.FixedUShortValues.Select(x => (ushort)x).ToArray())
-            .IsEquivalentTo(message.FixedUShortValues);
-        await Assert
-            .That(clone.ShortValues.Select(x => (short)x).ToArray())
-            .IsEquivalentTo(message.ShortValues);
-        await Assert
-            .That(clone.SShortValues.Select(x => (short)x).ToArray())
-            .IsEquivalentTo(message.SShortValues);
-        await Assert
-            .That(clone.SFixedShortValues.Select(x => (short)x).ToArray())
-            .IsEquivalentTo(message.SFixedShortValues);
+        await Assert.That(clone.UShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.UShortValues);
+        await Assert.That(clone.FixedUShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.FixedUShortValues);
+        await Assert.That(clone.ShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.ShortValues);
+        await Assert.That(clone.SShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.SShortValues);
+        await Assert.That(clone.SFixedShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.SFixedShortValues);
 
-        await Assert
-            .That(clone.PackedUShortValues.Select(x => (ushort)x).ToArray())
-            .IsEquivalentTo(message.PackedUShortValues);
-        await Assert
-            .That(clone.PackedFixedUShortValues.Select(x => (ushort)x).ToArray())
-            .IsEquivalentTo(message.PackedFixedUShortValues);
-        await Assert
-            .That(clone.PackedShortValues.Select(x => (short)x).ToArray())
-            .IsEquivalentTo(message.PackedShortValues);
-        await Assert
-            .That(clone.PackedSShortValues.Select(x => (short)x).ToArray())
-            .IsEquivalentTo(message.PackedSShortValues);
-        await Assert
-            .That(clone.PackedSFixedShortValues.Select(x => (short)x).ToArray())
-            .IsEquivalentTo(message.PackedSFixedShortValues);
+        await Assert.That(clone.PackedUShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.PackedUShortValues);
+        await Assert.That(clone.PackedFixedUShortValues.Select(x => (ushort)x).ToArray()).IsEquivalentTo(message.PackedFixedUShortValues);
+        await Assert.That(clone.PackedShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.PackedShortValues);
+        await Assert.That(clone.PackedSShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.PackedSShortValues);
+        await Assert.That(clone.PackedSFixedShortValues.Select(x => (short)x).ToArray()).IsEquivalentTo(message.PackedSFixedShortValues);
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -476,15 +328,11 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.PackedByteValues).IsEquivalentTo(message.PackedByteValues);
         await Assert.That(clone.PackedSByteValues).IsEquivalentTo(message.PackedSByteValues);
         await Assert.That(clone.PackedSSByteValues).IsEquivalentTo(message.PackedSSByteValues);
-        await Assert
-            .That(clone.PackedFixedByteValues)
-            .IsEquivalentTo(message.PackedFixedByteValues);
+        await Assert.That(clone.PackedFixedByteValues).IsEquivalentTo(message.PackedFixedByteValues);
         await Assert.That(clone.CharValues).IsEquivalentTo(message.CharValues);
         await Assert.That(clone.FixedCharValues).IsEquivalentTo(message.FixedCharValues);
         await Assert.That(clone.PackedCharValues).IsEquivalentTo(message.PackedCharValues);
-        await Assert
-            .That(clone.PackedFixedCharValues)
-            .IsEquivalentTo(message.PackedFixedCharValues);
+        await Assert.That(clone.PackedFixedCharValues).IsEquivalentTo(message.PackedFixedCharValues);
 
         await Assert.That(clone.UShortValues).IsEquivalentTo(message.UShortValues);
         await Assert.That(clone.FixedUShortValues).IsEquivalentTo(message.FixedUShortValues);
@@ -493,13 +341,9 @@ public partial class PrimitiveArrayTests
         await Assert.That(clone.SFixedShortValues).IsEquivalentTo(message.SFixedShortValues);
 
         await Assert.That(clone.PackedUShortValues).IsEquivalentTo(message.PackedUShortValues);
-        await Assert
-            .That(clone.PackedFixedUShortValues)
-            .IsEquivalentTo(message.PackedFixedUShortValues);
+        await Assert.That(clone.PackedFixedUShortValues).IsEquivalentTo(message.PackedFixedUShortValues);
         await Assert.That(clone.PackedShortValues).IsEquivalentTo(message.PackedShortValues);
         await Assert.That(clone.PackedSShortValues).IsEquivalentTo(message.PackedSShortValues);
-        await Assert
-            .That(clone.PackedSFixedShortValues)
-            .IsEquivalentTo(message.PackedSFixedShortValues);
+        await Assert.That(clone.PackedSFixedShortValues).IsEquivalentTo(message.PackedSFixedShortValues);
     }
 }

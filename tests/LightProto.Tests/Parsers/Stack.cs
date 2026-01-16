@@ -35,8 +35,7 @@ public partial class StackPackedTests : BaseTests<StackPackedTests.Message, Stac
 
     public override IEnumerable<StackPackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new StackPackedTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new StackPackedTestsMessage() { Property = { o.Property } });
     }
 
     public override async Task AssertGoogleResult(StackPackedTestsMessage clone, Message message)

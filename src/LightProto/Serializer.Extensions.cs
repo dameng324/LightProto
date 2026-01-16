@@ -29,11 +29,7 @@ namespace LightProto
             return writer.IsMessage ? CodedOutputStream.ComputeLengthSize(size) + size : size;
         }
 
-        public static void WriteMessageTo<T>(
-            this IProtoWriter<T> writer,
-            ref WriterContext output,
-            T value
-        )
+        public static void WriteMessageTo<T>(this IProtoWriter<T> writer, ref WriterContext output, T value)
         {
             if (writer.IsMessage)
             {
@@ -106,11 +102,8 @@ namespace LightProto
         /// <param name="destination"> The destination buffer to serialize to. </param>
         /// <param name="writer"> The proto writer to use for serialization. </param>
         /// <typeparam name="T"> The type of the instance to serialize. </typeparam>
-        public static void SerializeTo<T>(
-            this T instance,
-            Stream destination,
-            IProtoWriter<T> writer
-        ) => Serialize(destination, instance, writer);
+        public static void SerializeTo<T>(this T instance, Stream destination, IProtoWriter<T> writer) =>
+            Serialize(destination, instance, writer);
 
         /// <summary>
         /// Serializes the instance to the given destination buffer.
@@ -119,10 +112,7 @@ namespace LightProto
         /// <param name="destination"> The destination buffer to serialize to. </param>
         /// <param name="writer"> The proto writer to use for serialization. </param>
         /// <typeparam name="T"> The type of the instance to serialize. </typeparam>
-        public static void SerializeTo<T>(
-            this T instance,
-            IBufferWriter<byte> destination,
-            IProtoWriter<T> writer
-        ) => Serialize(destination, instance, writer);
+        public static void SerializeTo<T>(this T instance, IBufferWriter<byte> destination, IProtoWriter<T> writer) =>
+            Serialize(destination, instance, writer);
     }
 }

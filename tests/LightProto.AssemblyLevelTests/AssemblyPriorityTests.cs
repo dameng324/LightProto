@@ -36,16 +36,10 @@ public partial class AssemblyPriorityTests
 #if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
 #else
-        var cloned = Serializer.DeepClone(
-            message,
-            AssemblyParserPersonContract.ProtoReader,
-            AssemblyParserPersonContract.ProtoWriter
-        );
+        var cloned = Serializer.DeepClone(message, AssemblyParserPersonContract.ProtoReader, AssemblyParserPersonContract.ProtoWriter);
 #endif
 
-        await Assert
-            .That(cloned.Person!.ParserType)
-            .IsEqualTo(typeof(AssemblyLevelPersonProtoParser.LightProtoReader));
+        await Assert.That(cloned.Person!.ParserType).IsEqualTo(typeof(AssemblyLevelPersonProtoParser.LightProtoReader));
         await Assert.That(cloned.Person!.Id).IsEqualTo(message.Person.Id);
     }
 }

@@ -59,10 +59,7 @@
                             $"Invalid ticks for MINMAX scale: {protoParser.Ticks}"
                         );
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(protoParser.Scale),
-                        $"Unknown scale: {protoParser.Scale}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(protoParser.Scale), $"Unknown scale: {protoParser.Scale}");
             }
             return new TimeSpan(ticks);
         }

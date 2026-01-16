@@ -39,14 +39,10 @@ public partial class Map4Tests : BaseTests<Map4Tests.Message, Map3TestsMessage>
 
     public override async Task AssertResult(Message clone, Message message)
     {
-        await Assert
-            .That(clone.Property.Keys.ToArray())
-            .IsEquivalentTo(message.Property.Keys.ToArray());
+        await Assert.That(clone.Property.Keys.ToArray()).IsEquivalentTo(message.Property.Keys.ToArray());
         foreach (var kv in message.Property)
         {
-            await Assert
-                .That(clone.Property.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value)
-                .IsEquivalentTo(kv.Value);
+            await Assert.That(clone.Property.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value).IsEquivalentTo(kv.Value);
         }
     }
 
@@ -59,9 +55,7 @@ public partial class Map4Tests : BaseTests<Map4Tests.Message, Map3TestsMessage>
 
                 foreach (var kv in o.Property)
                 {
-                    Map3TestsMessage.Property.Add(
-                        new Map3NestMessage() { Key = { kv.Key }, Value = { kv.Value } }
-                    );
+                    Map3TestsMessage.Property.Add(new Map3NestMessage() { Key = { kv.Key }, Value = { kv.Value } });
                 }
 
                 return Map3TestsMessage;
@@ -73,9 +67,7 @@ public partial class Map4Tests : BaseTests<Map4Tests.Message, Map3TestsMessage>
         await Assert.That(clone.Property.Count).IsEqualTo(message.Property.Count);
         foreach (var kv in message.Property)
         {
-            await Assert
-                .That(clone.Property.First(o => o.Key.SequenceEqual(kv.Key)).Value)
-                .IsEquivalentTo(kv.Value);
+            await Assert.That(clone.Property.First(o => o.Key.SequenceEqual(kv.Key)).Value).IsEquivalentTo(kv.Value);
         }
     }
 }

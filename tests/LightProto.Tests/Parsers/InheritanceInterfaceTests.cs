@@ -2,10 +2,7 @@
 
 [InheritsTests]
 public partial class InheritanceInterfaceTests
-    : BaseProtoBufTestsWithParser<
-        InheritanceInterfaceTests.Base,
-        InheritanceInterfaceTests.BaseProtoParser
-    >
+    : BaseProtoBufTestsWithParser<InheritanceInterfaceTests.Base, InheritanceInterfaceTests.BaseProtoParser>
 {
     [ProtoContract()]
     [ProtoBuf.ProtoContract()]

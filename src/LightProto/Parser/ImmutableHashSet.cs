@@ -2,15 +2,13 @@
 
 namespace LightProto.Parser
 {
-    public sealed class ImmutableHashSetProtoWriter<T>
-        : IEnumerableProtoWriter<ImmutableHashSet<T>, T>
+    public sealed class ImmutableHashSetProtoWriter<T> : IEnumerableProtoWriter<ImmutableHashSet<T>, T>
     {
         public ImmutableHashSetProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
             : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
     }
 
-    public sealed class ImmutableHashSetProtoReader<TItem>
-        : ICollectionReader<ImmutableHashSet<TItem>, TItem>
+    public sealed class ImmutableHashSetProtoReader<TItem> : ICollectionReader<ImmutableHashSet<TItem>, TItem>
     {
         private readonly ArrayProtoReader<TItem> _arrayReader;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -33,11 +31,7 @@ namespace LightProto.Parser
             ItemReader = itemReader;
         }
 
-        public ImmutableHashSetProtoReader(
-            IProtoReader<TItem> itemReader,
-            uint tag,
-            int itemFixedSize
-        )
+        public ImmutableHashSetProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
             : this(itemReader, itemFixedSize) { }
 
         public ImmutableHashSet<TItem> Empty => ImmutableHashSet<TItem>.Empty;

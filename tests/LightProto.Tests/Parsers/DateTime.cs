@@ -25,16 +25,12 @@ public partial class DateTimeTests : BaseTests<DateTimeTests.Message, DateTimeTe
         yield return new() { Property = DateTime.Today.AddHours(1) };
         yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1) };
         yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1) };
-        yield return new()
-        {
-            Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1).AddMilliseconds(1),
-        };
+        yield return new() { Property = DateTime.Today.AddHours(1).AddMinutes(1).AddSeconds(1).AddMilliseconds(1) };
     }
 
     public override IEnumerable<DateTimeTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new DateTimeTestsMessage() { Property = o.Property.ToProtobuf() });
+        return GetMessages().Select(o => new DateTimeTestsMessage() { Property = o.Property.ToProtobuf() });
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -108,19 +104,10 @@ file static class Extension
                 else if (proxy.Value == 1)
                     return DateTime.MaxValue;
                 else
-                    throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Value),
-                        $"Invalid ticks for MINMAX scale: {proxy.Value}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Value), $"Invalid ticks for MINMAX scale: {proxy.Value}");
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(proxy.Scale),
-                    $"Unknown scale: {proxy.Scale}"
-                );
+                throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
         }
-        return new DateTime(
-            ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-            kind: (System.DateTimeKind)proxy.Kind
-        );
+        return new DateTime(ticks: ticks + EpochOriginsTicks[(int)proxy.Kind], kind: (System.DateTimeKind)proxy.Kind);
     }
 }

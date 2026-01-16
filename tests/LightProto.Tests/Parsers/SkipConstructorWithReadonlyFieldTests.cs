@@ -2,8 +2,7 @@ namespace LightProto.Tests.Parsers;
 
 #if NET8_0_OR_GREATER
 [InheritsTests]
-public partial class SkipConstructorWithReadonlyFieldTests
-    : BaseTests<SkipConstructorWithReadonlyFieldTests.Message, StructTestsMessage>
+public partial class SkipConstructorWithReadonlyFieldTests : BaseTests<SkipConstructorWithReadonlyFieldTests.Message, StructTestsMessage>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
@@ -49,9 +48,7 @@ public partial class SkipConstructorWithReadonlyFieldTests
 
     public override async Task AssertGoogleResult(StructTestsMessage clone, Message message)
     {
-        await Assert
-            .That(clone.Property ?? string.Empty)
-            .IsEquivalentTo(message.Property ?? string.Empty);
+        await Assert.That(clone.Property ?? string.Empty).IsEquivalentTo(message.Property ?? string.Empty);
     }
 }
 #endif

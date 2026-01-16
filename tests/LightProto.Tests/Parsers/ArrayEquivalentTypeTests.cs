@@ -1,8 +1,7 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ArrayEquivalentTypeTests
-    : BaseEquivalentTypeTests<ArrayEquivalentTypeTests.Message, int[]>
+public partial class ArrayEquivalentTypeTests : BaseEquivalentTypeTests<ArrayEquivalentTypeTests.Message, int[]>
 {
     [ProtoContract]
     public partial record Message
@@ -27,11 +26,7 @@ public partial class ArrayEquivalentTypeTests
         yield return new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     }
 
-    public override async Task AssertResult(
-        Message lightProto,
-        int[] protobuf,
-        bool lightProtoToProtoBuf
-    )
+    public override async Task AssertResult(Message lightProto, int[] protobuf, bool lightProtoToProtoBuf)
     {
         await Assert.That(lightProto.Values).IsEquivalentTo(protobuf);
     }

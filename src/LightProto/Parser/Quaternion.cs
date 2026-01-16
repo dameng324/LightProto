@@ -19,25 +19,14 @@ namespace LightProto.Parser
 
             if (protoParser.Floats.Length != 4)
             {
-                throw new ArgumentException(
-                    "Input array must contain 4 elements for Quaternion conversion.",
-                    nameof(protoParser)
-                );
+                throw new ArgumentException("Input array must contain 4 elements for Quaternion conversion.", nameof(protoParser));
             }
-            return new Quaternion(
-                protoParser.Floats[0],
-                protoParser.Floats[1],
-                protoParser.Floats[2],
-                protoParser.Floats[3]
-            );
+            return new Quaternion(protoParser.Floats[0], protoParser.Floats[1], protoParser.Floats[2], protoParser.Floats[3]);
         }
 
         public static implicit operator QuaternionProtoParser(Quaternion value)
         {
-            return new QuaternionProtoParser()
-            {
-                Floats = new[] { value.X, value.Y, value.Z, value.W },
-            };
+            return new QuaternionProtoParser() { Floats = new[] { value.X, value.Y, value.Z, value.W } };
         }
     }
 }

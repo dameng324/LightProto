@@ -3,19 +3,13 @@ using LightProto.Internal;
 
 namespace LightProto.Parser
 {
-    public sealed class ReadOnlyCollectionProtoWriter<T>
-        : IEnumerableProtoWriter<ReadOnlyCollection<T>, T>
+    public sealed class ReadOnlyCollectionProtoWriter<T> : IEnumerableProtoWriter<ReadOnlyCollection<T>, T>
     {
-        public ReadOnlyCollectionProtoWriter(
-            IProtoWriter<T> itemWriter,
-            uint tag,
-            int itemFixedSize
-        )
+        public ReadOnlyCollectionProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
             : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
     }
 
-    public sealed class ReadOnlyCollectionProtoReader<TItem>
-        : ICollectionReader<ReadOnlyCollection<TItem>, TItem>
+    public sealed class ReadOnlyCollectionProtoReader<TItem> : ICollectionReader<ReadOnlyCollection<TItem>, TItem>
     {
         private readonly ListProtoReader<TItem> _listReader;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -39,11 +33,7 @@ namespace LightProto.Parser
             ItemReader = itemReader;
         }
 
-        public ReadOnlyCollectionProtoReader(
-            IProtoReader<TItem> itemReader,
-            uint tag,
-            int itemFixedSize
-        )
+        public ReadOnlyCollectionProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
             : this(itemReader, itemFixedSize) { }
 
 #if NET7_0_OR_GREATER

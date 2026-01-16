@@ -8,11 +8,7 @@ namespace LightProto
         /// <summary>
         /// Writes a protocol-buffer representation of the given instance to the supplied writer.
         /// </summary>
-        public static void Serialize<T>(
-            IBufferWriter<byte> destination,
-            T instance,
-            IProtoWriter<T> writer
-        )
+        public static void Serialize<T>(IBufferWriter<byte> destination, T instance, IProtoWriter<T> writer)
         {
             if (!writer.IsMessage && writer is not ICollectionWriter)
             {

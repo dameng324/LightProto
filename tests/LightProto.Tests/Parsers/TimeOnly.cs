@@ -24,8 +24,7 @@ public partial class TimeOnlyTests : BaseTests<TimeOnlyTests.Message, TimeOnlyTe
 
     public override IEnumerable<TimeOnlyTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new TimeOnlyTestsMessage() { Property = o.Property.Ticks });
+        return GetMessages().Select(o => new TimeOnlyTestsMessage() { Property = o.Property.Ticks });
     }
 
     public override async Task AssertResult(Message clone, Message message)

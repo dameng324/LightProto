@@ -4,8 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ConcurrentQueuePackedTests
-    : BaseTests<ConcurrentQueuePackedTests.Message, ConcurrentQueuePackedTestsMessage>
+public partial class ConcurrentQueuePackedTests : BaseTests<ConcurrentQueuePackedTests.Message, ConcurrentQueuePackedTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -36,14 +35,10 @@ public partial class ConcurrentQueuePackedTests
 
     public override IEnumerable<ConcurrentQueuePackedTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new ConcurrentQueuePackedTestsMessage() { Property = { o.Property } });
+        return GetMessages().Select(o => new ConcurrentQueuePackedTestsMessage() { Property = { o.Property } });
     }
 
-    public override async Task AssertGoogleResult(
-        ConcurrentQueuePackedTestsMessage clone,
-        Message message
-    )
+    public override async Task AssertGoogleResult(ConcurrentQueuePackedTestsMessage clone, Message message)
     {
         await Assert.That(clone.Property.ToArray()).IsEquivalentTo(message.Property.ToArray());
     }

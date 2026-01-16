@@ -19,10 +19,7 @@ namespace LightProto.Parser
 
             if (protoParser.Floats.Length != 16)
             {
-                throw new ArgumentException(
-                    "Input array must contain 16 elements for Matrix4x4 conversion.",
-                    nameof(protoParser)
-                );
+                throw new ArgumentException("Input array must contain 16 elements for Matrix4x4 conversion.", nameof(protoParser));
             }
             return new Matrix4x4(
                 protoParser.Floats[0],

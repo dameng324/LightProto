@@ -64,10 +64,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 0, 1, 0 };
-            var strings = Serializer.Deserialize(
-                bytes,
-                Int32ProtoParser.ProtoReader.GetListReader()
-            );
+            var strings = Serializer.Deserialize(bytes, Int32ProtoParser.ProtoReader.GetListReader());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("invalid tag");
@@ -101,10 +98,7 @@ public partial class FailedTests
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
             var bytes = new byte[] { 8, 1, 8 };
-            var strings = Serializer.Deserialize(
-                bytes,
-                Int32ProtoParser.ProtoReader.GetListReader()
-            );
+            var strings = Serializer.Deserialize(bytes, Int32ProtoParser.ProtoReader.GetListReader());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("input has been truncated");
@@ -117,10 +111,7 @@ public partial class FailedTests
         {
             // normal bytes is new byte[] { 10,3,111,110,111,10,5,116,104,114,101,101 };
             var bytes = new byte[] { 10, 3, 0xE0, 0x80, 0x80, 10, 5, 116, 104, 114, 101, 101 };
-            var strings = Serializer.Deserialize(
-                bytes,
-                StringProtoParser.ProtoReader.GetListReader()
-            );
+            var strings = Serializer.Deserialize(bytes, StringProtoParser.ProtoReader.GetListReader());
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("is invalid UTF-8");
@@ -186,25 +177,7 @@ public partial class FailedTests
     {
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
-            var bytes = new byte[]
-            {
-                0x08,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-            };
+            var bytes = new byte[] { 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             var strings = Serializer.Deserialize<MalformedVarint>(bytes);
             await Task.CompletedTask;
         });
@@ -216,29 +189,9 @@ public partial class FailedTests
     {
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
-            var bytes = new byte[]
-            {
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-            };
+            var bytes = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             var ms = new MemoryStream(bytes);
-            var strings = Serializer.DeserializeWithLengthPrefix<MalformedVarint>(
-                ms,
-                PrefixStyle.Base128
-            );
+            var strings = Serializer.DeserializeWithLengthPrefix<MalformedVarint>(ms, PrefixStyle.Base128);
             await Task.CompletedTask;
         });
         await Assert.That(ex!.Message).Contains("malformed varint");
@@ -256,25 +209,7 @@ public partial class FailedTests
     {
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
-            var bytes = new byte[]
-            {
-                0x08,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-            };
+            var bytes = new byte[] { 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             var strings = Serializer.Deserialize<MalformedVarint64>(bytes);
             await Task.CompletedTask;
         });
@@ -293,25 +228,7 @@ public partial class FailedTests
     {
         var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
         {
-            var bytes = new byte[]
-            {
-                0x08,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-                0xFF,
-            };
+            var bytes = new byte[] { 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             var strings = Serializer.Deserialize<MalformedVarUint64>(bytes);
             await Task.CompletedTask;
         });

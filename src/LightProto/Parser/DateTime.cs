@@ -69,21 +69,12 @@
                     else if (proxy.Ticks == 1)
                         return DateTime.MaxValue;
                     else
-                        throw new ArgumentOutOfRangeException(
-                            nameof(proxy.Ticks),
-                            $"Invalid ticks for MINMAX scale: {proxy.Ticks}"
-                        );
+                        throw new ArgumentOutOfRangeException(nameof(proxy.Ticks), $"Invalid ticks for MINMAX scale: {proxy.Ticks}");
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(proxy.Scale),
-                        $"Unknown scale: {proxy.Scale}"
-                    );
+                    throw new ArgumentOutOfRangeException(nameof(proxy.Scale), $"Unknown scale: {proxy.Scale}");
             }
 
-            return new DateTime(
-                ticks: ticks + EpochOriginsTicks[(int)proxy.Kind],
-                kind: proxy.Kind
-            );
+            return new DateTime(ticks: ticks + EpochOriginsTicks[(int)proxy.Kind], kind: proxy.Kind);
         }
 
         internal static readonly long[] EpochOriginsTicks =

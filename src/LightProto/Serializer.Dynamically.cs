@@ -26,8 +26,7 @@ namespace LightProto
 #if NET7_0_OR_GREATER
             [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
-            T>(IBufferWriter<byte> destination, T instance) =>
-            Serialize(destination, instance, GetProtoWriter<T>());
+            T>(IBufferWriter<byte> destination, T instance) => Serialize(destination, instance, GetProtoWriter<T>());
 
         /// <summary>
         /// Writes a protocol-buffer representation of the given instance to the supplied stream.
@@ -41,8 +40,7 @@ namespace LightProto
 #if NET7_0_OR_GREATER
             [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
-            T>(Stream destination, T instance) =>
-            Serialize(destination, instance, GetProtoWriter<T>());
+            T>(Stream destination, T instance) => Serialize(destination, instance, GetProtoWriter<T>());
 
         /// <summary>
         /// Creates a new instance from a protocol-buffer stream
@@ -172,10 +170,7 @@ namespace LightProto
             RegisterParser(ComplexProtoParser.ProtoReader, ComplexProtoParser.ProtoWriter);
             RegisterParser(CultureInfoProtoParser.ProtoReader, CultureInfoProtoParser.ProtoWriter);
             RegisterParser(DateTimeProtoParser.ProtoReader, DateTimeProtoParser.ProtoWriter);
-            RegisterParser(
-                DateTimeOffsetProtoParser.ProtoReader,
-                DateTimeOffsetProtoParser.ProtoWriter
-            );
+            RegisterParser(DateTimeOffsetProtoParser.ProtoReader, DateTimeOffsetProtoParser.ProtoWriter);
             RegisterParser(DecimalProtoParser.ProtoReader, DecimalProtoParser.ProtoWriter);
             RegisterParser(GuidProtoParser.ProtoReader, GuidProtoParser.ProtoWriter);
             RegisterParser(TimeSpanProtoParser.ProtoReader, TimeSpanProtoParser.ProtoWriter);
@@ -188,14 +183,8 @@ namespace LightProto
             RegisterParser(Int64ProtoParser.ProtoReader, Int64ProtoParser.ProtoWriter);
             RegisterParser(UInt64ProtoParser.ProtoReader, UInt64ProtoParser.ProtoWriter);
             RegisterParser(StringProtoParser.ProtoReader, StringProtoParser.ProtoWriter);
-            RegisterParser(
-                StringBuilderProtoParser.ProtoReader,
-                StringBuilderProtoParser.ProtoWriter
-            );
-            RegisterParser(
-                TimeZoneInfoProtoParser.ProtoReader,
-                TimeZoneInfoProtoParser.ProtoWriter
-            );
+            RegisterParser(StringBuilderProtoParser.ProtoReader, StringBuilderProtoParser.ProtoWriter);
+            RegisterParser(TimeZoneInfoProtoParser.ProtoReader, TimeZoneInfoProtoParser.ProtoWriter);
             RegisterParser(VersionProtoParser.ProtoReader, VersionProtoParser.ProtoWriter);
             RegisterParser(ByteProtoParser.ProtoReader, ByteProtoParser.ProtoWriter);
             RegisterParser(SByteProtoParser.ProtoReader, SByteProtoParser.ProtoWriter);
@@ -214,81 +203,25 @@ namespace LightProto
             RegisterParser(Vector2ProtoParser.ProtoReader, Vector2ProtoParser.ProtoWriter);
             RegisterParser(Vector3ProtoParser.ProtoReader, Vector3ProtoParser.ProtoWriter);
 #endif
-            RegisterGenericParser(
-                typeof(List<>),
-                typeof(ListProtoReader<>),
-                typeof(ListProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(Nullable<>),
-                typeof(NullableProtoReader<>),
-                typeof(NullableProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(Lazy<>),
-                typeof(LazyProtoReader<>),
-                typeof(LazyProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(Stack<>),
-                typeof(StackProtoReader<>),
-                typeof(StackProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(Queue<>),
-                typeof(QueueProtoReader<>),
-                typeof(QueueProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(Collection<>),
-                typeof(CollectionProtoReader<>),
-                typeof(CollectionProtoWriter<>)
-            );
+            RegisterGenericParser(typeof(List<>), typeof(ListProtoReader<>), typeof(ListProtoWriter<>));
+            RegisterGenericParser(typeof(Nullable<>), typeof(NullableProtoReader<>), typeof(NullableProtoWriter<>));
+            RegisterGenericParser(typeof(Lazy<>), typeof(LazyProtoReader<>), typeof(LazyProtoWriter<>));
+            RegisterGenericParser(typeof(Stack<>), typeof(StackProtoReader<>), typeof(StackProtoWriter<>));
+            RegisterGenericParser(typeof(Queue<>), typeof(QueueProtoReader<>), typeof(QueueProtoWriter<>));
+            RegisterGenericParser(typeof(Collection<>), typeof(CollectionProtoReader<>), typeof(CollectionProtoWriter<>));
             RegisterGenericParser(
                 typeof(BlockingCollection<>),
                 typeof(BlockingCollectionProtoReader<>),
                 typeof(BlockingCollectionProtoWriter<>)
             );
-            RegisterGenericParser(
-                typeof(ConcurrentBag<>),
-                typeof(ConcurrentBagProtoReader<>),
-                typeof(ConcurrentBagProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(ConcurrentQueue<>),
-                typeof(ConcurrentQueueProtoReader<>),
-                typeof(ConcurrentQueueProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(ConcurrentStack<>),
-                typeof(ConcurrentStackProtoReader<>),
-                typeof(ConcurrentStackProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(HashSet<>),
-                typeof(HashSetProtoReader<>),
-                typeof(HashSetProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(ImmutableArray<>),
-                typeof(ImmutableArrayProtoReader<>),
-                typeof(ImmutableArrayProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(ImmutableList<>),
-                typeof(ImmutableListProtoReader<>),
-                typeof(ImmutableListProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(ImmutableHashSet<>),
-                typeof(ImmutableHashSetProtoReader<>),
-                typeof(ImmutableHashSetProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(LinkedList<>),
-                typeof(LinkedListProtoReader<>),
-                typeof(LinkedListProtoWriter<>)
-            );
+            RegisterGenericParser(typeof(ConcurrentBag<>), typeof(ConcurrentBagProtoReader<>), typeof(ConcurrentBagProtoWriter<>));
+            RegisterGenericParser(typeof(ConcurrentQueue<>), typeof(ConcurrentQueueProtoReader<>), typeof(ConcurrentQueueProtoWriter<>));
+            RegisterGenericParser(typeof(ConcurrentStack<>), typeof(ConcurrentStackProtoReader<>), typeof(ConcurrentStackProtoWriter<>));
+            RegisterGenericParser(typeof(HashSet<>), typeof(HashSetProtoReader<>), typeof(HashSetProtoWriter<>));
+            RegisterGenericParser(typeof(ImmutableArray<>), typeof(ImmutableArrayProtoReader<>), typeof(ImmutableArrayProtoWriter<>));
+            RegisterGenericParser(typeof(ImmutableList<>), typeof(ImmutableListProtoReader<>), typeof(ImmutableListProtoWriter<>));
+            RegisterGenericParser(typeof(ImmutableHashSet<>), typeof(ImmutableHashSetProtoReader<>), typeof(ImmutableHashSetProtoWriter<>));
+            RegisterGenericParser(typeof(LinkedList<>), typeof(LinkedListProtoReader<>), typeof(LinkedListProtoWriter<>));
             RegisterGenericParser(
                 typeof(ObservableCollection<>),
                 typeof(ObservableCollectionProtoReader<>),
@@ -304,21 +237,9 @@ namespace LightProto
                 typeof(ReadOnlyObservableCollectionProtoReader<>),
                 typeof(ReadOnlyObservableCollectionProtoWriter<>)
             );
-            RegisterGenericParser(
-                typeof(SortedSet<>),
-                typeof(SortedSetProtoReader<>),
-                typeof(SortedSetProtoWriter<>)
-            );
-            RegisterGenericParser(
-                typeof(KeyValuePair<,>),
-                typeof(KeyValuePairProtoReader<,>),
-                typeof(KeyValuePairProtoWriter<,>)
-            );
-            RegisterGenericParser(
-                typeof(Dictionary<,>),
-                typeof(DictionaryProtoReader<,>),
-                typeof(DictionaryProtoWriter<,>)
-            );
+            RegisterGenericParser(typeof(SortedSet<>), typeof(SortedSetProtoReader<>), typeof(SortedSetProtoWriter<>));
+            RegisterGenericParser(typeof(KeyValuePair<,>), typeof(KeyValuePairProtoReader<,>), typeof(KeyValuePairProtoWriter<,>));
+            RegisterGenericParser(typeof(Dictionary<,>), typeof(DictionaryProtoReader<,>), typeof(DictionaryProtoWriter<,>));
             RegisterGenericParser(
                 typeof(ReadOnlyDictionary<,>),
                 typeof(ReadOnlyDictionaryProtoReader<,>),
@@ -334,11 +255,7 @@ namespace LightProto
                 typeof(SortedDictionaryProtoReader<,>),
                 typeof(SortedDictionaryProtoWriter<,>)
             );
-            RegisterGenericParser(
-                typeof(SortedList<,>),
-                typeof(SortedListProtoReader<,>),
-                typeof(SortedListProtoWriter<,>)
-            );
+            RegisterGenericParser(typeof(SortedList<,>), typeof(SortedListProtoReader<,>), typeof(SortedListProtoWriter<,>));
             RegisterGenericParser(
                 typeof(ImmutableDictionary<,>),
                 typeof(ImmutableDictionaryProtoReader<,>),
@@ -347,8 +264,7 @@ namespace LightProto
         }
 
 #if NET7_0_OR_GREATER
-        private const DynamicallyAccessedMemberTypes LightProtoRequiredMembers =
-            DynamicallyAccessedMemberTypes.PublicProperties;
+        private const DynamicallyAccessedMemberTypes LightProtoRequiredMembers = DynamicallyAccessedMemberTypes.PublicProperties;
 #endif
 
 #if NET7_0_OR_GREATER
@@ -367,10 +283,7 @@ namespace LightProto
             }
             if (typeof(IProtoParser<>).MakeGenericType(type).IsAssignableFrom(type))
             {
-                var parser = type.GetProperty(
-                            isReader ? "ProtoReader" : "ProtoWriter",
-                            BindingFlags.Public | BindingFlags.Static
-                        )!
+                var parser = type.GetProperty(isReader ? "ProtoReader" : "ProtoWriter", BindingFlags.Public | BindingFlags.Static)!
                     .GetValue(null)!;
                 parsers.TryAdd(type, parser);
                 return parser;
@@ -379,10 +292,7 @@ namespace LightProto
             {
                 var enumParserType = typeof(EnumProtoParser<>).MakeGenericType(type);
                 var parser = enumParserType
-                    .GetProperty(
-                        isReader ? "ProtoReader" : "ProtoWriter",
-                        BindingFlags.Public | BindingFlags.Static
-                    )!
+                    .GetProperty(isReader ? "ProtoReader" : "ProtoWriter", BindingFlags.Public | BindingFlags.Static)!
                     .GetValue(null)!;
                 parsers.TryAdd(type, parser);
                 return parser;
@@ -430,20 +340,12 @@ namespace LightProto
 #pragma warning restore IL2062
                 if (!genericTypes.TryGetValue(genericDef, out var genericParserType))
                 {
-                    if (
-                        isReader
-                        && typeof(IEnumerable<>).MakeGenericType(itemType).IsAssignableFrom(type)
-                    )
+                    if (isReader && typeof(IEnumerable<>).MakeGenericType(itemType).IsAssignableFrom(type))
                         genericParserType = typeof(ListProtoReader<>);
-                    else if (
-                        !isReader
-                        && typeof(ICollection<>).MakeGenericType(itemType).IsAssignableFrom(type)
-                    )
+                    else if (!isReader && typeof(ICollection<>).MakeGenericType(itemType).IsAssignableFrom(type))
                         genericParserType = typeof(ICollectionProtoWriter<>);
                     else
-                        throw new InvalidOperationException(
-                            $"No ProtoParser registered for type {genericDef}"
-                        );
+                        throw new InvalidOperationException($"No ProtoParser registered for type {genericDef}");
                 }
                 var parserType = genericParserType.MakeGenericType(itemType);
                 uint tag = 0;
@@ -485,23 +387,14 @@ namespace LightProto
                     if (
                         isReader
                         && typeof(IEnumerable<>)
-                            .MakeGenericType(
-                                typeof(KeyValuePair<,>).MakeGenericType(keyType, valueType)
-                            )
+                            .MakeGenericType(typeof(KeyValuePair<,>).MakeGenericType(keyType, valueType))
                             .IsAssignableFrom(type)
                     )
                         genericParserType = typeof(DictionaryProtoReader<,>);
-                    else if (
-                        !isReader
-                        && typeof(IReadOnlyDictionary<,>)
-                            .MakeGenericType(keyType, valueType)
-                            .IsAssignableFrom(type)
-                    )
+                    else if (!isReader && typeof(IReadOnlyDictionary<,>).MakeGenericType(keyType, valueType).IsAssignableFrom(type))
                         genericParserType = typeof(IReadOnlyDictionaryProtoWriter<,>);
                     else
-                        throw new InvalidOperationException(
-                            $"No ProtoParser registered for type {genericDef}"
-                        );
+                        throw new InvalidOperationException($"No ProtoParser registered for type {genericDef}");
                 }
 
 #pragma warning disable IL2062

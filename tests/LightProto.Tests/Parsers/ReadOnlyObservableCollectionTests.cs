@@ -5,8 +5,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadOnlyObservableCollectionTests
-    : BaseTests<ReadOnlyObservableCollectionTests.Message, ArrayTestsMessage>
+public partial class ReadOnlyObservableCollectionTests : BaseTests<ReadOnlyObservableCollectionTests.Message, ArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -26,32 +25,11 @@ public partial class ReadOnlyObservableCollectionTests
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new()
-        {
-            Property = new ReadOnlyObservableCollection<int>(
-                (ObservableCollection<int>)([1, 2, 3, 4, 5])
-            ),
-        };
-        yield return new()
-        {
-            Property = new ReadOnlyObservableCollection<int>(
-                (ObservableCollection<int>)([-1, -2, -3, -4, -5])
-            ),
-        };
-        yield return new()
-        {
-            Property = new ReadOnlyObservableCollection<int>(
-                (ObservableCollection<int>)([0, 0, 0, 0, 0])
-            ),
-        };
-        yield return new()
-        {
-            Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([0])),
-        };
-        yield return new()
-        {
-            Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([])),
-        };
+        yield return new() { Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([1, 2, 3, 4, 5])) };
+        yield return new() { Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([-1, -2, -3, -4, -5])) };
+        yield return new() { Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([0, 0, 0, 0, 0])) };
+        yield return new() { Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([0])) };
+        yield return new() { Property = new ReadOnlyObservableCollection<int>((ObservableCollection<int>)([])) };
     }
 
     public override IEnumerable<ArrayTestsMessage> GetGoogleMessages()
@@ -73,10 +51,7 @@ public partial class ReadOnlyObservableCollectionTests
     public async Task EmptyTest()
     {
         byte[] bytes = [];
-        var deserialized = Serializer.Deserialize(
-            bytes,
-            Int32ProtoParser.ProtoReader.GetReadOnlyObservableCollectionReader()
-        );
+        var deserialized = Serializer.Deserialize(bytes, Int32ProtoParser.ProtoReader.GetReadOnlyObservableCollectionReader());
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
 }

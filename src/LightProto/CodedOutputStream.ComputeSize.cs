@@ -27,9 +27,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// double field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeDoubleSize(double value)
         {
             return DoubleSize;
@@ -39,9 +37,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// float field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeFloatSize(float value)
         {
             return FloatSize;
@@ -51,9 +47,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// uint64 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeUInt64Size(ulong value)
         {
             return ComputeRawVarint64Size(value);
@@ -63,9 +57,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode an
         /// int64 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeInt64Size(long value)
         {
             return ComputeRawVarint64Size((ulong)value);
@@ -75,9 +67,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode an
         /// int32 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeInt32Size(int value)
         {
             if (value >= 0)
@@ -95,9 +85,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// fixed64 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeFixed64Size(ulong value)
         {
             return LittleEndian64Size;
@@ -107,9 +95,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// fixed32 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeFixed32Size(uint value)
         {
             return LittleEndian32Size;
@@ -179,9 +165,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// string field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeStringSize(String value)
         {
             int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(value);
@@ -192,9 +176,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a
         /// uint32 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeUInt32Size(uint value)
         {
             return ComputeRawVarint32Size(value);
@@ -205,9 +187,7 @@ namespace LightProto
         /// enum field, including the tag. The caller is responsible for
         /// converting the enum value to its numeric value.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeEnumSize(int value)
         {
             // Currently just a pass-through, but it's nice to separate it logically.
@@ -218,9 +198,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode an
         /// sfixed32 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeSFixed32Size(int value)
         {
             return LittleEndian32Size;
@@ -230,9 +208,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode an
         /// sfixed64 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeSFixed64Size(long value)
         {
             return LittleEndian64Size;
@@ -242,9 +218,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode an
         /// sint32 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeSInt32Size(int value)
         {
             return ComputeRawVarint32Size(WritingPrimitives.EncodeZigZag32(value));
@@ -254,9 +228,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode an
         /// sint64 field, including the tag.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeSInt64Size(long value)
         {
             return ComputeRawVarint64Size(WritingPrimitives.EncodeZigZag64(value));
@@ -266,9 +238,7 @@ namespace LightProto
         /// Computes the number of bytes that would be needed to encode a length,
         /// as written by <see cref="WriteLength"/>.
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(
-            System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining
-        )]
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static int ComputeLengthSize(int length)
         {
             return ComputeRawVarint32Size((uint)length);

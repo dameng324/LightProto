@@ -19,10 +19,7 @@ namespace LightProto.Parser
 
             if (protoParser.Floats.Length != 6)
             {
-                throw new ArgumentException(
-                    "Input array must contain 6 elements for Matrix3x2 conversion.",
-                    nameof(protoParser)
-                );
+                throw new ArgumentException("Input array must contain 6 elements for Matrix3x2 conversion.", nameof(protoParser));
             }
 
             return new Matrix3x2(
@@ -37,10 +34,7 @@ namespace LightProto.Parser
 
         public static implicit operator Matrix3x2ProtoParser(Matrix3x2 value)
         {
-            return new Matrix3x2ProtoParser()
-            {
-                Floats = new[] { value.M11, value.M12, value.M21, value.M22, value.M31, value.M32 },
-            };
+            return new Matrix3x2ProtoParser() { Floats = new[] { value.M11, value.M12, value.M21, value.M22, value.M31, value.M32 } };
         }
     }
 }

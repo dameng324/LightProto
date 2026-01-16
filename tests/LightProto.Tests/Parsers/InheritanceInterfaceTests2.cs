@@ -1,8 +1,7 @@
 ﻿namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class InheritanceInterfaceTests2
-    : BaseProtoBufTests<InheritanceInterfaceTests2.Message>
+public partial class InheritanceInterfaceTests2 : BaseProtoBufTests<InheritanceInterfaceTests2.Message>
 {
     [ProtoContract(SkipConstructor = true)]
     [ProtoBuf.ProtoContract(SkipConstructor = true)]
@@ -42,14 +41,8 @@ public partial class InheritanceInterfaceTests2
 
     public override IEnumerable<Message> GetMessages()
     {
-        yield return new Message()
-        {
-            Content = new ClassMessage { Value = Guid.NewGuid().ToString() },
-        };
-        yield return new Message()
-        {
-            Content = new StructMessage { Value = Guid.NewGuid().ToString() },
-        };
+        yield return new Message() { Content = new ClassMessage { Value = Guid.NewGuid().ToString() } };
+        yield return new Message() { Content = new StructMessage { Value = Guid.NewGuid().ToString() } };
     }
 
     public override async Task AssertResult(Message clone, Message message)

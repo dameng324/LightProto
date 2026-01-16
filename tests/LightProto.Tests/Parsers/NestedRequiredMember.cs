@@ -3,8 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class NestedRequiredMember
-    : BaseTests<NestedRequiredMember.Message, NestedRequiredMemberMessage>
+public partial class NestedRequiredMember : BaseTests<NestedRequiredMember.Message, NestedRequiredMemberMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -36,10 +35,7 @@ public partial class NestedRequiredMember
     public override IEnumerable<NestedRequiredMemberMessage> GetGoogleMessages()
     {
         return GetMessages()
-            .Select(o => new NestedRequiredMemberMessage()
-            {
-                Property = new NullableIntTestsMessage() { Property = o.Property.Property },
-            });
+            .Select(o => new NestedRequiredMemberMessage() { Property = new NullableIntTestsMessage() { Property = o.Property.Property } });
     }
 
     public override async Task AssertResult(Message clone, Message message)
@@ -47,10 +43,7 @@ public partial class NestedRequiredMember
         await Assert.That(clone.Property.Property).IsEquivalentTo(message.Property.Property);
     }
 
-    public override async Task AssertGoogleResult(
-        NestedRequiredMemberMessage clone,
-        Message message
-    )
+    public override async Task AssertGoogleResult(NestedRequiredMemberMessage clone, Message message)
     {
         await Assert.That(clone.Property.Property).IsEquivalentTo(message.Property.Property);
     }

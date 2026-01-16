@@ -24,8 +24,7 @@ public partial class DateOnlyTests : BaseTests<DateOnlyTests.Message, DateOnlyTe
 
     public override IEnumerable<DateOnlyTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o => new DateOnlyTestsMessage() { Property = o.Property.DayNumber });
+        return GetMessages().Select(o => new DateOnlyTestsMessage() { Property = o.Property.DayNumber });
     }
 
     public override async Task AssertResult(Message clone, Message message)

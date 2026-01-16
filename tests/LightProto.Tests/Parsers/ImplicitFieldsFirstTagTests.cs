@@ -2,10 +2,7 @@
 
 [InheritsTests]
 public partial class ImplicitFieldsFirstTagTests
-    : BaseEquivalentTypeTests<
-        ImplicitFieldsFirstTagTests.LightProtoMessage,
-        ImplicitFieldsFirstTagTests.ProtoBufMessage
-    >
+    : BaseEquivalentTypeTests<ImplicitFieldsFirstTagTests.LightProtoMessage, ImplicitFieldsFirstTagTests.ProtoBufMessage>
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic, ImplicitFirstTag = 5)]
     public partial record LightProtoMessage
@@ -52,10 +49,7 @@ public partial class ImplicitFieldsFirstTagTests
         }
     }
 
-    [ProtoBuf.ProtoContract(
-        ImplicitFields = ProtoBuf.ImplicitFields.AllPublic,
-        ImplicitFirstTag = 5
-    )]
+    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllPublic, ImplicitFirstTag = 5)]
     public partial class ProtoBufMessage
     {
         public int Property1 { get; set; }
@@ -110,11 +104,7 @@ public partial class ImplicitFieldsFirstTagTests
         return ProtoBufMessage.GetMessages();
     }
 
-    public override async Task AssertResult(
-        LightProtoMessage lightProto,
-        ProtoBufMessage protobuf,
-        bool lightProtoToProtoBuf
-    )
+    public override async Task AssertResult(LightProtoMessage lightProto, ProtoBufMessage protobuf, bool lightProtoToProtoBuf)
     {
         await Assert.That(lightProto.Property1).IsEqualTo(protobuf.Property1);
         await Assert.That(lightProto.Property2).IsEqualTo(protobuf.Property2);

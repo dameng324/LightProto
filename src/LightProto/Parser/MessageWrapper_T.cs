@@ -6,8 +6,7 @@
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((T)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (T)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (T)value);
 
             private readonly uint tag;
             public bool IsMessage => true;

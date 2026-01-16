@@ -6,8 +6,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ImmutableDictionaryTests
-    : BaseTests<ImmutableDictionaryTests.Message, MapTestsMessage>
+public partial class ImmutableDictionaryTests : BaseTests<ImmutableDictionaryTests.Message, MapTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -61,11 +60,7 @@ public partial class ImmutableDictionaryTests
         byte[] bytes = [];
         var deserialized = Serializer.Deserialize(
             bytes,
-            new ImmutableDictionaryProtoReader<int, string>(
-                Int32ProtoParser.ProtoReader,
-                StringProtoParser.ProtoReader,
-                0
-            )
+            new ImmutableDictionaryProtoReader<int, string>(Int32ProtoParser.ProtoReader, StringProtoParser.ProtoReader, 0)
         );
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }

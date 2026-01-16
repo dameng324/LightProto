@@ -22,16 +22,7 @@ public partial class PlaneTests : BaseTests<PlaneTests.Message, PlaneTestsMessag
         return GetMessages()
             .Select(x => new PlaneTestsMessage()
             {
-                Property = new PlaneMessage()
-                {
-                    M =
-                    {
-                        x.Property.Normal.X,
-                        x.Property.Normal.Y,
-                        x.Property.Normal.Z,
-                        x.Property.D,
-                    },
-                },
+                Property = new PlaneMessage() { M = { x.Property.Normal.X, x.Property.Normal.Y, x.Property.Normal.Z, x.Property.D } },
             });
     }
 
@@ -85,9 +76,7 @@ public partial class PlaneTests : BaseTests<PlaneTests.Message, PlaneTestsMessag
                 Plane result = protoParser;
             })
             .Throws<ArgumentException>();
-        await Assert
-            .That(exception!.Message)
-            .Contains("Input array must contain 4 elements for Plane conversion.");
+        await Assert.That(exception!.Message).Contains("Input array must contain 4 elements for Plane conversion.");
     }
 }
 #endif

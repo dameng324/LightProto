@@ -5,11 +5,7 @@
         : IEnumerableKeyValuePairProtoReader<SortedDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public SortedDictionaryProtoReader(
-            IProtoReader<TKey> keyReader,
-            IProtoReader<TValue> valueReader,
-            uint tag
-        )
+        public SortedDictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader, uint tag)
             : base(
                 keyReader,
                 valueReader,
@@ -26,11 +22,7 @@
         : IEnumerableKeyValuePairProtoWriter<SortedDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public SortedDictionaryProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter,
-            uint tag
-        )
+        public SortedDictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag)
             : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
     }
 }

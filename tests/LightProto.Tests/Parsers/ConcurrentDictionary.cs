@@ -4,8 +4,7 @@ using LightProto;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ConcurrentDictionaryTests
-    : BaseTests<ConcurrentDictionaryTests.Message, MapTestsMessage>
+public partial class ConcurrentDictionaryTests : BaseTests<ConcurrentDictionaryTests.Message, MapTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]

@@ -11,11 +11,6 @@
             uint tag,
             Func<TDictionary, int> getCount
         )
-            : base(
-                itemWriter: new KeyValuePairProtoWriter<TKey, TValue>(keyWriter, valueWriter),
-                tag,
-                getCount,
-                itemFixedSize: 0
-            ) { }
+            : base(itemWriter: new KeyValuePairProtoWriter<TKey, TValue>(keyWriter, valueWriter), tag, getCount, itemFixedSize: 0) { }
     }
 }

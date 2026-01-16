@@ -22,10 +22,7 @@ namespace LightProto.Parser
         public TItem[] Empty => Array.Empty<TItem>();
         int ItemFixedSize { get; }
 
-        private readonly SimpleObjectPool<List<TItem>> _listPool = new(
-            static () => new(),
-            static list => list.Clear()
-        );
+        private readonly SimpleObjectPool<List<TItem>> _listPool = new(static () => new(), static list => list.Clear());
 
         internal ArrayProtoReader(IProtoReader<TItem> itemReader, int itemFixedSize)
         {
@@ -41,10 +38,7 @@ namespace LightProto.Parser
             var tag = ctx.state.lastTag;
 
             var fixedSize = ItemFixedSize;
-            if (
-                WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited
-                && PackedRepeated.Support<TItem>()
-            )
+            if (WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited && PackedRepeated.Support<TItem>())
             {
                 int length = ctx.ReadLength();
                 if (length <= 0)
@@ -58,11 +52,7 @@ namespace LightProto.Parser
                     //
                     // Check that the supplied length doesn't exceed the underlying buffer.
                     // That prevents a malicious length from initializing a very large collection.
-                    if (
-                        fixedSize > 0
-                        && length % fixedSize == 0
-                        && ParsingPrimitives.IsDataAvailable(ref ctx.state, length)
-                    )
+                    if (fixedSize > 0 && length % fixedSize == 0 && ParsingPrimitives.IsDataAvailable(ref ctx.state, length))
                     {
                         var count = length / fixedSize;
                         var collection = new TItem[count];

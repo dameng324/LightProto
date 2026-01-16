@@ -8,8 +8,7 @@ namespace LightProto.Parser
             : base(itemWriter, tag, static collection => collection.Length, itemFixedSize) { }
     }
 
-    public sealed class ImmutableArrayProtoReader<TItem>
-        : ICollectionReader<ImmutableArray<TItem>, TItem>
+    public sealed class ImmutableArrayProtoReader<TItem> : ICollectionReader<ImmutableArray<TItem>, TItem>
     {
         private readonly ArrayProtoReader<TItem> _arrayReader;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
@@ -33,11 +32,7 @@ namespace LightProto.Parser
             ItemReader = itemReader;
         }
 
-        public ImmutableArrayProtoReader(
-            IProtoReader<TItem> itemReader,
-            uint tag,
-            int itemFixedSize
-        )
+        public ImmutableArrayProtoReader(IProtoReader<TItem> itemReader, uint tag, int itemFixedSize)
             : this(itemReader, itemFixedSize) { }
 
         public ImmutableArray<TItem> Empty => ImmutableArray<TItem>.Empty;

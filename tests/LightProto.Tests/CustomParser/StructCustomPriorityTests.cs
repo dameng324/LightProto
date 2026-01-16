@@ -107,16 +107,10 @@ public partial class StructCustomPriorityTests
 #if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
 #else
-        var cloned = Serializer.DeepClone(
-            message,
-            MemberParserPersonContract.ProtoReader,
-            MemberParserPersonContract.ProtoWriter
-        );
+        var cloned = Serializer.DeepClone(message, MemberParserPersonContract.ProtoReader, MemberParserPersonContract.ProtoWriter);
 #endif
 
-        await Assert
-            .That(cloned.Person!.Value.ParserType)
-            .IsEqualTo(typeof(MemberLevelPersonProtoParser.LightProtoReader));
+        await Assert.That(cloned.Person!.Value.ParserType).IsEqualTo(typeof(MemberLevelPersonProtoParser.LightProtoReader));
         await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 
@@ -127,16 +121,10 @@ public partial class StructCustomPriorityTests
 #if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
 #else
-        var cloned = Serializer.DeepClone(
-            message,
-            ClassParserPersonContract.ProtoReader,
-            ClassParserPersonContract.ProtoWriter
-        );
+        var cloned = Serializer.DeepClone(message, ClassParserPersonContract.ProtoReader, ClassParserPersonContract.ProtoWriter);
 #endif
 
-        await Assert
-            .That(cloned.Person!.Value.ParserType)
-            .IsEqualTo(typeof(ClassLevelPersonProtoParser.LightProtoReader));
+        await Assert.That(cloned.Person!.Value.ParserType).IsEqualTo(typeof(ClassLevelPersonProtoParser.LightProtoReader));
         await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 
@@ -147,16 +135,10 @@ public partial class StructCustomPriorityTests
 #if NET5_0_OR_GREATER
         var cloned = Serializer.DeepClone(message);
 #else
-        var cloned = Serializer.DeepClone(
-            message,
-            TypeParserPersonContract.ProtoReader,
-            TypeParserPersonContract.ProtoWriter
-        );
+        var cloned = Serializer.DeepClone(message, TypeParserPersonContract.ProtoReader, TypeParserPersonContract.ProtoWriter);
 #endif
 
-        await Assert
-            .That(cloned.Person!.Value.ParserType)
-            .IsEqualTo(typeof(TypeLevelPersonProtoParser.LightProtoReader));
+        await Assert.That(cloned.Person!.Value.ParserType).IsEqualTo(typeof(TypeLevelPersonProtoParser.LightProtoReader));
         await Assert.That(cloned.Person!.Value.Id).IsEqualTo(message.Person.Value.Id);
     }
 }

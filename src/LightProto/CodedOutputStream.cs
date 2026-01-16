@@ -105,8 +105,7 @@ namespace LightProto
         public sealed class OutOfSpaceException : IOException
         {
             internal OutOfSpaceException()
-                : base("CodedOutputStream was writing to a flat byte array and ran out of space.")
-            { }
+                : base("CodedOutputStream was writing to a flat byte array and ran out of space.") { }
         }
 
         /// <summary>

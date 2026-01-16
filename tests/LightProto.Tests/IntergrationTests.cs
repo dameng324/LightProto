@@ -42,11 +42,7 @@ public class IntergrationTests
             SFixed64Field = random.Next(),
             EnumField = CsTestEnum.OptionB,
             EnumArrayFields = { CsTestEnum.OptionB, CsTestEnum.None, CsTestEnum.OptionA },
-            NestedMessageField = new CsTestMessage()
-            {
-                RequiredIntField = 20,
-                StringField = "hello",
-            },
+            NestedMessageField = new CsTestMessage() { RequiredIntField = 20, StringField = "hello" },
             NestedMessageArrayFields =
             [
                 new CsTestMessage() { RequiredIntField = 20, StringField = "hello" },
@@ -98,17 +94,10 @@ public class IntergrationTests
     [Repeat(100)]
     public async Task GoogleProtobuf_Should_Compatible()
     {
-        await RunGoogleProtobuf<CsTestMessage, TestMessage>(
-            NewCsMessage(),
-            TestMessage.Parser.ParseFrom,
-            t2 => t2.ToByteArray()
-        );
+        await RunGoogleProtobuf<CsTestMessage, TestMessage>(NewCsMessage(), TestMessage.Parser.ParseFrom, t2 => t2.ToByteArray());
     }
 
-    [ProtoBuf.ProtoContract(
-        ImplicitFields = ProtoBuf.ImplicitFields.AllPublic,
-        ImplicitFirstTag = 10
-    )]
+    [ProtoBuf.ProtoContract(ImplicitFields = ProtoBuf.ImplicitFields.AllPublic, ImplicitFirstTag = 10)]
     [DataContract]
     public class TestProtobufContract
     {
@@ -171,11 +160,7 @@ public class IntergrationTests
         //Console.WriteLine( ProtoBuf.Serializer.GetProto<InheritanceTests.Container>());
     }
 
-    async Task<T2> RunGoogleProtobuf<T1, T2>(
-        T1 origin,
-        Func<byte[], T2> parserFunc,
-        Func<T2, byte[]> t2ToByteArray
-    )
+    async Task<T2> RunGoogleProtobuf<T1, T2>(T1 origin, Func<byte[], T2> parserFunc, Func<T2, byte[]> t2ToByteArray)
         where T1 : IProtoParser<T1>
     {
         var bytes = origin.ToByteArray(ProtoParser<T1>.ProtoWriter);
@@ -191,7 +176,7 @@ public class IntergrationTests
 #if NET6_0_OR_GREATER
                 Serializer.CalculateSize(origin)
 #else
-                    ProtoParser<T1>.ProtoWriter.CalculateSize(origin)
+                ProtoParser<T1>.ProtoWriter.CalculateSize(origin)
 #endif
             );
         }
@@ -208,9 +193,7 @@ public class IntergrationTests
         var parseBackBytes = Convert.ToBase64String(bytes2);
         await Assert.That(parseBackBytes).IsEqualTo(originalBytes);
 #if NET6_0_OR_GREATER
-        await Assert
-            .That(Serializer.CalculateSize(parseBack))
-            .IsEqualTo(Serializer.CalculateSize(origin));
+        await Assert.That(Serializer.CalculateSize(parseBack)).IsEqualTo(Serializer.CalculateSize(origin));
 #else
         await Assert
             .That(ProtoParser<T1>.ProtoWriter.CalculateSize(parseBack))
@@ -239,10 +222,7 @@ public class IntergrationTests
         var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(bytes);
 #else
         var bytes = obj.ToByteArray(ProtoParser<CsTestMessage>.ProtoWriter);
-        var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(
-            bytes,
-            ProtoParser<CsTestMessage>.ProtoReader
-        );
+        var parsed = LightProto.Serializer.Deserialize<CsTestMessage>(bytes, ProtoParser<CsTestMessage>.ProtoReader);
 #endif
         await Assert.That(parsed.Int32ArrayFields).IsNotNull();
         await Assert.That(parsed.StringArrayFields).IsNotNull();

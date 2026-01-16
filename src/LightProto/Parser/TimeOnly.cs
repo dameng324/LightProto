@@ -23,8 +23,7 @@
         {
             int IProtoWriter.CalculateSize(object value) => CalculateSize((TimeOnly)value);
 
-            void IProtoWriter.WriteTo(ref WriterContext output, object value) =>
-                WriteTo(ref output, (TimeOnly)value);
+            void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (TimeOnly)value);
 
             public WireFormat.WireType WireType => WireFormat.WireType.Varint;
             public bool IsMessage => false;

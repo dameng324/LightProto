@@ -3,11 +3,7 @@
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class InternStringTests
-    : BaseEquivalentTypeTests<
-        InternStringTests.LightProtoMessage,
-        InternStringTests.ProtoBufMessage
-    >
+public partial class InternStringTests : BaseEquivalentTypeTests<InternStringTests.LightProtoMessage, InternStringTests.ProtoBufMessage>
 {
     [ProtoContract]
     public partial struct LightProtoMessage
@@ -36,14 +32,8 @@ public partial class InternStringTests
         yield return new() { Property = Guid.NewGuid().ToString("N") };
     }
 
-    public override async Task AssertResult(
-        LightProtoMessage lightProto,
-        ProtoBufMessage protobuf,
-        bool lightProtoToProtoBuf
-    )
+    public override async Task AssertResult(LightProtoMessage lightProto, ProtoBufMessage protobuf, bool lightProtoToProtoBuf)
     {
-        await Assert
-            .That(String.IsInterned(lightProto.Property))
-            .IsEquivalentTo(lightProto.Property);
+        await Assert.That(String.IsInterned(lightProto.Property)).IsEquivalentTo(lightProto.Property);
     }
 }

@@ -58,10 +58,7 @@
         {
             var tag = ctx.state.lastTag;
             var fixedSize = ItemFixedSize;
-            if (
-                WireFormat.GetTagWireType(tag) is WireFormat.WireType.LengthDelimited
-                && PackedRepeated.Support<TItem>()
-            )
+            if (WireFormat.GetTagWireType(tag) is WireFormat.WireType.LengthDelimited && PackedRepeated.Support<TItem>())
             {
                 var length = ctx.ReadInt64();
                 if (length <= 0)
@@ -75,11 +72,7 @@
                     //
                     // Check that the supplied length doesn't exceed the underlying buffer.
                     // That prevents a malicious length from initializing a very large collection.
-                    if (
-                        fixedSize > 0
-                        && length % fixedSize == 0
-                        && ParsingPrimitives.IsDataAvailable(ref ctx.state, length)
-                    )
+                    if (fixedSize > 0 && length % fixedSize == 0 && ParsingPrimitives.IsDataAvailable(ref ctx.state, length))
                     {
                         var count = length / fixedSize;
                         var collection = CreateWithCapacity((int)count);
@@ -111,10 +104,7 @@
                                 // Only FieldCodecs with a fixed size can reach here, and they are all known
                                 // types that don't allow the user to specify a custom reader action.
                                 // reader action will never return null.
-                                collection = AddItem(
-                                    collection,
-                                    ItemReader.ParseMessageFrom(ref ctx)
-                                );
+                                collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                             }
                         }
 

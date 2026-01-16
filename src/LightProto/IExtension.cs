@@ -12,10 +12,7 @@
     [Obsolete("compatibility protobuf-net only, no effect.")]
     public class Extensible : IExtensible
     {
-        public static IExtension GetExtensionObject(
-            ref IExtension extensionObject,
-            bool createIfMissing
-        )
+        public static IExtension GetExtensionObject(ref IExtension extensionObject, bool createIfMissing)
         {
             return null!;
         }

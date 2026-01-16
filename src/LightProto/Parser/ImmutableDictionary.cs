@@ -6,11 +6,7 @@ namespace LightProto.Parser
         : IEnumerableKeyValuePairProtoWriter<ImmutableDictionary<TKey, TValue>, TKey, TValue>
         where TKey : notnull
     {
-        public ImmutableDictionaryProtoWriter(
-            IProtoWriter<TKey> keyWriter,
-            IProtoWriter<TValue> valueWriter,
-            uint tag
-        )
+        public ImmutableDictionaryProtoWriter(IProtoWriter<TKey> keyWriter, IProtoWriter<TValue> valueWriter, uint tag)
             : base(keyWriter, valueWriter, tag, (dic) => dic.Count) { }
     }
 
@@ -22,27 +18,17 @@ namespace LightProto.Parser
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
-        object IProtoReader.ParseFrom(ref ReaderContext input) =>
-            _dictionaryReader.ParseFrom(ref input).ToImmutableDictionary();
+        object IProtoReader.ParseFrom(ref ReaderContext input) => _dictionaryReader.ParseFrom(ref input).ToImmutableDictionary();
 
-        ImmutableDictionary<TKey, TValue> IProtoReader<ImmutableDictionary<TKey, TValue>>.ParseFrom(
-            ref ReaderContext input
-        ) => _dictionaryReader.ParseFrom(ref input).ToImmutableDictionary();
+        ImmutableDictionary<TKey, TValue> IProtoReader<ImmutableDictionary<TKey, TValue>>.ParseFrom(ref ReaderContext input) =>
+            _dictionaryReader.ParseFrom(ref input).ToImmutableDictionary();
 
         public WireFormat.WireType ItemWireType => ItemReader.WireType;
         object ICollectionReader.Empty => Empty;
 
-        public ImmutableDictionaryProtoReader(
-            IProtoReader<TKey> keyReader,
-            IProtoReader<TValue> valueReader,
-            uint tag
-        )
+        public ImmutableDictionaryProtoReader(IProtoReader<TKey> keyReader, IProtoReader<TValue> valueReader, uint tag)
         {
-            _dictionaryReader = new DictionaryProtoReader<TKey, TValue>(
-                keyReader,
-                valueReader,
-                tag
-            );
+            _dictionaryReader = new DictionaryProtoReader<TKey, TValue>(keyReader, valueReader, tag);
         }
 
         public ImmutableDictionary<TKey, TValue> Empty => ImmutableDictionary<TKey, TValue>.Empty;

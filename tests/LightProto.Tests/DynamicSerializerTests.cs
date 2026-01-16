@@ -102,10 +102,7 @@ public partial class DynamicSerializerTests
 
         public BufferSegment Append(byte[] memory)
         {
-            var segment = new BufferSegment(memory)
-            {
-                RunningIndex = this.RunningIndex + this.Memory.Length,
-            };
+            var segment = new BufferSegment(memory) { RunningIndex = this.RunningIndex + this.Memory.Length };
             this.Next = segment;
             return segment;
         }
@@ -119,12 +116,7 @@ public partial class DynamicSerializerTests
         {
             lastBufferSegment = lastBufferSegment.Append(bytesArray[i]);
         }
-        return new ReadOnlySequence<byte>(
-            firstBufferSegment,
-            0,
-            lastBufferSegment,
-            lastBufferSegment.Memory.Length
-        );
+        return new ReadOnlySequence<byte>(firstBufferSegment, 0, lastBufferSegment, lastBufferSegment.Memory.Length);
     }
 
     [Test]
@@ -255,12 +247,7 @@ public partial class DynamicSerializerTests
     public async Task CollectionTest81()
     {
         using var ms = new MemoryStream();
-        HttpStatusCode[] original =
-        [
-            HttpStatusCode.OK,
-            HttpStatusCode.NotFound,
-            HttpStatusCode.InternalServerError,
-        ];
+        HttpStatusCode[] original = [HttpStatusCode.OK, HttpStatusCode.NotFound, HttpStatusCode.InternalServerError];
 
         Serializer.SerializeDynamically(ms, original);
         ms.Position = 0;
@@ -292,12 +279,7 @@ public partial class DynamicSerializerTests
     public async Task CollectionTest83()
     {
         using var ms = new MemoryStream();
-        List<HttpStatusCode> original =
-        [
-            HttpStatusCode.OK,
-            HttpStatusCode.NotFound,
-            HttpStatusCode.InternalServerError,
-        ];
+        List<HttpStatusCode> original = [HttpStatusCode.OK, HttpStatusCode.NotFound, HttpStatusCode.InternalServerError];
 
         Serializer.SerializeDynamically(ms, original);
         ms.Position = 0;
@@ -311,12 +293,7 @@ public partial class DynamicSerializerTests
     public async Task CollectionTest84()
     {
         using var ms = new MemoryStream();
-        ICollection<HttpStatusCode> original =
-        [
-            HttpStatusCode.OK,
-            HttpStatusCode.NotFound,
-            HttpStatusCode.InternalServerError,
-        ];
+        ICollection<HttpStatusCode> original = [HttpStatusCode.OK, HttpStatusCode.NotFound, HttpStatusCode.InternalServerError];
 
         Serializer.SerializeDynamically(ms, original);
         ms.Position = 0;
@@ -330,9 +307,7 @@ public partial class DynamicSerializerTests
     public async Task CollectionTest85()
     {
         using var ms = new MemoryStream();
-        ValueTuple<HttpStatusCode> original = new ValueTuple<HttpStatusCode>(
-            HttpStatusCode.Accepted
-        );
+        ValueTuple<HttpStatusCode> original = new ValueTuple<HttpStatusCode>(HttpStatusCode.Accepted);
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
@@ -353,10 +328,7 @@ public partial class DynamicSerializerTests
     public async Task CollectionTest86()
     {
         using var ms = new MemoryStream();
-        ValueTuple<int, HttpStatusCode> original = new ValueTuple<int, HttpStatusCode>(
-            123,
-            HttpStatusCode.Accepted
-        );
+        ValueTuple<int, HttpStatusCode> original = new ValueTuple<int, HttpStatusCode>(123, HttpStatusCode.Accepted);
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
             var ms = new MemoryStream();
@@ -376,11 +348,11 @@ public partial class DynamicSerializerTests
     public async Task CollectionTest87()
     {
         using var ms = new MemoryStream();
-        ValueTuple<int, string, HttpStatusCode> original = new ValueTuple<
-            int,
-            string,
-            HttpStatusCode
-        >(123, "hello", HttpStatusCode.Accepted);
+        ValueTuple<int, string, HttpStatusCode> original = new ValueTuple<int, string, HttpStatusCode>(
+            123,
+            "hello",
+            HttpStatusCode.Accepted
+        );
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
             var ms = new MemoryStream();
@@ -390,9 +362,7 @@ public partial class DynamicSerializerTests
 
         var ex2 = Assert.Throws<InvalidOperationException>(() =>
         {
-            Serializer.DeserializeDynamically<ValueTuple<int, string, HttpStatusCode>>(
-                new MemoryStream()
-            );
+            Serializer.DeserializeDynamically<ValueTuple<int, string, HttpStatusCode>>(new MemoryStream());
         });
         await Assert.That(ex2.Message).Contains("No ProtoParser registered for type");
     }
@@ -450,11 +420,7 @@ public partial class DynamicSerializerTests
     public async Task DictionaryTest()
     {
         ArrayBufferWriter<byte> bufferWriter = new();
-        Dictionary<int, TestContract> original = new()
-        {
-            [1] = CreateTestContract(),
-            [2] = CreateTestContract(),
-        };
+        Dictionary<int, TestContract> original = new() { [1] = CreateTestContract(), [2] = CreateTestContract() };
         Serializer.SerializeDynamically(bufferWriter, original);
         var parsed = Serializer.DeserializeDynamically<Dictionary<int, TestContract>>(
             GetReadonlySequence(bufferWriter.WrittenMemory.ToArray().Chunk(2).ToArray())
@@ -467,11 +433,7 @@ public partial class DynamicSerializerTests
     public async Task DictionaryTest2()
     {
         using var ms = new MemoryStream();
-        Dictionary<int, TestContract> original = new()
-        {
-            [1] = CreateTestContract(),
-            [2] = CreateTestContract(),
-        };
+        Dictionary<int, TestContract> original = new() { [1] = CreateTestContract(), [2] = CreateTestContract() };
         Serializer.SerializeDynamically(ms, original);
         ms.Position = 0;
         var parsed = Serializer.DeserializeDynamically<Dictionary<int, TestContract>>(ms);
@@ -483,11 +445,7 @@ public partial class DynamicSerializerTests
     public async Task DictionaryTest3()
     {
         using var ms = new MemoryStream();
-        Dictionary<List<int>, TestContract> original = new()
-        {
-            [[1, 3]] = CreateTestContract(),
-            [[2, 3]] = CreateTestContract(),
-        };
+        Dictionary<List<int>, TestContract> original = new() { [[1, 3]] = CreateTestContract(), [[2, 3]] = CreateTestContract() };
         Serializer.SerializeDynamically(ms, original);
         ms.Position = 0;
 
@@ -495,9 +453,7 @@ public partial class DynamicSerializerTests
         await Assert.That(parsed.Count).IsEquivalentTo(original.Count);
         foreach (var kv in original)
         {
-            await Assert
-                .That(parsed.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value)
-                .IsEquivalentTo(kv.Value);
+            await Assert.That(parsed.FirstOrDefault(o => o.Key.SequenceEqual(kv.Key)).Value).IsEquivalentTo(kv.Value);
         }
     }
 
@@ -521,9 +477,7 @@ public partial class DynamicSerializerTests
         MemoryStream ms = new MemoryStream();
         Serializer.SerializeDynamically(ms, map);
         var bytes = ms.ToArray();
-        var clone = Serializer.DeserializeDynamically<IEnumerable<KeyValuePair<string, int>>>(
-            bytes.AsSpan()
-        );
+        var clone = Serializer.DeserializeDynamically<IEnumerable<KeyValuePair<string, int>>>(bytes.AsSpan());
         await Assert.That(clone).IsEquivalentTo(map);
     }
 
@@ -535,9 +489,7 @@ public partial class DynamicSerializerTests
         MemoryStream ms = new MemoryStream();
         Serializer.SerializeDynamically<IReadOnlyDictionary<string, int>>(ms, map);
         var bytes = ms.ToArray();
-        var clone = Serializer.DeserializeDynamically<IReadOnlyDictionary<string, int>>(
-            bytes.AsSpan()
-        );
+        var clone = Serializer.DeserializeDynamically<IReadOnlyDictionary<string, int>>(bytes.AsSpan());
         await Assert.That(clone).IsEquivalentTo(map);
     }
 
