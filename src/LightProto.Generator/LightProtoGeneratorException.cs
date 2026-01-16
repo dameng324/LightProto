@@ -232,4 +232,18 @@ internal class LightProtoGeneratorException(string message) : Exception(message)
             Location = getLocation,
         };
     }
+
+    public static Exception ProtoInclude_DerivedType_Tag_Conflicts_With_Member(string toDisplayString, uint result, Location? getLocation)
+    {
+        return new LightProtoGeneratorException(
+            $"Derived type in ProtoInclude attribute {toDisplayString} tag {result} conflicts with member tag"
+        )
+        {
+            Id = "LIGHT_PROTO_019",
+            Title = $"Derived type in ProtoInclude attribute tag conflicts with member tag",
+            Category = "Usage",
+            Severity = DiagnosticSeverity.Error,
+            Location = getLocation,
+        };
+    }
 }
