@@ -86,13 +86,17 @@ internal static class Helper
         return false;
     }
 
-    internal static bool IsCollectionType(Compilation compilation, ITypeSymbol type)
+    internal static bool IsCollectionType(Compilation compilation, ITypeSymbol type) => IsCollectionType(compilation, type, out _);
+
+    internal static bool IsCollectionType(Compilation compilation, ITypeSymbol type, out ITypeSymbol? itemType)
     {
         if (type is IArrayTypeSymbol arrayType)
         {
+            itemType = arrayType.ElementType;
             return IsCollectionType(compilation, arrayType.ElementType, type);
         }
 
+        itemType = null;
         if (type is not INamedTypeSymbol namedType)
             return false;
 
@@ -105,9 +109,8 @@ internal static class Helper
         if (namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>")
             return false;
 
-        var elementType = namedType.TypeArguments[0];
-
-        return IsCollectionType(compilation, elementType, namedType);
+        itemType = namedType.TypeArguments[0];
+        return IsCollectionType(compilation, itemType, namedType);
     }
 
     internal static bool IsCollectionType(Compilation compilation, ITypeSymbol elementType, ITypeSymbol type)
@@ -570,10 +573,10 @@ internal static class Helper
                 var name = namedType.SpecialType switch
                 {
                     SpecialType.System_SByte when format is DataFormat.ZigZag => "SSByte",
-                    SpecialType.System_SByte when format is DataFormat.FixedSize => "SFixedByte",
                     SpecialType.System_Int16 when format is DataFormat.ZigZag => "SInt16",
                     SpecialType.System_Int32 when format is DataFormat.ZigZag => "SInt32",
                     SpecialType.System_Int64 when format is DataFormat.ZigZag => "SInt64",
+                    SpecialType.System_SByte when format is DataFormat.FixedSize => "SFixedByte",
                     SpecialType.System_Int32 when format is DataFormat.FixedSize => "SFixed32",
                     SpecialType.System_Int16 when format is DataFormat.FixedSize => "SFixed16",
                     SpecialType.System_Int64 when format is DataFormat.FixedSize => "SFixed64",
@@ -797,4 +800,41 @@ internal static class Helper
 
         return disposable;
     }
+
+    public static bool SupportsPackedEncoding(Compilation compilation, ITypeSymbol? itemType)
+    {
+        if (itemType is null)
+        {
+            return false;
+        }
+
+        return itemType.SpecialType
+            is SpecialType.System_Boolean
+                or SpecialType.System_Int16
+                or SpecialType.System_UInt16
+                or SpecialType.System_Int32
+                or SpecialType.System_UInt32
+                or SpecialType.System_Int64
+                or SpecialType.System_UInt64
+                or SpecialType.System_Byte
+                or SpecialType.System_SByte
+                or SpecialType.System_Single
+                or SpecialType.System_Double
+                or SpecialType.System_Char
+                or SpecialType.System_Enum;
+    }
+
+    internal static bool SupportFixedSize(ITypeSymbol type) =>
+        type.SpecialType
+            is SpecialType.System_SByte
+                or SpecialType.System_Int32
+                or SpecialType.System_Int16
+                or SpecialType.System_Int64
+                or SpecialType.System_Byte
+                or SpecialType.System_UInt16
+                or SpecialType.System_UInt32
+                or SpecialType.System_UInt64;
+
+    internal static bool SupportZigZag(ITypeSymbol type) =>
+        type.SpecialType is SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_Int32 or SpecialType.System_Int64;
 }

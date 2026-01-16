@@ -49,7 +49,7 @@ class ProtoContract
         var typeDeclaration = (targetType.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as TypeDeclarationSyntax)!;
 
         var proxyFor = GetProxyFor(targetType.GetAttributes());
-
+        var members = GetProtoMembers(compilation, targetType, typeDeclaration, implicitFields, implicitFirstTag, skipConstructor, spc);
         var protoIncludeAttributes = targetType
             .GetAttributes()
             .Where(attr => attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoIncludeAttribute")
@@ -106,6 +106,16 @@ class ProtoContract
                     attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
                 );
             }
+
+            if (members.Any(x => x.FieldNumber == tag))
+            {
+                throw LightProtoGeneratorException.ProtoInclude_DerivedType_Tag_Conflicts_With_Member(
+                    derivedType.ToDisplayString(),
+                    tag,
+                    attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation()
+                );
+            }
+
             derivedTypeContracts.Add((rawTag, contract));
         }
 
@@ -125,7 +135,7 @@ class ProtoContract
             Compilation = compilation,
             Type = targetType,
             TypeDeclaration = typeDeclaration,
-            Members = GetProtoMembers(compilation, targetType, typeDeclaration, implicitFields, implicitFirstTag, skipConstructor, spc),
+            Members = members,
             ImplicitFields = implicitFields,
             ImplicitFirstTag = implicitFirstTag,
             AttributeData = default,
@@ -376,6 +386,70 @@ class ProtoContract
                 }
             }
 
+            if (isPacked)
+            {
+                if (Helper.IsCollectionType(compilation, memberType, out var itemType))
+                {
+                    if (!Helper.SupportsPackedEncoding(compilation, itemType))
+                    {
+                        spc.ReportDiagnostic(
+                            LightProtoGeneratorWarning.MemberIsPackedButItemNotSupportPacked(
+                                $"{targetType}.{member.Name}",
+                                member.Locations
+                            )
+                        );
+                    }
+                }
+                else
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.MemberIsPackedButNotCollection($"{targetType}.{member.Name}", member.Locations)
+                    );
+                }
+            }
+
+            if (dataFormat is DataFormat.ZigZag)
+            {
+                if (Helper.SupportZigZag(memberType))
+                {
+                    //OK
+                }
+                else if (Helper.IsCollectionType(compilation, memberType, out var itemType) && Helper.SupportZigZag(itemType!))
+                {
+                    //OK
+                }
+                else
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.Member_DataFormat_ZigZag_Not_Supported_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+            }
+
+            if (dataFormat is DataFormat.FixedSize)
+            {
+                if (Helper.SupportFixedSize(memberType))
+                {
+                    //OK
+                }
+                else if (Helper.IsCollectionType(compilation, memberType, out var itemType) && Helper.SupportFixedSize(itemType!))
+                {
+                    //OK
+                }
+                else
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.Member_DataFormat_FixedSize_Not_Supported_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+            }
+
             bool HasEmptyStaticField(ITypeSymbol type)
             {
                 return type.GetMembers().OfType<IFieldSymbol>().Any(o => o.IsStatic && o.Name == "Empty");
@@ -388,11 +462,40 @@ class ProtoContract
                 return attributeDatas.Any(attr => attr.AttributeClass?.ToDisplayString() == "LightProto.StringInternAttribute");
             }
 
+            var memberStringIntern = HasStringInternAttribute(member.GetAttributes());
             bool stringIntern =
-                HasStringInternAttribute(member.GetAttributes())
+                memberStringIntern
                 || HasStringInternAttribute(targetType.GetAttributes())
                 || HasStringInternAttribute(targetType.ContainingModule.GetAttributes())
                 || HasStringInternAttribute(targetType.ContainingAssembly.GetAttributes());
+
+            if (memberStringIntern)
+            {
+                if (memberType.SpecialType == SpecialType.System_String)
+                {
+                    // OK
+                }
+                else if (memberType is IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_String })
+                {
+                    // OK
+                }
+                else if (
+                    memberType is INamedTypeSymbol namedType
+                    && namedType.TypeArguments.Any(x => x.SpecialType == SpecialType.System_String)
+                )
+                {
+                    // OK
+                }
+                else
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.StringInternAttribute_Applied_NonString_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+            }
 
             AttributeData? GetCompatibilityLevelAttribute(IEnumerable<AttributeData> attributeDatas)
             {
@@ -401,8 +504,9 @@ class ProtoContract
                 );
             }
 
+            var memberCompatibilityLevelAttr = GetCompatibilityLevelAttribute(member.GetAttributes());
             AttributeData? compatibilityLevelAttr =
-                GetCompatibilityLevelAttribute(member.GetAttributes())
+                memberCompatibilityLevelAttr
                 ?? GetCompatibilityLevelAttribute(targetType.GetAttributes())
                 ?? GetCompatibilityLevelAttribute(targetType.ContainingModule.GetAttributes())
                 ?? GetCompatibilityLevelAttribute(targetType.ContainingAssembly.GetAttributes());
@@ -414,6 +518,50 @@ class ProtoContract
                 ? _compatibilityLevel
                 : CompatibilityLevel.Level200;
 
+            if (memberCompatibilityLevelAttr is not null)
+            {
+                if (compatibilityLevel == CompatibilityLevel.Level240)
+                {
+                    if (memberType.SpecialType is SpecialType.System_DateTime)
+                    {
+                        //OK
+                    }
+                    else if (Helper.IsTimeSpanType(memberType))
+                    {
+                        //OK
+                    }
+                    else
+                    {
+                        spc.ReportDiagnostic(
+                            LightProtoGeneratorWarning.CompatibilityLevel240_Only_Support_DateTime_TimeSpan(
+                                $"{targetType}.{member.Name}",
+                                member.Locations
+                            )
+                        );
+                    }
+                }
+                else if (compatibilityLevel == CompatibilityLevel.Level300)
+                {
+                    if (memberType.SpecialType is SpecialType.System_Decimal)
+                    {
+                        //OK
+                    }
+                    else if (Helper.IsGuidType(memberType))
+                    {
+                        //OK
+                    }
+                    else
+                    {
+                        spc.ReportDiagnostic(
+                            LightProtoGeneratorWarning.CompatibilityLevel300_Only_Support_Decimal_Guid(
+                                $"{targetType}.{member.Name}",
+                                member.Locations
+                            )
+                        );
+                    }
+                }
+            }
+
             if (
 #pragma warning disable CS0618 // Type or member is obsolete
                 dataFormat is DataFormat.WellKnown
@@ -422,9 +570,17 @@ class ProtoContract
             {
                 compatibilityLevel = CompatibilityLevel.Level240;
             }
+
             AttributeData? protoMapAttr = member
                 .GetAttributes()
                 .FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoMapAttribute");
+
+            if (protoMapAttr is not null && !Helper.IsDictionaryType(compilation, memberType))
+            {
+                spc.ReportDiagnostic(
+                    LightProtoGeneratorWarning.Member_ProtoMapAttribute_But_Not_Dictionary($"{targetType}.{member.Name}", member.Locations)
+                );
+            }
 
             var keyFormat = Enum.TryParse<DataFormat>(
                 protoMapAttr?.NamedArguments.FirstOrDefault(kv => kv.Key == "KeyFormat").Value.Value?.ToString(),
@@ -439,6 +595,50 @@ class ProtoContract
             )
                 ? _valueFormat
                 : DataFormat.Default;
+
+            if (memberType is INamedTypeSymbol { TypeArguments: { Length: 2 } typeArguments })
+            {
+                var keyType = typeArguments[0];
+                if (keyFormat is DataFormat.ZigZag && !Helper.SupportZigZag(keyType))
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.Member_ProtoMap_Key_DataFormat_ZigZag_Not_Supported_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+                if (keyFormat is DataFormat.FixedSize && !Helper.SupportFixedSize(keyType))
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.Member_ProtoMap_Key_DataFormat_FixedSize_Not_Supported_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+
+                var valueType = typeArguments[1];
+                if (valueFormat is DataFormat.ZigZag && !Helper.SupportZigZag(valueType))
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.Member_ProtoMap_Value_DataFormat_ZigZag_Not_Supported_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+
+                if (valueFormat is DataFormat.FixedSize && !Helper.SupportFixedSize(valueType))
+                {
+                    spc.ReportDiagnostic(
+                        LightProtoGeneratorWarning.Member_ProtoMap_Value_DataFormat_FixedSize_Not_Supported_Type(
+                            $"{targetType}.{member.Name}",
+                            member.Locations
+                        )
+                    );
+                }
+            }
 
             if (members.Any(o => o.FieldNumber == tag))
             {
