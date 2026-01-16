@@ -49,7 +49,7 @@ class ProtoContract
         var typeDeclaration = (targetType.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as TypeDeclarationSyntax)!;
 
         var proxyFor = GetProxyFor(targetType.GetAttributes());
-
+        var members = GetProtoMembers(compilation, targetType, typeDeclaration, implicitFields, implicitFirstTag, skipConstructor, spc);
         var protoIncludeAttributes = targetType
             .GetAttributes()
             .Where(attr => attr.AttributeClass?.ToDisplayString() == "LightProto.ProtoIncludeAttribute")
@@ -107,7 +107,7 @@ class ProtoContract
                 );
             }
 
-            if (contract.Members.Any(x => x.FieldNumber == tag))
+            if (members.Any(x => x.FieldNumber == tag))
             {
                 throw LightProtoGeneratorException.ProtoInclude_DerivedType_Tag_Conflicts_With_Member(
                     derivedType.ToDisplayString(),
@@ -135,7 +135,7 @@ class ProtoContract
             Compilation = compilation,
             Type = targetType,
             TypeDeclaration = typeDeclaration,
-            Members = GetProtoMembers(compilation, targetType, typeDeclaration, implicitFields, implicitFirstTag, skipConstructor, spc),
+            Members = members,
             ImplicitFields = implicitFields,
             ImplicitFirstTag = implicitFirstTag,
             AttributeData = default,
