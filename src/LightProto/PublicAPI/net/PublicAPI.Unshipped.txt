@@ -23,3 +23,5 @@ static LightProto.Parser.SInt16ProtoParser.ProtoReader.get -> LightProto.IProtoR
 static LightProto.Parser.SInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
 static LightProto.Parser.UInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
 static LightProto.Parser.UInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!
+static LightProto.Serializer.ParseMessageFrom(this LightProto.IProtoReader! reader, ref LightProto.ReaderContext input) -> object!
+static LightProto.Serializer.WriteMessageTo(this LightProto.IProtoWriter! writer, ref LightProto.WriterContext output, object! value) -> void

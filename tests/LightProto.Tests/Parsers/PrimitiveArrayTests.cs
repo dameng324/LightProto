@@ -107,17 +107,21 @@ public partial class PrimitiveArrayTests : BaseTests<PrimitiveArrayTests.Message
         [ProtoBuf.ProtoMember(24)]
         public char[] CharValues { get; set; } = [];
 
+#pragma warning disable LIGHT_PROTO_W008
         [ProtoMember(25, DataFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(25, DataFormat = ProtoBuf.DataFormat.FixedSize)]
         public char[] FixedCharValues { get; set; } = [];
+#pragma warning restore LIGHT_PROTO_W008
 
         [ProtoMember(26, IsPacked = true)]
         [ProtoBuf.ProtoMember(26, IsPacked = true)]
         public char[] PackedCharValues { get; set; } = [];
 
+#pragma warning disable LIGHT_PROTO_W008
         [ProtoMember(27, IsPacked = true, DataFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(27, IsPacked = true, DataFormat = ProtoBuf.DataFormat.FixedSize)]
         public char[] PackedFixedCharValues { get; set; } = [];
+#pragma warning restore LIGHT_PROTO_W008
 
         [ProtoMember(28)]
         [ProtoBuf.ProtoMember(28)]

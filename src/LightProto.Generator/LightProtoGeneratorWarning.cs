@@ -77,16 +77,13 @@ internal static class LightProtoGeneratorWarning
         );
     }
 
-    public static Diagnostic CompatibilityLevel240_Only_Support_DateTime_TimeSpan(
-        string memberName,
-        ImmutableArray<Location> memberLocations
-    )
+    public static Diagnostic CompatibilityLevel240_Not_Supported_Type(string memberName, ImmutableArray<Location> memberLocations)
     {
         return Diagnostic.Create(
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W005",
-                title: "CompatibilityLevel.Level240 only supports DateTime and TimeSpan for well-known types",
-                messageFormat: "Member '{0}' is of a well-known type that is not supported in CompatibilityLevel.Level240. Only DateTime and TimeSpan are supported.",
+                title: "Member has CompatibilityLevel.Level240 but the type does not support it",
+                messageFormat: "Member '{0}' is of a well-known type that is not supported in CompatibilityLevel.Level240. The CompatibilityLevel.Level240 option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -98,13 +95,13 @@ internal static class LightProtoGeneratorWarning
         );
     }
 
-    public static Diagnostic CompatibilityLevel300_Only_Support_Decimal_Guid(string memberName, ImmutableArray<Location> memberLocations)
+    public static Diagnostic CompatibilityLevel300_Not_Supported_Type(string memberName, ImmutableArray<Location> memberLocations)
     {
         return Diagnostic.Create(
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W006",
-                title: "CompatibilityLevel.Level300 only supports Decimal and Guid for well-known types",
-                messageFormat: "Member '{0}' is of a well-known type that is not supported in CompatibilityLevel.Level300. Only Decimal and Guid are supported.",
+                title: "Member has CompatibilityLevel.Level300 but the type does not support it",
+                messageFormat: "Member '{0}' is of a well-known type that is not supported in CompatibilityLevel.Level300. The CompatibilityLevel.Level300 option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -213,7 +210,7 @@ internal static class LightProtoGeneratorWarning
     }
 
     public static Diagnostic Member_ProtoMap_Value_DataFormat_ZigZag_Not_Supported_Type(
-        string memberName,
+        string typeName,
         ImmutableArray<Location> memberLocations
     )
     {
@@ -221,7 +218,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W012",
                 title: "Member has ProtoMapAttribute with DataFormat.ZigZag on value but the value type does not support it",
-                messageFormat: "Member '{0}' is marked with ProtoMapAttribute with DataFormat.ZigZag on value but the value type does not support it. The DataFormat.ZigZag option will be ignored for the value.",
+                messageFormat: "Member Type '{0}' is marked with ProtoMapAttribute with DataFormat.ZigZag on value but the value type does not support it. The DataFormat.ZigZag option will be ignored for the value.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -229,12 +226,12 @@ internal static class LightProtoGeneratorWarning
             ),
             memberLocations.FirstOrDefault() ?? Location.None,
             additionalLocations: memberLocations.Skip(1),
-            memberName
+            typeName
         );
     }
 
     public static Diagnostic Member_ProtoMap_Value_DataFormat_FixedSize_Not_Supported_Type(
-        string memberName,
+        string typeName,
         ImmutableArray<Location> memberLocations
     )
     {
@@ -242,7 +239,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W013",
                 title: "Member has ProtoMapAttribute with DataFormat.FixedSize on value but the value type does not support it",
-                messageFormat: "Member '{0}' is marked with ProtoMapAttribute with DataFormat.FixedSize on value but the value type does not support it. The DataFormat.FixedSize option will be ignored for the value.",
+                messageFormat: "Member Type '{0}' is marked with ProtoMapAttribute with DataFormat.FixedSize on value but the value type does not support it. The DataFormat.FixedSize option will be ignored for the value.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -250,7 +247,7 @@ internal static class LightProtoGeneratorWarning
             ),
             memberLocations.FirstOrDefault() ?? Location.None,
             additionalLocations: memberLocations.Skip(1),
-            memberName
+            typeName
         );
     }
 }

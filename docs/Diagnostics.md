@@ -87,7 +87,7 @@ The cause of this issue is that the `StringIntern` attribute is only applicable 
 
 ## LIGHT_PROTO_W005
 
-CompatibilityLevel.Level240 only supports DateTime and TimeSpan for well-known types
+Member has CompatibilityLevel.Level240 but the type does not support it.
 
 ```csharp
 [ProtoContract()]
@@ -102,9 +102,11 @@ public partial class MyClass
 
 The cause of this issue is that when using `CompatibilityLevel.Level240`, only `DateTime` and `TimeSpan` are supported as well-known types. Using other types like `Guid` is not supported and will be ignored.
 
+DateTime will be mapped to `google.protobuf.Timestamp` and TimeSpan will be mapped to `google.protobuf.Duration` in this compatibility level.
+
 ## LIGHT_PROTO_W006
 
-CompatibilityLevel.Level300 only supports Decimal and Guid for well-known types
+Member has CompatibilityLevel.Level300 but the type does not support it
 
 ```csharp
 [ProtoContract()]
@@ -116,7 +118,11 @@ public partial class MyClass
 }
 ```
 
-The cause of this issue is that when using `CompatibilityLevel.Level300`, only `Decimal` and `Guid` are supported as well-known types. Using other types like `DateTime` is not supported and will be ignored.
+The cause of this issue is that when using `CompatibilityLevel.Level300`, only `Guid` and `decimal` are supported as well-known types. Using other types like `DateTime` is not supported and will be ignored.
+
+`Guid` will be mapped to `string` and `decimal` will be mapped to `string` in this compatibility level.
+
+When using `CompatibilityLevel.Level300` on `DateTime` or `TimeSpan`, `CompatibilityLevel.Level240` will affect the serialization instead.
 
 ## LIGHT_PROTO_W007
 

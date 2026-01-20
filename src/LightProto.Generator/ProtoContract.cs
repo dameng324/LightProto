@@ -390,7 +390,7 @@ class ProtoContract
             {
                 if (Helper.IsCollectionType(compilation, memberType, out var itemType))
                 {
-                    if (!Helper.SupportsPackedEncoding(compilation, itemType))
+                    if (!Helper.SupportsPackedEncoding(itemType))
                     {
                         spc.ReportDiagnostic(
                             LightProtoGeneratorWarning.MemberIsPackedButItemNotSupportPacked(
@@ -520,44 +520,21 @@ class ProtoContract
 
             if (memberCompatibilityLevelAttr is not null)
             {
-                if (compatibilityLevel == CompatibilityLevel.Level240)
+                switch (compatibilityLevel)
                 {
-                    if (memberType.SpecialType is SpecialType.System_DateTime)
-                    {
-                        //OK
-                    }
-                    else if (Helper.IsTimeSpanType(memberType))
-                    {
-                        //OK
-                    }
-                    else
+                    case CompatibilityLevel.Level240 when !Helper.SupportLevel240Types(memberType):
                     {
                         spc.ReportDiagnostic(
-                            LightProtoGeneratorWarning.CompatibilityLevel240_Only_Support_DateTime_TimeSpan(
-                                $"{targetType}.{member.Name}",
-                                member.Locations
-                            )
+                            LightProtoGeneratorWarning.CompatibilityLevel240_Not_Supported_Type($"{memberType}", member.Locations)
                         );
+                        break;
                     }
-                }
-                else if (compatibilityLevel == CompatibilityLevel.Level300)
-                {
-                    if (memberType.SpecialType is SpecialType.System_Decimal)
-                    {
-                        //OK
-                    }
-                    else if (Helper.IsGuidType(memberType))
-                    {
-                        //OK
-                    }
-                    else
+                    case CompatibilityLevel.Level300 when !Helper.SupportLevel300Types(memberType):
                     {
                         spc.ReportDiagnostic(
-                            LightProtoGeneratorWarning.CompatibilityLevel300_Only_Support_Decimal_Guid(
-                                $"{targetType}.{member.Name}",
-                                member.Locations
-                            )
+                            LightProtoGeneratorWarning.CompatibilityLevel300_Not_Supported_Type($"{memberType}", member.Locations)
                         );
+                        break;
                     }
                 }
             }
@@ -602,17 +579,14 @@ class ProtoContract
                 if (keyFormat is DataFormat.ZigZag && !Helper.SupportZigZag(keyType))
                 {
                     spc.ReportDiagnostic(
-                        LightProtoGeneratorWarning.Member_ProtoMap_Key_DataFormat_ZigZag_Not_Supported_Type(
-                            $"{targetType}.{member.Name}",
-                            member.Locations
-                        )
+                        LightProtoGeneratorWarning.Member_ProtoMap_Key_DataFormat_ZigZag_Not_Supported_Type($"{keyType}", member.Locations)
                     );
                 }
                 if (keyFormat is DataFormat.FixedSize && !Helper.SupportFixedSize(keyType))
                 {
                     spc.ReportDiagnostic(
                         LightProtoGeneratorWarning.Member_ProtoMap_Key_DataFormat_FixedSize_Not_Supported_Type(
-                            $"{targetType}.{member.Name}",
+                            $"{keyType}",
                             member.Locations
                         )
                     );
@@ -623,7 +597,7 @@ class ProtoContract
                 {
                     spc.ReportDiagnostic(
                         LightProtoGeneratorWarning.Member_ProtoMap_Value_DataFormat_ZigZag_Not_Supported_Type(
-                            $"{targetType}.{member.Name}",
+                            $"{valueType}",
                             member.Locations
                         )
                     );
@@ -633,7 +607,7 @@ class ProtoContract
                 {
                     spc.ReportDiagnostic(
                         LightProtoGeneratorWarning.Member_ProtoMap_Value_DataFormat_FixedSize_Not_Supported_Type(
-                            $"{targetType}.{member.Name}",
+                            $"{valueType}",
                             member.Locations
                         )
                     );

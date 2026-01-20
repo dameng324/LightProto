@@ -54,12 +54,44 @@ internal class RuntimeProtoParser<T> : IProtoReader, IProtoWriter, IProtoReader<
         TValue>(int fieldNumber, Func<T, TValue> getter, Action<T, TValue> setter) =>
         AddMember(fieldNumber, getter, setter, Serializer.GetProtoReader<TValue>(), Serializer.GetProtoWriter<TValue>());
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(Serializer.AOTWarning)]
+#endif
+    public void AddMember(
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(Serializer.LightProtoRequiredMembers)]
+#endif
+        Type type,
+        int fieldNumber,
+        Func<T, object> getter,
+        Action<T, object> setter
+    ) => AddMember(type, fieldNumber, getter, setter, Serializer.GetProtoReader(type), Serializer.GetProtoWriter(type));
+
     public void AddMember<TValue>(
         int fieldNumber,
         Func<T, TValue> getter,
         Action<T, TValue> setter,
         IProtoReader<TValue> reader,
         IProtoWriter<TValue> writer
+    )
+    {
+        AddMember(
+            typeof(TValue),
+            fieldNumber,
+            x => getter(x)!,
+            (x, v) => setter(x, (TValue)v!),
+            (IProtoReader)reader,
+            (IProtoWriter)writer
+        );
+    }
+
+    public void AddMember(
+        Type type,
+        int fieldNumber,
+        Func<T, object> getter,
+        Action<T, object> setter,
+        IProtoReader reader,
+        IProtoWriter writer
     )
     {
         if (writer is ICollectionWriter collectionWriter)
@@ -71,7 +103,7 @@ internal class RuntimeProtoParser<T> : IProtoReader, IProtoWriter, IProtoReader<
                 (IProtoReader)reader,
                 (IProtoWriter)writer,
                 x => getter(x)!,
-                (x, v) => setter(x, (TValue)v!)
+                (x, v) => setter(x, v!)
             );
             _members.Add(member);
             collectionWriter.Tag = tag1;
@@ -88,7 +120,7 @@ internal class RuntimeProtoParser<T> : IProtoReader, IProtoWriter, IProtoReader<
                 (IProtoReader)reader,
                 (IProtoWriter)writer,
                 x => getter(x)!,
-                (x, v) => setter(x, (TValue)v!)
+                (x, v) => setter(x, v!)
             );
             _members.Add(member);
             _tagMembers[tag] = member;
