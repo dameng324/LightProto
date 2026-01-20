@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using LightProto.Parser;
 
 namespace LightProto
@@ -29,6 +30,14 @@ namespace LightProto
             return writer.IsMessage ? CodedOutputStream.ComputeLengthSize(size) + size : size;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int CalculateMessageSize(this IProtoWriter writer, object value)
+        {
+            var size = writer.CalculateSize(value);
+            return writer.IsMessage ? CodedOutputStream.ComputeLengthSize(size) + size : size;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessageTo(this IProtoWriter writer, ref WriterContext output, object value)
         {
             if (writer.IsMessage)
@@ -39,6 +48,7 @@ namespace LightProto
             writer.WriteTo(ref output, value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessageTo<T>(this IProtoWriter<T> writer, ref WriterContext output, T value)
         {
             if (writer.IsMessage)

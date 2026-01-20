@@ -114,15 +114,15 @@ public partial class MyClass
 {
     [ProtoMember(1)]
     [CompatibilityLevel(CompatibilityLevel.Level300)]
-    public DateTime MyDateTime { get; set; } // Warning: LIGHT_PROTO_W006
+    public string MyString { get; set; } // Warning: LIGHT_PROTO_W006
 }
 ```
 
-The cause of this issue is that when using `CompatibilityLevel.Level300`, only `Guid` and `decimal` are supported as well-known types. Using other types like `DateTime` is not supported and will be ignored.
+The cause of this issue is that when using `CompatibilityLevel.Level300`, only `Guid` and `decimal` and `CompatibilityLevel.Level240` supported types are supported as well-known types. Using other types like `string` is not supported and will be ignored.
 
 `Guid` will be mapped to `string` and `decimal` will be mapped to `string` in this compatibility level.
 
-When using `CompatibilityLevel.Level300` on `DateTime` or `TimeSpan`, `CompatibilityLevel.Level240` will affect the serialization instead.
+When using `CompatibilityLevel.Level300` on `CompatibilityLevel.Level240` supported types, `CompatibilityLevel.Level240` will affect the serialization instead.
 
 ## LIGHT_PROTO_W007
 

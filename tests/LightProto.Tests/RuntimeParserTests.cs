@@ -113,4 +113,36 @@ public partial class RuntimeParserTests
         await Assert.That(cloned.StringValue).IsEqualTo(message.StringValue);
         await Assert.That(cloned.IntArray).IsEquivalentTo(message.IntArray);
     }
+
+    [Test]
+    [SkipAot]
+    public async Task GenericRuntimeParser_WithRegistration_WorksCorrectly2()
+    {
+        Serializer.RegisterGenericParser(
+            typeof(TestMessage2<>),
+            typeof(TestMessage2RuntimeProtoReader<>),
+            typeof(TestMessage2RuntimeProtoWriter<>)
+        );
+
+        var message = new TestMessage2<TestMessage>
+        {
+            Value = new TestMessage()
+            {
+                Value = 42,
+                StringValue = "Hello, Runtime Parser!",
+                IntArray = new int[] { 1, 2, 3, 4, 5 },
+            },
+            StringValue = "Hello, Runtime Parser!",
+            IntArray = new int[] { 1, 2, 3, 4, 5 },
+        };
+        var bytes = Serializer.SerializeToArrayDynamically(message);
+
+        var cloned = Serializer.DeserializeDynamically<TestMessage2<TestMessage>>(bytes);
+
+        await Assert.That(cloned.Value.Value).IsEqualTo(message.Value.Value);
+        await Assert.That(cloned.Value.StringValue).IsEqualTo(message.Value.StringValue);
+        await Assert.That(cloned.Value.IntArray).IsEquivalentTo(message.Value.IntArray);
+        await Assert.That(cloned.StringValue).IsEqualTo(message.StringValue);
+        await Assert.That(cloned.IntArray).IsEquivalentTo(message.IntArray);
+    }
 }

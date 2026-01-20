@@ -371,31 +371,28 @@ namespace LightProto
                 }
                 else
                 {
-                    if (parserType.GetConstructor(Type.EmptyTypes) != null)
+                    var parserInterfaceType = isReader
+                        ? typeof(IProtoReader<>).MakeGenericType(itemType)
+                        : typeof(IProtoWriter<>).MakeGenericType(itemType);
+                    if (parserType.GetConstructor([parserInterfaceType, typeof(uint), typeof(int)]) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType, itemParser, tag, 0)!;
+                    }
+                    else if (parserType.GetConstructor([parserInterfaceType, typeof(uint)]) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType, itemParser, tag)!;
+                    }
+                    else if (parserType.GetConstructor([parserInterfaceType]) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType, itemParser)!;
+                    }
+                    else if (parserType.GetConstructor(Type.EmptyTypes) != null)
                     {
                         parser = Activator.CreateInstance(parserType)!;
                     }
                     else
                     {
-                        var parserInterfaceType = isReader
-                            ? typeof(IProtoReader<>).MakeGenericType(itemType)
-                            : typeof(IProtoWriter<>).MakeGenericType(itemType);
-                        if (parserType.GetConstructor([parserInterfaceType]) != null)
-                        {
-                            parser = Activator.CreateInstance(parserType, itemParser)!;
-                        }
-                        else if (parserType.GetConstructor([parserInterfaceType, typeof(uint)]) != null)
-                        {
-                            parser = Activator.CreateInstance(parserType, itemParser, tag)!;
-                        }
-                        else if (parserType.GetConstructor([parserInterfaceType, typeof(uint), typeof(int)]) != null)
-                        {
-                            parser = Activator.CreateInstance(parserType, itemParser, tag, 0)!;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"No suitable constructor found for ProtoParser type {parserType}");
-                        }
+                        throw new InvalidOperationException($"No suitable constructor found for ProtoParser type {parserType}");
                     }
                 }
 

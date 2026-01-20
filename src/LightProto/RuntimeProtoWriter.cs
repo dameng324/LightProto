@@ -49,15 +49,9 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
 
     public void AddMember(Type type, int fieldNumber, Func<T, object> getter, IProtoWriter writer)
     {
-        uint tag;
-        if (writer is ICollectionWriter collectionWriter)
-        {
-            tag = collectionWriter.Tag = WireFormat.MakeTag(fieldNumber, collectionWriter.ItemWireType);
-        }
-        else
-        {
-            tag = WireFormat.MakeTag(fieldNumber, writer.WireType);
-        }
+        uint tag = writer is ICollectionWriter collectionWriter
+            ? collectionWriter.Tag = WireFormat.MakeTag(fieldNumber, collectionWriter.ItemWireType)
+            : WireFormat.MakeTag(fieldNumber, writer.WireType);
         var member = new ProtoMember(tag, writer, x => getter(x)!);
         _members.Add(member);
     }
@@ -74,7 +68,7 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
             {
                 size += CodedOutputStream.ComputeUInt32Size(member.Tag);
             }
-            size += member.Writer.CalculateSize(member.Getter(value));
+            size += member.Writer.CalculateMessageSize(member.Getter(value));
         }
 
         return size;
