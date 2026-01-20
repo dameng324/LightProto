@@ -29,7 +29,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W002",
                 title: "Member is marked as IsPacked but is not a collection type",
-                messageFormat: "Member '{0}' with type '{1}'is marked as IsPacked but is not a collection type. The IsPacked option will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is marked as IsPacked but is not a collection type. The IsPacked option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -48,7 +48,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W003",
                 title: "Member is marked as IsPacked but the item type does not support packed encoding",
-                messageFormat: "Member '{0}' with type '{1}'is marked as IsPacked but the item type does not support packed encoding. The IsPacked option will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is marked as IsPacked but the item type does not support packed encoding. The IsPacked option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -71,7 +71,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W004",
                 title: "StringInternAttribute applied to non-string type",
-                messageFormat: "Member '{0}' with type '{1}'is marked with StringInternAttribute but is not of type string. The attribute will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is marked with StringInternAttribute but is not of type string. The attribute will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -94,7 +94,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W005",
                 title: "Member has CompatibilityLevel.Level240 but the type does not support it",
-                messageFormat: "Member '{0}' with type '{1}'is of a well-known type that is not supported in CompatibilityLevel.Level240. The CompatibilityLevel.Level240 option will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is of a well-known type that is not supported in CompatibilityLevel.Level240. The CompatibilityLevel.Level240 option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -117,7 +117,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W006",
                 title: "Member has CompatibilityLevel.Level300 but the type does not support it",
-                messageFormat: "Member '{0}' with type '{1}'is of a well-known type that is not supported in CompatibilityLevel.Level300. The CompatibilityLevel.Level300 option will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is of a well-known type that is not supported in CompatibilityLevel.Level300. The CompatibilityLevel.Level300 option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -140,7 +140,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W007",
                 title: "Member has DataFormat.ZigZag but the type does not support it",
-                messageFormat: "Member '{0}' with type '{1}'is marked with DataFormat.ZigZag but the type does not support it. The DataFormat.ZigZag option will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is marked with DataFormat.ZigZag but the type does not support it. The DataFormat.ZigZag option will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -186,7 +186,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W009",
                 title: "Member has ProtoMapAttribute but is not a dictionary type",
-                messageFormat: "Member '{0}' with type '{1}'is marked with ProtoMapAttribute but is not a dictionary type. The ProtoMapAttribute will be ignored.",
+                messageFormat: "Member '{0}' with type '{1}' is marked with ProtoMapAttribute but is not a dictionary type. The ProtoMapAttribute will be ignored.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -209,7 +209,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W010",
                 title: "Member has ProtoMapAttribute with DataFormat.ZigZag on key but the key type does not support it",
-                messageFormat: "Key type '{0}' is marked with ProtoMapAttribute with DataFormat.ZigZag on key but the key type does not support it. The DataFormat.ZigZag option will be ignored for the key.",
+                messageFormat: "Member '{0}' with key type '{1}' is marked with ProtoMapAttribute with DataFormat.ZigZag on key but the key type does not support it. The DataFormat.ZigZag option will be ignored for the key.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -232,7 +232,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W011",
                 title: "Member has ProtoMapAttribute with DataFormat.FixedSize on key but the key type does not support it",
-                messageFormat: "Key type '{0}' is marked with ProtoMapAttribute with DataFormat.FixedSize on key but the key type does not support it. The DataFormat.FixedSize option will be ignored for the key.",
+                messageFormat: "Member '{0}' with key type '{1}' is marked with ProtoMapAttribute with DataFormat.FixedSize on key but the key type does not support it. The DataFormat.FixedSize option will be ignored for the key.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -255,7 +255,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W012",
                 title: "Member has ProtoMapAttribute with DataFormat.ZigZag on value but the value type does not support it",
-                messageFormat: "Value type '{0}' is marked with ProtoMapAttribute with DataFormat.ZigZag on value but the value type does not support it. The DataFormat.ZigZag option will be ignored for the value.",
+                messageFormat: "Member '{0}' with value type '{1}' is marked with ProtoMapAttribute with DataFormat.ZigZag on value but the value type does not support it. The DataFormat.ZigZag option will be ignored for the value.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -278,7 +278,7 @@ internal static class LightProtoGeneratorWarning
             new DiagnosticDescriptor(
                 id: "LIGHT_PROTO_W013",
                 title: "Member has ProtoMapAttribute with DataFormat.FixedSize on value but the value type does not support it",
-                messageFormat: "Value type '{0}' is marked with ProtoMapAttribute with DataFormat.FixedSize on value but the value type does not support it. The DataFormat.FixedSize option will be ignored for the value.",
+                messageFormat: "Member '{0}' with value type '{1}' is marked with ProtoMapAttribute with DataFormat.FixedSize on value but the value type does not support it. The DataFormat.FixedSize option will be ignored for the value.",
                 category: "Usage",
                 defaultSeverity: DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
