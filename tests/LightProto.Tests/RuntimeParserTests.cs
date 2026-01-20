@@ -1,4 +1,7 @@
-﻿namespace LightProto.Tests;
+﻿using System.Diagnostics.CodeAnalysis;
+using LightProto.Parser;
+
+namespace LightProto.Tests;
 
 public partial class RuntimeParserTests
 {
@@ -16,12 +19,23 @@ public partial class RuntimeParserTests
     }
 
     [Test]
-    public async Task Test()
+    public async Task RuntimeParser_Serialization_Deserialization_ProducesEquivalentResults()
     {
         var runtimeParser = new RuntimeProtoParser<TestMessage>(() => new());
         runtimeParser.AddMember(1, message => message.Value, (message, value) => message.Value = value);
         runtimeParser.AddMember(2, message => message.StringValue, (message, value) => message.StringValue = value);
-        runtimeParser.AddMember(3, message => message.IntArray, (message, value) => message.IntArray = value);
+        runtimeParser.AddMember<int[]>(
+            3,
+            message => message.IntArray,
+            (message, value) => message.IntArray = value,
+            Int32ProtoParser.ProtoReader.GetArrayReader(),
+            Int32ProtoParser.ProtoWriter.GetCollectionWriter()
+        );
+
+        await Assert.That(runtimeParser.ProtoReader.IsMessage).IsEqualTo(true);
+        await Assert.That(runtimeParser.ProtoReader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
+        await Assert.That(runtimeParser.ProtoWriter.IsMessage).IsEqualTo(true);
+        await Assert.That(runtimeParser.ProtoWriter.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
 
         var message = new TestMessage
         {
@@ -30,10 +44,10 @@ public partial class RuntimeParserTests
             IntArray = new int[] { 1, 2, 3, 4, 5 },
         };
         var bytes = message.ToByteArray(TestMessage.ProtoWriter);
-        var runtimeBytes = message.ToByteArray(runtimeParser);
+        var runtimeBytes = message.ToByteArray(runtimeParser.ProtoWriter);
         await Assert.That(runtimeBytes).IsEquivalentTo(bytes);
 
-        var cloned = Serializer.Deserialize<TestMessage>(bytes, runtimeParser);
+        var cloned = Serializer.Deserialize<TestMessage>(bytes, runtimeParser.ProtoReader);
 
         await Assert.That(cloned.Value).IsEqualTo(message.Value);
         await Assert.That(cloned.StringValue).IsEqualTo(message.StringValue);
@@ -47,24 +61,35 @@ public partial class RuntimeParserTests
         public int[] IntArray { get; set; } = [];
     }
 
-    internal class TestMessage2RuntimeProtoParser<T1> : RuntimeProtoParser<TestMessage2<T1>>
+    internal class TestMessage2RuntimeProtoReader<T1> : RuntimeProtoReader<TestMessage2<T1>>
     {
-        public TestMessage2RuntimeProtoParser()
+        public TestMessage2RuntimeProtoReader()
             : base(() => new())
         {
-            AddMember(1, x => x.Value, (x, v) => x.Value = v);
-            AddMember(2, x => x.StringValue, (x, v) => x.StringValue = v);
-            AddMember(3, x => x.IntArray, (x, v) => x.IntArray = v);
+            AddMember<T1>(1, (x, v) => x.Value = v);
+            AddMember<string>(2, (x, v) => x.StringValue = v);
+            AddMember<int[]>(3, (x, v) => x.IntArray = v);
+        }
+    }
+
+    internal class TestMessage2RuntimeProtoWriter<T1> : RuntimeProtoWriter<TestMessage2<T1>>
+    {
+        public TestMessage2RuntimeProtoWriter()
+        {
+            AddMember<T1>(1, x => x.Value);
+            AddMember<string>(2, x => x.StringValue);
+            AddMember<int[]>(3, x => x.IntArray);
         }
     }
 
     [Test]
-    public async Task Test2()
+    [SkipAot]
+    public async Task GenericRuntimeParser_WithRegistration_WorksCorrectly()
     {
         Serializer.RegisterGenericParser(
             typeof(TestMessage2<>),
-            typeof(TestMessage2RuntimeProtoParser<>),
-            typeof(TestMessage2RuntimeProtoParser<>)
+            typeof(TestMessage2RuntimeProtoReader<>),
+            typeof(TestMessage2RuntimeProtoWriter<>)
         );
         var message = new TestMessage
         {

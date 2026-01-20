@@ -10,5 +10,5 @@ public partial class TestMessage
 {
     [ProtoMember(1)]
     [CompatibilityLevel(CompatibilityLevel.Level300)]
-    public DateTime Id { get; set; }
+    public global::System.DateTime? Id { get; set; }
 }

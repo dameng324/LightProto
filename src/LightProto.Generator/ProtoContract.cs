@@ -393,10 +393,7 @@ class ProtoContract
                     if (!Helper.SupportsPackedEncoding(itemType))
                     {
                         spc.ReportDiagnostic(
-                            LightProtoGeneratorWarning.MemberIsPackedButItemNotSupportPacked(
-                                $"{targetType}.{member.Name}",
-                                member.Locations
-                            )
+                            LightProtoGeneratorWarning.MemberIsPackedButItemNotSupportPacked($"{memberType}", member.Locations)
                         );
                     }
                 }
@@ -421,10 +418,7 @@ class ProtoContract
                 else
                 {
                     spc.ReportDiagnostic(
-                        LightProtoGeneratorWarning.Member_DataFormat_ZigZag_Not_Supported_Type(
-                            $"{targetType}.{member.Name}",
-                            member.Locations
-                        )
+                        LightProtoGeneratorWarning.Member_DataFormat_ZigZag_Not_Supported_Type($"{memberType}", member.Locations)
                     );
                 }
             }
@@ -442,10 +436,7 @@ class ProtoContract
                 else
                 {
                     spc.ReportDiagnostic(
-                        LightProtoGeneratorWarning.Member_DataFormat_FixedSize_Not_Supported_Type(
-                            $"{targetType}.{member.Name}",
-                            member.Locations
-                        )
+                        LightProtoGeneratorWarning.Member_DataFormat_FixedSize_Not_Supported_Type($"{memberType}", member.Locations)
                     );
                 }
             }
@@ -489,10 +480,7 @@ class ProtoContract
                 else
                 {
                     spc.ReportDiagnostic(
-                        LightProtoGeneratorWarning.StringInternAttribute_Applied_NonString_Type(
-                            $"{targetType}.{member.Name}",
-                            member.Locations
-                        )
+                        LightProtoGeneratorWarning.StringInternAttribute_Applied_NonString_Type($"{memberType}", member.Locations)
                     );
                 }
             }
@@ -555,7 +543,7 @@ class ProtoContract
             if (protoMapAttr is not null && !Helper.IsDictionaryType(compilation, memberType))
             {
                 spc.ReportDiagnostic(
-                    LightProtoGeneratorWarning.Member_ProtoMapAttribute_But_Not_Dictionary($"{targetType}.{member.Name}", member.Locations)
+                    LightProtoGeneratorWarning.Member_ProtoMapAttribute_But_Not_Dictionary($"{memberType}", member.Locations)
                 );
             }
 

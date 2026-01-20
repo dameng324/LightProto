@@ -88,7 +88,9 @@ public partial class PrimitiveTests : BaseTests<PrimitiveTests.Message, Primitiv
 
         [ProtoMember(20, DataFormat = DataFormat.FixedSize)]
         [ProtoBuf.ProtoMember(20, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+#pragma warning disable LIGHT_PROTO_W008
         public char FixedCharValue { get; set; } //fixed32
+#pragma warning restore LIGHT_PROTO_W008
 
         [ProtoMember(21)]
         [ProtoBuf.ProtoMember(21)]

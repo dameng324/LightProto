@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
@@ -810,7 +809,7 @@ internal static class Helper
         }
         if (itemType.SpecialType is SpecialType.System_Nullable_T || IsLazyType(itemType))
         {
-            return SupportsPackedEncoding(itemType);
+            return SupportsPackedEncoding(((INamedTypeSymbol)itemType).TypeArguments[0]);
         }
 
         return itemType.SpecialType
