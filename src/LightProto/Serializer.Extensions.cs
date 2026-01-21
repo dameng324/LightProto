@@ -24,6 +24,7 @@ namespace LightProto
             where T : IProtoParser<T> => ToByteArray(message, T.ProtoWriter);
 #endif
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CalculateMessageSize<T>(this IProtoWriter<T> writer, T value)
         {
             var size = writer.CalculateSize(value);
@@ -59,74 +60,65 @@ namespace LightProto
             writer.WriteTo(ref output, value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object ParseMessageFrom(this IProtoReader reader, ref ReaderContext input)
         {
-            if (reader.IsMessage)
-            {
-                var length = input.ReadInt64();
-                if (input.state.recursionDepth >= input.state.recursionLimit)
-                {
-                    throw InvalidProtocolBufferException.RecursionLimitExceeded();
-                }
-
-                var oldLimit = SegmentedBufferHelper.PushLimit(ref input.state, length);
-                ++input.state.recursionDepth;
-                var message = reader.ParseFrom(ref input);
-
-                if (input.state.lastTag != 0)
-                {
-                    throw InvalidProtocolBufferException.MoreDataAvailable();
-                }
-
-                // Check that we've read exactly as much data as expected.
-                if (!SegmentedBufferHelper.IsReachedLimit(ref input.state))
-                {
-                    throw InvalidProtocolBufferException.TruncatedMessage();
-                }
-
-                --input.state.recursionDepth;
-                SegmentedBufferHelper.PopLimit(ref input.state, oldLimit);
-                return message;
-            }
-            else
+            if (!reader.IsMessage)
             {
                 return reader.ParseFrom(ref input);
             }
+
+            var length = input.ReadInt64();
+            var oldLimit = PushLimit(ref input, length);
+            var message = reader.ParseFrom(ref input);
+            PopLimit(ref input, oldLimit);
+            return message;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void PopLimit(ref ReaderContext input, long oldLimit)
+        {
+            if (input.state.lastTag != 0)
+            {
+                throw InvalidProtocolBufferException.MoreDataAvailable();
+            }
+
+            // Check that we've read exactly as much data as expected.
+            if (!SegmentedBufferHelper.IsReachedLimit(ref input.state))
+            {
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
+
+            --input.state.recursionDepth;
+            SegmentedBufferHelper.PopLimit(ref input.state, oldLimit);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static long PushLimit(ref ReaderContext input, long length)
+        {
+            if (input.state.recursionDepth >= input.state.recursionLimit)
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
+
+            var oldLimit = SegmentedBufferHelper.PushLimit(ref input.state, length);
+            ++input.state.recursionDepth;
+            return oldLimit;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ParseMessageFrom<T>(this IProtoReader<T> reader, ref ReaderContext input)
         {
-            if (reader.IsMessage)
-            {
-                var length = input.ReadInt64();
-                if (input.state.recursionDepth >= input.state.recursionLimit)
-                {
-                    throw InvalidProtocolBufferException.RecursionLimitExceeded();
-                }
-
-                var oldLimit = SegmentedBufferHelper.PushLimit(ref input.state, length);
-                ++input.state.recursionDepth;
-                var message = reader.ParseFrom(ref input);
-
-                if (input.state.lastTag != 0)
-                {
-                    throw InvalidProtocolBufferException.MoreDataAvailable();
-                }
-
-                // Check that we've read exactly as much data as expected.
-                if (!SegmentedBufferHelper.IsReachedLimit(ref input.state))
-                {
-                    throw InvalidProtocolBufferException.TruncatedMessage();
-                }
-
-                --input.state.recursionDepth;
-                SegmentedBufferHelper.PopLimit(ref input.state, oldLimit);
-                return message;
-            }
-            else
+            if (!reader.IsMessage)
             {
                 return reader.ParseFrom(ref input);
             }
+
+            var length = input.ReadInt64();
+            var oldLimit = PushLimit(ref input, length);
+            var message = reader.ParseFrom(ref input);
+            PopLimit(ref input, oldLimit);
+            return message;
         }
 
         /// <summary>
@@ -157,6 +149,7 @@ namespace LightProto
         /// <param name="destination"> The destination buffer to serialize to. </param>
         /// <param name="writer"> The proto writer to use for serialization. </param>
         /// <typeparam name="T"> The type of the instance to serialize. </typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SerializeTo<T>(this T instance, Stream destination, IProtoWriter<T> writer) =>
             Serialize(destination, instance, writer);
 
@@ -167,6 +160,7 @@ namespace LightProto
         /// <param name="destination"> The destination buffer to serialize to. </param>
         /// <param name="writer"> The proto writer to use for serialization. </param>
         /// <typeparam name="T"> The type of the instance to serialize. </typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SerializeTo<T>(this T instance, IBufferWriter<byte> destination, IProtoWriter<T> writer) =>
             Serialize(destination, instance, writer);
     }

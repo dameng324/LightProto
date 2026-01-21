@@ -378,9 +378,9 @@ namespace LightProto
                     {
                         parser = Activator.CreateInstance(parserType, itemParser, tag, 0)!;
                     }
-                    else if (parserType.GetConstructor([parserInterfaceType, typeof(uint)]) != null)
+                    else if (isReader && parserType.GetConstructor([parserInterfaceType, typeof(int)]) != null)
                     {
-                        parser = Activator.CreateInstance(parserType, itemParser, tag)!;
+                        parser = Activator.CreateInstance(parserType, itemParser, 0)!;
                     }
                     else if (parserType.GetConstructor([parserInterfaceType]) != null)
                     {
