@@ -624,3 +624,56 @@ static LightProto.Parser.SFixedByteProtoParser.ProtoReader.get -> LightProto.IPr
 static LightProto.Parser.SFixedByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<sbyte>!
 static LightProto.Parser.SSByteProtoParser.ProtoReader.get -> LightProto.IProtoReader<sbyte>!
 static LightProto.Parser.SSByteProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<sbyte>!
+LightProto.Parser.CharProtoParser
+LightProto.Parser.CharProtoParser.CharProtoParser() -> void
+LightProto.Parser.Fixed16ProtoParser
+LightProto.Parser.Fixed16ProtoParser.Fixed16ProtoParser() -> void
+LightProto.Parser.Int16ProtoParser
+LightProto.Parser.Int16ProtoParser.Int16ProtoParser() -> void
+LightProto.Parser.SFixed16ProtoParser
+LightProto.Parser.SFixed16ProtoParser.SFixed16ProtoParser() -> void
+LightProto.Parser.SInt16ProtoParser
+LightProto.Parser.SInt16ProtoParser.SInt16ProtoParser() -> void
+LightProto.Parser.UInt16ProtoParser
+LightProto.Parser.UInt16ProtoParser.UInt16ProtoParser() -> void
+LightProto.RuntimeProtoParser<T>
+LightProto.RuntimeProtoParser<T>.AddMember(System.Type! type, int fieldNumber, System.Func<T, object!>! getter, System.Action<T, object!>! setter) -> void
+LightProto.RuntimeProtoParser<T>.AddMember(System.Type! type, int fieldNumber, System.Func<T, object!>! getter, System.Action<T, object!>! setter, LightProto.IProtoReader! reader, LightProto.IProtoWriter! writer) -> void
+LightProto.RuntimeProtoParser<T>.AddMember<TValue>(int fieldNumber, System.Func<T, TValue>! getter, System.Action<T, TValue>! setter) -> void
+LightProto.RuntimeProtoParser<T>.AddMember<TValue>(int fieldNumber, System.Func<T, TValue>! getter, System.Action<T, TValue>! setter, LightProto.IProtoReader<TValue>! reader, LightProto.IProtoWriter<TValue>! writer) -> void
+LightProto.RuntimeProtoParser<T>.ProtoReader.get -> LightProto.RuntimeProtoReader<T>!
+LightProto.RuntimeProtoParser<T>.ProtoWriter.get -> LightProto.RuntimeProtoWriter<T>!
+LightProto.RuntimeProtoParser<T>.RuntimeProtoParser(System.Func<T>! factory) -> void
+LightProto.RuntimeProtoReader<T>
+LightProto.RuntimeProtoReader<T>.AddMember(System.Type! type, int fieldNumber, System.Action<T, object!>! setter) -> void
+LightProto.RuntimeProtoReader<T>.AddMember(System.Type! type, int fieldNumber, System.Action<T, object!>! setter, LightProto.IProtoReader! reader) -> void
+LightProto.RuntimeProtoReader<T>.AddMember<TValue>(int fieldNumber, System.Action<T, TValue>! setter) -> void
+LightProto.RuntimeProtoReader<T>.AddMember<TValue>(int fieldNumber, System.Action<T, TValue>! setter, LightProto.IProtoReader<TValue>! reader) -> void
+LightProto.RuntimeProtoReader<T>.IsMessage.get -> bool
+LightProto.RuntimeProtoReader<T>.RuntimeProtoReader(System.Func<T>! factory) -> void
+LightProto.RuntimeProtoReader<T>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.RuntimeProtoWriter<T>
+LightProto.RuntimeProtoWriter<T>.AddMember(System.Type! type, int fieldNumber, System.Func<T, object!>! getter) -> void
+LightProto.RuntimeProtoWriter<T>.AddMember(System.Type! type, int fieldNumber, System.Func<T, object!>! getter, LightProto.IProtoWriter! writer) -> void
+LightProto.RuntimeProtoWriter<T>.AddMember<TValue>(int fieldNumber, System.Func<T, TValue>! getter) -> void
+LightProto.RuntimeProtoWriter<T>.AddMember<TValue>(int fieldNumber, System.Func<T, TValue>! getter, LightProto.IProtoWriter<TValue>! writer) -> void
+LightProto.RuntimeProtoWriter<T>.CalculateSize(T value) -> int
+LightProto.RuntimeProtoWriter<T>.IsMessage.get -> bool
+LightProto.RuntimeProtoWriter<T>.RuntimeProtoWriter() -> void
+LightProto.RuntimeProtoWriter<T>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.RuntimeProtoWriter<T>.WriteTo(ref LightProto.WriterContext output, T value) -> void
+static LightProto.Parser.CharProtoParser.ProtoReader.get -> LightProto.IProtoReader<char>!
+static LightProto.Parser.CharProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<char>!
+static LightProto.Parser.Fixed16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
+static LightProto.Parser.Fixed16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!
+static LightProto.Parser.Int16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.Int16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.SFixed16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.SFixed16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.SInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<short>!
+static LightProto.Parser.SInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<short>!
+static LightProto.Parser.UInt16ProtoParser.ProtoReader.get -> LightProto.IProtoReader<ushort>!
+static LightProto.Parser.UInt16ProtoParser.ProtoWriter.get -> LightProto.IProtoWriter<ushort>!
+static LightProto.Serializer.CalculateMessageSize(this LightProto.IProtoWriter! writer, object! value) -> int
+static LightProto.Serializer.ParseMessageFrom(this LightProto.IProtoReader! reader, ref LightProto.ReaderContext input) -> object!
+static LightProto.Serializer.WriteMessageTo(this LightProto.IProtoWriter! writer, ref LightProto.WriterContext output, object! value) -> void

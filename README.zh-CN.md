@@ -13,30 +13,30 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-A high-performance, Native AOT–friendly, production-ready Protocol Buffers implementation for C#/.NET, powered by source generators.
+面向 C#/.NET 的高性能、Native AOT 友好、生产可用的 Protocol Buffers 实现，基于源代码生成器。
 
-## Why LightProto? 🤔
+## 为什么选择 LightProto? 🤔
 
-[protobuf-net](https://github.com/protobuf-net/protobuf-net) is a popular Protocol Buffers implementation in .NET, but some scenarios (especially Native AOT) can be challenging due to runtime reflection and dynamic generation. LightProto addresses this with compile-time code generation and a protobuf-net–style API.
+[protobuf-net](https://github.com/protobuf-net/protobuf-net) 是 .NET 中常用的 Protocol Buffers 实现，但在某些场景（尤其是 Native AOT）会因运行时反射和动态生成而受限。LightProto 通过编译期代码生成和 protobuf-net 风格 API 解决了这些问题。
 
-## Features ✨
+## 主要特性 ✨
 
-- Source generator–powered serializers/parsers generated at compile time
-- AOT-friendly by design, no IL warnings
-- Minimum C# 9.0 requirement for broader compatibility (including Unity)
-- No third-party dependencies
-- protobuf-net–style Serializer API and familiar attributes
-- Performance is about 20% to 50% better than protobuf-net; see [benchmarks](#performance--benchmarks-) below
-- Target frameworks: netstandard2.0, net8.0, net9.0, net10.0
-- Serialize to Stream or IBufferWriter<byte>, or use ToByteArray
-- ReadOnlySpan<byte>/ReadOnlySequence<byte>/Stream deserialization
-- Dynamic and non-generic serialization/deserialization APIs
-- RuntimeTypeModel-like APIs for dynamic message types
-- Surrogates supported
+- 由源代码生成器在编译期生成序列化/反序列化代码
+- AOT 友好设计，无 IL 警告
+- 最低 C# 9.0，兼容性更好（包括 Unity）
+- 无第三方依赖
+- protobuf-net 风格的 Serializer API 与熟悉的特性
+- 性能约比 protobuf-net 快 20%~50%，详见下方“性能与基准测试”
+- 目标框架：netstandard2.0、net8.0、net9.0、net10.0
+- 支持 Stream、IBufferWriter<byte> 序列化，或使用 ToByteArray
+- 支持 ReadOnlySpan<byte>/ReadOnlySequence<byte>/Stream 反序列化
+- 动态与非泛型序列化/反序列化 API
+- 类似 RuntimeTypeModel 的动态消息类型 API
+- 支持 Surrogate
 
-## Rich built-in type support 🧰
+## 丰富的内置类型支持 🧰
 
-- .NET primitives (`byte`,`sbyte`, `int`,`uint`,`long`,`ulong`, `bool`, `char`, `double`, etc.)
+- .NET 基元类型（`byte`,`sbyte`, `int`,`uint`,`long`,`ulong`, `bool`, `char`, `double`, etc.）
 - `string`, `decimal`, `Half`, `Int128`, `UInt128`, `Guid`, `Rune`, `BigInteger`
 - `TimeSpan`, `DateTime`, `DateTimeOffset`, `TimeOnly`, `DateOnly`, `TimeZoneInfo`
 - `Complex`, `Plane`, `Quaternion`, `Matrix3x2`, `Matrix4x4`, `Vector2`, `Vector3`, `Vector4`
@@ -50,15 +50,15 @@ A high-performance, Native AOT–friendly, production-ready Protocol Buffers imp
 - `ConcurrentBag<>`, `ConcurrentQueue<>`, `ConcurrentStack<>`, `ConcurrentDictionary<,>`, `BlockingCollection<>`
 - `ImmutableList<>`, `ImmutableArray<>`, `ImmutableHashSet<>`, `ImmutableDictionary<,>`
 
-## Quick Start ⚡
+## 快速开始 ⚡
 
-Install from NuGet:
+从 NuGet 安装：
 
 ```bash
 dotnet add package LightProto
 ```
 
-Define your contracts (partial classes) using LightProto attributes:
+使用 LightProto 特性定义你的协议类型（partial 类）：
 
 ```csharp
 using LightProto;
@@ -96,14 +96,14 @@ Person fromStream = Serializer.Deserialize<Person>(input);
 // Person fromStream = Serializer.Deserialize<Person>(input, Person.ProtoReader); // use this overload when targeting .netstandard2.0
 ```
 
-## Migration from protobuf-net 🔁
+## 从 protobuf-net 迁移 🔁
 
-Most code migrates by swapping the namespace and marking your types partial.
+大多数代码只需替换命名空间并将类型标记为 partial。
 
-1. Replace ProtoBuf with LightProto.
-2. Mark serializable types as partial.
+1. 将 ProtoBuf 替换为 LightProto。
+2. 将可序列化类型标记为 partial。
 
-Example:
+示例：
 
 ```diff
 - using ProtoBuf;
@@ -131,17 +131,17 @@ byte[] data = stream.ToArray();
 var obj = Serializer.Deserialize<Person>(new ReadOnlySpan<byte>(data));
 ```
 
-## Serialization APIs 🧩
+## 序列化 API 🧩
 
-### Generic-constrained APIs 🔒
+### 泛型约束 API 🔒
 
-`Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)` require that `T` implements `IProtoParser<T>` (i.e., a generated message type).
+`Serializer.Serialize<T>(...)` 和 `Serializer.Deserialize<T>(...)` 要求 `T` 实现 `IProtoParser<T>`（即生成的消息类型）。
 
-**Note:** These APIs are not supported in .netstandard2.0 due to lack of static virtual members in interfaces. Use IProtoParser-specified APIs instead.
+**注意: ** 这些 API 在 .netstandard2.0 中不可用，因为接口不支持静态虚成员。请改用指定 IProtoParser 的 API。
 
-### IProtoParser-specified APIs 🧭
+### 指定 IProtoParser 的 API 🧭
 
-`Serializer.Serialize<T>(..., IProtoWriter<T>)` and `Serializer.Deserialize<T>(..., IProtoReader<T>)` where `T` is a `[ProtoContract]` marked type with generated `IProtoParser<T>` implementation.
+`Serializer.Serialize<T>(..., IProtoWriter<T>)` 和 `Serializer.Deserialize<T>(..., IProtoReader<T>)`，其中 `T` 为标记了 `[ProtoContract]` 且生成了 `IProtoParser<T>` 的类型。
 
 ```csharp
 Person person = new Person { Name = "Alice", Age = 30 };
@@ -151,9 +151,9 @@ var bytes = person.ToByteArray(Person.ProtoWriter); // extension method
 Person result = LightProto.Serializer.Deserialize<Person>(bytes, Person.ProtoReader); // must pass reader
 ```
 
-### Dynamic APIs 🌀
+### 动态 API 🌀
 
-`Serializer.SerializeDynamically<T>(...)` and `Serializer.DeserializeDynamically<T>(...)` resolve `IProtoReader/Writer` at runtime via `T.ProtoReader/Writer` or `Serializer.RegisterParser` or reflection.
+`Serializer.SerializeDynamically<T>(...)` 和 `Serializer.DeserializeDynamically<T>(...)` 会在运行时通过 `T.ProtoReader/Writer`、`Serializer.RegisterParser` 或反射解析 `IProtoReader/Writer`。
 
 ```csharp
 Person person = new Person { Name = "Alice", Age = 30 };
@@ -162,16 +162,16 @@ LightProto.Serializer.SerializeDynamically<Person>(bufferWriter, person); // dyn
 Person result = LightProto.Serializer.DeserializeDynamically<Person>(bufferWriter.WrittenSpan); // dynamic API
 ```
 
-ProtoWriter/Reader resolution order:
+ProtoWriter/Reader 的解析顺序：
 
-1. If a parser is registered via `Serializer.RegisterParser<T>(reader, writer)`, use the registered parser.
-2. If `T` is a primitive/built-in type, use built-in parser from `LightProto.Parser` namespace which is registered internally.
-3. If `T` implements `IProtoParser<T>` (usually marked as `[ProtoContract]`), use `T.ProtoWriter/Reader` by reflection. This is fine with AOT, as the generic argument T is marked as `[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]`.
-4. If `T` is a generic container shape (e.g., `List<>`, `Dictionary<,>`, `Nullable<>`, etc.), try to resolve element type parser recursively. This may fail at runtime on AOT due to missing type metadata.
+1. 如果通过 `Serializer.RegisterParser<T>(reader, writer)` 注册了 parser，则使用已注册的 parser。
+2. 如果 `T` 是基元/内置类型，则使用 `LightProto.Parser` 命名空间下的内置 parser（内部已注册）。
+3. 如果 `T` 实现 `IProtoParser<T>`（通常标记为 `[ProtoContract]`），则通过反射使用 `T.ProtoWriter/Reader`。这在 AOT 下是安全的，因为泛型参数 T 标记了 `[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]`。
+4. 如果 `T` 是泛型容器形态（如 `List<>`、`Dictionary<,>`、`Nullable<>` 等），将递归解析元素类型的 parser。在 AOT 下可能因缺少类型元数据而在运行时失败。
 
-### Non-generic APIs 🧱
+### 非泛型 API 🧱
 
-`Serializer.SerializeNonGeneric(..., object instance)` and `Serializer.DeserializeNonGeneric(Type type, ...)` are similar to Dynamic APIs, but the type is specified at runtime.
+`Serializer.SerializeNonGeneric(..., object instance)` 和 `Serializer.DeserializeNonGeneric(Type type, ...)` 与动态 API 类似，但类型在运行时指定。
 
 ```csharp
 Person person = new Person { Name = "Alice", Age = 30 };
@@ -180,40 +180,40 @@ LightProto.Serializer.SerializeNonGeneric(bufferWriter, person); // non-generic 
 Person result = (Person)LightProto.Serializer.DeserializeNonGeneric(typeof(Person), bufferWriter.WrittenSpan); // non-generic API
 ```
 
-The ProtoWriter/Reader resolution order is the same as [Dynamic APIs](#dynamic-apis-).
+ProtoWriter/Reader 的解析顺序与“动态 API”一致。
 
 ## .NET Standard 📦
 
-In .NET Standard target frameworks, we can't use [static virtual members in interface](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members) to find `T.ProtoReader/Writer`.
+在 .NET Standard 目标框架（如 .NET Framework）中，无法使用[接口中的静态虚成员](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members)来查找 `T.ProtoReader/Writer`。
 
-So LightProto requires you to specify a `ProtoWriter` when serializing and a `ProtoReader` when deserializing.
+因此，LightProto 要求在序列化时指定 `ProtoWriter`，在反序列化时指定 `ProtoReader`。
 
-For `[ProtoContract]`-marked message types, `ProtoReader/Writer` is generated by LightProto, so use `MessageType.ProtoReader/Writer`.
+对标记了 `[ProtoContract]` 的消息类型，`ProtoReader/Writer` 会由 LightProto 生成，直接使用 `MessageType.ProtoReader/Writer` 即可。
 
-For primitive types, LightProto provides predefined parsers in the `LightProto.Parser` namespace, such as `LightProto.Parser.DateTimeParser`.
+对基元类型，LightProto 在 `LightProto.Parser` 命名空间中提供了预置 parser，例如 `LightProto.Parser.DateTimeParser`。
 
-If you don't need AOT support, you can use the dynamic APIs `Serializer.SerializeDynamically<T>` and `Serializer.DeserializeDynamically<T>` without passing ProtoReader/Writer.
+如果不需要 AOT 支持，可以使用动态 API `Serializer.SerializeDynamically<T>` 和 `Serializer.DeserializeDynamically<T>`，无需传入 ProtoReader/Writer。
 
-### Unity Support 🎮
+### Unity 支持 🎮
 
-LightProto's generated code supports C# 9, making it compatible with Unity projects targeting .NET Standard 2.0. You can use LightProto in Unity by following the same installation and usage instructions as for other .NET projects.
-IL2CPP builds are supported because LightProto is AOT-friendly.
+LightProto 生成的代码支持 C# 9，可用于面向 .NET Standard 2.0 的 Unity 项目。按常规 .NET 项目的安装与使用方式即可。
+由于 LightProto AOT 友好，因此支持 IL2CPP 构建。
 
-## Surrogates 🧬
+## Surrogate（代理类型）🧬
 
-protobuf-net can register surrogates via RuntimeTypeModel at runtime.
+protobuf-net 可以在运行时通过 RuntimeTypeModel 注册 surrogate。
 
-LightProto lets you specify a custom ProtoParserType for MessageType.
-For example, if MessageType is `Person` and the custom ProtoParserType is `PersonProtoParser`, you can use the following attributes in precedence order:
+LightProto 允许为 MessageType 指定自定义 ProtoParserType。
+例如 MessageType 为 `Person`，自定义 ProtoParserType 为 `PersonProtoParser`，可以按以下优先级使用对应特性：
 
 1. member level: `[ProtoMember(1,ParserType=typeof(PersonProtoParser))]`
 2. class level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`
-3. module/assembly level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]` (messageType and parserType should not be in the same assembly; if they are, use the type-level attribute.)
+3. module/assembly level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`（messageType 与 parserType 不应在同一程序集；若在同一程序集，建议使用类型级特性）
 4. type level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`
 5. default: `global::LightProto.Parser.PersonProtoParser`
 
-The ProtoParserType must implement `IProtoParser<MessageType>`. The easiest way is to define a SurrogateType with `[ProtoContract]` and mark it with `[ProtoSurrogateFor<MessageType>]`.
-Example for Person (can be any type):
+ProtoParserType 必须实现 `IProtoParser<MessageType>`。最简单的方式是定义一个带 `[ProtoContract]` 的 SurrogateType，并标记 `[ProtoSurrogateFor<MessageType>]`。
+以 Person 为例（可替换为任意类型）：
 
 ```csharp
 [ProtoParserType(typeof(PersonProtoParser))] // type level ProtoParser
@@ -249,19 +249,19 @@ public class MessageContract
 }
 ```
 
-You can also read/write raw binary data, but only WireType.LengthDelimited is supported for now because LightProtoGenerator needs to compute tags at compile time and any unknown type will be treated as LengthDelimited.
+你也可以读写原始二进制数据，但目前仅支持 WireType.LengthDelimited，因为 LightProtoGenerator 需要在编译期计算 tag，未知类型会被视为 LengthDelimited。
 
 ## StringIntern 🧵
 
-`[StringIntern]` attribute can be applied to individual string members, classes, modules, or assemblies.
+`[StringIntern]` 特性可用于单个字符串成员、类、模块或程序集。
 
 ## RuntimeTypeModel 🧠
 
-LightProto provides a set of APIs in `RuntimeProtoWriter`, `RuntimeProtoReader`, and `RuntimeProtoParser`.
+LightProto 提供了一组 `RuntimeProtoWriter`、`RuntimeProtoReader`、`RuntimeProtoParser` API。
 
-`RuntimeProtoParser<T>` can be used to get `IProtoReader<T>` and `IProtoWriter<T>` at runtime.
+`RuntimeProtoParser<T>` 可在运行时获取 `IProtoReader<T>` 和 `IProtoWriter<T>`。
 
-You can use them to serialize/deserialize, or use Serializer.RegisterParser<T>(reader, writer) to register globally, then use Serializer.SerializeDynamically/DeserializeDynamically or Serializer.SerializeNonGeneric APIs.
+你可以用它们进行序列化/反序列化，或使用 Serializer.RegisterParser<T>(reader, writer) 进行全局注册，然后使用 Serializer.SerializeDynamically/DeserializeDynamically 或 Serializer.SerializeNonGeneric API。
 
 ```csharp
 public class TestMessage
@@ -287,7 +287,7 @@ var writer = runtimeParser.ProtoWriter;
 var reader = runtimeParser.ProtoReader;
 ```
 
-If you do not need both Serialize and Deserialize, you can use `RuntimeProtoWriter<T>` or `RuntimeProtoReader<T>` to create only writer or reader.
+如果你不需要同时支持序列化和反序列化，可以使用 `RuntimeProtoWriter<T>` 或 `RuntimeProtoReader<T>` 只创建 writer 或 reader。
 
 ```csharp
 public class TestMessage
@@ -310,13 +310,13 @@ protoWriter.AddMember<int[]>(3, message => message.IntArray, Int32ProtoParser.Pr
 
 ## IExtensible 🧷
 
-`IExtensible` is defined for compatibility only and has no effect.
+`IExtensible` 仅为兼容性而定义，不会产生实际效果。
 
-## Performance & Benchmarks 📊
+## 性能与基准测试 📊
 
-The following benchmarks compare serialization performance between LightProto, protobuf-net, and Google.Protobuf.
+以下基准测试比较了 LightProto、protobuf-net 与 Google.Protobuf 的序列化性能。
 
-You can reproduce these by cloning the repo and running tests/Benchmark.
+你可以克隆仓库并运行 tests/Benchmark 来复现。
 
 ```md
 BenchmarkDotNet v0.15.3, Windows 11 (10.0.26100.4652/24H2/2024Update/HudsonValley)
@@ -349,27 +349,27 @@ AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
 | Deserialize_LightProto     | .NET 10.0 | .NET 10.0 | 411.5 μs |  8.08 μs |  9.92 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
 |                            |           |           |          |          |          |       |         |           |             |
 | Deserialize_ProtoBuf_net   | .NET 8.0  | .NET 8.0  | 688.0 μs | 13.51 μs | 15.56 μs |  1.55 |    0.05 |    562 KB |        0.84 |
-| Deserialize_GoogleProtoBuf | .NET 8.0  | .NET 8.0  | 595.5 μs | 11.51 μs | 16.14 μs |  1.34 |    0.04 |  648.7 KB |        0.97 |
-| Deserialize_LightProto     | .NET 8.0  | .NET 8.0  | 444.8 μs |  8.88 μs |  9.12 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
+| Deserialize_GoogleProtoBuf | .NET 8.0  | .NET 8.0 | 595.5 μs | 11.51 μs | 16.14 μs |  1.34 |    0.04 |  648.7 KB |        0.97 |
+| Deserialize_LightProto     | .NET 8.0 | .NET 8.0 | 444.8 μs |  8.88 μs |  9.12 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
 |                            |           |           |          |          |          |       |         |           |             |
-| Deserialize_ProtoBuf_net   | .NET 9.0  | .NET 9.0  | 662.3 μs | 12.60 μs | 11.17 μs |  1.53 |    0.04 |    562 KB |        0.84 |
-| Deserialize_GoogleProtoBuf | .NET 9.0  | .NET 9.0  | 491.7 μs |  9.64 μs | 13.52 μs |  1.14 |    0.04 |  648.7 KB |        0.97 |
-| Deserialize_LightProto     | .NET 9.0  | .NET 9.0  | 431.9 μs |  8.33 μs |  9.25 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
+| Deserialize_ProtoBuf_net   | .NET 9.0 | .NET 9.0 | 662.3 μs | 12.60 μs | 11.17 μs |  1.53 |    0.04 |    562 KB |        0.84 |
+| Deserialize_GoogleProtoBuf | .NET 9.0 | .NET 9.0 | 491.7 μs |  9.64 μs | 13.52 μs |  1.14 |    0.04 |  648.7 KB |        0.97 |
+| Deserialize_LightProto     | .NET 9.0 | .NET 9.0 | 431.9 μs |  8.33 μs |  9.25 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
 
-Note: Results vary by hardware, runtime, and data model. Please run the benchmarks on your environment for the most relevant numbers.
+注：结果会因硬件、运行时和数据模型而异，请在你的环境中运行基准测试以获得最相关的结果。
 
-## Working with .proto files 📄
+## 使用 .proto 文件 📄
 
-LightProto doesn't ship a .proto → C# generator yet. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn't work, please file an issue.
+LightProto 目前不提供 .proto → C# 生成器。你可以使用 protobuf-net（或其他工具）生成 C#，再适配到 LightProto（通常是将 ProtoBuf 命名空间替换为 LightProto，并将类型标记为 partial）。如有问题，请提交 issue。
 
-If you need a dedicated .proto → C# generator, please vote on this [issue](https://github.com/dameng324/LightProto/issues/85).
+如果你需要专用的 .proto → C# 生成器，请在此 [issue](https://github.com/dameng324/LightProto/issues/85) 投票支持。
 
-## Contributing 🤝
+## 贡献指南 🤝
 
-Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed contribution guidelines.
+欢迎贡献！请参阅 [CONTRIBUTING](CONTRIBUTING.md) 了解详细贡献指南。
 
-[ARCHITECTURE.md](ARCHITECTURE.md) describes the internal design and structure of LightProto, which may be helpful for contributors.
+[ARCHITECTURE.md](ARCHITECTURE.md) 描述了 LightProto 的内部设计与结构，供贡献者参考。
 
-## License 📄
+## 许可 📄
 
-MIT License — see LICENSE for details.
+MIT License — 详见 LICENSE。
