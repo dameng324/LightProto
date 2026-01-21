@@ -258,18 +258,24 @@ public partial class RuntimeParserTests
         await Assert.That(cloned).IsEquivalentTo(message);
     }
 
-    public sealed class NoSuitableConstructorMyListProtoWriter<T> : IEnumerableProtoWriter<MyList<T>, T>
+    public class NoSuitableConstructorMyList<T> : MyList<T>
+    {
+        public NoSuitableConstructorMyList(int capacity)
+            : base(capacity) { }
+    }
+
+    public sealed class NoSuitableConstructorMyListProtoWriter<T> : IEnumerableProtoWriter<NoSuitableConstructorMyList<T>, T>
     {
         public NoSuitableConstructorMyListProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize, string dummy)
             : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
     }
 
-    public sealed class NoSuitableConstructorMyListProtoReader<T> : IEnumerableProtoReader<MyList<T>, T>
+    public sealed class NoSuitableConstructorMyListProtoReader<T> : IEnumerableProtoReader<NoSuitableConstructorMyList<T>, T>
     {
         public NoSuitableConstructorMyListProtoReader(IProtoReader<T> itemReader, int itemFixedSize, string dummy)
             : base(
                 itemReader,
-                static capacity => new MyList<T>(capacity),
+                static capacity => new NoSuitableConstructorMyList<T>(capacity),
                 static (collection, item) =>
                 {
                     collection.Add(item);
@@ -284,13 +290,13 @@ public partial class RuntimeParserTests
     public async Task NoSuitableConstructorTest()
     {
         Serializer.RegisterGenericParser(
-            typeof(MyList<>),
+            typeof(NoSuitableConstructorMyList<>),
             typeof(NoSuitableConstructorMyListProtoReader<>),
             typeof(NoSuitableConstructorMyListProtoWriter<>)
         );
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
-            var message = new MyList<int>(10) { 1, 2, 3, 4, 5 };
+            var message = new NoSuitableConstructorMyList<int>(10) { 1, 2, 3, 4, 5 };
             var bytes = Serializer.SerializeToArrayDynamically(message);
         });
         await Assert.That(ex!.Message).Contains("No suitable constructor found for ProtoParser type");
@@ -298,7 +304,7 @@ public partial class RuntimeParserTests
         ex = Assert.Throws<InvalidOperationException>(() =>
         {
             var bytes = new byte[] { 10, 5, 1, 2, 3, 4, 5 };
-            var cloned = Serializer.DeserializeDynamically<MyList<int>>(bytes);
+            var cloned = Serializer.DeserializeDynamically<NoSuitableConstructorMyList<int>>(bytes);
         });
 
         await Assert.That(ex!.Message).Contains("No suitable constructor found for ProtoParser type");
