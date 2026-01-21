@@ -137,9 +137,7 @@ var obj = Serializer.Deserialize<Person>(new ReadOnlySpan<byte>(data));
 
 `Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)` require that `T` implements `IProtoParser<T>` (i.e., a generated message type).
 
-:::info
-These APIs are not supported in .netstandard2.0 due to lack of static virtual members in interfaces. Use IProtoParser-specified APIs instead.
-:::
+**Note:** These APIs are not supported in .netstandard2.0 due to lack of static virtual members in interfaces. Use IProtoParser-specified APIs instead.
 
 ### IProtoParser-specified APIs 🧭
 
@@ -182,7 +180,7 @@ LightProto.Serializer.SerializeNonGeneric(bufferWriter, person); // non-generic 
 Person result = (Person)LightProto.Serializer.DeserializeNonGeneric(typeof(Person), bufferWriter.WrittenSpan); // non-generic API
 ```
 
-The ProtoWriter/Reader resolution order is the same as [Dynamic APIs](#dynamic-apis).
+The ProtoWriter/Reader resolution order is the same as [Dynamic APIs](#dynamic-apis-).
 
 ## .NET Standard 📦
 

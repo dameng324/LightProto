@@ -137,9 +137,7 @@ var obj = Serializer.Deserialize<Person>(new ReadOnlySpan<byte>(data));
 
 `Serializer.Serialize<T>(...)` 和 `Serializer.Deserialize<T>(...)` 要求 `T` 实现 `IProtoParser<T>`（即生成的消息类型）。
 
-:::info
-这些 API 在 .netstandard2.0 中不可用，因为接口不支持静态虚成员。请改用指定 IProtoParser 的 API。
-:::
+**注意: ** 这些 API 在 .netstandard2.0 中不可用，因为接口不支持静态虚成员。请改用指定 IProtoParser 的 API。
 
 ### 指定 IProtoParser 的 API 🧭
 

@@ -20,7 +20,6 @@
     <Project Path="src/LightProto/LightProto.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/LightProto.Cs9Tests/LightProto.Cs9Tests.csproj" />
     <Project Path="tests/Benchmark/Benchmark.csproj" />
     <Project Path="tests/LightProto.AssemblyLevelTests/LightProto.AssemblyLevelTests.csproj" />
     <Project Path="tests/LightProto.InternalTests/LightProto.InternalTests.csproj" />
