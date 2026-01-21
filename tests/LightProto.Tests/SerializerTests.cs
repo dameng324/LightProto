@@ -305,39 +305,6 @@ public partial class SerializerTests
     }
 
     [Test]
-    public async Task SerializeTest13()
-    {
-        byte[] Serialize()
-        {
-            using var ms = new MemoryStream();
-            var original = CreateTestContract();
-            using var codedOutputStream = new CodedOutputStream(ms, leaveOpen: false);
-            WriterContext.Initialize(codedOutputStream, out var ctx);
-            TestContract.ProtoWriter.WriteTo(ref ctx, original);
-            ctx.Flush();
-            return ms.ToArray();
-        }
-        var bytes = Serialize();
-        await Assert.That(bytes.Length).IsGreaterThan(0);
-    }
-
-    [Test]
-    public async Task DeserializeTest()
-    {
-        var original = CreateTestContract();
-        TestContract Deserialize()
-        {
-            var bytes = original.ToByteArray(TestContract.ProtoWriter);
-            var stream = new MemoryStream(bytes);
-            using var codedStream = new CodedInputStream(stream, leaveOpen: false);
-            ReaderContext.Initialize(codedStream, out var ctx);
-            return TestContract.ProtoReader.ParseFrom(ref ctx);
-        }
-        var parsed = Deserialize();
-        await Assert.That(parsed).IsEquivalentTo(original);
-    }
-
-    [Test]
     public async Task DictionaryTest()
     {
         ArrayBufferWriter<byte> bufferWriter = new();

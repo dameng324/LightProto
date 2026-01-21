@@ -57,7 +57,7 @@ public partial class RuntimeParserTests
 
     public class TestMessage2<T>
     {
-        public T Value { get; set; }
+        public T Value { get; set; } = default!;
         public string StringValue { get; set; } = string.Empty;
         public int[] IntArray { get; set; } = [];
     }

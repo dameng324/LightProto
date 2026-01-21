@@ -42,13 +42,7 @@ internal class ProtoMember
     public static PbWireType GetPbWireType(Compilation compilation, ITypeSymbol Type, DataFormat DataFormat)
     {
         // Handle nullable value types by getting the underlying type
-        if (
-            Type is INamedTypeSymbol namedType
-            && (
-                namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
-                || namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>"
-            )
-        )
+        if (Type is INamedTypeSymbol namedType && (Helper.IsNullableType(Type) || Helper.IsLazyType(Type)))
         {
             return GetPbWireType(compilation, namedType.TypeArguments[0], DataFormat);
         }

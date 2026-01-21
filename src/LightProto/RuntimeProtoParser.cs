@@ -4,7 +4,7 @@ using LightProto.Parser;
 
 namespace LightProto;
 
-internal class RuntimeProtoParser<T>
+public class RuntimeProtoParser<T>
 {
     public RuntimeProtoReader<T> ProtoReader { get; }
     public RuntimeProtoWriter<T> ProtoWriter { get; }

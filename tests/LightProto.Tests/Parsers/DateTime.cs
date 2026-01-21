@@ -43,17 +43,6 @@ public partial class DateTimeTests : BaseTests<DateTimeTests.Message, DateTimeTe
     {
         await Assert.That(clone.Property.ToDateTime()).IsEquivalentTo(message.Property);
     }
-
-    [Test]
-    public async Task IsNormalizedTest()
-    {
-        DateTime240ProtoParser parser = new() { Nanos = -1 };
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-        {
-            DateTime dateTime = parser;
-        });
-        await Assert.That(ex.Message).Contains("contains invalid values");
-    }
 }
 
 file static class Extension

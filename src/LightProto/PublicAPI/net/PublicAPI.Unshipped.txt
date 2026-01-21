@@ -11,6 +11,14 @@ LightProto.Parser.SInt16ProtoParser
 LightProto.Parser.SInt16ProtoParser.SInt16ProtoParser() -> void
 LightProto.Parser.UInt16ProtoParser
 LightProto.Parser.UInt16ProtoParser.UInt16ProtoParser() -> void
+LightProto.RuntimeProtoParser<T>
+LightProto.RuntimeProtoParser<T>.AddMember(System.Type! type, int fieldNumber, System.Func<T, object!>! getter, System.Action<T, object!>! setter) -> void
+LightProto.RuntimeProtoParser<T>.AddMember(System.Type! type, int fieldNumber, System.Func<T, object!>! getter, System.Action<T, object!>! setter, LightProto.IProtoReader! reader, LightProto.IProtoWriter! writer) -> void
+LightProto.RuntimeProtoParser<T>.AddMember<TValue>(int fieldNumber, System.Func<T, TValue>! getter, System.Action<T, TValue>! setter) -> void
+LightProto.RuntimeProtoParser<T>.AddMember<TValue>(int fieldNumber, System.Func<T, TValue>! getter, System.Action<T, TValue>! setter, LightProto.IProtoReader<TValue>! reader, LightProto.IProtoWriter<TValue>! writer) -> void
+LightProto.RuntimeProtoParser<T>.ProtoReader.get -> LightProto.RuntimeProtoReader<T>!
+LightProto.RuntimeProtoParser<T>.ProtoWriter.get -> LightProto.RuntimeProtoWriter<T>!
+LightProto.RuntimeProtoParser<T>.RuntimeProtoParser(System.Func<T>! factory) -> void
 LightProto.RuntimeProtoReader<T>
 LightProto.RuntimeProtoReader<T>.AddMember(System.Type! type, int fieldNumber, System.Action<T, object!>! setter) -> void
 LightProto.RuntimeProtoReader<T>.AddMember(System.Type! type, int fieldNumber, System.Action<T, object!>! setter, LightProto.IProtoReader! reader) -> void
