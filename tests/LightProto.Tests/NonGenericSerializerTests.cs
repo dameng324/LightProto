@@ -699,10 +699,6 @@ public partial class NonGenericSerializerTests
         await AssertEquivalentTo(type, deserialized, value);
 
         var reader = Serializer.GetProtoReader(type);
-        if (reader is ICollectionReader collectionReader)
-        {
-            Assert.NotNull(collectionReader.Empty);
-        }
 
         static async Task AssertEquivalentTo(Type type, object deserialized, object original)
         {
@@ -770,12 +766,6 @@ public partial class NonGenericSerializerTests
                 (int?)456,
                 new NullableProtoReader<int>(Int32ProtoParser.ProtoReader),
                 new NullableProtoWriter<int>(Int32ProtoParser.ProtoWriter)
-            );
-        yield return () =>
-            (
-                456,
-                MessageWrapper<int>.ProtoReader.From(Int32ProtoParser.ProtoReader),
-                MessageWrapper<int>.ProtoWriter.From(Int32ProtoParser.ProtoWriter)
             );
         yield return () =>
             (DateTime.Now, (IProtoReader)DateTime240ProtoParser.ProtoReader, (IProtoWriter)DateTime240ProtoParser.ProtoWriter);

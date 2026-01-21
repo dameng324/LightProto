@@ -1,6 +1,6 @@
 ﻿using LightProto.Internal;
 
-namespace LightProto.Tests;
+namespace LightProto.InternalTests;
 
 public class SimpleObjectPoolTest
 {

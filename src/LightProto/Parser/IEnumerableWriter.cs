@@ -1,6 +1,10 @@
 namespace LightProto.Parser
 {
-    public interface ICollectionWriter { }
+    public interface ICollectionWriter
+    {
+        internal uint Tag { get; set; }
+        internal WireFormat.WireType ItemWireType { get; }
+    }
 
     public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter, IProtoWriter<TCollection>, ICollectionWriter
         where TCollection : IEnumerable<TItem>
@@ -12,6 +16,7 @@ namespace LightProto.Parser
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
+        WireFormat.WireType ICollectionWriter.ItemWireType => ItemWriter.WireType;
         public IProtoWriter<TItem> ItemWriter { get; }
         public uint Tag { get; set; }
         public Func<TCollection, int> GetCount { get; }

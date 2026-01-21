@@ -6,7 +6,7 @@
     <OutputType>exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.3" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageReference Include="Google.Protobuf" Version="3.30.2" />
     <!-- above 3.31 cause aot issue see: https://github.com/protocolbuffers/protobuf/issues/21824 -->
     <PackageReference Include="protobuf-net" Version="3.2.56" />

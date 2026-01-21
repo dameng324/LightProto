@@ -1,9 +1,4 @@
 ﻿<Solution>
-  <Configurations>
-    <Platform Name="Any CPU" />
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
   <Folder Name="/.github/">
     <File Path=".github/agents/CSharpExpert.agent.md" />
     <File Path=".github/copilot-instructions.md" />
@@ -27,6 +22,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Benchmark/Benchmark.csproj" />
     <Project Path="tests/LightProto.AssemblyLevelTests/LightProto.AssemblyLevelTests.csproj" />
+    <Project Path="tests/LightProto.InternalTests/LightProto.InternalTests.csproj" />
     <Project Path="tests/LightProto.Tests/LightProto.Tests.csproj" />
     <Project Path="tests/TestAot/TestAot.csproj" />
   </Folder>

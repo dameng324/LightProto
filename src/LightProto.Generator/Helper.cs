@@ -103,10 +103,10 @@ internal static class Helper
         if (namedType.TypeArguments.Length != 1)
             return false;
 
-        if (namedType.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
+        if (IsNullableType(namedType))
             return false;
 
-        if (namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>")
+        if (IsLazyType(namedType))
             return false;
 
         itemType = namedType.TypeArguments[0];
@@ -611,10 +611,7 @@ internal static class Helper
 
             if (typeArguments.Length == 1)
             {
-                if (
-                    namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
-                    || namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>"
-                )
+                if (IsNullableType(namedType) || IsLazyType(namedType))
                 {
                     var elementType = typeArguments[0];
                     var elementParser = GetProtoParser(
@@ -801,31 +798,40 @@ internal static class Helper
         return disposable;
     }
 
-    public static bool SupportsPackedEncoding(Compilation compilation, ITypeSymbol? itemType)
+    public static bool SupportsPackedEncoding(ITypeSymbol? itemType)
     {
         if (itemType is null)
         {
             return false;
         }
+        if (IsNullableType(itemType) || IsLazyType(itemType))
+        {
+            return SupportsPackedEncoding(((INamedTypeSymbol)itemType).TypeArguments[0]);
+        }
 
         return itemType.SpecialType
-            is SpecialType.System_Boolean
-                or SpecialType.System_Int16
-                or SpecialType.System_UInt16
-                or SpecialType.System_Int32
-                or SpecialType.System_UInt32
-                or SpecialType.System_Int64
-                or SpecialType.System_UInt64
-                or SpecialType.System_Byte
-                or SpecialType.System_SByte
-                or SpecialType.System_Single
-                or SpecialType.System_Double
-                or SpecialType.System_Char
-                or SpecialType.System_Enum;
+                is SpecialType.System_Boolean
+                    or SpecialType.System_Int16
+                    or SpecialType.System_UInt16
+                    or SpecialType.System_Int32
+                    or SpecialType.System_UInt32
+                    or SpecialType.System_Int64
+                    or SpecialType.System_UInt64
+                    or SpecialType.System_Byte
+                    or SpecialType.System_SByte
+                    or SpecialType.System_Single
+                    or SpecialType.System_Double
+                    or SpecialType.System_Char
+            || itemType.TypeKind is TypeKind.Enum;
     }
 
-    internal static bool SupportFixedSize(ITypeSymbol type) =>
-        type.SpecialType
+    internal static bool SupportFixedSize(ITypeSymbol type)
+    {
+        if (IsNullableType(type) || IsLazyType(type))
+        {
+            return SupportFixedSize(((INamedTypeSymbol)type).TypeArguments[0]);
+        }
+        return type.SpecialType
             is SpecialType.System_SByte
                 or SpecialType.System_Int32
                 or SpecialType.System_Int16
@@ -834,7 +840,53 @@ internal static class Helper
                 or SpecialType.System_UInt16
                 or SpecialType.System_UInt32
                 or SpecialType.System_UInt64;
+    }
 
-    internal static bool SupportZigZag(ITypeSymbol type) =>
-        type.SpecialType is SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_Int32 or SpecialType.System_Int64;
+    internal static bool SupportZigZag(ITypeSymbol type)
+    {
+        if (IsNullableType(type) || IsLazyType(type))
+        {
+            return SupportZigZag(((INamedTypeSymbol)type).TypeArguments[0]);
+        }
+
+        return type.SpecialType
+            is SpecialType.System_SByte
+                or SpecialType.System_Int16
+                or SpecialType.System_Int32
+                or SpecialType.System_Int64;
+    }
+
+    internal static bool IsLazyType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.OriginalDefinition.ToDisplayString() == "System.Lazy<T>";
+    }
+
+    internal static bool IsNullableType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T;
+    }
+
+    public static bool SupportLevel240Types(ITypeSymbol type)
+    {
+        if (IsNullableType(type) || IsLazyType(type))
+        {
+            return SupportLevel240Types(((INamedTypeSymbol)type).TypeArguments[0]);
+        }
+        return type.SpecialType is SpecialType.System_DateTime || IsTimeSpanType(type);
+    }
+
+    public static bool SupportLevel300Types(ITypeSymbol type)
+    {
+        if (IsNullableType(type) || IsLazyType(type))
+        {
+            return SupportLevel300Types(((INamedTypeSymbol)type).TypeArguments[0]);
+        }
+        return type.SpecialType is SpecialType.System_Decimal || IsGuidType(type) || SupportLevel240Types(type);
+    }
 }

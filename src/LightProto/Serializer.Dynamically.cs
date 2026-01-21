@@ -11,7 +11,7 @@ namespace LightProto
     public static partial class Serializer
     {
 #if NET7_0_OR_GREATER
-        const string AOTWarning =
+        internal const string AOTWarning =
             "This method is not fully compatible with AOT compilation. If T is a [ProtoContract] marked type, it should be fine. But for other types, it is not aot safe. Consider using the overload with a IProtoReader<T>/IProtoWriter<T> parameter for AOT safety and to remove IL warnings.";
 #endif
         /// <summary>
@@ -264,7 +264,7 @@ namespace LightProto
         }
 
 #if NET7_0_OR_GREATER
-        private const DynamicallyAccessedMemberTypes LightProtoRequiredMembers = DynamicallyAccessedMemberTypes.PublicProperties;
+        internal const DynamicallyAccessedMemberTypes LightProtoRequiredMembers = DynamicallyAccessedMemberTypes.PublicProperties;
 #endif
 
 #if NET7_0_OR_GREATER
@@ -371,7 +371,29 @@ namespace LightProto
                 }
                 else
                 {
-                    parser = Activator.CreateInstance(parserType, itemParser, tag, 0)!;
+                    var parserInterfaceType = isReader
+                        ? typeof(IProtoReader<>).MakeGenericType(itemType)
+                        : typeof(IProtoWriter<>).MakeGenericType(itemType);
+                    if (parserType.GetConstructor([parserInterfaceType, typeof(uint), typeof(int)]) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType, itemParser, tag, 0)!;
+                    }
+                    else if (isReader && parserType.GetConstructor([parserInterfaceType, typeof(int)]) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType, itemParser, 0)!;
+                    }
+                    else if (parserType.GetConstructor([parserInterfaceType]) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType, itemParser)!;
+                    }
+                    else if (parserType.GetConstructor(Type.EmptyTypes) != null)
+                    {
+                        parser = Activator.CreateInstance(parserType)!;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"No suitable constructor found for ProtoParser type {parserType}");
+                    }
                 }
 
                 parsers.TryAdd(type, parser);
