@@ -2,7 +2,7 @@
 using System.Numerics;
 using LightProto.Parser;
 
-namespace LightProto.Tests;
+namespace LightProto.InternalTests;
 
 public class InternalTest
 {

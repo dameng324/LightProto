@@ -32,11 +32,31 @@ public partial class RuntimeParserTests
             Int32ProtoParser.ProtoReader.GetArrayReader(),
             Int32ProtoParser.ProtoWriter.GetCollectionWriter()
         );
+        await RuntimeReaderWriter_ProducesEquivalentResults(runtimeParser.ProtoReader, runtimeParser.ProtoWriter);
+    }
 
-        await Assert.That(runtimeParser.ProtoReader.IsMessage).IsEqualTo(true);
-        await Assert.That(runtimeParser.ProtoReader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
-        await Assert.That(runtimeParser.ProtoWriter.IsMessage).IsEqualTo(true);
-        await Assert.That(runtimeParser.ProtoWriter.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
+    [Test]
+    public async Task RuntimeReaderWriter_Serialization_Deserialization_ProducesEquivalentResults()
+    {
+        var protoReader = new RuntimeProtoReader<TestMessage>(() => new());
+        protoReader.AddMember<int>(1, (message, value) => message.Value = value);
+        protoReader.AddMember(typeof(string), 2, (message, value) => message.StringValue = (string)value);
+        protoReader.AddMember<int[]>(3, (message, value) => message.IntArray = value, Int32ProtoParser.ProtoReader.GetArrayReader());
+
+        var protoWriter = new RuntimeProtoWriter<TestMessage>();
+        protoWriter.AddMember<int>(1, message => message.Value);
+        protoWriter.AddMember(typeof(string), 2, message => message.StringValue);
+        protoWriter.AddMember<int[]>(3, message => message.IntArray, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
+
+        await RuntimeReaderWriter_ProducesEquivalentResults(protoReader, protoWriter);
+    }
+
+    async Task RuntimeReaderWriter_ProducesEquivalentResults(IProtoReader<TestMessage> protoReader, IProtoWriter<TestMessage> protoWriter)
+    {
+        await Assert.That(protoReader.IsMessage).IsEqualTo(true);
+        await Assert.That(protoReader.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
+        await Assert.That(protoWriter.IsMessage).IsEqualTo(true);
+        await Assert.That(protoWriter.WireType).IsEqualTo(WireFormat.WireType.LengthDelimited);
 
         var message = new TestMessage
         {
@@ -45,10 +65,10 @@ public partial class RuntimeParserTests
             IntArray = new int[] { 1, 2, 3, 4, 5 },
         };
         var bytes = message.ToByteArray(TestMessage.ProtoWriter);
-        var runtimeBytes = message.ToByteArray(runtimeParser.ProtoWriter);
+        var runtimeBytes = message.ToByteArray(protoWriter);
         await Assert.That(runtimeBytes).IsEquivalentTo(bytes);
 
-        var cloned = Serializer.Deserialize<TestMessage>(bytes, runtimeParser.ProtoReader);
+        var cloned = Serializer.Deserialize<TestMessage>(bytes, protoReader);
 
         await Assert.That(cloned.Value).IsEqualTo(message.Value);
         await Assert.That(cloned.StringValue).IsEqualTo(message.StringValue);
@@ -236,5 +256,51 @@ public partial class RuntimeParserTests
         var bytes = Serializer.SerializeToArrayDynamically(message);
         var cloned = Serializer.DeserializeDynamically<MyList<int>>(bytes);
         await Assert.That(cloned).IsEquivalentTo(message);
+    }
+
+    public sealed class NoSuitableConstructorMyListProtoWriter<T> : IEnumerableProtoWriter<MyList<T>, T>
+    {
+        public NoSuitableConstructorMyListProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize, string dummy)
+            : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
+    }
+
+    public sealed class NoSuitableConstructorMyListProtoReader<T> : IEnumerableProtoReader<MyList<T>, T>
+    {
+        public NoSuitableConstructorMyListProtoReader(IProtoReader<T> itemReader, int itemFixedSize, string dummy)
+            : base(
+                itemReader,
+                static capacity => new MyList<T>(capacity),
+                static (collection, item) =>
+                {
+                    collection.Add(item);
+                    return collection;
+                },
+                itemFixedSize
+            ) { }
+    }
+
+    [Test]
+    [SkipAot]
+    public async Task NoSuitableConstructorTest()
+    {
+        Serializer.RegisterGenericParser(
+            typeof(MyList<>),
+            typeof(NoSuitableConstructorMyListProtoReader<>),
+            typeof(NoSuitableConstructorMyListProtoWriter<>)
+        );
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var message = new MyList<int>(10) { 1, 2, 3, 4, 5 };
+            var bytes = Serializer.SerializeToArrayDynamically(message);
+        });
+        await Assert.That(ex!.Message).Contains("No suitable constructor found for ProtoParser type");
+
+        ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var bytes = new byte[] { 10, 5, 1, 2, 3, 4, 5 };
+            var cloned = Serializer.DeserializeDynamically<MyList<int>>(bytes);
+        });
+
+        await Assert.That(ex!.Message).Contains("No suitable constructor found for ProtoParser type");
     }
 }
