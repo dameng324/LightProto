@@ -50,7 +50,7 @@ jobs:
         run: dotnet restore
 
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release
 
       - name: Run tests
         run: dotnet test --configuration Release --no-build --verbosity normal -p:PublishAot=false
