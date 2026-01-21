@@ -11,7 +11,7 @@
 ![Size](https://img.shields.io/github/repo-size/dameng324/LightProto.svg)
 [![License](https://img.shields.io/github/license/dameng324/LightProto.svg)](LICENSE)
 
-A high‑performance, Native AOT–friendly, production ready Protocol Buffers implementation for C#/.NET, powered by source generators.
+A high-performance, Native AOT–friendly, production-ready Protocol Buffers implementation for C#/.NET, powered by source generators.
 
 ## Why LightProto? 🤔
 
@@ -19,15 +19,18 @@ A high‑performance, Native AOT–friendly, production ready Protocol Buffers i
 
 ## Features ✨
 
-- Source generator–powered serializers/parsers at compile time
-- AOT-friendly by design, No IL warnings
-- minimal C# 9.0 requirement for broader compatibility (including Unity)
+- Source generator–powered serializers/parsers generated at compile time
+- AOT-friendly by design, no IL warnings
+- Minimum C# 9.0 requirement for broader compatibility (including Unity)
 - No third-party dependencies
 - protobuf-net–style Serializer API and familiar attributes
-- Performance is about 20%-50% better than protobuf-net, see [benchmarks](#performance--benchmarks-) below
+- Performance is about 20% to 50% better than protobuf-net; see [benchmarks](#performance--benchmarks-) below
 - Target frameworks: netstandard2.0, net8.0, net9.0, net10.0
-- Stream and IBufferWriter<byte> serialization or ToByteArray
+- Serialize to Stream or IBufferWriter<byte>, or use ToByteArray
 - ReadOnlySpan<byte>/ReadOnlySequence<byte>/Stream deserialization
+- Dynamic and non-generic serialization/deserialization APIs
+- RuntimeTypeModel-like APIs for dynamic message types
+- Surrogates supported
 
 ## Rich built-in type support
 
@@ -72,23 +75,23 @@ var person = new Person { Name = "Alice", Age = 30 };
 
 // Serialize to a byte[]
 byte[] bytes = person.ToByteArray();
-// person.ToByteArray(Person.ProtoWriter); // use this overload when .netstandard2.0
+// person.ToByteArray(Person.ProtoWriter); // use this overload when targeting .netstandard2.0
 
 // Or serialize to a Stream
 using var stream = new MemoryStream();
 Serializer.Serialize(stream, person);
-// Serializer.Serialize(stream, person, Person.ProtoWriter); // use this overload when .netstandard2.0
+// Serializer.Serialize(stream, person, Person.ProtoWriter); // use this overload when targeting .netstandard2.0
 
 byte[] data = stream.ToArray();
 
 // Deserialize from byte[] (ReadOnlySpan<byte> overload will be used)
 Person fromBytes = Serializer.Deserialize<Person>(bytes);
-// Person fromBytes = Serializer.Deserialize<Person>(bytes,Person.ProtoReader); // use this overload when .netstandard2.0
+// Person fromBytes = Serializer.Deserialize<Person>(bytes, Person.ProtoReader); // use this overload when targeting .netstandard2.0
 
 // Or deserialize from Stream
 using var input = new MemoryStream(data);
 Person fromStream = Serializer.Deserialize<Person>(input);
-// Person fromStream = Serializer.Deserialize<Person>(input,Person.ProtoReader); // use this overload when .netstandard2.0
+// Person fromStream = Serializer.Deserialize<Person>(input, Person.ProtoReader); // use this overload when targeting .netstandard2.0
 ```
 
 ## Migration from protobuf-net 🔁
@@ -97,7 +100,6 @@ Most code migrates by swapping the namespace and marking your types partial.
 
 1. Replace ProtoBuf with LightProto.
 2. Mark serializable types as partial.
-3. Remove runtime configuration (e.g., RuntimeTypeModel). LightProto generates code at compile time.
 
 Example:
 
@@ -127,81 +129,91 @@ byte[] data = stream.ToArray();
 var obj = Serializer.Deserialize<Person>(new ReadOnlySpan<byte>(data));
 ```
 
-Common replacements:
+## Serialization APIs
 
-- RuntimeTypeModel and runtime surrogates → use compile-time attributes (see Surrogates below).
-- Non-partial types → mark as partial to enable generator output.
+### Generic-constrained APIs
 
-## Need to know 🧠
+`Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)` require that `T` implements `IProtoParser<T>` (i.e., a generated message type).
 
-LightProto aims to minimize differences from protobuf-net; notable ones include:
+:::info
+These APIs are not supported in .netstandard2.0 due to lack of static virtual members in interfaces. Use IProtoParser-specified APIs instead.
+:::
 
-### Partial classes required
+### IProtoParser-specified APIs
 
-protobuf-net: partial not required
-
-LightProto: mark `[ProtoContract]` types as partial so the generator can emit code. 
-
-### Serialization APIs
-
-protobuf-net: `Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)`
-
-LightProto: 
-
-- Generic-constrained APIs: `Serializer.Serialize<T>(...)` and `Serializer.Deserialize<T>(...)` require that `T` must implement `IProtoParser<T>` (i.e., a generated message type); 
-- Explicitly passing `IProtoReader/Writer` APIs: `Serializer.Serialize<T>(..., IProtoWriter<T>)` and `Serializer.Deserialize<T>(..., IProtoReader<T>)` for types without `IProtoParser<T>` implementation (e.g., primitive types).
-- Non-Generic-constrained APIs: `Serializer.SerializeDynamically<T>(...)` and `Serializer.DeserializeDynamically<T>(...)` resolve `IProtoReader/Writer` at runtime (not AOT-safe for generic container shapes).
-  They only work in AOT when `T` is a `[ProtoContract]` marked type or a primitive/known built-in type; using generic container shapes like `Nullable<>`, `Lazy<>`, `List<>`, `Dictionary<,>` etc. will fail at runtime on AOT due to missing type metadata.
+`Serializer.Serialize<T>(..., IProtoWriter<T>)` and `Serializer.Deserialize<T>(..., IProtoReader<T>)` where `T` is a `[ProtoContract]` marked type with generated `IProtoParser<T>` implementation.
 
 ```csharp
-int a=10;
-ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
-LightProto.Serializer.Serialize<int>(writer, a,Int32ProtoParser.Writer); // must pass writer
-var bytes = a.ToByteArray(Int32ProtoParser.Writer); // extension method
-int result = LightProto.Serializer.Deserialize<int>(bytes,Int32ProtoParser.Reader); // must pass reader
-
-List<int> list=[1,2,3];
-var bytes = list.ToByteArray(Int32ProtoParser.Writer.GetCollectionWriter());// extension method
-ArrayBufferWriter<byte> writer = new ArrayBufferWriter<byte>();
-LightProto.Serializer.Serialize(writer, list,Int32ProtoParser.Writer.GetCollectionWriter()); // pass collection writer
-LightProto.Serializer.SerializeDynamically<List<int>>(writer, list); // dynamic API, not AOT-safe approach.
-List<int> arr2=LightProto.Serializer.Deserialize(bytes,Int32ProtoParser.Reader.GetListReader()); // pass element reader
-List<int> arr3=LightProto.Serializer.DeserializeDynamically<List<int>>(bytes); // dynamic API, not AOT-safe approach.
+Person person = new Person { Name = "Alice", Age = 30 };
+ArrayBufferWriter<byte> bufferWriter = new ArrayBufferWriter<byte>();
+LightProto.Serializer.Serialize<Person>(bufferWriter, person, Person.ProtoWriter); // must pass writer
+var bytes = person.ToByteArray(Person.ProtoWriter); // extension method
+Person result = LightProto.Serializer.Deserialize<Person>(bytes, Person.ProtoReader); // must pass reader
 ```
 
-### .netstandard
+### Dynamic APIs
 
-In .netstandard targeting platform such as .NET Framework, we can't use [static virtual members in interface](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members) to find `ProtoReader/Writer`.
+`Serializer.SerializeDynamically<T>(...)` and `Serializer.DeserializeDynamically<T>(...)` resolve `IProtoReader/Writer` at runtime via `T.ProtoReader/Writer` or `Serializer.RegisterParser` or reflection.
 
-So LightProto requires user to specify a `ProtoWriter` when serializing and a `ProtoReader` when deserializing.
+```csharp
+Person person = new Person { Name = "Alice", Age = 30 };
+ArrayBufferWriter<byte> bufferWriter = new ArrayBufferWriter<byte>();
+LightProto.Serializer.SerializeDynamically<Person>(bufferWriter, person); // dynamic API
+Person result = LightProto.Serializer.DeserializeDynamically<Person>(bufferWriter.WrittenSpan); // dynamic API
+```
 
-For `[ProtoContract]` marked MessageType the `ProtoReader/Writer` is generated by LightProto, just use `MessageType.ProtoReader/Writer`.
+ProtoWriter/Reader resolution order:
 
-For primitive types, LightProto has predefined in `LightProto.Parser` namespace, such as `LightProto.Parser.DateTimeParser`. 
+1. If a parser is registered via `Serializer.RegisterParser<T>(reader, writer)`, use the registered parser.
+2. If `T` is a primitive/built-in type, use built-in parser from `LightProto.Parser` namespace which is registered internally.
+3. If `T` implements `IProtoParser<T>` (usually marked as `[ProtoContract]`), use `T.ProtoWriter/Reader` by reflection. This is fine with AOT, as the generic argument T is marked as `[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]`.
+4. If `T` is a generic container shape (e.g., `List<>`, `Dictionary<,>`, `Nullable<>`, etc.), try to resolve element type parser recursively. This may fail at runtime on AOT due to missing type metadata.
 
-If you don't need AOT support, you can use dynamic APIs `Serializer.SerializeDynamically<T>` and `Serializer.DeserializeDynamically<T>` without passing ProtoReader/Writer.
+### Non-generic APIs
 
-### IExtensible
+`Serializer.SerializeNonGeneric(..., object instance)` and `Serializer.DeserializeNonGeneric(Type type, ...)` are similar to Dynamic APIs, but the type is specified at runtime.
 
-protobuf-net: supports `IExtensible` for dynamic extensions
+```csharp
+Person person = new Person { Name = "Alice", Age = 30 };
+ArrayBufferWriter<byte> bufferWriter = new ArrayBufferWriter<byte>();
+LightProto.Serializer.SerializeNonGeneric(bufferWriter, person); // non-generic API
+Person result = (Person)LightProto.Serializer.DeserializeNonGeneric(typeof(Person), bufferWriter.WrittenSpan); // non-generic API
+```
 
-LightProto: `IExtensible` is defined for compatibility only and has no effect
+The ProtoWriter/Reader resolution order is the same as [Dynamic APIs](#dynamic-apis).
 
-### Surrogates
+## .NET Standard
 
-protobuf-net: can register surrogates via RuntimeTypeModel at runtime
+In .NET Standard target frameworks, we can't use [static virtual members in interface](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/static-virtual-interface-members) to find `T.ProtoReader/Writer`.
 
-LightProto: You can specify a custom ProtoParserType for MessageType.
-For example, MessageType is `Person`, custom ProtoParserType is `PersonProtoParser`, you can use following attribute to specify a custom ProtoParserType, list as precedence order:
+So LightProto requires you to specify a `ProtoWriter` when serializing and a `ProtoReader` when deserializing.
+
+For `[ProtoContract]`-marked message types, `ProtoReader/Writer` is generated by LightProto, so use `MessageType.ProtoReader/Writer`.
+
+For primitive types, LightProto provides predefined parsers in the `LightProto.Parser` namespace, such as `LightProto.Parser.DateTimeParser`.
+
+If you don't need AOT support, you can use the dynamic APIs `Serializer.SerializeDynamically<T>` and `Serializer.DeserializeDynamically<T>` without passing ProtoReader/Writer.
+
+### Unity Support
+
+LightProto's generated code supports C# 9, making it compatible with Unity projects targeting .NET Standard 2.0. You can use LightProto in Unity by following the same installation and usage instructions as for other .NET projects.
+IL2CPP builds are supported because LightProto is AOT-friendly.
+
+## Surrogates
+
+protobuf-net can register surrogates via RuntimeTypeModel at runtime.
+
+LightProto lets you specify a custom ProtoParserType for MessageType.
+For example, if MessageType is `Person` and the custom ProtoParserType is `PersonProtoParser`, you can use the following attributes in precedence order:
 
 1. member level: `[ProtoMember(1,ParserType=typeof(PersonProtoParser))]`
 2. class level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`
-3. module/assembly level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]` (messageType and parserType should not be in same assembly, If so, type level attribute is suggested.)
+3. module/assembly level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]` (messageType and parserType should not be in the same assembly; if they are, use the type-level attribute.)
 4. type level: `[ProtoParserTypeMap(typeof(Person), typeof(PersonProtoParser))]`
-5. default: `LightProto.Parser.PersonProtoParser`
+5. default: `global::LightProto.Parser.PersonProtoParser`
 
-The ProtoParserType must implement `IProtoParser<MessageType>`. The easiest way is defining a SurrogateType with `[ProtoContract]` and mark `[ProtoSurrogateFor<MessageType>]`.     
-Example for Person(can be any type):
+The ProtoParserType must implement `IProtoParser<MessageType>`. The easiest way is to define a SurrogateType with `[ProtoContract]` and mark it with `[ProtoSurrogateFor<MessageType>]`.
+Example for Person (can be any type):
 
 ```csharp
 [ProtoParserType(typeof(PersonProtoParser))] // type level ProtoParser
@@ -218,11 +230,11 @@ public partial struct PersonProtoParser
 {
   [ProtoMember(1)]
   internal string Name { get; set; }    
-  public static implicit operator Person(PersonProtoParser parser) //must define implicit conversions for surrogate type
+  public static implicit operator Person(PersonProtoParser parser) // must define implicit conversions for surrogate type
   {
       return Person.FromName(parser.Name);
   }    
-  public static implicit operator PersonProtoParser(Person value) //must define implicit conversions for surrogate type
+  public static implicit operator PersonProtoParser(Person value) // must define implicit conversions for surrogate type
   {
       return new PersonProtoParser() { Name = value.Name };
   }
@@ -237,25 +249,68 @@ public class MessageContract
 }
 ```
 
-You can also read/write raw binary data, for example see:[DateOnlyProtoParser](https://github.com/dameng324/LightProto/blob/main/src/LightProto/Parser/DateOnly.cs) 
+You can also read/write raw binary data, but only WireType.LengthDelimited is supported for now because LightProtoGenerator needs to compute tags at compile time and any unknown type will be treated as LengthDelimited.
 
-### StringIntern
+## StringIntern
 
-protobuf-net: Use `RuntimeTypeModel.Default.StringInterning = true;` to enable string interning globally
+`[StringIntern]` attribute can be applied to individual string members, classes, modules, or assemblies.
 
-LightProto: `[StringIntern]` attribute can apply to individual string members/class/module/assembly. 
+## RuntimeTypeModel
 
-### RuntimeTypeModel
+LightProto provides a set of APIs in `RuntimeProtoWriter`, `RuntimeProtoReader`, and `RuntimeProtoParser`.
 
-Not supported; all configuration is static via attributes and generated code
+`RuntimeProtoParser<T>` can be used to get `IProtoReader<T>` and `IProtoWriter<T>` at runtime.
 
-If you encounter different behavior versus protobuf-net, please open an issue.
+You can use them to serialize/deserialize, or use Serializer.RegisterParser<T>(reader, writer) to register globally, then use Serializer.SerializeDynamically/DeserializeDynamically or Serializer.SerializeNonGeneric APIs.
 
-## Unity Support 🎮
+```csharp
+public class TestMessage
+{
+    public int Value { get; set; }
+    public string StringValue { get; set; } = string.Empty;
+    public int[] IntArray { get; set; } = [];
+}
+var runtimeParser = new RuntimeProtoParser<TestMessage>(() => new());
+runtimeParser.AddMember(1, message => message.Value, (message, value) => message.Value = value);
+runtimeParser.AddMember(typeof(string), 2, message => message.StringValue, (message, value) => message.StringValue = (string)value);
+runtimeParser.AddMember<int[]>(
+    3,
+    message => message.IntArray,
+    (message, value) => message.IntArray = value,
+    // specify array reader/writer for aot support
+    Int32ProtoParser.ProtoReader.GetArrayReader(),
+    Int32ProtoParser.ProtoWriter.GetCollectionWriter()
+);
 
-LightProto supports C# 9, making it compatible with Unity projects targeting .NET Standard 2.0. You can use LightProto in Unity by following the same installation and usage instructions as for other .NET projects.
+// Use the runtime parser to serialize/deserialize.
+var writer = runtimeParser.ProtoWriter;
+var reader = runtimeParser.ProtoReader;
+```
 
-IL2CPP builds are supported since LightProto is AOT-friendly.
+If you do not need both Serialize and Deserialize, you can use `RuntimeProtoWriter<T>` or `RuntimeProtoReader<T>` to create only writer or reader.
+
+```csharp
+public class TestMessage
+{
+    public int Value { get; set; }
+    public string StringValue { get; set; } = string.Empty;
+    public int[] IntArray { get; set; } = [];
+}
+
+var protoReader = new RuntimeProtoReader<TestMessage>(() => new());
+protoReader.AddMember<int>(1, (message, value) => message.Value = value);
+protoReader.AddMember(typeof(string), 2, (message, value) => message.StringValue = (string)value);
+protoReader.AddMember<int[]>(3, (message, value) => message.IntArray = value, Int32ProtoParser.ProtoReader.GetArrayReader());
+
+var protoWriter = new RuntimeProtoWriter<TestMessage>();
+protoWriter.AddMember<int>(1, message => message.Value);
+protoWriter.AddMember(typeof(string), 2, message => message.StringValue);
+protoWriter.AddMember<int[]>(3, message => message.IntArray, Int32ProtoParser.ProtoWriter.GetCollectionWriter());
+```
+
+## IExtensible
+
+`IExtensible` is defined for compatibility only and has no effect.
 
 ## Performance & Benchmarks 📊
 
@@ -305,13 +360,13 @@ Note: Results vary by hardware, runtime, and data model. Please run the benchmar
 
 ## Working with .proto files 📄
 
-LightProto doesn’t ship a .proto → C# generator for now. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn’t work, please file an issue.
+LightProto doesn't ship a .proto → C# generator yet. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn't work, please file an issue.
 
-If you need a dedicated .proto → C# generator, please vote this [issue](https://github.com/dameng324/LightProto/issues/85).
+If you need a dedicated .proto → C# generator, please vote on this [issue](https://github.com/dameng324/LightProto/issues/85).
 
 ## Contributing 🤝
 
-Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed contribution guidelines. 
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed contribution guidelines.
 
 [ARCHITECTURE.md](ARCHITECTURE.md) describes the internal design and structure of LightProto, which may be helpful for contributors.
 
