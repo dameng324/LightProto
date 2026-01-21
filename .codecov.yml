@@ -8,3 +8,6 @@
       default:
         target: 95%          # minimal patch coverage
         threshold: 1%        # allow 1% drop
+
+ignore:
+  - "./tests/**"
