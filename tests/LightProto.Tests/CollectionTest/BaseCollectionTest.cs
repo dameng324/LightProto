@@ -49,6 +49,28 @@ public abstract class BaseCollectionTest<T>
         Serializer.Serialize(ms, original, ProtoWriter.GetCollectionWriter());
 
         {
+            foreach (var item in original)
+            {
+                {
+                    var size = ProtoWriter.CalculateSize(item);
+                    var longSize = ProtoWriter.CalculateLongSize(item);
+                    await Assert.That(longSize).IsEqualTo(size);
+                }
+                {
+                    IProtoWriter writer = (IProtoWriter)ProtoWriter;
+                    var size = writer.CalculateSize(item!);
+                    var longSize = writer.CalculateLongSize(item!);
+                    await Assert.That(longSize).IsEqualTo(size);
+                }
+            }
+        }
+        {
+            var writer = ProtoWriter.GetCollectionWriter();
+            var size = writer.CalculateSize(original);
+            var longSize = writer.CalculateLongSize(original);
+            await Assert.That(longSize).IsEqualTo(size);
+        }
+        {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
             await Assert.That(parsed).IsEquivalentTo(original, Comparer, CollectionOrdering.Matching);

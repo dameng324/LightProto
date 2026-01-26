@@ -30,8 +30,13 @@
 
             public bool IsMessage => false;
 
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Double)value);
+
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            public int CalculateSize(Double value)
+            public int CalculateSize(Double value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(Double value)
             {
                 return CodedOutputStream.ComputeDoubleSize(value);
             }

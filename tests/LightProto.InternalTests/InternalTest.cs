@@ -136,4 +136,29 @@ public class InternalTest
         });
         await Assert.That(ex.Message).Contains("contains invalid values");
     }
+
+    [Test]
+    public async Task MessageWrapper_TTest()
+    {
+        var protoWriter = MessageWrapper<int>.ProtoWriter.From(Int32ProtoParser.ProtoWriter);
+        int a = 1234;
+        var longSize = protoWriter.CalculateLongSize(a);
+        var size = protoWriter.CalculateSize(a);
+        await Assert.That(longSize).IsEqualTo(size);
+
+        var nonGenericWriter = (IProtoWriter)protoWriter;
+        longSize = nonGenericWriter.CalculateLongSize(a);
+        size = nonGenericWriter.CalculateSize(a);
+        await Assert.That(longSize).IsEqualTo(size);
+    }
+
+    [Test]
+    public async Task MessageWrapperTest()
+    {
+        var protoWriter = (IProtoWriter)MessageWrapper.ProtoWriter.From((IProtoWriter)Int32ProtoParser.ProtoWriter);
+        int a = 1234;
+        var longSize = protoWriter.CalculateLongSize(a);
+        var size = protoWriter.CalculateSize(a);
+        await Assert.That(longSize).IsEqualTo(size);
+    }
 }

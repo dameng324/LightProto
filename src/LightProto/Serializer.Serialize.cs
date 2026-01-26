@@ -42,7 +42,13 @@ namespace LightProto
         /// <returns>A new instance that is a deep clone of <paramref name="message"/>.</returns>
         public static T DeepClone<T>(T message, IProtoReader<T> reader, IProtoWriter<T> writer)
         {
-            var size = writer.CalculateSize(message);
+            var longSize = writer.CalculateLongSize(message);
+            if (longSize > int.MaxValue)
+            {
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            }
+            var size = (int)longSize;
+
             var array = ArrayPool<byte>.Shared.Rent(size);
             try
             {

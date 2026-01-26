@@ -13,7 +13,7 @@ public partial class FailedTests
         {
             var message = "1234567";
             var writer = StringProtoParser.ProtoWriter;
-            var buffer = new byte[writer.CalculateSize(message) - 1];
+            var buffer = new byte[writer.CalculateLongSize(message) - 1];
             using CodedOutputStream output = new CodedOutputStream(buffer);
             WriterContext.Initialize(output, out var ctx);
             writer.WriteTo(ref ctx, message);

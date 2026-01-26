@@ -61,14 +61,24 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
 
     public int CalculateSize(T value)
     {
-        int size = 0;
+        var longSize = CalculateLongSize(value);
+        if (longSize > int.MaxValue)
+        {
+            throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+        }
+        return (int)longSize;
+    }
+
+    public long CalculateLongSize(T value)
+    {
+        long size = 0;
         foreach (var member in _members)
         {
             if (member.Writer is not ICollectionWriter)
             {
                 size += CodedOutputStream.ComputeUInt32Size(member.Tag);
             }
-            size += member.Writer.CalculateMessageSize(member.Getter(value));
+            size += member.Writer.CalculateLongMessageSize(member.Getter(value));
         }
 
         return size;
@@ -87,6 +97,8 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
     }
 
     int IProtoWriter.CalculateSize(object value) => CalculateSize((T)value);
+
+    long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((T)value);
 
     void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (T)value);
 }

@@ -108,7 +108,7 @@ namespace LightProto
             {
                 writer = MessageWrapper.ProtoWriter.From(writer);
             }
-            var buffer = new byte[writer.CalculateSize(instance)];
+            var buffer = new byte[writer.CalculateLongSize(instance)];
             var span = buffer.AsSpan();
             WriterContext.Initialize(ref span, out var ctx);
             writer.WriteTo(ref ctx, instance);

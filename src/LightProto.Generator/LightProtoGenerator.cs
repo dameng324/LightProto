@@ -202,6 +202,7 @@ public partial class LightProtoGenerator : IIncrementalGenerator
                 $"void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyOrClassName})message);"
             );
             writer.WriteLine($"int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyOrClassName})message);");
+            writer.WriteLine($"long IProtoWriter.CalculateLongSize(object message) => CalculateLongSize(({proxyOrClassName})message);");
             writer.WriteLine($"public bool IsMessage => true;");
             writer.WriteLine($"public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;");
             GenerateMemberProtoParsers(writer, protoMembers, compilation, targetType, "Writer");
@@ -221,14 +222,14 @@ public partial class LightProtoGenerator : IIncrementalGenerator
         List<(uint RawTag, ProtoContract Contract)> derivedTypes
     )
     {
-        writer.WriteLine($"public int CalculateSize({proxyOrClassName} value)");
+        writer.WriteLine($"public long CalculateLongSize({proxyOrClassName} value)");
         using (writer.IndentScope())
         {
             var valueToMessage = proxyOrClassName.Equals(className, StringComparison.Ordinal)
                 ? $"ref {className} message = ref value;"
                 : $"{className} message = value;";
             writer.WriteLine(valueToMessage);
-            writer.WriteLine("int size=0;");
+            writer.WriteLine("long size=0;");
             foreach (var member in protoMembers)
             {
                 var tagSize = member.RawTagSize;
@@ -238,11 +239,11 @@ public partial class LightProtoGenerator : IIncrementalGenerator
                 using (writer.IndentScope())
                 {
                     if (Helper.IsCollectionType(compilation, member.Type) || Helper.IsDictionaryType(compilation, member.Type))
-                        writer.WriteLine($"size += {member.Name}_ProtoWriter.CalculateSize({memberAccess}); ");
+                        writer.WriteLine($"size += {member.Name}_ProtoWriter.CalculateLongSize({memberAccess}); ");
                     else if (TryGetInternalTypeName(member.Type, member.DataFormat, member.StringIntern, out var name))
                         writer.WriteLine($"size += {tagSize} + CodedOutputStream.Compute{name}Size({memberAccess});");
                     else
-                        writer.WriteLine($"size += {tagSize} + {member.Name}_ProtoWriter.CalculateMessageSize({memberAccess});");
+                        writer.WriteLine($"size += {tagSize} + {member.Name}_ProtoWriter.CalculateLongMessageSize({memberAccess});");
                 }
             }
 
@@ -252,11 +253,23 @@ public partial class LightProtoGenerator : IIncrementalGenerator
                 using (writer.IndentScope(false))
                 {
                     writer.WriteLine(
-                        $"size += {ProtoMember.GetRawTagSize(member.RawTag)} + {member.Contract.Type}.MemberStructWriter.CalculateMessageSize(message.{member.Contract.Type.Name}_MemberStruct.Value); "
+                        $"size += {ProtoMember.GetRawTagSize(member.RawTag)} + {member.Contract.Type}.MemberStructWriter.CalculateLongMessageSize(message.{member.Contract.Type.Name}_MemberStruct.Value); "
                     );
                 }
             }
             writer.WriteLine("return size;");
+        }
+
+        writer.WriteLine($"public int CalculateSize({proxyOrClassName} value)");
+        using (writer.IndentScope())
+        {
+            writer.WriteLine("var longSize = CalculateLongSize(value);");
+            writer.WriteLine("if (longSize > int.MaxValue)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("throw new OverflowException(\"Calculated size exceeds Int32.MaxValue\");");
+            }
+            writer.WriteLine("return (int)longSize;");
         }
     }
 
@@ -697,12 +710,14 @@ public partial class LightProtoGenerator : IIncrementalGenerator
                 $"void IProtoWriter.WriteTo(ref WriterContext output, object message) => WriteTo(ref output, ({proxyOrClassName})message);"
             );
             writer.WriteLine($"int IProtoWriter.CalculateSize(object message) => CalculateSize(({proxyOrClassName})message);");
+            writer.WriteLine($"long IProtoWriter.CalculateLongSize(object message) => CalculateLongSize(({proxyOrClassName})message);");
             writer.WriteLine($"public bool IsMessage => true;");
             writer.WriteLine($"public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;");
             writer.WriteLine(
                 $"public void WriteTo(ref WriterContext output, {proxyOrClassName} message) => {writerName}.WriteTo(ref output, {message});"
             );
             writer.WriteLine($"public int CalculateSize({proxyOrClassName} message) => {writerName}.CalculateSize({message});");
+            writer.WriteLine($"public long CalculateLongSize({proxyOrClassName} message) => {writerName}.CalculateLongSize({message});");
         }
     }
 

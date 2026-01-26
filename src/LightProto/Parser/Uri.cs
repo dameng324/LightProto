@@ -39,8 +39,13 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Uri?)value);
+
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            public int CalculateSize(Uri? value)
+            public int CalculateSize(Uri? value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(Uri? value)
             {
                 return CodedOutputStream.ComputeStringSize(value?.OriginalString ?? string.Empty);
             }

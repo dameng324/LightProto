@@ -73,6 +73,10 @@ public partial class RuntimeParserTests
         await Assert.That(cloned.Value).IsEqualTo(message.Value);
         await Assert.That(cloned.StringValue).IsEqualTo(message.StringValue);
         await Assert.That(cloned.IntArray).IsEquivalentTo(message.IntArray);
+
+        var size = protoWriter.CalculateSize(message);
+        var longSize = protoWriter.CalculateLongSize(message);
+        await Assert.That(longSize).IsEqualTo(size);
     }
 
     public class TestMessage2<T>
@@ -82,7 +86,11 @@ public partial class RuntimeParserTests
         public int[] IntArray { get; set; } = [];
     }
 
-    internal class TestMessage2RuntimeProtoReader<T1> : RuntimeProtoReader<TestMessage2<T1>>
+    internal class TestMessage2RuntimeProtoReader<
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+        T1> : RuntimeProtoReader<TestMessage2<T1>>
     {
         public TestMessage2RuntimeProtoReader()
             : base(() => new())

@@ -31,14 +31,24 @@
                 ItemWriter.WriteTo(ref output, value);
             }
 
-            public int CalculateSize(object value)
+            int IProtoWriter.CalculateSize(object value)
             {
-                int size = 0;
+                var longSize = CalculateLongSize(value);
+                if (longSize > int.MaxValue)
+                {
+                    throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+                }
+                return (int)longSize;
+            }
+
+            public long CalculateLongSize(object value)
+            {
+                long size = 0;
                 if (ItemWriter is not ICollectionWriter)
                 {
                     size += CodedOutputStream.ComputeRawVarint32Size(tag);
                 }
-                size += ItemWriter.CalculateSize(value);
+                size += ItemWriter.CalculateLongSize(value);
                 return size;
             }
         }

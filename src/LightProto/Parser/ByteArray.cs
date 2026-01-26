@@ -28,15 +28,20 @@
 
             public void WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (byte[])value);
 
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((byte[])value);
+
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            public int CalculateSize(byte[] value)
+            public int CalculateSize(byte[] value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(byte[] value)
             {
-                return CodedOutputStream.ComputeLengthSize(value.Length) + value.Length;
+                return CodedOutputStream.ComputeLongLengthSize(value.Length) + value.Length;
             }
 
             public void WriteTo(ref WriterContext output, byte[] value)
             {
-                output.WriteLength(value.Length);
+                output.WriteLongLength(value.Length);
                 WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, value);
             }
         }

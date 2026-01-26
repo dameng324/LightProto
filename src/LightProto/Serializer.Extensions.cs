@@ -14,6 +14,12 @@ namespace LightProto
             return T.ProtoWriter.CalculateSize(message);
         }
 
+        public static long CalculateLongSize<T>(T message)
+            where T : IProtoParser<T>
+        {
+            return T.ProtoWriter.CalculateLongSize(message);
+        }
+
         /// <summary>
         /// Serializes the message to a byte array.
         /// </summary>
@@ -39,11 +45,25 @@ namespace LightProto
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long CalculateLongMessageSize<T>(this IProtoWriter<T> writer, T value)
+        {
+            var size = writer.CalculateLongSize(value);
+            return writer.IsMessage ? CodedOutputStream.ComputeLongLengthSize(size) + size : size;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long CalculateLongMessageSize(this IProtoWriter writer, object value)
+        {
+            var size = writer.CalculateLongSize(value);
+            return writer.IsMessage ? CodedOutputStream.ComputeLongLengthSize(size) + size : size;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessageTo(this IProtoWriter writer, ref WriterContext output, object value)
         {
             if (writer.IsMessage)
             {
-                output.WriteLength(writer.CalculateSize(value));
+                output.WriteLongLength(writer.CalculateLongSize(value));
             }
 
             writer.WriteTo(ref output, value);
@@ -54,7 +74,7 @@ namespace LightProto
         {
             if (writer.IsMessage)
             {
-                output.WriteLength(writer.CalculateSize(value));
+                output.WriteLongLength(writer.CalculateLongSize(value));
             }
 
             writer.WriteTo(ref output, value);
@@ -134,7 +154,12 @@ namespace LightProto
             {
                 writer = MessageWrapper<T>.ProtoWriter.From(writer);
             }
-            var buffer = new byte[writer.CalculateSize(message)];
+            var longSize = writer.CalculateLongSize(message);
+            if (longSize > int.MaxValue)
+                throw new OverflowException(
+                    "Message size exceeds maximum array size. Use Stream-based serialization for messages larger than 2GB."
+                );
+            var buffer = new byte[(int)longSize];
             var span = buffer.AsSpan();
             WriterContext.Initialize(ref span, out var ctx);
             writer.WriteTo(ref ctx, message);

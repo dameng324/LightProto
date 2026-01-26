@@ -366,6 +366,17 @@ namespace LightProto
             WriteRawVarint32(ref buffer, ref state, (uint)length);
         }
 
+        /// <summary>
+        /// Writes a length (in bytes) for length-delimited data.
+        /// </summary>
+        /// <remarks>
+        /// This method simply writes a rawint, but exists for clarity in calling code.
+        /// </remarks>
+        public static void WriteLongLength(ref Span<byte> buffer, ref WriterInternalState state, long length)
+        {
+            WriteRawVarint64(ref buffer, ref state, (ulong)length);
+        }
+
         #endregion
 
         #region Writing primitives

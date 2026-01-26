@@ -30,14 +30,14 @@ namespace LightProto.Parser
             ItemFixedSize = itemFixedSize;
         }
 
-        private int CalculatePackedDataSize(TCollection collection, int count)
+        private long CalculatePackedDataSize(TCollection collection, int count)
         {
             return ItemFixedSize != 0 ? ItemFixedSize * count : GetAllItemSize(collection);
         }
 
-        int GetAllItemSize(TCollection collection)
+        long GetAllItemSize(TCollection collection)
         {
-            int size = 0;
+            long size = 0;
 
             if (collection is IList<TItem> list)
             {
@@ -49,7 +49,7 @@ namespace LightProto.Parser
                         throw new Exception("Sequence contained null element");
                     }
 
-                    size += ItemWriter.CalculateMessageSize(item);
+                    size += ItemWriter.CalculateLongMessageSize(item);
                 }
             }
             else
@@ -61,13 +61,27 @@ namespace LightProto.Parser
                         throw new Exception("Sequence contained null element");
                     }
 
-                    size += ItemWriter.CalculateMessageSize(item);
+                    size += ItemWriter.CalculateLongMessageSize(item);
                 }
             }
             return size;
         }
 
+        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((TCollection)value);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(TCollection value)
+        {
+            var longSize = CalculateLongSize(value);
+            if (longSize > int.MaxValue)
+            {
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            }
+            return (int)longSize;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public long CalculateLongSize(TCollection value)
         {
             if (value is null)
                 return 0;
@@ -80,7 +94,7 @@ namespace LightProto.Parser
             if (IsPacked && PackedRepeated.Support<TItem>())
             {
                 var dataSize = CalculatePackedDataSize(value, count);
-                return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLengthSize(dataSize) + dataSize;
+                return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLongLengthSize(dataSize) + dataSize;
             }
             else
             {
@@ -106,9 +120,9 @@ namespace LightProto.Parser
             if (IsPacked && PackedRepeated.Support<TItem>())
             {
                 // Packed primitive type
-                int size = CalculatePackedDataSize(collection, count);
+                long size = CalculatePackedDataSize(collection, count);
                 output.WriteTag(Tag);
-                output.WriteLength(size);
+                output.WriteLongLength(size);
 
                 // if littleEndian and elements has fixed size, treat array as bytes (and write it as bytes to buffer) for improved performance
                 // if(TryGetArrayAsSpanPinnedUnsafe(codec, out Span<byte> span, out GCHandle handle))
