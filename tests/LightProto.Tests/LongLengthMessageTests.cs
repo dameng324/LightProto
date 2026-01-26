@@ -52,12 +52,12 @@ public partial class LongLengthMessageTests
         Assert.Throws<OverflowException>(() =>
         {
             var lazyWriter = new LazyProtoWriter<TestMessage>(TestMessage.ProtoWriter);
-            var size = lazyWriter.CalculateLongSize(new Lazy<TestMessage>(() => message));
+            var size = lazyWriter.CalculateSize(new Lazy<TestMessage>(() => message));
         });
         Assert.Throws<OverflowException>(() =>
         {
             var lazyWriter = new NullableProtoWriter<TestMessage>(TestMessage.ProtoWriter);
-            var size = lazyWriter.CalculateLongSize(message);
+            var size = lazyWriter.CalculateSize(message);
         });
 
         var tempFileName = Path.GetTempFileName();
