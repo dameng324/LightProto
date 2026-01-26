@@ -172,13 +172,16 @@ public class IntergrationTests
         try
         {
             await Assert.That(originalBytes).IsEqualTo(parsedBytes);
-            await Assert.That(t2Array.Length).IsEqualTo(
+
 #if NET6_0_OR_GREATER
-                Serializer.CalculateSize(origin)
+            var calculatedSize = Serializer.CalculateSize(origin);
+            var calculatedLongSize = Serializer.CalculateSize(origin);
 #else
-                ProtoParser<T1>.ProtoWriter.CalculateSize(origin)
+            var calculatedSize = ProtoParser<T1>.ProtoWriter.CalculateSize(origin);
+            var calculatedLongSize = ProtoParser<T1>.ProtoWriter.CalculateLongSize(origin);
 #endif
-            );
+            await Assert.That(t2Array.Length).IsEqualTo(calculatedSize);
+            await Assert.That((long)t2Array.Length).IsEqualTo(calculatedLongSize);
         }
         catch (Exception)
         {

@@ -31,15 +31,7 @@ public sealed class RuneProtoParser : IProtoParser<System.Text.Rune>
         long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((System.Text.Rune)value);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public int CalculateSize(System.Text.Rune value)
-        {
-            var longSize = CalculateLongSize(value);
-            if (longSize > int.MaxValue)
-            {
-                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
-            }
-            return (int)longSize;
-        }
+        public int CalculateSize(System.Text.Rune value) => (int)CalculateLongSize(value);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public long CalculateLongSize(System.Text.Rune value)

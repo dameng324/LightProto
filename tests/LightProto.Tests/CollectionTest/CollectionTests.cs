@@ -395,6 +395,26 @@ public class NullableCollectionTest : BaseCollectionTest<int?>
 }
 
 [InheritsTests]
+public class KeyValuePairCollectionTest : BaseCollectionTest<KeyValuePair<int, string>>
+{
+    public override IProtoWriter<KeyValuePair<int, string>> ProtoWriter { get; } =
+        new KeyValuePairProtoWriter<int, string>(Int32ProtoParser.ProtoWriter, StringProtoParser.ProtoWriter);
+
+    public override IProtoReader<KeyValuePair<int, string>> ProtoReader { get; } =
+        new KeyValuePairProtoReader<int, string>(Int32ProtoParser.ProtoReader, StringProtoParser.ProtoReader);
+
+    public override IEnumerable<KeyValuePair<int, string>[]> GetCollection()
+    {
+        yield return new KeyValuePair<int, string>[]
+        {
+            new KeyValuePair<int, string>(1, "One"),
+            new KeyValuePair<int, string>(2, "Two"),
+            new KeyValuePair<int, string>(3, "Three"),
+        };
+    }
+}
+
+[InheritsTests]
 public partial class ContractCollectionTest : BaseCollectionTestWithParser<ContractCollectionTest.Message, ContractCollectionTest.Message>
 {
     protected override IEqualityComparer<Message> Comparer { get; } = StructuralEqualityComparer<Message>.Instance;

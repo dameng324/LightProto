@@ -36,7 +36,7 @@
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public long CalculateLongSize(byte[] value)
             {
-                return CodedOutputStream.ComputeLengthSize(value.Length) + value.Length;
+                return CodedOutputStream.ComputeLongLengthSize(value.Length) + value.Length;
             }
 
             public void WriteTo(ref WriterContext output, byte[] value)

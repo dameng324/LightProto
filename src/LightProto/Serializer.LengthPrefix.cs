@@ -268,14 +268,22 @@ namespace LightProto
                         //write tag
                         ctx.WriteTag(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited));
                     }
-                    ctx.WriteInt64(length);
+                    ctx.WriteLongLength(length);
                 }
                 else if (style is PrefixStyle.Fixed32)
                 {
+                    if (length > uint.MaxValue)
+                    {
+                        throw new OverflowException("Serialized message is too large for Fixed32 length prefix.");
+                    }
                     ctx.WriteFixed32((uint)length);
                 }
                 else if (style is PrefixStyle.Fixed32BigEndian)
                 {
+                    if (length > uint.MaxValue)
+                    {
+                        throw new OverflowException("Serialized message is too large for Fixed32BigEndian length prefix.");
+                    }
                     ctx.WriteFixedBigEndian32((uint)length);
                 }
                 else

@@ -65,6 +65,12 @@ public abstract class BaseCollectionTest<T>
             }
         }
         {
+            var writer = ProtoWriter.GetCollectionWriter();
+            var size = writer.CalculateSize(original);
+            var longSize = writer.CalculateLongSize(original);
+            await Assert.That(longSize).IsEqualTo(size);
+        }
+        {
             ms.Position = 0;
             var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
             await Assert.That(parsed).IsEquivalentTo(original, Comparer, CollectionOrdering.Matching);

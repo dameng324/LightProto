@@ -32,15 +32,7 @@ public sealed class HalfProtoParser : IProtoParser<Half>
         long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Half)value);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public int CalculateSize(Half value)
-        {
-            var longSize = CalculateLongSize(value);
-            if (longSize > int.MaxValue)
-            {
-                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
-            }
-            return (int)longSize;
-        }
+        public int CalculateSize(Half value) => (int)CalculateLongSize(value);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public long CalculateLongSize(Half value)

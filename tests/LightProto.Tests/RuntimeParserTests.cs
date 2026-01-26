@@ -73,6 +73,10 @@ public partial class RuntimeParserTests
         await Assert.That(cloned.Value).IsEqualTo(message.Value);
         await Assert.That(cloned.StringValue).IsEqualTo(message.StringValue);
         await Assert.That(cloned.IntArray).IsEquivalentTo(message.IntArray);
+
+        var size = protoWriter.CalculateSize(message);
+        var longSize = protoWriter.CalculateLongSize(message);
+        await Assert.That(longSize).IsEqualTo(size);
     }
 
     public class TestMessage2<T>

@@ -63,7 +63,7 @@ namespace LightProto
         {
             if (writer.IsMessage)
             {
-                output.WriteInt64(writer.CalculateLongSize(value));
+                output.WriteLongLength(writer.CalculateLongSize(value));
             }
 
             writer.WriteTo(ref output, value);
@@ -154,7 +154,12 @@ namespace LightProto
             {
                 writer = MessageWrapper<T>.ProtoWriter.From(writer);
             }
-            var buffer = new byte[writer.CalculateLongSize(message)];
+            var longSize = writer.CalculateLongSize(message);
+            if (longSize > int.MaxValue)
+                throw new OverflowException(
+                    "Message size exceeds maximum array size. Use Stream-based serialization for messages larger than 2GB."
+                );
+            var buffer = new byte[(int)longSize];
             var span = buffer.AsSpan();
             WriterContext.Initialize(ref span, out var ctx);
             writer.WriteTo(ref ctx, message);
