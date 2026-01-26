@@ -17,13 +17,15 @@ public partial class LongLengthMessageTests
         public byte[] Data { get; set; } = [];
     }
 
+#if NET10 // only for .NET 10 to avoid out-of-memory in CI
     [Test]
     public async Task LongLengthMessageTest()
     {
+        int count = 1100_000;
         var message = new TestMessage { Items = new List<InternalMessage>() };
-        for (int i = 0; i < 500; i++)
+        for (int i = 0; i < count; i++)
         {
-            message.Items.Add(new InternalMessage { Data = new byte[10_000_000] });
+            message.Items.Add(new InternalMessage { Data = new byte[4096] });
         }
 
         var longSize = TestMessage.ProtoWriter.CalculateLongSize(message);
@@ -69,11 +71,12 @@ public partial class LongLengthMessageTests
                 Serializer.Serialize(gzip, message, TestMessage.ProtoWriter);
             }
 
+            GC.Collect();
             using (var fs = File.OpenRead(tempFileName))
             {
                 using var gzip = new GZipStream(fs, CompressionMode.Decompress, leaveOpen: true);
                 var deserialized = Serializer.Deserialize<TestMessage>(gzip, TestMessage.ProtoReader);
-                await Assert.That(deserialized.Items.Count).IsEqualTo(message.Items.Count);
+                await Assert.That(deserialized.Items.Count).IsEqualTo(count);
             }
         }
         finally
@@ -82,4 +85,5 @@ public partial class LongLengthMessageTests
                 File.Delete(tempFileName);
         }
     }
+#endif
 }
