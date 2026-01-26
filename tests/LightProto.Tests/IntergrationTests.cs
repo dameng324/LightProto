@@ -175,7 +175,7 @@ public class IntergrationTests
 
 #if NET6_0_OR_GREATER
             var calculatedSize = Serializer.CalculateSize(origin);
-            var calculatedLongSize = Serializer.CalculateSize(origin);
+            var calculatedLongSize = Serializer.CalculateLongSize(origin);
 #else
             var calculatedSize = ProtoParser<T1>.ProtoWriter.CalculateSize(origin);
             var calculatedLongSize = ProtoParser<T1>.ProtoWriter.CalculateLongSize(origin);

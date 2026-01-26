@@ -17,7 +17,7 @@ public partial class LongLengthMessageTests
         public byte[] Data { get; set; } = [];
     }
 
-#if NET10 // only for .NET 10 to avoid out-of-memory in CI
+#if NET10_0 // only for .NET 10 to avoid out-of-memory in CI
     [Test]
     public async Task LongLengthMessageTest()
     {
@@ -60,6 +60,21 @@ public partial class LongLengthMessageTests
         {
             var lazyWriter = new NullableProtoWriter<TestMessage>(TestMessage.ProtoWriter);
             var size = lazyWriter.CalculateSize(message);
+        });
+        Assert.Throws<OverflowException>(() =>
+        {
+            var runtimeProtoWriter = new RuntimeProtoWriter<TestMessage>();
+            runtimeProtoWriter.AddMember(1, x => x.Items, InternalMessage.ProtoWriter.GetCollectionWriter());
+            var runtimeSize = runtimeProtoWriter.CalculateSize(message);
+        });
+        Assert.Throws<OverflowException>(() =>
+        {
+            var size = TestMessage.ProtoWriter.GetCollectionWriter().CalculateSize([message]);
+        });
+        Assert.Throws<OverflowException>(() =>
+        {
+            var keyValuePairWriter = new KeyValuePairProtoWriter<int, TestMessage>(Int32ProtoParser.ProtoWriter, TestMessage.ProtoWriter);
+            var size = keyValuePairWriter.CalculateSize(new KeyValuePair<int, TestMessage>(1, message));
         });
 
         var tempFileName = Path.GetTempFileName();

@@ -616,6 +616,7 @@ public partial class NonGenericSerializerTests
         yield return () => ImmutableDictionary.CreateRange(new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 });
         yield return () => new SortedList<string, int>() { ["a"] = 1, ["b"] = 2 };
         yield return () => new SortedDictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
+        yield return () => new KeyValuePair<string, int>("key", 123);
     }
 
     [Test]
