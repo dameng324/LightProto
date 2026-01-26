@@ -245,6 +245,16 @@ namespace LightProto
         }
 
         /// <summary>
+        /// Computes the number of bytes that would be needed to encode a length,
+        /// as written by <see cref="WriteLength"/>.
+        /// </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static int ComputeLongLengthSize(long length)
+        {
+            return ComputeRawVarint64Size((ulong)length);
+        }
+
+        /// <summary>
         /// Computes the number of bytes that would be needed to encode a varint.
         /// </summary>
         public static int ComputeRawVarint32Size(uint value)

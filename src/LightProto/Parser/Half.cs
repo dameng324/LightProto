@@ -29,8 +29,21 @@ public sealed class HalfProtoParser : IProtoParser<Half>
         public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
         public bool IsMessage => false;
 
+        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Half)value);
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(Half value)
+        {
+            var longSize = CalculateLongSize(value);
+            if (longSize > int.MaxValue)
+            {
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            }
+            return (int)longSize;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public long CalculateLongSize(Half value)
         {
             return CodedOutputStream.ComputeFloatSize((float)value);
         }

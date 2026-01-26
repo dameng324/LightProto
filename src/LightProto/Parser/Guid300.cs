@@ -30,7 +30,13 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
-            public int CalculateSize(Guid value)
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Guid)value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public int CalculateSize(Guid value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(Guid value)
             {
                 return CodedOutputStream.ComputeStringSize(value.ToString());
             }

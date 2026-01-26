@@ -28,8 +28,13 @@
             public WireFormat.WireType WireType => WireFormat.WireType.Fixed32;
             public bool IsMessage => false;
 
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((UInt32)value);
+
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            public int CalculateSize(UInt32 value)
+            public int CalculateSize(UInt32 value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(UInt32 value)
             {
                 return CodedOutputStream.ComputeFixed32Size(value);
             }

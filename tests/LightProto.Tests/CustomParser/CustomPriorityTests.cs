@@ -40,6 +40,11 @@ public partial class CustomPriorityTests
                 return CodedOutputStream.ComputeInt32Size(value.Id);
             }
 
+            public long CalculateLongSize(Person value)
+            {
+                return CodedOutputStream.ComputeInt32Size(value.Id);
+            }
+
             public void WriteTo(ref WriterContext output, Person value)
             {
                 output.WriteInt32(value.Id);

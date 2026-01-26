@@ -17,6 +17,87 @@ public class Int32CollectionTest : BaseCollectionTestWithParser<Int32ProtoParser
 }
 
 [InheritsTests]
+public class SInt32CollectionTest : BaseCollectionTestWithParser<SInt32ProtoParser, int>
+{
+    public override IEnumerable<int[]> GetCollection()
+    {
+        yield return new int[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SFixedInt32CollectionTest : BaseCollectionTestWithParser<SFixed32ProtoParser, int>
+{
+    public override IEnumerable<int[]> GetCollection()
+    {
+        yield return new int[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class UInt32CollectionTest : BaseCollectionTestWithParser<UInt32ProtoParser, uint>
+{
+    public override IEnumerable<uint[]> GetCollection()
+    {
+        yield return new uint[] { 1, 2, 3 };
+    }
+}
+
+[InheritsTests]
+public class FixedInt32CollectionTest : BaseCollectionTestWithParser<Fixed32ProtoParser, uint>
+{
+    public override IEnumerable<uint[]> GetCollection()
+    {
+        yield return new uint[] { 1, 2, 3 };
+    }
+}
+
+[InheritsTests]
+public class Int16CollectionTest : BaseCollectionTestWithParser<Int16ProtoParser, Int16>
+{
+    public override IEnumerable<Int16[]> GetCollection()
+    {
+        yield return new Int16[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SInt16CollectionTest : BaseCollectionTestWithParser<SInt16ProtoParser, Int16>
+{
+    public override IEnumerable<Int16[]> GetCollection()
+    {
+        yield return new Int16[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class SFixedInt16CollectionTest : BaseCollectionTestWithParser<SFixed16ProtoParser, Int16>
+{
+    public override IEnumerable<Int16[]> GetCollection()
+    {
+        yield return new Int16[] { 1, -2, 3 };
+    }
+}
+
+[InheritsTests]
+public class UInt16CollectionTest : BaseCollectionTestWithParser<UInt16ProtoParser, UInt16>
+{
+    public override IEnumerable<UInt16[]> GetCollection()
+    {
+        yield return new UInt16[] { 1, 2, 3 };
+    }
+}
+
+[InheritsTests]
+public class FixedInt16CollectionTest : BaseCollectionTestWithParser<Fixed16ProtoParser, UInt16>
+{
+    public override IEnumerable<UInt16[]> GetCollection()
+    {
+        yield return new UInt16[] { 1, 2, 3 };
+    }
+}
+
+[InheritsTests]
 public class SByteCollectionTest : BaseCollectionTestWithParser<SByteProtoParser, sbyte>
 {
     public override IEnumerable<sbyte[]> GetCollection()
@@ -71,15 +152,6 @@ public class Int64CollectionTest : BaseCollectionTestWithParser<Int64ProtoParser
 }
 
 [InheritsTests]
-public class SInt32CollectionTest : BaseCollectionTestWithParser<SInt32ProtoParser, int>
-{
-    public override IEnumerable<int[]> GetCollection()
-    {
-        yield return new int[] { 1, -2, 3 };
-    }
-}
-
-[InheritsTests]
 public class CharCollectionTest : BaseCollectionTestWithParser<CharProtoParser, char>
 {
     public override IEnumerable<char[]> GetCollection()
@@ -98,15 +170,6 @@ public class SInt64CollectionTest : BaseCollectionTestWithParser<SInt64ProtoPars
 }
 
 [InheritsTests]
-public class SFixedInt32CollectionTest : BaseCollectionTestWithParser<SFixed32ProtoParser, int>
-{
-    public override IEnumerable<int[]> GetCollection()
-    {
-        yield return new int[] { 1, -2, 3 };
-    }
-}
-
-[InheritsTests]
 public class SFixedInt64CollectionTest : BaseCollectionTestWithParser<SFixed64ProtoParser, long>
 {
     public override IEnumerable<long[]> GetCollection()
@@ -116,29 +179,11 @@ public class SFixedInt64CollectionTest : BaseCollectionTestWithParser<SFixed64Pr
 }
 
 [InheritsTests]
-public class UInt32CollectionTest : BaseCollectionTestWithParser<UInt32ProtoParser, uint>
-{
-    public override IEnumerable<uint[]> GetCollection()
-    {
-        yield return new uint[] { 1, 2, 3 };
-    }
-}
-
-[InheritsTests]
 public class UInt64CollectionTest : BaseCollectionTestWithParser<UInt64ProtoParser, ulong>
 {
     public override IEnumerable<ulong[]> GetCollection()
     {
         yield return new ulong[] { 1, 2, 3 };
-    }
-}
-
-[InheritsTests]
-public class FixedInt32CollectionTest : BaseCollectionTestWithParser<Fixed32ProtoParser, uint>
-{
-    public override IEnumerable<uint[]> GetCollection()
-    {
-        yield return new uint[] { 1, 2, 3 };
     }
 }
 
@@ -604,13 +649,32 @@ public class LazyCollectionTest
     {
         int[] original = [-1, 0, 1, 2];
         var lazyList = original.Select(o => new Lazy<int>(() => o)).ToList();
-        using var ms = new MemoryStream();
-        Serializer.Serialize(ms, lazyList, ProtoWriter.GetCollectionWriter());
+        {
+            using var ms = new MemoryStream();
+            Serializer.Serialize(ms, lazyList, ProtoWriter.GetCollectionWriter());
 
-        ms.Position = 0;
-        var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
-        var parsedValues = parsed.Select(o => o.Value).ToList();
-        await Assert.That(parsedValues).IsEquivalentTo(original);
+            ms.Position = 0;
+            var parsed = Serializer.Deserialize(ms, ProtoReader.GetListReader());
+            var parsedValues = parsed.Select(o => o.Value).ToList();
+            await Assert.That(parsedValues).IsEquivalentTo(original);
+        }
+
+        {
+            foreach (var item in lazyList)
+            {
+                {
+                    var size = ProtoWriter.CalculateSize(item);
+                    var longSize = ProtoWriter.CalculateLongSize(item);
+                    await Assert.That(longSize).IsEqualTo(size);
+                }
+                {
+                    IProtoWriter writer = (IProtoWriter)ProtoWriter;
+                    var size = writer.CalculateSize(item);
+                    var longSize = writer.CalculateLongSize(item);
+                    await Assert.That(longSize).IsEqualTo(size);
+                }
+            }
+        }
     }
 }
 

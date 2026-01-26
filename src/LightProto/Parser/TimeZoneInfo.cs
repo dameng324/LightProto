@@ -31,7 +31,13 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
-            public int CalculateSize(TimeZoneInfo value)
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((TimeZoneInfo)value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public int CalculateSize(TimeZoneInfo value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(TimeZoneInfo value)
             {
                 return CodedOutputStream.ComputeStringSize(value.ToSerializedString());
             }

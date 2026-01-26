@@ -29,10 +29,16 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
-            public int CalculateSize(StringBuilder value)
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((StringBuilder)value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public int CalculateSize(StringBuilder value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(StringBuilder value)
             {
 #if NET5_0_OR_GREATER
-                int size = 0;
+                long size = 0;
                 foreach (var readOnlyMemory in value.GetChunks())
                 {
                     int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(readOnlyMemory.Span);

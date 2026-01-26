@@ -47,10 +47,23 @@ namespace LightProto.Parser
             ValueWriter = valueWriter;
         }
 
+        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Lazy<T>)value);
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(Lazy<T> value)
         {
-            return ValueWriter.CalculateMessageSize(value.Value);
+            var longSize = CalculateLongSize(value);
+            if (longSize > int.MaxValue)
+            {
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            }
+            return (int)longSize;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public long CalculateLongSize(Lazy<T> value)
+        {
+            return ValueWriter.CalculateLongMessageSize(value.Value);
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

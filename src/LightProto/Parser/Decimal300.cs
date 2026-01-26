@@ -31,7 +31,13 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
             public bool IsMessage => false;
 
-            public int CalculateSize(Decimal value)
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((Decimal)value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public int CalculateSize(Decimal value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(Decimal value)
             {
                 return CodedOutputStream.ComputeStringSize(value.ToString("G"));
             }

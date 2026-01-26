@@ -1,1 +1,12 @@
 ﻿#nullable enable
+LightProto.IProtoWriter.CalculateLongSize(object! value) -> long
+LightProto.IProtoWriter<T>.CalculateLongSize(T value) -> long
+LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.CalculateLongSize(TCollection value) -> long
+LightProto.Parser.KeyValuePairProtoWriter<TKey, TValue>.CalculateLongSize(System.Collections.Generic.KeyValuePair<TKey, TValue> value) -> long
+LightProto.Parser.LazyProtoWriter<T>.CalculateLongSize(System.Lazy<T>! value) -> long
+LightProto.Parser.NullableProtoWriter<T>.CalculateLongSize(T? value) -> long
+LightProto.RuntimeProtoWriter<T>.CalculateLongSize(T value) -> long
+LightProto.WriterContext.WriteLongLength(long length) -> void
+static LightProto.CodedOutputStream.ComputeLongLengthSize(long length) -> int
+static LightProto.Serializer.CalculateLongMessageSize(this LightProto.IProtoWriter! writer, object! value) -> long
+static LightProto.Serializer.CalculateLongMessageSize<T>(this LightProto.IProtoWriter<T>! writer, T value) -> long

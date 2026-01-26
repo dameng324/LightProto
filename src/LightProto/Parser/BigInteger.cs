@@ -31,8 +31,13 @@ namespace LightProto.Parser
 
             public void WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (BigInteger)value);
 
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((BigInteger)value);
+
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            public int CalculateSize(BigInteger value)
+            public int CalculateSize(BigInteger value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(BigInteger value)
             {
 #if NET7_0_OR_GREATER
                 var byteCount = value.GetByteCount();
@@ -45,7 +50,7 @@ namespace LightProto.Parser
             public void WriteTo(ref WriterContext output, BigInteger value)
             {
                 var bytes = value.ToByteArray();
-                output.WriteLength(bytes.Length);
+                output.WriteLongLength(bytes.Length);
                 WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, bytes);
             }
         }

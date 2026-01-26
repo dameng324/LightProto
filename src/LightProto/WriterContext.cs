@@ -197,6 +197,15 @@ namespace LightProto
         public void WriteLength(int length) => WritingPrimitives.WriteLength(ref buffer, ref state, length);
 
         /// <summary>
+        /// Writes a length (in bytes) for length-delimited data.
+        /// </summary>
+        /// <remarks>
+        /// This method simply writes a rawint, but exists for clarity in calling code.
+        /// </remarks>
+        /// <param name="length">Length value, in bytes.</param>
+        public void WriteLongLength(long length) => WritingPrimitives.WriteLongLength(ref buffer, ref state, length);
+
+        /// <summary>
         /// Writes an already-encoded tag.
         /// </summary>
         /// <param name="tag">The encoded tag</param>

@@ -38,10 +38,23 @@
             ValueWriter = valueWriter;
         }
 
+        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((T?)value);
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(T? value)
         {
-            return !value.HasValue ? 0 : ValueWriter.CalculateMessageSize(value.Value);
+            var longSize = CalculateLongSize(value);
+            if (longSize > int.MaxValue)
+            {
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            }
+            return (int)longSize;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public long CalculateLongSize(T? value)
+        {
+            return !value.HasValue ? 0 : ValueWriter.CalculateLongMessageSize(value.Value);
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

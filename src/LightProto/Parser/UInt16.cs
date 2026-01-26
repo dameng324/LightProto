@@ -27,7 +27,13 @@
             public WireFormat.WireType WireType => WireFormat.WireType.Varint;
             public bool IsMessage => false;
 
-            public int CalculateSize(UInt16 value)
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((UInt16)value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public int CalculateSize(UInt16 value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(UInt16 value)
             {
                 return CodedOutputStream.ComputeUInt32Size(value);
             }

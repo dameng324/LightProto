@@ -82,7 +82,11 @@ public partial class RuntimeParserTests
         public int[] IntArray { get; set; } = [];
     }
 
-    internal class TestMessage2RuntimeProtoReader<T1> : RuntimeProtoReader<TestMessage2<T1>>
+    internal class TestMessage2RuntimeProtoReader<
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+        T1> : RuntimeProtoReader<TestMessage2<T1>>
     {
         public TestMessage2RuntimeProtoReader()
             : base(() => new())

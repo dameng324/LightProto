@@ -1,9 +1,12 @@
 ﻿namespace LightProto.Parser
 {
-    public class KeyValuePairProtoReader<TKey, TValue> : IProtoReader<KeyValuePair<TKey, TValue>>
+    public class KeyValuePairProtoReader<TKey, TValue> : IProtoReader, IProtoReader<KeyValuePair<TKey, TValue>>
         where TKey : notnull
     {
         public bool IsMessage => true;
+
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
+
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
 
         private readonly IProtoReader<TKey> _keyReader;
@@ -70,33 +73,51 @@
         }
     }
 
-    public class KeyValuePairProtoWriter<TKey, TValue> : IProtoWriter<KeyValuePair<TKey, TValue>>
+    public class KeyValuePairProtoWriter<TKey, TValue> : IProtoWriter, IProtoWriter<KeyValuePair<TKey, TValue>>
         where TKey : notnull
     {
         public bool IsMessage => true;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
 
+        int IProtoWriter.CalculateSize(object value) => CalculateSize((KeyValuePair<TKey, TValue>)value);
+
+        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((KeyValuePair<TKey, TValue>)value);
+
+        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (KeyValuePair<TKey, TValue>)value);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public int CalculateSize(KeyValuePair<TKey, TValue> value)
         {
-            int size = 0;
+            var longSize = CalculateLongSize(value);
+            if (longSize > int.MaxValue)
+            {
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            }
+            return (int)longSize;
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public long CalculateLongSize(KeyValuePair<TKey, TValue> value)
+        {
+            long size = 0;
             if (_keyWriter is ICollectionWriter)
             {
-                size += _keyWriter.CalculateSize(value.Key);
+                size += _keyWriter.CalculateLongSize(value.Key);
             }
             else
             {
                 size += CodedOutputStream.ComputeRawVarint32Size(_keyTag);
-                size += _keyWriter.CalculateMessageSize(value.Key);
+                size += _keyWriter.CalculateLongMessageSize(value.Key);
             }
 
             if (_valueWriter is ICollectionWriter)
             {
-                size += _valueWriter.CalculateSize(value.Value);
+                size += _valueWriter.CalculateLongSize(value.Value);
             }
             else
             {
                 size += CodedOutputStream.ComputeRawVarint32Size(_valueTag);
-                size += _valueWriter.CalculateMessageSize(value.Value);
+                size += _valueWriter.CalculateLongMessageSize(value.Value);
             }
 
             return size;

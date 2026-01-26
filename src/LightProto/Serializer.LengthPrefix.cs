@@ -260,7 +260,7 @@ namespace LightProto
                 {
                     writer = MessageWrapper<T>.ProtoWriter.From(writer);
                 }
-                var length = writer.CalculateSize(instance);
+                var length = writer.CalculateLongSize(instance);
                 if (style is PrefixStyle.Base128)
                 {
                     if (fieldNumber > 0)
@@ -268,7 +268,7 @@ namespace LightProto
                         //write tag
                         ctx.WriteTag(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited));
                     }
-                    ctx.WriteInt32(length);
+                    ctx.WriteInt64(length);
                 }
                 else if (style is PrefixStyle.Fixed32)
                 {

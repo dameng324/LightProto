@@ -27,7 +27,13 @@ namespace LightProto.Parser
             public WireFormat.WireType WireType => WireFormat.WireType.Varint;
             public bool IsMessage => false;
 
-            public int CalculateSize(byte value)
+            long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((byte)value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public int CalculateSize(byte value) => (int)CalculateLongSize(value);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+            public long CalculateLongSize(byte value)
             {
                 return CodedOutputStream.ComputeUInt32Size(value);
             }

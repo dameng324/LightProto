@@ -22,6 +22,7 @@ namespace LightProto
         public WireFormat.WireType WireType { get; }
         public bool IsMessage { get; }
         public int CalculateSize(T value);
+        public long CalculateLongSize(T value);
         public void WriteTo(ref WriterContext output, T value);
     }
 
@@ -37,6 +38,7 @@ namespace LightProto
         public WireFormat.WireType WireType { get; }
         public bool IsMessage { get; }
         public int CalculateSize(object value);
+        public long CalculateLongSize(object value);
         public void WriteTo(ref WriterContext output, object value);
     }
 }
