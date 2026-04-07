@@ -18,9 +18,12 @@ namespace LightProto.Parser
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
-        object IProtoReader.ParseFrom(ref ReaderContext input) => _dictionaryReader.ParseFrom(ref input).ToImmutableSortedDictionary();
+        object IProtoReader.ParseFrom(ref ReaderContext input) => ParseImmutableSortedDictionary(ref input);
 
         ImmutableSortedDictionary<TKey, TValue> IProtoReader<ImmutableSortedDictionary<TKey, TValue>>.ParseFrom(ref ReaderContext input) =>
+            ParseImmutableSortedDictionary(ref input);
+
+        private ImmutableSortedDictionary<TKey, TValue> ParseImmutableSortedDictionary(ref ReaderContext input) =>
             _dictionaryReader.ParseFrom(ref input).ToImmutableSortedDictionary();
 
         public WireFormat.WireType ItemWireType => ItemReader.WireType;
