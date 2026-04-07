@@ -2,38 +2,10 @@ using System.Collections.Immutable;
 
 namespace LightProto.Parser
 {
-    public sealed class ImmutableStackProtoWriter<T> : IProtoWriter, IProtoWriter<ImmutableStack<T>>, ICollectionWriter
+    public sealed class ImmutableStackProtoWriter<T> : IEnumerableProtoWriter<ImmutableStack<T>, T>
     {
-        private readonly ArrayProtoWriter<T> _arrayWriter;
-
-        public WireFormat.WireType WireType => _arrayWriter.WireType;
-        public bool IsMessage => _arrayWriter.IsMessage;
-
-        uint ICollectionWriter.Tag
-        {
-            get => _arrayWriter.Tag;
-            set => _arrayWriter.Tag = value;
-        }
-
-        WireFormat.WireType ICollectionWriter.ItemWireType => ((ICollectionWriter)_arrayWriter).ItemWireType;
-
         public ImmutableStackProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
-        {
-            _arrayWriter = new ArrayProtoWriter<T>(itemWriter, tag, itemFixedSize);
-        }
-
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((ImmutableStack<T>)value);
-
-        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((ImmutableStack<T>)value);
-
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (ImmutableStack<T>)value);
-
-        public int CalculateSize(ImmutableStack<T> collection) => _arrayWriter.CalculateSize(collection.ToArray());
-
-        public long CalculateLongSize(ImmutableStack<T> collection) => _arrayWriter.CalculateLongSize(collection.ToArray());
-
-        public void WriteTo(ref WriterContext output, ImmutableStack<T> collection) =>
-            _arrayWriter.WriteTo(ref output, collection.ToArray());
+            : base(itemWriter, tag, static collection => collection.Count(), itemFixedSize) { }
     }
 
     public sealed class ImmutableStackProtoReader<TItem> : ICollectionReader<ImmutableStack<TItem>, TItem>

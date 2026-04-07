@@ -2,38 +2,10 @@ using System.Collections.Immutable;
 
 namespace LightProto.Parser
 {
-    public sealed class ImmutableQueueProtoWriter<T> : IProtoWriter, IProtoWriter<ImmutableQueue<T>>, ICollectionWriter
+    public sealed class ImmutableQueueProtoWriter<T> : IEnumerableProtoWriter<ImmutableQueue<T>, T>
     {
-        private readonly ArrayProtoWriter<T> _arrayWriter;
-
-        public WireFormat.WireType WireType => _arrayWriter.WireType;
-        public bool IsMessage => _arrayWriter.IsMessage;
-
-        uint ICollectionWriter.Tag
-        {
-            get => _arrayWriter.Tag;
-            set => _arrayWriter.Tag = value;
-        }
-
-        WireFormat.WireType ICollectionWriter.ItemWireType => ((ICollectionWriter)_arrayWriter).ItemWireType;
-
         public ImmutableQueueProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
-        {
-            _arrayWriter = new ArrayProtoWriter<T>(itemWriter, tag, itemFixedSize);
-        }
-
-        int IProtoWriter.CalculateSize(object value) => CalculateSize((ImmutableQueue<T>)value);
-
-        long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize((ImmutableQueue<T>)value);
-
-        void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, (ImmutableQueue<T>)value);
-
-        public int CalculateSize(ImmutableQueue<T> collection) => _arrayWriter.CalculateSize(collection.ToArray());
-
-        public long CalculateLongSize(ImmutableQueue<T> collection) => _arrayWriter.CalculateLongSize(collection.ToArray());
-
-        public void WriteTo(ref WriterContext output, ImmutableQueue<T> collection) =>
-            _arrayWriter.WriteTo(ref output, collection.ToArray());
+            : base(itemWriter, tag, static collection => collection.Count(), itemFixedSize) { }
     }
 
     public sealed class ImmutableQueueProtoReader<TItem> : ICollectionReader<ImmutableQueue<TItem>, TItem>
