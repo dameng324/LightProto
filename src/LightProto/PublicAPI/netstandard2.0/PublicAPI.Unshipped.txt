@@ -10,3 +10,45 @@ LightProto.WriterContext.WriteLongLength(long length) -> void
 static LightProto.CodedOutputStream.ComputeLongLengthSize(long length) -> int
 static LightProto.Serializer.CalculateLongMessageSize(this LightProto.IProtoWriter! writer, object! value) -> long
 static LightProto.Serializer.CalculateLongMessageSize<T>(this LightProto.IProtoWriter<T>! writer, T value) -> long
+LightProto.Parser.ImmutableQueueProtoReader<TItem>
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.Empty.get -> System.Collections.Immutable.ImmutableQueue<TItem>!
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.ImmutableQueueProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.ImmutableQueueProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Immutable.ImmutableQueue<TItem>!
+LightProto.Parser.ImmutableQueueProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableQueueProtoWriter<T>
+LightProto.Parser.ImmutableQueueProtoWriter<T>.ImmutableQueueProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>.Empty.get -> System.Collections.Immutable.ImmutableSortedDictionary<TKey, TValue>!
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>.ImmutableSortedDictionaryProtoReader(LightProto.IProtoReader<TKey>! keyReader, LightProto.IProtoReader<TValue>! valueReader, uint tag) -> void
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>.IsMessage.get -> bool
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>.ItemReader.get -> LightProto.IProtoReader<System.Collections.Generic.KeyValuePair<TKey, TValue>>!
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableSortedDictionaryProtoReader<TKey, TValue>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableSortedDictionaryProtoWriter<TKey, TValue>
+LightProto.Parser.ImmutableSortedDictionaryProtoWriter<TKey, TValue>.ImmutableSortedDictionaryProtoWriter(LightProto.IProtoWriter<TKey>! keyWriter, LightProto.IProtoWriter<TValue>! valueWriter, uint tag) -> void
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.Empty.get -> System.Collections.Immutable.ImmutableSortedSet<TItem>!
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.ImmutableSortedSetProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.ImmutableSortedSetProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Immutable.ImmutableSortedSet<TItem>!
+LightProto.Parser.ImmutableSortedSetProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableSortedSetProtoWriter<T>
+LightProto.Parser.ImmutableSortedSetProtoWriter<T>.ImmutableSortedSetProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ImmutableStackProtoReader<TItem>
+LightProto.Parser.ImmutableStackProtoReader<TItem>.Empty.get -> System.Collections.Immutable.ImmutableStack<TItem>!
+LightProto.Parser.ImmutableStackProtoReader<TItem>.ImmutableStackProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.ImmutableStackProtoReader<TItem>.ImmutableStackProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ImmutableStackProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.ImmutableStackProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.ImmutableStackProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableStackProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Immutable.ImmutableStack<TItem>!
+LightProto.Parser.ImmutableStackProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ImmutableStackProtoWriter<T>
+LightProto.Parser.ImmutableStackProtoWriter<T>.ImmutableStackProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
