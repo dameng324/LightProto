@@ -221,6 +221,13 @@ namespace LightProto
             RegisterGenericParser(typeof(ImmutableArray<>), typeof(ImmutableArrayProtoReader<>), typeof(ImmutableArrayProtoWriter<>));
             RegisterGenericParser(typeof(ImmutableList<>), typeof(ImmutableListProtoReader<>), typeof(ImmutableListProtoWriter<>));
             RegisterGenericParser(typeof(ImmutableHashSet<>), typeof(ImmutableHashSetProtoReader<>), typeof(ImmutableHashSetProtoWriter<>));
+            RegisterGenericParser(
+                typeof(ImmutableSortedSet<>),
+                typeof(ImmutableSortedSetProtoReader<>),
+                typeof(ImmutableSortedSetProtoWriter<>)
+            );
+            RegisterGenericParser(typeof(ImmutableQueue<>), typeof(ImmutableQueueProtoReader<>), typeof(ImmutableQueueProtoWriter<>));
+            RegisterGenericParser(typeof(ImmutableStack<>), typeof(ImmutableStackProtoReader<>), typeof(ImmutableStackProtoWriter<>));
             RegisterGenericParser(typeof(LinkedList<>), typeof(LinkedListProtoReader<>), typeof(LinkedListProtoWriter<>));
             RegisterGenericParser(
                 typeof(ObservableCollection<>),
@@ -260,6 +267,11 @@ namespace LightProto
                 typeof(ImmutableDictionary<,>),
                 typeof(ImmutableDictionaryProtoReader<,>),
                 typeof(ImmutableDictionaryProtoWriter<,>)
+            );
+            RegisterGenericParser(
+                typeof(ImmutableSortedDictionary<,>),
+                typeof(ImmutableSortedDictionaryProtoReader<,>),
+                typeof(ImmutableSortedDictionaryProtoWriter<,>)
             );
         }
 
