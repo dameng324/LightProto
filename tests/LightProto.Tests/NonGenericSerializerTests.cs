@@ -614,6 +614,10 @@ public partial class NonGenericSerializerTests
         yield return () => new ReadOnlyDictionary<string, int>(new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 });
         yield return () => new ConcurrentDictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
         yield return () => ImmutableDictionary.CreateRange(new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 });
+        yield return () => ImmutableQueue.Create(1, 2, 3);
+        yield return () => ImmutableStack.Create(1, 2, 3);
+        yield return () => ImmutableSortedSet.Create(1, 2, 3);
+        yield return () => ImmutableSortedDictionary.CreateRange(new Dictionary<string, int>() { ["a"] = 1, ["b"] = 2 });
         yield return () => new SortedList<string, int>() { ["a"] = 1, ["b"] = 2 };
         yield return () => new SortedDictionary<string, int>() { ["a"] = 1, ["b"] = 2 };
         yield return () => new KeyValuePair<string, int>("key", 123);
