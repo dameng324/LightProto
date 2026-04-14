@@ -64,6 +64,7 @@ public class LightProtoCSharpGeneratorTests
     /// <summary>
     /// Asserts that the generated code, once formatted and normalized by CSharpier, contains the
     /// CSharpier-formatted and normalized expected snippet.
+    /// The <c>async Task</c> signature is required by TUnit's assertion awaitable pattern.
     /// </summary>
     private static async Task AssertContainsFormatted(string generatedCode, string expectedSnippet)
     {

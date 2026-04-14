@@ -454,7 +454,7 @@ internal sealed class LightProtoCSharpGenerator
         bool isAllUpper = !hasUnderscore && name.All(c => !char.IsLetter(c) || char.IsUpper(c));
 
         if (!hasUnderscore && !isAllUpper)
-            return char.ToUpperInvariant(name[0]) + name[1..];
+            return name.Length == 1 ? char.ToUpperInvariant(name[0]).ToString() : char.ToUpperInvariant(name[0]) + name[1..];
 
         // For snake_case, ALL_CAPS, or ALL_CAPS_WITH_UNDERSCORES:
         // split on underscores and title-case each segment.
