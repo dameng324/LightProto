@@ -118,7 +118,8 @@ internal sealed class LightProtoCSharpGenerator
         }
 
         // Collect oneof groups whose fields are all message-typed → emit [ProtoInclude]
-        var protoIncludes = CollectProtoIncludes(message, localMapEntries);
+        // (only when UseProtoIncludeForOneof is enabled; default is to emit as nullable properties)
+        var protoIncludes = _options.UseProtoIncludeForOneof ? CollectProtoIncludes(message, localMapEntries) : [];
 
         sb.AppendLine($"{indent}[global::LightProto.ProtoContract]");
 
@@ -149,7 +150,10 @@ internal sealed class LightProtoCSharpGenerator
         }
 
         // Build the set of oneof field indices that are covered by ProtoInclude
-        var protoIncludeOneofIndices = GetProtoIncludeOneofIndices(message, localMapEntries);
+        // (empty when UseProtoIncludeForOneof is false, so all fields are emitted)
+        var protoIncludeOneofIndices = _options.UseProtoIncludeForOneof
+            ? GetProtoIncludeOneofIndices(message, localMapEntries)
+            : new HashSet<int>();
 
         // Fields (skip oneof fields that were promoted to ProtoInclude)
         bool firstField = true;

@@ -41,13 +41,21 @@ var useRecordOption = new Option<bool>("--record")
     Description = "Emit 'partial record'. Combined with --struct emits 'partial record struct'.",
 };
 
-var rootCommand = new RootCommand { Description = "lightproto-gen – Generate LightProto [ProtoContract] C# classes from .proto files." };
+var oneofAsIncludeOption = new Option<bool>("--oneof-as-include")
+{
+    Description =
+        "Promote oneof groups where all fields are message types to [ProtoInclude] attributes "
+        + "on the containing type. By default, oneof fields are always emitted as nullable properties.",
+};
+
+var rootCommand = new RootCommand { Description = "lightproto-gen - Generate LightProto [ProtoContract] C# classes from .proto files." };
 rootCommand.Options.Add(protoOption);
 rootCommand.Options.Add(outputOption);
 rootCommand.Options.Add(namespaceOption);
 rootCommand.Options.Add(strictOptionalOption);
 rootCommand.Options.Add(useStructOption);
 rootCommand.Options.Add(useRecordOption);
+rootCommand.Options.Add(oneofAsIncludeOption);
 
 rootCommand.SetAction(
     (ParseResult parseResult) =>
@@ -58,6 +66,7 @@ rootCommand.SetAction(
         var strictOptional = parseResult.GetValue(strictOptionalOption);
         var useStruct = parseResult.GetValue(useStructOption);
         var useRecord = parseResult.GetValue(useRecordOption);
+        var oneofAsInclude = parseResult.GetValue(oneofAsIncludeOption);
 
         // Expand glob patterns into concrete file paths
         var resolvedFiles = ResolveProtoFiles(protoPatterns);
@@ -76,6 +85,7 @@ rootCommand.SetAction(
             StrictOptional = strictOptional,
             UseStruct = useStruct,
             UseRecord = useRecord,
+            UseProtoIncludeForOneof = oneofAsInclude,
         };
 
         int exitCode = 0;

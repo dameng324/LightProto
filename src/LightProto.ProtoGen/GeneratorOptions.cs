@@ -24,6 +24,15 @@ internal sealed class GeneratorOptions
     /// </summary>
     public bool StrictOptional { get; set; }
 
+    /// <summary>
+    /// When <see langword="true"/>, a <c>oneof</c> group whose fields are all message-typed
+    /// is promoted to <c>[ProtoInclude]</c> attributes on the containing type and the
+    /// individual oneof fields are not emitted as properties.
+    /// The default is <see langword="false"/>, which always emits oneof fields as nullable
+    /// properties regardless of their type.
+    /// </summary>
+    public bool UseProtoIncludeForOneof { get; set; }
+
     /// <summary>Returns the C# type keyword for message/record declarations.</summary>
     public string TypeKeyword =>
         (UseRecord, UseStruct) switch

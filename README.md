@@ -360,9 +360,48 @@ Note: Results vary by hardware, runtime, and data model. Please run the benchmar
 
 ## Working with .proto files 📄
 
-LightProto doesn't ship a .proto → C# generator yet. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn't work, please file an issue.
+LightProto ships `lightproto-gen`, a dotnet tool that generates LightProto `[ProtoContract]` C# classes from `.proto` files.
 
-If you need a dedicated .proto → C# generator, please vote on this [issue](https://github.com/dameng324/LightProto/issues/85).
+### Installation
+
+```bash
+dotnet tool install -g LightProto.Tools
+```
+
+### Usage
+
+```
+lightproto-gen --proto <pattern> [--output <dir>] [--namespace <ns>]
+               [--strict-optional] [--struct] [--record] [--oneof-as-include]
+```
+
+Options:
+
+| Option | Description |
+|--------|-------------|
+| `--proto <pattern>` | Path(s) to `.proto` file(s). Supports glob patterns (`*.proto`, `**/*.proto`). Repeatable. |
+| `--output <dir>` | Output directory for generated `.cs` files. Defaults to the current directory. |
+| `--namespace <ns>` | Override the C# namespace for all generated files. If omitted, the `csharp_namespace` option from the `.proto` file is used; otherwise the file name is used. |
+| `--strict-optional` | Only treat fields explicitly declared with the `optional` keyword as nullable. By default, all non-repeated, non-map fields are nullable because they are optional on the proto3 wire. |
+| `--struct` | Emit `partial struct` instead of `partial class`. |
+| `--record` | Emit `partial record`. Combined with `--struct` emits `partial record struct`. |
+| `--oneof-as-include` | Promote `oneof` groups where all fields are message types to `[ProtoInclude]` attributes on the containing type instead of emitting them as nullable properties. |
+
+### Examples
+
+```bash
+# Generate from a single file
+lightproto-gen --proto messages.proto --output ./Generated
+
+# Generate from all .proto files in a directory (recursive)
+lightproto-gen --proto "**/*.proto" --output ./Generated --namespace MyApp.Models
+
+# Generate with strict optional and record struct output
+lightproto-gen --proto api.proto --output ./Generated --strict-optional --record --struct
+
+# Promote message-only oneofs to [ProtoInclude] inheritance attributes
+lightproto-gen --proto api.proto --output ./Generated --oneof-as-include
+```
 
 ## Contributing 🤝
 
