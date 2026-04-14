@@ -29,6 +29,12 @@ internal sealed class LightProtoCSharpGenerator
     };
 
     private readonly string _indent = "    ";
+    private readonly GeneratorOptions _options;
+
+    public LightProtoCSharpGenerator(GeneratorOptions? options = null)
+    {
+        _options = options ?? new GeneratorOptions();
+    }
 
     /// <summary>
     /// Generates C# source code for all messages and enums in the given file descriptor.
@@ -111,8 +117,17 @@ internal sealed class LightProtoCSharpGenerator
                 localMapEntries[$".{message.Name}.{nested.Name}"] = nested;
         }
 
+        // Collect oneof groups whose fields are all message-typed → emit [ProtoInclude]
+        var protoIncludes = CollectProtoIncludes(message, localMapEntries);
+
         sb.AppendLine($"{indent}[global::LightProto.ProtoContract]");
-        sb.AppendLine($"{indent}public partial class {ToPascalCase(message.Name)}");
+
+        foreach (var (tag, typeName) in protoIncludes)
+        {
+            sb.AppendLine($"{indent}[global::LightProto.ProtoInclude({tag}, typeof({typeName}))]");
+        }
+
+        sb.AppendLine($"{indent}public partial {_options.TypeKeyword} {ToPascalCase(message.Name)}");
         sb.AppendLine($"{indent}{{");
 
         var innerIndent = indent + _indent;
@@ -133,10 +148,17 @@ internal sealed class LightProtoCSharpGenerator
             sb.AppendLine();
         }
 
-        // Fields
+        // Build the set of oneof field indices that are covered by ProtoInclude
+        var protoIncludeOneofIndices = GetProtoIncludeOneofIndices(message, localMapEntries);
+
+        // Fields (skip oneof fields that were promoted to ProtoInclude)
         bool firstField = true;
         foreach (var field in message.Fields)
         {
+            // If this field belongs to a oneof that was fully promoted to ProtoInclude, skip it
+            if (FieldIsInOneof(field) && protoIncludeOneofIndices.Contains(field.OneofIndex))
+                continue;
+
             if (!firstField)
                 sb.AppendLine();
             firstField = false;
@@ -146,7 +168,69 @@ internal sealed class LightProtoCSharpGenerator
         sb.AppendLine($"{indent}}}");
     }
 
-    private static void AppendField(
+    /// <summary>
+    /// Returns a set of oneof group indices where all fields are message-typed
+    /// and thus promoted to [ProtoInclude].
+    /// </summary>
+    private static HashSet<int> GetProtoIncludeOneofIndices(DescriptorProto message, Dictionary<string, DescriptorProto> mapEntries)
+    {
+        var result = new HashSet<int>();
+        for (int i = 0; i < message.OneofDecls.Count; i++)
+        {
+            var oneofFields = message.Fields.Where(f => FieldIsInOneof(f) && f.OneofIndex == i).ToList();
+            if (oneofFields.Count > 0 && oneofFields.All(f => IsMessageType(f, mapEntries)))
+                result.Add(i);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Collects (tag, CsTypeName) pairs for [ProtoInclude] attributes from message-only oneofs.
+    /// </summary>
+    private static List<(int Tag, string TypeName)> CollectProtoIncludes(
+        DescriptorProto message,
+        Dictionary<string, DescriptorProto> mapEntries
+    )
+    {
+        var result = new List<(int, string)>();
+        for (int i = 0; i < message.OneofDecls.Count; i++)
+        {
+            var oneofFields = message.Fields.Where(f => FieldIsInOneof(f) && f.OneofIndex == i).ToList();
+            if (oneofFields.Count == 0 || !oneofFields.All(f => IsMessageType(f, mapEntries)))
+                continue;
+
+            foreach (var field in oneofFields)
+            {
+                var typeName = string.Join(".", (field.TypeName?.TrimStart('.') ?? "object").Split('.').Select(ToPascalCase));
+                result.Add((field.Number, typeName));
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the field is a member of a oneof group.
+    /// Uses the protobuf-net ShouldSerialize pattern since <see cref="FieldDescriptorProto.OneofIndex"/>
+    /// defaults to 0 even for non-oneof fields.
+    /// </summary>
+    private static bool FieldIsInOneof(FieldDescriptorProto field)
+    {
+        // ShouldSerializeOneofIndex() returns true only when the oneof_index wire field was present
+        return field.ShouldSerializeOneofIndex();
+    }
+
+    private static bool IsMessageType(FieldDescriptorProto field, Dictionary<string, DescriptorProto> mapEntries)
+    {
+        // Must be a message type (not a map entry)
+        if (field.type != FieldDescriptorProto.Type.TypeMessage)
+            return false;
+        // Exclude map-entry messages
+        if (mapEntries.ContainsKey(field.TypeName))
+            return false;
+        return true;
+    }
+
+    private void AppendField(
         System.Text.StringBuilder sb,
         FieldDescriptorProto field,
         Dictionary<string, DescriptorProto> mapEntries,
@@ -167,6 +251,9 @@ internal sealed class LightProtoCSharpGenerator
         bool isRepeated = field.label == FieldDescriptorProto.Label.LabelRepeated;
         var (csType, dataFormat) = ResolveType(field, mapEntries);
 
+        // Determine if this field should be nullable
+        bool makeNullable = !isRepeated && IsFieldNullable(field);
+
         // Build [ProtoMember] attribute
         var memberAttrArgs = $"{field.Number}";
         if (dataFormat != null)
@@ -180,27 +267,48 @@ internal sealed class LightProtoCSharpGenerator
                 $"{indent}public global::System.Collections.Generic.List<{csType}> {ToPascalCase(field.Name)} {{ get; set; }} = new();"
             );
         }
-        else if (csType == "string")
+        else if (makeNullable)
         {
-            sb.AppendLine($"{indent}public string {ToPascalCase(field.Name)} {{ get; set; }} = string.Empty;");
-        }
-        else if (csType == "byte[]")
-        {
-            sb.AppendLine($"{indent}public byte[] {ToPascalCase(field.Name)} {{ get; set; }} = global::System.Array.Empty<byte>();");
-        }
-        else if (IsScalarValueType(field.type))
-        {
-            sb.AppendLine($"{indent}public {csType} {ToPascalCase(field.Name)} {{ get; set; }}");
+            // Emit nullable type with null default
+            var nullableType = MakeNullable(csType);
+            sb.AppendLine($"{indent}public {nullableType} {ToPascalCase(field.Name)} {{ get; set; }}");
         }
         else
         {
-            // Message or enum reference - nullable for messages, value type for enums
-            var isEnum = field.type == FieldDescriptorProto.Type.TypeEnum;
-            if (isEnum)
-                sb.AppendLine($"{indent}public {csType} {ToPascalCase(field.Name)} {{ get; set; }}");
+            // Non-nullable: emit with appropriate default initializer
+            if (csType == "string")
+                sb.AppendLine($"{indent}public string {ToPascalCase(field.Name)} {{ get; set; }} = string.Empty;");
+            else if (csType == "byte[]")
+                sb.AppendLine($"{indent}public byte[] {ToPascalCase(field.Name)} {{ get; set; }} = global::System.Array.Empty<byte>();");
             else
-                sb.AppendLine($"{indent}public {csType}? {ToPascalCase(field.Name)} {{ get; set; }}");
+                sb.AppendLine($"{indent}public {csType} {ToPascalCase(field.Name)} {{ get; set; }}");
         }
+    }
+
+    /// <summary>
+    /// Determines whether a field should be emitted as a nullable type.
+    /// </summary>
+    private bool IsFieldNullable(FieldDescriptorProto field)
+    {
+        if (_options.StrictOptional)
+        {
+            // Only fields explicitly declared with 'optional' in proto3 are nullable
+            return field.Proto3Optional;
+        }
+
+        // Default: everything is nullable (proto3 all fields are optional on the wire)
+        return true;
+    }
+
+    private static string MakeNullable(string csType)
+    {
+        // Reference types: string?, byte[]?, etc. (already end with ? for well-known nullable types)
+        // Value types: int?, bool?, etc.
+        if (csType.EndsWith("?"))
+            return csType; // Already nullable (e.g., well-known type wrappers)
+        if (csType.EndsWith("[]"))
+            return csType + "?"; // byte[]?
+        return csType + "?";
     }
 
     private static void AppendMapField(System.Text.StringBuilder sb, FieldDescriptorProto field, DescriptorProto mapEntry, string indent)

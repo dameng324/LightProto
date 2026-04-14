@@ -7,6 +7,7 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="CSharpier.Core" Version="1.2.6" />
     <PackageReference Include="TUnit" Version="1.11.16" />
   </ItemGroup>
   <ItemGroup>
