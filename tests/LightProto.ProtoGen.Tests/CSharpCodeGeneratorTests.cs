@@ -9,7 +9,10 @@ public class LightProtoCSharpGeneratorTests
     private static string Generate(string protoSchema, string? ns = null)
     {
         var set = new FileDescriptorSet();
-        set.Add("test.proto", source: new System.IO.StringReader(protoSchema));
+        using (var reader = new System.IO.StringReader(protoSchema))
+        {
+            set.Add("test.proto", source: reader);
+        }
         set.Process();
         var errors = set.GetErrors();
         if (errors.Length > 0)

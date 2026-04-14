@@ -337,7 +337,7 @@ internal sealed class LightProtoCSharpGenerator
     internal static string ToPascalCase(string name)
     {
         if (string.IsNullOrEmpty(name))
-            return name;
+            return "Generated";
 
         // If there are no underscores and the name is not all-uppercase,
         // just ensure the first character is upper-cased and leave the rest as-is
@@ -360,6 +360,8 @@ internal sealed class LightProtoCSharpGenerator
             if (part.Length > 1)
                 sb.Append(part[1..].ToLowerInvariant());
         }
-        return sb.Length == 0 ? name : sb.ToString();
+
+        // If all parts were empty (e.g., name is only underscores), fall back to a safe default.
+        return sb.Length == 0 ? "Generated" : sb.ToString();
     }
 }
