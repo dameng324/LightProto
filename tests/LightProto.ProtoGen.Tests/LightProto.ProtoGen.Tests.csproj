@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <LangVersion>latest</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" Version="1.11.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LightProto.ProtoGen\LightProto.ProtoGen.csproj" />
+  </ItemGroup>
+</Project>

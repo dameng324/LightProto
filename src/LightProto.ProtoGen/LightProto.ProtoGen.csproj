@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>lightproto-gen</AssemblyName>
+    <RootNamespace>LightProto.ProtoGen</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>lightproto-gen</ToolCommandName>
+    <!-- NuGet Package Metadata -->
+    <PackageId>LightProto.Tools</PackageId>
+    <Title>LightProto Proto Gen Tool</Title>
+    <Description>A dotnet tool for generating LightProto [ProtoContract] C# classes from .proto files.</Description>
+    <PackageTags>lightproto;protobuf;codegen;proto;dotnet-tool</PackageTags>
+    <Authors>dameng324</Authors>
+    <Copyright>Copyright (c) 2025 dameng324</Copyright>
+    <PackageProjectUrl>https://github.com/dameng324/LightProto</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dameng324/LightProto.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryBranch>main</RepositoryBranch>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Version>999.999.999-localbuild3</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LightProto.ProtoGen.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="protobuf-net.Reflection" Version="3.2.52" />
+  </ItemGroup>
+</Project>
