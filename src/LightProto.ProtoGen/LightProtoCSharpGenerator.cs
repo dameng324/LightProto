@@ -495,7 +495,7 @@ internal sealed class LightProtoCSharpGenerator
             return Array.Empty<string>();
 
         var firstTypeIndex = FindFirstTypeSegmentIndex(segments);
-        if (firstTypeIndex <= 0)
+        if (firstTypeIndex == 0)
             return segments;
 
         var result = new string[segments.Length - firstTypeIndex];
