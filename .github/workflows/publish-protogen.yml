@@ -56,11 +56,16 @@ jobs:
 
       - name: Resolve version
         id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          GIT_REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ github.event.inputs.version }}"
-          elif [[ "${{ github.ref }}" == refs/tags/protogen-v* ]]; then
-            VERSION="${{ github.ref_name }}"
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            VERSION="$INPUT_VERSION"
+          elif [[ "$GIT_REF" == refs/tags/protogen-v* ]]; then
+            VERSION="$REF_NAME"
             VERSION="${VERSION#protogen-v}"
           else
             VERSION="not-valid-version"
