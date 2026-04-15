@@ -17,12 +17,14 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/LightProto.Generator/LightProto.Generator.csproj" />
+    <Project Path="src/LightProto.ProtoGen/LightProto.ProtoGen.csproj" />
     <Project Path="src/LightProto/LightProto.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Benchmark/Benchmark.csproj" />
     <Project Path="tests/LightProto.AssemblyLevelTests/LightProto.AssemblyLevelTests.csproj" />
     <Project Path="tests/LightProto.InternalTests/LightProto.InternalTests.csproj" />
+    <Project Path="tests/LightProto.ProtoGen.Tests/LightProto.ProtoGen.Tests.csproj" />
     <Project Path="tests/LightProto.Tests/LightProto.Tests.csproj" />
     <Project Path="tests/TestAot/TestAot.csproj" />
   </Folder>

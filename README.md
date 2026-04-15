@@ -131,6 +131,23 @@ byte[] data = stream.ToArray();
 var obj = Serializer.Deserialize<Person>(new ReadOnlySpan<byte>(data));
 ```
 
+## Working with .proto files 📄
+
+LightProto ships **`lightproto-gen`**, a dotnet tool that generates LightProto `[ProtoContract]` C# classes directly from `.proto` files.
+
+```bash
+dotnet tool install -g LightProto.ProtoGen
+```
+
+Quick start:
+
+```bash
+# Generate to ./Generated (also supports stdin/stdout pipe mode)
+lightproto-gen --proto "**/*.proto" --output ./Generated --namespace MyApp.Models
+```
+
+For full documentation — all options, pipe mode, type-shape and nullability controls — see the [tool README](https://github.com/dameng324/LightProto/blob/main/src/LightProto.ProtoGen/README.md).
+
 ## Serialization APIs 🧩
 
 ### Generic-constrained APIs 🔒
@@ -357,12 +374,6 @@ AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
 | Deserialize_LightProto     | .NET 9.0  | .NET 9.0  | 431.9 μs |  8.33 μs |  9.25 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
 
 Note: Results vary by hardware, runtime, and data model. Please run the benchmarks on your environment for the most relevant numbers.
-
-## Working with .proto files 📄
-
-LightProto doesn't ship a .proto → C# generator yet. You can generate C# using protobuf-net (or other tools), then adapt the output to LightProto (typically replacing the ProtoBuf namespace with LightProto and marking types partial). If something doesn't work, please file an issue.
-
-If you need a dedicated .proto → C# generator, please vote on this [issue](https://github.com/dameng324/LightProto/issues/85).
 
 ## Contributing 🤝
 
