@@ -131,6 +131,23 @@ byte[] data = stream.ToArray();
 var obj = Serializer.Deserialize<Person>(new ReadOnlySpan<byte>(data));
 ```
 
+## Working with .proto files 📄
+
+LightProto ships **`lightproto-gen`**, a dotnet tool that generates LightProto `[ProtoContract]` C# classes directly from `.proto` files.
+
+```bash
+dotnet tool install -g LightProto.ProtoGen
+```
+
+Quick start:
+
+```bash
+# Generate to ./Generated (also supports stdin/stdout pipe mode)
+lightproto-gen --proto "**/*.proto" --output ./Generated --namespace MyApp.Models
+```
+
+For full documentation — all options, pipe mode, type-shape and nullability controls — see the [tool README](src/LightProto.ProtoGen/README.md).
+
 ## Serialization APIs 🧩
 
 ### Generic-constrained APIs 🔒
@@ -357,51 +374,6 @@ AMD Ryzen 7 5800X 3.80GHz, 1 CPU, 16 logical and 8 physical cores
 | Deserialize_LightProto     | .NET 9.0  | .NET 9.0  | 431.9 μs |  8.33 μs |  9.25 μs |  1.00 |    0.03 | 665.95 KB |        1.00 |
 
 Note: Results vary by hardware, runtime, and data model. Please run the benchmarks on your environment for the most relevant numbers.
-
-## Working with .proto files 📄
-
-LightProto ships `lightproto-gen`, a dotnet tool that generates LightProto `[ProtoContract]` C# classes from `.proto` files.
-
-### Installation
-
-```bash
-dotnet tool install -g LightProto.Tools
-```
-
-### Usage
-
-```
-lightproto-gen --proto <pattern> [--output <dir>] [--namespace <ns>]
-               [--strict-optional] [--struct] [--record] [--oneof-as-include]
-```
-
-Options:
-
-| Option | Description |
-|--------|-------------|
-| `--proto <pattern>` | Path(s) to `.proto` file(s). Supports glob patterns (`*.proto`, `**/*.proto`). Repeatable. |
-| `--output <dir>` | Output directory for generated `.cs` files. Defaults to the current directory. |
-| `--namespace <ns>` | Override the C# namespace for all generated files. If omitted, the `csharp_namespace` option from the `.proto` file is used; otherwise the file name is used. |
-| `--strict-optional` | Only treat fields explicitly declared with the `optional` keyword as nullable. By default, all non-repeated, non-map fields are nullable because they are optional on the proto3 wire. |
-| `--struct` | Emit `partial struct` instead of `partial class`. |
-| `--record` | Emit `partial record`. Combined with `--struct` emits `partial record struct`. |
-| `--oneof-as-include` | Promote `oneof` groups where all fields are message types to `[ProtoInclude]` attributes on the containing type instead of emitting them as nullable properties. |
-
-### Examples
-
-```bash
-# Generate from a single file
-lightproto-gen --proto messages.proto --output ./Generated
-
-# Generate from all .proto files in a directory (recursive)
-lightproto-gen --proto "**/*.proto" --output ./Generated --namespace MyApp.Models
-
-# Generate with strict optional and record struct output
-lightproto-gen --proto api.proto --output ./Generated --strict-optional --record --struct
-
-# Promote message-only oneofs to [ProtoInclude] inheritance attributes
-lightproto-gen --proto api.proto --output ./Generated --oneof-as-include
-```
 
 ## Contributing 🤝
 

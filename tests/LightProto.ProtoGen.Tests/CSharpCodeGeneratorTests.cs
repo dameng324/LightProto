@@ -321,7 +321,7 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task StrictOptionalMode_NonOptionalScalarsAreNotNullable()
     {
-        var opts = new GeneratorOptions { StrictOptional = true };
+        var opts = new GeneratorOptions { Nullability = NullabilityMode.StrictOptional };
         var code = Generate(
             """
             syntax = "proto3";
@@ -359,7 +359,7 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task StrictOptionalMode_NonOptionalStringHasEmptyDefault()
     {
-        var opts = new GeneratorOptions { StrictOptional = true };
+        var opts = new GeneratorOptions { Nullability = NullabilityMode.StrictOptional };
         var code = Generate(
             """
             syntax = "proto3";
@@ -391,7 +391,7 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task StrictOptionalMode_NonOptionalBytesHasEmptyDefault()
     {
-        var opts = new GeneratorOptions { StrictOptional = true };
+        var opts = new GeneratorOptions { Nullability = NullabilityMode.StrictOptional };
         var code = Generate(
             """
             syntax = "proto3";
@@ -753,7 +753,7 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task UseStructOptionGeneratesPartialStruct()
     {
-        var opts = new GeneratorOptions { UseStruct = true };
+        var opts = new GeneratorOptions { TypeShape = TypeShape.Struct };
         var code = Generate(
             """
             syntax = "proto3";
@@ -785,7 +785,7 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task UseRecordOptionGeneratesPartialRecord()
     {
-        var opts = new GeneratorOptions { UseRecord = true };
+        var opts = new GeneratorOptions { TypeShape = TypeShape.Record };
         var code = Generate(
             """
             syntax = "proto3";
@@ -817,7 +817,7 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task UseRecordAndStructOptionGeneratesPartialRecordStruct()
     {
-        var opts = new GeneratorOptions { UseRecord = true, UseStruct = true };
+        var opts = new GeneratorOptions { TypeShape = TypeShape.RecordStruct };
         var code = Generate(
             """
             syntax = "proto3";
@@ -883,8 +883,8 @@ public class LightProtoCSharpGeneratorTests
     [Test]
     public async Task OneofWithAllMessageFieldsGeneratesProtoInclude()
     {
-        // UseProtoIncludeForOneof must be explicitly set; default is false.
-        var opts = new GeneratorOptions { UseProtoIncludeForOneof = true };
+        // OneofHandling.ProtoInclude must be explicitly set; default is OneofHandling.Default.
+        var opts = new GeneratorOptions { OneofHandling = OneofHandling.ProtoInclude };
         var code = Generate(
             """
             syntax = "proto3";
@@ -1041,7 +1041,7 @@ public class LightProtoCSharpGeneratorTests
             message Person { int32 id = 1; string name = 2; }
             """,
             "MyNs",
-            new GeneratorOptions { StrictOptional = true }
+            new GeneratorOptions { Nullability = NullabilityMode.StrictOptional }
         );
 
         const string expected = """

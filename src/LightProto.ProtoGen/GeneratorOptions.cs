@@ -1,45 +1,90 @@
 namespace LightProto.ProtoGen;
 
 /// <summary>
+/// Controls the C# type shape emitted for each message declaration.
+/// </summary>
+internal enum TypeShape
+{
+    /// <summary>Emit <c>partial class</c> (the default).</summary>
+    Default = 0,
+
+    /// <summary>Emit <c>partial record</c>.</summary>
+    Record,
+
+    /// <summary>Emit <c>partial struct</c>.</summary>
+    Struct,
+
+    /// <summary>Emit <c>partial record struct</c>.</summary>
+    RecordStruct,
+}
+
+/// <summary>
+/// Controls how nullability is inferred for non-repeated, non-map fields.
+/// </summary>
+internal enum NullabilityMode
+{
+    /// <summary>
+    /// Every non-repeated, non-map field is emitted as nullable because proto3 fields are
+    /// always optional on the wire (the default).
+    /// </summary>
+    Default = 0,
+
+    /// <summary>
+    /// Only fields explicitly declared with the <c>optional</c> keyword in the <c>.proto</c>
+    /// file are emitted as nullable.
+    /// </summary>
+    StrictOptional,
+}
+
+/// <summary>
+/// Controls how <c>oneof</c> groups are translated to C# members.
+/// </summary>
+internal enum OneofHandling
+{
+    /// <summary>
+    /// All <c>oneof</c> fields are emitted as nullable properties regardless of their type
+    /// (the default).
+    /// </summary>
+    Default = 0,
+
+    /// <summary>
+    /// A <c>oneof</c> group whose fields are all message-typed is promoted to
+    /// <c>[ProtoInclude]</c> attributes on the containing type; the individual oneof fields
+    /// are not emitted as properties.
+    /// </summary>
+    ProtoInclude,
+}
+
+/// <summary>
 /// Controls how <see cref="LightProtoCSharpGenerator"/> produces C# code.
 /// </summary>
 internal sealed class GeneratorOptions
 {
     /// <summary>
-    /// When <see langword="true"/>, emits <c>partial struct</c> instead of <c>partial class</c>.
+    /// The C# type shape emitted for each message declaration.
+    /// Defaults to <see cref="TypeShape.Default"/> (partial class).
     /// </summary>
-    public bool UseStruct { get; set; }
+    public TypeShape TypeShape { get; set; }
 
     /// <summary>
-    /// When <see langword="true"/>, emits <c>partial record</c> (or <c>partial record struct</c>
-    /// when combined with <see cref="UseStruct"/>).
+    /// Controls how nullability is inferred for non-repeated, non-map fields.
+    /// Defaults to <see cref="NullabilityMode.Default"/> (all fields nullable).
     /// </summary>
-    public bool UseRecord { get; set; }
+    public NullabilityMode Nullability { get; set; }
 
     /// <summary>
-    /// When <see langword="false"/> (the default), every non-repeated, non-map field is emitted
-    /// as a nullable type, because proto3 fields are always optional on the wire.
-    /// When <see langword="true"/>, only fields explicitly declared with the <c>optional</c>
-    /// keyword in the <c>.proto</c> file are emitted as nullable.
+    /// Controls how <c>oneof</c> groups are translated to C# members.
+    /// Defaults to <see cref="OneofHandling.Default"/> (nullable properties).
     /// </summary>
-    public bool StrictOptional { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, a <c>oneof</c> group whose fields are all message-typed
-    /// is promoted to <c>[ProtoInclude]</c> attributes on the containing type and the
-    /// individual oneof fields are not emitted as properties.
-    /// The default is <see langword="false"/>, which always emits oneof fields as nullable
-    /// properties regardless of their type.
-    /// </summary>
-    public bool UseProtoIncludeForOneof { get; set; }
+    public OneofHandling OneofHandling { get; set; }
 
     /// <summary>Returns the C# type keyword for message/record declarations.</summary>
     public string TypeKeyword =>
-        (UseRecord, UseStruct) switch
+        TypeShape switch
         {
-            (true, true) => "record struct",
-            (true, false) => "record",
-            (false, true) => "struct",
+            TypeShape.Record => "record",
+            TypeShape.Struct => "struct",
+            TypeShape.RecordStruct => "record struct",
             _ => "class",
         };
 }

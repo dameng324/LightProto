@@ -8,15 +8,16 @@ using ProtoBuf.Reflection;
 
 var protoOption = new Option<string[]>("--proto")
 {
-    Description = "Path(s) to .proto file(s). Supports glob patterns such as *.proto or **/*.proto.",
+    Description =
+        "Path(s) to .proto file(s). Supports glob patterns such as *.proto or **/*.proto. "
+        + "If omitted, proto schema is read from stdin.",
     AllowMultipleArgumentsPerToken = false,
 };
-protoOption.Arity = ArgumentArity.OneOrMore;
+protoOption.Arity = ArgumentArity.ZeroOrMore;
 
-var outputOption = new Option<string>("--output")
+var outputOption = new Option<string?>("--output")
 {
-    Description = "Output directory for generated .cs files.",
-    DefaultValueFactory = _ => ".",
+    Description = "Output directory for generated .cs files. " + "If omitted, generated code is written to stdout.",
 };
 
 var namespaceOption = new Option<string?>("--namespace")
@@ -27,48 +28,109 @@ var namespaceOption = new Option<string?>("--namespace")
         + "otherwise the file name is used.",
 };
 
-var strictOptionalOption = new Option<bool>("--strict-optional")
+var typeShapeOption = new Option<TypeShape>("--type-shape")
 {
     Description =
-        "Only treat fields explicitly declared with the 'optional' keyword as nullable. "
-        + "By default all non-repeated, non-map fields are nullable because they are optional on the wire.",
+        "C# type shape for generated message types. "
+        + "Accepted values: Default (partial class), Record (partial record), "
+        + "Struct (partial struct), RecordStruct (partial record struct).",
+    DefaultValueFactory = _ => TypeShape.Default,
 };
 
-var useStructOption = new Option<bool>("--struct") { Description = "Emit 'partial struct' instead of 'partial class'." };
-
-var useRecordOption = new Option<bool>("--record")
-{
-    Description = "Emit 'partial record'. Combined with --struct emits 'partial record struct'.",
-};
-
-var oneofAsIncludeOption = new Option<bool>("--oneof-as-include")
+var nullabilityOption = new Option<NullabilityMode>("--nullability")
 {
     Description =
-        "Promote oneof groups where all fields are message types to [ProtoInclude] attributes "
-        + "on the containing type. By default, oneof fields are always emitted as nullable properties.",
+        "Nullability inference rule for non-repeated, non-map fields. "
+        + "Default: every field is nullable (all proto3 fields are optional on the wire). "
+        + "StrictOptional: only fields explicitly declared with the 'optional' keyword are nullable.",
+    DefaultValueFactory = _ => NullabilityMode.Default,
+};
+
+var oneofOption = new Option<OneofHandling>("--oneof")
+{
+    Description =
+        "How oneof groups are translated to C# members. "
+        + "Default: all oneof fields are emitted as nullable properties. "
+        + "ProtoInclude: a oneof group whose fields are all message-typed is promoted to "
+        + "[ProtoInclude] attributes on the containing type.",
+    DefaultValueFactory = _ => OneofHandling.Default,
 };
 
 var rootCommand = new RootCommand { Description = "lightproto-gen - Generate LightProto [ProtoContract] C# classes from .proto files." };
 rootCommand.Options.Add(protoOption);
 rootCommand.Options.Add(outputOption);
 rootCommand.Options.Add(namespaceOption);
-rootCommand.Options.Add(strictOptionalOption);
-rootCommand.Options.Add(useStructOption);
-rootCommand.Options.Add(useRecordOption);
-rootCommand.Options.Add(oneofAsIncludeOption);
+rootCommand.Options.Add(typeShapeOption);
+rootCommand.Options.Add(nullabilityOption);
+rootCommand.Options.Add(oneofOption);
 
 rootCommand.SetAction(
     (ParseResult parseResult) =>
     {
         var protoPatterns = parseResult.GetValue(protoOption) ?? [];
-        var outputDir = parseResult.GetValue(outputOption) ?? ".";
+        var outputDir = parseResult.GetValue(outputOption);
         var namespaceOverride = parseResult.GetValue(namespaceOption);
-        var strictOptional = parseResult.GetValue(strictOptionalOption);
-        var useStruct = parseResult.GetValue(useStructOption);
-        var useRecord = parseResult.GetValue(useRecordOption);
-        var oneofAsInclude = parseResult.GetValue(oneofAsIncludeOption);
+        var typeShape = parseResult.GetValue(typeShapeOption);
+        var nullability = parseResult.GetValue(nullabilityOption);
+        var oneofHandling = parseResult.GetValue(oneofOption);
 
-        // Expand glob patterns into concrete file paths
+        var options = new GeneratorOptions
+        {
+            TypeShape = typeShape,
+            Nullability = nullability,
+            OneofHandling = oneofHandling,
+        };
+
+        var generator = new LightProtoCSharpGenerator(options);
+        bool useStdout = outputDir is null;
+
+        // --------------- stdin mode: no --proto patterns supplied ---------------
+        if (protoPatterns.Length == 0)
+        {
+            if (!Console.IsInputRedirected)
+            {
+                Console.Error.WriteLine(
+                    "error: No .proto files specified and no input on stdin. " + "Provide --proto <file> or pipe proto schema to stdin."
+                );
+                return 1;
+            }
+
+            string stdinContent;
+            try
+            {
+                stdinContent = Console.In.ReadToEnd();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"error: Failed to read stdin: {ex.Message}");
+                return 1;
+            }
+
+            try
+            {
+                var code = GenerateFromProtoSchema(stdinContent, "stdin.proto", generator, namespaceOverride);
+                if (useStdout)
+                {
+                    Console.Write(code);
+                }
+                else
+                {
+                    Directory.CreateDirectory(outputDir!);
+                    var outputPath = Path.Combine(outputDir!, "stdin.g.cs");
+                    File.WriteAllText(outputPath, code, System.Text.Encoding.UTF8);
+                    Console.Error.WriteLine($"Generated: {outputPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"error: Failed to generate from stdin: {ex.Message}");
+                return 1;
+            }
+
+            return 0;
+        }
+
+        // --------------- file mode: --proto patterns supplied -------------------
         var resolvedFiles = ResolveProtoFiles(protoPatterns);
 
         if (resolvedFiles.Count == 0)
@@ -77,30 +139,28 @@ rootCommand.SetAction(
             return 1;
         }
 
-        // Ensure output directory exists
-        Directory.CreateDirectory(outputDir);
-
-        var options = new GeneratorOptions
-        {
-            StrictOptional = strictOptional,
-            UseStruct = useStruct,
-            UseRecord = useRecord,
-            UseProtoIncludeForOneof = oneofAsInclude,
-        };
+        if (!useStdout)
+            Directory.CreateDirectory(outputDir!);
 
         int exitCode = 0;
-        var generator = new LightProtoCSharpGenerator(options);
 
         foreach (var protoFile in resolvedFiles)
         {
             try
             {
                 var code = GenerateFromProtoFile(protoFile, generator, namespaceOverride);
-                var outputFileName = Path.GetFileNameWithoutExtension(protoFile) + ".g.cs";
-                var outputPath = Path.Combine(outputDir, outputFileName);
 
-                File.WriteAllText(outputPath, code, System.Text.Encoding.UTF8);
-                Console.WriteLine($"Generated: {outputPath}");
+                if (useStdout)
+                {
+                    Console.Write(code);
+                }
+                else
+                {
+                    var outputFileName = Path.GetFileNameWithoutExtension(protoFile) + ".g.cs";
+                    var outputPath = Path.Combine(outputDir!, outputFileName);
+                    File.WriteAllText(outputPath, code, System.Text.Encoding.UTF8);
+                    Console.Error.WriteLine($"Generated: {outputPath}");
+                }
             }
             catch (Exception ex)
             {
@@ -175,6 +235,27 @@ static string GetGlobRoot(string pattern)
     var prefix = pattern[..firstGlobIdx];
     var lastSep = prefix.LastIndexOf('/');
     return lastSep < 0 ? "" : prefix[..lastSep];
+}
+
+static string GenerateFromProtoSchema(string protoSchema, string fileName, LightProtoCSharpGenerator generator, string? namespaceOverride)
+{
+    var set = new FileDescriptorSet();
+    using var reader = new StringReader(protoSchema);
+    set.Add(fileName, source: reader);
+    set.Process();
+
+    var errors = set.GetErrors();
+    if (errors.Length > 0)
+    {
+        var messages = string.Join(Environment.NewLine, errors.Select(e => e.ToString()));
+        throw new InvalidOperationException($"Proto parse errors:{Environment.NewLine}{messages}");
+    }
+
+    var file = set.Files.FirstOrDefault(f => f.Name == fileName);
+    if (file is null)
+        throw new InvalidOperationException($"Proto file '{fileName}' was not found in the parsed set.");
+
+    return generator.Generate(file, namespaceOverride);
 }
 
 static string GenerateFromProtoFile(string protoFile, LightProtoCSharpGenerator generator, string? namespaceOverride)
