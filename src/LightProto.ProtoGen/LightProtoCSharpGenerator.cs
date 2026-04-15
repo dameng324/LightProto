@@ -237,7 +237,7 @@ internal sealed class LightProtoCSharpGenerator
                 foreach (var field in oneofFields)
                 {
                     var subCsName = ResolveTypeCsName(field.TypeName ?? "", package);
-                    result.TryAdd(subCsName, csMessageName);
+                    result.TryAdd(subCsName, fullCsName);
                 }
             }
 
@@ -468,15 +468,72 @@ internal sealed class LightProtoCSharpGenerator
 
     /// <summary>
     /// Converts a fully-qualified proto type name (e.g. <c>.my.pkg.Outer.Inner</c>) to the
-    /// emitted C# name (<c>Outer.Inner</c>) by stripping the file's package prefix and
-    /// applying PascalCase to each remaining segment.
+    /// emitted C# name (<c>Outer.Inner</c>). The current file package is stripped when present,
+    /// and for foreign-package references we avoid carrying proto package segments into the C#
+    /// type path because those segments are not emitted as synthetic container types.
     /// </summary>
     private static string ResolveTypeCsName(string protoTypeName, string package)
     {
         var stripped = StripPackagePrefix(protoTypeName, package).TrimStart('.');
         if (string.IsNullOrEmpty(stripped))
             return "object";
-        return string.Join(".", stripped.Split('.').Select(ToPascalCase));
+
+        var typeSegments = GetCSharpTypeSegments(stripped);
+        return typeSegments.Length == 0 ? "object" : string.Join(".", typeSegments.Select(ToPascalCase));
+    }
+
+    /// <summary>
+    /// Returns only the type segments from a stripped proto type path, discarding any leading
+    /// all-lowercase package segments (e.g. "other.pkg.Foo" → ["Foo"]).
+    /// Package segments in proto are conventionally all-lowercase; message/enum names start
+    /// with an uppercase character.
+    /// </summary>
+    private static string[] GetCSharpTypeSegments(string strippedTypeName)
+    {
+        var segments = strippedTypeName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0)
+            return Array.Empty<string>();
+
+        var firstTypeIndex = FindFirstTypeSegmentIndex(segments);
+        if (firstTypeIndex <= 0)
+            return segments;
+
+        var result = new string[segments.Length - firstTypeIndex];
+        Array.Copy(segments, firstTypeIndex, result, 0, result.Length);
+        return result;
+    }
+
+    /// <summary>
+    /// Finds the first segment that looks like a proto message/enum name (contains at least one
+    /// uppercase character). Package segments are conventionally all-lowercase.
+    /// Falls back to the last segment when no uppercase segment is found.
+    /// </summary>
+    private static int FindFirstTypeSegmentIndex(string[] segments)
+    {
+        for (int i = 0; i < segments.Length; i++)
+        {
+            if (LooksLikeProtoTypeName(segments[i]))
+                return i;
+        }
+
+        // All segments are lowercase — fall back to the last segment so we emit at least
+        // something (avoids emitting all-lowercase package parts as nested C# types).
+        return segments.Length - 1;
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <paramref name="segment"/> looks like a proto
+    /// message/enum name — i.e. it contains at least one uppercase character.
+    /// </summary>
+    private static bool LooksLikeProtoTypeName(string segment)
+    {
+        foreach (var ch in segment)
+        {
+            if (char.IsUpper(ch))
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
