@@ -52,7 +52,7 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Run CodeGen tests
-        run: dotnet test tests/LightProto.ProtoGen.Tests/ --configuration Release --no-build --verbosity normal
+        run: dotnet test --project tests/LightProto.ProtoGen.Tests/ --configuration Release --no-build --verbosity normal
 
       - name: Resolve version
         id: version
