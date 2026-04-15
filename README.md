@@ -146,7 +146,7 @@ Quick start:
 lightproto-gen --proto "**/*.proto" --output ./Generated --namespace MyApp.Models
 ```
 
-For full documentation — all options, pipe mode, type-shape and nullability controls — see the [tool README](src/LightProto.ProtoGen/README.md).
+For full documentation — all options, pipe mode, type-shape and nullability controls — see the [tool README](https://github.com/dameng324/LightProto/blob/main/src/LightProto.ProtoGen/README.md).
 
 ## Serialization APIs 🧩
 

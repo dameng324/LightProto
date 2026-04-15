@@ -143,6 +143,7 @@ rootCommand.SetAction(
             Directory.CreateDirectory(outputDir!);
 
         int exitCode = 0;
+        bool firstStdoutFile = true;
 
         foreach (var protoFile in resolvedFiles)
         {
@@ -152,7 +153,14 @@ rootCommand.SetAction(
 
                 if (useStdout)
                 {
+                    // When multiple files go to stdout, insert a separator comment so the
+                    // reader can tell where each file's output begins.
+                    if (!firstStdoutFile)
+                        Console.WriteLine();
+                    if (resolvedFiles.Count > 1)
+                        Console.WriteLine($"// --- generated from: {Path.GetFileName(protoFile)} ---");
                     Console.Write(code);
+                    firstStdoutFile = false;
                 }
                 else
                 {
