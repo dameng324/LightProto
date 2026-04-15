@@ -1,11 +1,9 @@
-name: Publish NuGet Packages
+name: Publish LightProto.CodeGen
 
 on:
   push:
     tags:
-      - 'v*.*.*'
-  release:
-    types: [published]
+      - 'protogen-v*.*.*'
   workflow_dispatch:
     inputs:
       version:
@@ -15,7 +13,7 @@ on:
 
 permissions:
   contents: write
-  
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -32,8 +30,9 @@ jobs:
         with:
           global-json-file: global.json
           dotnet-version: '9.0.x'
-          
+
       - name: Verify tag points to main
+        if: github.event_name != 'workflow_dispatch'
         run: |
           TAG_COMMIT=$(git rev-list -n 1 $GITHUB_REF)
           if git merge-base --is-ancestor $TAG_COMMIT origin/main; then
@@ -42,51 +41,39 @@ jobs:
             echo "❌ Tag $GITHUB_REF is not based on main"
             exit 1
           fi
-          
+
       - name: Check format
         run: dotnet tool restore && dotnet tool run csharpier check .
-        
+
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build solution
         run: dotnet build --configuration Release
 
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal -p:PublishAot=false
+      - name: Run CodeGen tests
+        run: dotnet test tests/LightProto.ProtoGen.Tests/ --configuration Release --no-build --verbosity normal
 
-      - name: Run AOT tests
-        run: |
-          dotnet publish tests/LightProto.Tests/ -f net8.0 -r linux-x64 -c Release
-          ./tests/LightProto.Tests/bin/Release/net8.0/linux-x64/publish/LightProto.Tests
-          
-          dotnet publish tests/LightProto.Tests/ -f net9.0 -r linux-x64 -c Release
-          ./tests/LightProto.Tests/bin/Release/net9.0/linux-x64/publish/LightProto.Tests
-          
-          dotnet publish tests/LightProto.Tests/ -f net10.0 -r linux-x64 -c Release
-          ./tests/LightProto.Tests/bin/Release/net10.0/linux-x64/publish/LightProto.Tests
-          
-      - name: Pack packages
+      - name: Resolve version
+        id: version
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.version }}"
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          elif [[ "${{ github.ref }}" == refs/tags/protogen-v* ]]; then
             VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"
+            VERSION="${VERSION#protogen-v}"
           else
-            VERSION="not-vaild-version"
+            VERSION="not-valid-version"
           fi
-
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Publishing version: $VERSION"
 
-          dotnet build src/LightProto.Generator/LightProto.Generator.csproj \
-            --configuration Release \
-            -p:Version=$VERSION
-
-          dotnet pack src/LightProto/LightProto.csproj \
+      - name: Pack LightProto.CodeGen
+        run: |
+          dotnet pack src/LightProto.ProtoGen/LightProto.ProtoGen.csproj \
             --configuration Release \
             --output ./packages \
-            -p:Version=$VERSION
+            -p:Version=${{ steps.version.outputs.VERSION }}
 
       - name: Publish to NuGet
         run: |
@@ -99,8 +86,9 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/protogen-v')
         with:
-          generate_release_notes: true           
+          name: 'LightProto.CodeGen V${{ steps.version.outputs.VERSION }}'
+          generate_release_notes: true
           draft: false
           files: ./packages/*.nupkg
