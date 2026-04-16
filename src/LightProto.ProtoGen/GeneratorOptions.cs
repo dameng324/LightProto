@@ -56,6 +56,28 @@ internal enum OneofHandling
 }
 
 /// <summary>
+/// Controls how proto names are converted to C# identifiers.
+/// </summary>
+internal enum CaseStyle
+{
+    /// <summary>Convert to PascalCase.</summary>
+    Pascal = 0,
+
+    /// <summary>Convert to camelCase.</summary>
+    Camel,
+
+    /// <summary>Preserve the original proto name.</summary>
+    Preserve,
+}
+
+/// <summary>
+/// A naming rule that maps a proto FullName glob <see cref="Pattern"/> to a <see cref="Style"/>.
+/// </summary>
+/// <param name="Pattern">A glob pattern matched against proto FullName.</param>
+/// <param name="Style">The style to apply when matched.</param>
+internal sealed record CaseStyleRule(string Pattern, CaseStyle Style);
+
+/// <summary>
 /// Controls how <see cref="LightProtoCSharpGenerator"/> produces C# code.
 /// </summary>
 internal sealed class GeneratorOptions
@@ -77,6 +99,18 @@ internal sealed class GeneratorOptions
     /// Defaults to <see cref="OneofHandling.Default"/> (nullable properties).
     /// </summary>
     public OneofHandling OneofHandling { get; set; }
+
+    /// <summary>
+    /// Default case style applied when no <see cref="CaseStyleRules"/> match.
+    /// Defaults to <see cref="CaseStyle.Pascal"/>.
+    /// </summary>
+    public CaseStyle DefaultCaseStyle { get; set; } = CaseStyle.Pascal;
+
+    /// <summary>
+    /// Ordered glob rules matched against proto FullName.
+    /// When multiple rules match, the most specific one wins; ties are resolved by later rules.
+    /// </summary>
+    public List<CaseStyleRule> CaseStyleRules { get; } = [];
 
     /// <summary>Returns the C# type keyword for message/record declarations.</summary>
     public string TypeKeyword =>
