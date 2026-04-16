@@ -76,7 +76,28 @@ internal class Program
                 + "(* matches one segment, ** matches 0..N segments).",
             AllowMultipleArgumentsPerToken = false,
         };
-        caseStyleOption.Arity = ArgumentArity.ZeroOrMore;
+        caseStyleOption.Arity = ArgumentArity.OneOrMore;
+
+        var explainDefaultCaseStyleOption = new Option<CaseStyle>("--default-case-style")
+        {
+            Description = "Default name conversion style. Accepted values: Pascal (default), Camel, Preserve.",
+            DefaultValueFactory = _ => CaseStyle.Pascal,
+        };
+
+        var explainCaseStyleOption = new Option<string[]>("--case-style")
+        {
+            Description =
+                "Case-style rule in the format <Pattern>=<Style>. "
+                + "Repeat to add multiple rules. Pattern matches proto FullName segments with glob "
+                + "(* matches one segment, ** matches 0..N segments).",
+            AllowMultipleArgumentsPerToken = false,
+        };
+        explainCaseStyleOption.Arity = ArgumentArity.OneOrMore;
+
+        var explainCaseArgument = new Argument<string>("full-name")
+        {
+            Description = "Proto FullName to evaluate, such as package.Message.field_name.",
+        };
 
         var rootCommand = new RootCommand
         {
@@ -90,6 +111,73 @@ internal class Program
         rootCommand.Options.Add(oneofOption);
         rootCommand.Options.Add(defaultCaseStyleOption);
         rootCommand.Options.Add(caseStyleOption);
+        var explainCaseCommand = new Command("explain-case")
+        {
+            Description = "Explain which case-style rule is selected for a proto FullName.",
+        };
+        explainCaseCommand.Arguments.Add(explainCaseArgument);
+        explainCaseCommand.Options.Add(explainDefaultCaseStyleOption);
+        explainCaseCommand.Options.Add(explainCaseStyleOption);
+        explainCaseCommand.SetAction(
+            (ParseResult parseResult) =>
+            {
+                var fullName = parseResult.GetValue(explainCaseArgument);
+                if (string.IsNullOrWhiteSpace(fullName))
+                {
+                    Console.Error.WriteLine("error: full-name is required.");
+                    return 1;
+                }
+                var defaultCaseStyle = parseResult.GetValue(explainDefaultCaseStyleOption);
+                var caseStyleAssignments = parseResult.GetValue(explainCaseStyleOption) ?? [];
+
+                List<CaseStyleRule> caseStyleRules;
+                try
+                {
+                    caseStyleRules = caseStyleAssignments.Select(CaseStyleRuleParser.ParseAssignment).ToList();
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.Error.WriteLine($"error: {ex.Message}");
+                    return 1;
+                }
+
+                CaseStyleMatchExplanation explanation;
+                try
+                {
+                    explanation = new CaseStyleResolver(defaultCaseStyle, caseStyleRules).Explain(fullName);
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.Error.WriteLine($"error: {ex.Message}");
+                    return 1;
+                }
+
+                Console.WriteLine($"FullName: {explanation.FullName}");
+                Console.WriteLine($"SelectedStyle: {explanation.SelectedStyle}");
+                Console.WriteLine($"SelectedPattern: {explanation.SelectedPattern ?? "<default>"}");
+                Console.WriteLine("Candidates:");
+                if (explanation.Candidates.Count == 0)
+                {
+                    Console.WriteLine("  (none)");
+                }
+                else
+                {
+                    foreach (var candidate in explanation.Candidates)
+                    {
+                        var marker = candidate.IsWinner ? " [winner]" : "";
+                        Console.WriteLine(
+                            $"  #{candidate.RuleOrder}: {candidate.Pattern} => {candidate.Style} "
+                                + $"(L{candidate.Specificity.LiteralCount}, SG{candidate.Specificity.SegmentGlobCount}, "
+                                + $"S{candidate.Specificity.SingleStarCount}, DS{candidate.Specificity.DoubleStarCount}, D{candidate.Specificity.Depth})"
+                                + marker
+                        );
+                    }
+                }
+
+                return 0;
+            }
+        );
+        rootCommand.Subcommands.Add(explainCaseCommand);
 
         rootCommand.SetAction(
             (ParseResult parseResult) =>

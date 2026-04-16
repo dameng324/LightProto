@@ -25,6 +25,17 @@ generated C# to **stdout** (unless `--output` is specified):
 cat messages.proto | lightproto-gen --namespace MyApp.Models
 ```
 
+### Case rule explain mode
+
+Use the `explain-case` subcommand to inspect which rule wins for a proto FullName:
+
+```bash
+lightproto-gen explain-case "market.exchange.Trade.exchange_type" \
+  --default-case-style Pascal \
+  --case-style "market.exchange.**=Camel" \
+  --case-style "market.exchange.Trade.exchange_type=Preserve"
+```
+
 When `--output` is also omitted, every file mode invocation writes to **stdout** too:
 
 ```bash
@@ -42,7 +53,7 @@ lightproto-gen --proto messages.proto
 | `--nullability <value>` | Nullability inference rule for non-repeated, non-map fields. Values: `Default` (all fields nullable, default), `StrictOptional` (only `optional`-keyword fields are nullable). |
 | `--oneof <value>` | How `oneof` groups are translated to C# members. Values: `Default` (nullable properties, default), `ProtoInclude` (all-message oneofs become `[ProtoInclude]` attributes). |
 | `--default-case-style <style>` | Default style for all generated identifiers when no rule matches. Values: `Pascal` (default), `Camel`, `Preserve`. |
-| `--case-style "<pattern>=<style>"` | Repeatable case-style override rule matched against proto FullName (`package + nested types + member`). Glob supports `*` (single segment), `**` (0..N segments), and segment globs like `package*`. |
+| `--case-style "<pattern>=<style>"` | Repeatable case-style override rule matched against proto FullName (`package + nested types + member`). Glob supports `*` (single segment), `**` (0..N segments), and segment globs like `package*`. Each `--case-style` occurrence requires one assignment value. |
 
 ## Examples
 

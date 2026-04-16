@@ -48,7 +48,22 @@ internal sealed class CaseStyleResolver
         }
     }
 
-    public CaseStyle Resolve(string fullName) => Explain(fullName).SelectedStyle;
+    public CaseStyle Resolve(string fullName)
+    {
+        var targetSegments = SplitSegments(fullName);
+        CompiledCaseStyleRule? winner = null;
+
+        foreach (var rule in _rules)
+        {
+            if (!rule.Pattern.IsMatch(targetSegments))
+                continue;
+
+            if (winner is null || rule.IsMoreSpecificThan(winner))
+                winner = rule;
+        }
+
+        return winner?.Style ?? _defaultStyle;
+    }
 
     public CaseStyleMatchExplanation Explain(string fullName)
     {
