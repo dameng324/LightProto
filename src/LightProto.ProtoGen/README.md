@@ -41,6 +41,8 @@ lightproto-gen --proto messages.proto
 | `--type-shape <value>` | C# type shape for generated message types. Values: `Default` (partial class, default), `Record` (partial record), `Struct` (partial struct), `RecordStruct` (partial record struct). |
 | `--nullability <value>` | Nullability inference rule for non-repeated, non-map fields. Values: `Default` (all fields nullable, default), `StrictOptional` (only `optional`-keyword fields are nullable). |
 | `--oneof <value>` | How `oneof` groups are translated to C# members. Values: `Default` (nullable properties, default), `ProtoInclude` (all-message oneofs become `[ProtoInclude]` attributes). |
+| `--default-case-style <style>` | Default style for all generated identifiers when no rule matches. Values: `Pascal` (default), `Camel`, `Preserve`. |
+| `--case-style "<pattern>=<style>"` | Repeatable case-style override rule matched against proto FullName (`package + nested types + member`). Glob supports `*` (single segment), `**` (0..N segments), and segment globs like `package*`. |
 
 ## Examples
 
@@ -63,12 +65,35 @@ lightproto-gen --proto api.proto --output ./Generated --type-shape RecordStruct
 # Promote message-only oneofs to [ProtoInclude] inheritance attributes
 lightproto-gen --proto api.proto --output ./Generated --oneof ProtoInclude
 
+# Default Pascal, but preserve specific enum values and camel-case one member
+lightproto-gen --proto api.proto --output ./Generated \
+  --default-case-style Pascal \
+  --case-style "market.exchange.ExchangeType.SSE=Preserve" \
+  --case-style "market.exchange.Trade.exchange_type=Camel"
+
 # Pipe mode: read schema from stdin, write C# to stdout
 cat messages.proto | lightproto-gen --namespace MyApp.Models
 
 # Pipe mode with file output
 cat messages.proto | lightproto-gen --namespace MyApp.Models --output ./Generated
 ```
+
+## Case style glob rules
+
+- Rule format: `--case-style "<Pattern>=<Style>"` (repeatable)
+- Pattern target: proto FullName with dot segments: `<package>.<Outer>.<Inner>...<Type>[.<Member>]`
+- Wildcards:
+  - `*` matches exactly one segment (does not cross `.`)
+  - `**` matches zero to many segments (can cross `.`) and must be a standalone segment
+  - Segment glob like `package*` is supported
+- Matching is case-sensitive and does not support escaping
+- Rule winner when multiple match:
+  1. more literal segments
+  2. then more segment-globs (e.g. `pack*`)
+  3. then more `*`
+  4. then fewer `**`
+  5. then deeper path
+  6. then later rule overrides earlier rule
 
 ## Type shape details
 

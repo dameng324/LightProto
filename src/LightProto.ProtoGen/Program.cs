@@ -62,6 +62,22 @@ internal class Program
             DefaultValueFactory = _ => OneofHandling.Default,
         };
 
+        var defaultCaseStyleOption = new Option<CaseStyle>("--default-case-style")
+        {
+            Description = "Default name conversion style. Accepted values: Pascal (default), Camel, Preserve.",
+            DefaultValueFactory = _ => CaseStyle.Pascal,
+        };
+
+        var caseStyleOption = new Option<string[]>("--case-style")
+        {
+            Description =
+                "Case-style rule in the format <Pattern>=<Style>. "
+                + "Repeat to add multiple rules. Pattern matches proto FullName segments with glob "
+                + "(* matches one segment, ** matches 0..N segments).",
+            AllowMultipleArgumentsPerToken = false,
+        };
+        caseStyleOption.Arity = ArgumentArity.ZeroOrMore;
+
         var rootCommand = new RootCommand
         {
             Description = "lightproto-gen - Generate LightProto [ProtoContract] C# classes from .proto files.",
@@ -72,6 +88,8 @@ internal class Program
         rootCommand.Options.Add(typeShapeOption);
         rootCommand.Options.Add(nullabilityOption);
         rootCommand.Options.Add(oneofOption);
+        rootCommand.Options.Add(defaultCaseStyleOption);
+        rootCommand.Options.Add(caseStyleOption);
 
         rootCommand.SetAction(
             (ParseResult parseResult) =>
@@ -82,13 +100,28 @@ internal class Program
                 var typeShape = parseResult.GetValue(typeShapeOption);
                 var nullability = parseResult.GetValue(nullabilityOption);
                 var oneofHandling = parseResult.GetValue(oneofOption);
+                var defaultCaseStyle = parseResult.GetValue(defaultCaseStyleOption);
+                var caseStyleAssignments = parseResult.GetValue(caseStyleOption) ?? [];
+
+                List<CaseStyleRule> caseStyleRules;
+                try
+                {
+                    caseStyleRules = caseStyleAssignments.Select(CaseStyleRuleParser.ParseAssignment).ToList();
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.Error.WriteLine($"error: {ex.Message}");
+                    return 1;
+                }
 
                 var options = new GeneratorOptions
                 {
                     TypeShape = typeShape,
                     Nullability = nullability,
                     OneofHandling = oneofHandling,
+                    DefaultCaseStyle = defaultCaseStyle,
                 };
+                options.CaseStyleRules.AddRange(caseStyleRules);
 
                 var generator = new LightProtoCSharpGenerator(options);
                 bool useStdout = outputDir is null;
