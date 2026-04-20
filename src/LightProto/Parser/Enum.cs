@@ -8,6 +8,77 @@ namespace LightProto.Parser
         public static IProtoReader<T> ProtoReader { get; } = new EnumProtoReader();
         public static IProtoWriter<T> ProtoWriter { get; } = new EnumProtoWriter();
 
+        static readonly TypeCode UnderlyingTypeCode = Type.GetTypeCode(typeof(T));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int EnumToInt32(T value)
+        {
+            switch (UnderlyingTypeCode)
+            {
+                case TypeCode.SByte:
+                    return Unsafe.As<T, sbyte>(ref value);
+                case TypeCode.Byte:
+                    return Unsafe.As<T, byte>(ref value);
+                case TypeCode.Int16:
+                    return Unsafe.As<T, short>(ref value);
+                case TypeCode.UInt16:
+                    return Unsafe.As<T, ushort>(ref value);
+                case TypeCode.UInt32:
+                    return (int)Unsafe.As<T, uint>(ref value);
+                case TypeCode.Int64:
+                    return (int)Unsafe.As<T, long>(ref value);
+                case TypeCode.UInt64:
+                    return (int)Unsafe.As<T, ulong>(ref value);
+                default:
+                    return Unsafe.As<T, int>(ref value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static T Int32ToEnum(int value)
+        {
+            switch (UnderlyingTypeCode)
+            {
+                case TypeCode.SByte:
+                {
+                    var v = (sbyte)value;
+                    return Unsafe.As<sbyte, T>(ref v);
+                }
+                case TypeCode.Byte:
+                {
+                    var v = (byte)value;
+                    return Unsafe.As<byte, T>(ref v);
+                }
+                case TypeCode.Int16:
+                {
+                    var v = (short)value;
+                    return Unsafe.As<short, T>(ref v);
+                }
+                case TypeCode.UInt16:
+                {
+                    var v = (ushort)value;
+                    return Unsafe.As<ushort, T>(ref v);
+                }
+                case TypeCode.UInt32:
+                {
+                    var v = (uint)value;
+                    return Unsafe.As<uint, T>(ref v);
+                }
+                case TypeCode.Int64:
+                {
+                    var v = (long)value;
+                    return Unsafe.As<long, T>(ref v);
+                }
+                case TypeCode.UInt64:
+                {
+                    var v = (ulong)value;
+                    return Unsafe.As<ulong, T>(ref v);
+                }
+                default:
+                    return Unsafe.As<int, T>(ref value);
+            }
+        }
+
         sealed class EnumProtoReader : IProtoReader, IProtoReader<T>
         {
             object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
@@ -19,7 +90,7 @@ namespace LightProto.Parser
             public T ParseFrom(ref ReaderContext input)
             {
                 var value = input.ReadEnum();
-                return Unsafe.As<int, T>(ref value);
+                return Int32ToEnum(value);
             }
         }
 
@@ -40,13 +111,13 @@ namespace LightProto.Parser
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public long CalculateLongSize(T value)
             {
-                return CodedOutputStream.ComputeEnumSize(Unsafe.As<T, int>(ref value));
+                return CodedOutputStream.ComputeEnumSize(EnumToInt32(value));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void WriteTo(ref WriterContext output, T value)
             {
-                output.WriteEnum(Unsafe.As<T, int>(ref value));
+                output.WriteEnum(EnumToInt32(value));
             }
         }
     }

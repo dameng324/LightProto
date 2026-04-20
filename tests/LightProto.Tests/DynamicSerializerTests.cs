@@ -5,6 +5,36 @@ using LightProto.Parser;
 
 namespace LightProto.Tests;
 
+public enum ByteBackedEnum : byte
+{
+    Value1,
+    Value2,
+    Value3,
+    Value4,
+    Value5,
+}
+
+public enum SByteBackedEnum : sbyte
+{
+    Negative = -1,
+    Zero = 0,
+    One = 1,
+}
+
+public enum ShortBackedEnum : short
+{
+    Value1,
+    Value2,
+    Value3,
+}
+
+public enum UShortBackedEnum : ushort
+{
+    Value1,
+    Value2,
+    Value3,
+}
+
 public partial class DynamicSerializerTests
 {
     [ProtoContract]
@@ -550,5 +580,67 @@ public partial class DynamicSerializerTests
         using var deZip = new GZipStream(ms, mode: CompressionMode.Decompress, leaveOpen: true);
         var parsed = Serializer.DeserializeDynamically<int[]>(deZip);
         await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
+    [Test]
+    public async Task ByteBackedEnum_CalculateSize_ReturnsCorrectSize()
+    {
+        var writer = EnumProtoParser<ByteBackedEnum>.ProtoWriter;
+        // Value1 = 0, varint size should be 1
+        await Assert.That(writer.CalculateSize(ByteBackedEnum.Value1)).IsEqualTo(1);
+        // Value2 = 1, varint size should be 1
+        await Assert.That(writer.CalculateSize(ByteBackedEnum.Value2)).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task ByteBackedEnum_SerializeDeserialize_RoundTrips()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        var obj = ByteBackedEnum.Value3;
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<ByteBackedEnum>(data);
+        await Assert.That(parsed).IsEquivalentTo(obj);
+    }
+
+    [Test]
+    public async Task SByteBackedEnum_CalculateSize_ReturnsCorrectSize()
+    {
+        var writer = EnumProtoParser<SByteBackedEnum>.ProtoWriter;
+        await Assert.That(writer.CalculateSize(SByteBackedEnum.Zero)).IsEqualTo(1);
+        await Assert.That(writer.CalculateSize(SByteBackedEnum.One)).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task SByteBackedEnum_SerializeDeserialize_RoundTrips()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        var obj = SByteBackedEnum.One;
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<SByteBackedEnum>(data);
+        await Assert.That(parsed).IsEquivalentTo(obj);
+    }
+
+    [Test]
+    public async Task ShortBackedEnum_SerializeDeserialize_RoundTrips()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        var obj = ShortBackedEnum.Value2;
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<ShortBackedEnum>(data);
+        await Assert.That(parsed).IsEquivalentTo(obj);
+    }
+
+    [Test]
+    public async Task UShortBackedEnum_SerializeDeserialize_RoundTrips()
+    {
+        ArrayBufferWriter<byte> bufferWriter = new();
+        var obj = UShortBackedEnum.Value2;
+        Serializer.SerializeDynamically(bufferWriter, obj);
+        var data = bufferWriter.WrittenMemory.ToArray();
+        var parsed = Serializer.DeserializeDynamically<UShortBackedEnum>(data);
+        await Assert.That(parsed).IsEquivalentTo(obj);
     }
 }
