@@ -609,6 +609,8 @@ public partial class DynamicSerializerTests
         var writer = EnumProtoParser<SByteBackedEnum>.ProtoWriter;
         await Assert.That(writer.CalculateSize(SByteBackedEnum.Zero)).IsEqualTo(1);
         await Assert.That(writer.CalculateSize(SByteBackedEnum.One)).IsEqualTo(1);
+        // Negative values use 10-byte varint encoding in protobuf (sign-extended to 64 bits)
+        await Assert.That(writer.CalculateSize(SByteBackedEnum.Negative)).IsEqualTo(10);
     }
 
     [Test]
