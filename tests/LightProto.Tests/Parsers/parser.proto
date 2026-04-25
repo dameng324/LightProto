@@ -343,3 +343,14 @@ message DateTimeOffsetTestsMessage
 {
   DateTimeOffsetMessage Property = 1;
 }
+message EnumTestsMessage
+{
+  uint32 ByteEnum =1;
+  int32 SByteEnum =2;
+  int32 ShortEnum =3;
+  uint32 UShortEnum =4;
+  int32 IntEnum =5;
+  uint32 UIntEnum =6;
+  int64 LongEnum =7;
+  uint64 ULongEnum =8;
+}

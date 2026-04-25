@@ -1,4 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using Google.Protobuf;
 
 namespace LightProto.Tests.Parsers;
@@ -139,6 +144,65 @@ public abstract class BaseProtoBufTestsWithParser<[DynamicallyAccessedMembers(Dy
         var clone = Serializer.Deserialize(bytes, ProtoParser<Message, Parser>.ProtoReader);
         await AssertResult(clone, message);
     }
+
+#if NET9_0_OR_GREATER
+    public static string ToPathKey(string input)
+    {
+        var bytes = Encoding.UTF8.GetBytes(input);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash); // 64 chars
+    }
+
+    [Test]
+    [MethodDataSource(nameof(GetMessages))]
+    public async Task LightProto_JIT_Serialize_AOT_Deserialize(Message message)
+    {
+        var protoFileName = Path.Combine(
+            Path.GetTempPath(),
+            $"{ToPathKey(TestContext.Current!.Id + RuntimeInformation.FrameworkDescription + RuntimeFeature.IsDynamicCodeSupported)}.bin"
+        );
+        if (RuntimeFeature.IsDynamicCodeSupported == false) // AOT Deserialize
+        {
+            if (File.Exists(protoFileName))
+            {
+                var bytes = await File.ReadAllBytesAsync(protoFileName);
+                var clone = Serializer.Deserialize(bytes, ProtoParser<Message, Parser>.ProtoReader);
+                await AssertResult(clone, message);
+            }
+        }
+        else
+        {
+            // JIT Serialize
+            byte[] bytes = message.ToByteArray(ProtoParser<Message, Parser>.ProtoWriter);
+            await File.WriteAllBytesAsync(protoFileName, bytes);
+        }
+    }
+
+    [Test]
+    [MethodDataSource(nameof(GetMessages))]
+    public async Task LightProto_AOT_Serialize_JIT_Deserialize(Message message)
+    {
+        var protoFileName = Path.Combine(
+            Path.GetTempPath(),
+            $"{ToPathKey(TestContext.Current!.Id + RuntimeInformation.FrameworkDescription + RuntimeFeature.IsDynamicCodeSupported)}.bin"
+        );
+        if (RuntimeFeature.IsDynamicCodeSupported) // JIT Deserialize
+        {
+            if (File.Exists(protoFileName))
+            {
+                var bytes = await File.ReadAllBytesAsync(protoFileName);
+                var clone = Serializer.Deserialize(bytes, ProtoParser<Message, Parser>.ProtoReader);
+                await AssertResult(clone, message);
+            }
+        }
+        else
+        {
+            // AOT Serialize
+            byte[] bytes = message.ToByteArray(ProtoParser<Message, Parser>.ProtoWriter);
+            await File.WriteAllBytesAsync(protoFileName, bytes);
+        }
+    }
+#endif
 
     [Test]
     [MethodDataSource(nameof(GetMessages))]
