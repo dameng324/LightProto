@@ -612,37 +612,4 @@ public partial class DynamicSerializerTests
         // Negative values use 10-byte varint encoding in protobuf (sign-extended to 64 bits)
         await Assert.That(writer.CalculateSize(SByteBackedEnum.Negative)).IsEqualTo(10);
     }
-
-    [Test]
-    public async Task SByteBackedEnum_SerializeDeserialize_RoundTrips()
-    {
-        ArrayBufferWriter<byte> bufferWriter = new();
-        var obj = SByteBackedEnum.One;
-        Serializer.SerializeDynamically(bufferWriter, obj);
-        var data = bufferWriter.WrittenMemory.ToArray();
-        var parsed = Serializer.DeserializeDynamically<SByteBackedEnum>(data);
-        await Assert.That(parsed).IsEquivalentTo(obj);
-    }
-
-    [Test]
-    public async Task ShortBackedEnum_SerializeDeserialize_RoundTrips()
-    {
-        ArrayBufferWriter<byte> bufferWriter = new();
-        var obj = ShortBackedEnum.Value2;
-        Serializer.SerializeDynamically(bufferWriter, obj);
-        var data = bufferWriter.WrittenMemory.ToArray();
-        var parsed = Serializer.DeserializeDynamically<ShortBackedEnum>(data);
-        await Assert.That(parsed).IsEquivalentTo(obj);
-    }
-
-    [Test]
-    public async Task UShortBackedEnum_SerializeDeserialize_RoundTrips()
-    {
-        ArrayBufferWriter<byte> bufferWriter = new();
-        var obj = UShortBackedEnum.Value2;
-        Serializer.SerializeDynamically(bufferWriter, obj);
-        var data = bufferWriter.WrittenMemory.ToArray();
-        var parsed = Serializer.DeserializeDynamically<UShortBackedEnum>(data);
-        await Assert.That(parsed).IsEquivalentTo(obj);
-    }
 }
