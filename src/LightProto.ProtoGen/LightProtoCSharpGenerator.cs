@@ -373,6 +373,12 @@ internal sealed class LightProtoCSharpGenerator
             memberAttrArgs += $", DataFormat = global::LightProto.{dataFormat}";
 
         sb.AppendLine($"{indent}[global::LightProto.ProtoMember({memberAttrArgs})]");
+
+        // google.protobuf.Timestamp → DateTime and google.protobuf.Duration → TimeSpan
+        // must use CompatibilityLevel.Level240 to serialize with the Google Protobuf wire format.
+        var rawTypeName = field.TypeName?.TrimStart('.');
+        if (rawTypeName is "google.protobuf.Timestamp" or "google.protobuf.Duration")
+            sb.AppendLine($"{indent}[global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]");
         var fieldCsName = ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name));
 
         if (isRepeated)
@@ -445,6 +451,17 @@ internal sealed class LightProtoCSharpGenerator
             sb.AppendLine($"{indent}[global::LightProto.ProtoMap({protoMapArgs})]");
         else
             sb.AppendLine($"{indent}[global::LightProto.ProtoMap]");
+
+        // When the map key or value is google.protobuf.Timestamp/Duration, the Dictionary
+        // property must also carry [CompatibilityLevel(Level240)] so the elements are
+        // serialized with the Google Protobuf wire format.
+        var keyTypeName = keyField.TypeName?.TrimStart('.');
+        var valueTypeName = valueField.TypeName?.TrimStart('.');
+        if (
+            keyTypeName is "google.protobuf.Timestamp" or "google.protobuf.Duration"
+            || valueTypeName is "google.protobuf.Timestamp" or "google.protobuf.Duration"
+        )
+            sb.AppendLine($"{indent}[global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]");
 
         sb.AppendLine(
             $"{indent}public global::System.Collections.Generic.Dictionary<{keyCs}, {valueCs}> {ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name))} {{ get; set; }} = new();"
