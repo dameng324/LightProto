@@ -1296,9 +1296,11 @@ public class LightProtoCSharpGeneratorTests
                 public partial class Msg
                 {
                     [global::LightProto.ProtoMember(1)]
+                    [global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]
                     public global::System.DateTime? CreatedAt { get; set; }
 
                     [global::LightProto.ProtoMember(2)]
+                    [global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]
                     public global::System.TimeSpan? Ttl { get; set; }
                 }
             }

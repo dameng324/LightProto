@@ -373,6 +373,12 @@ internal sealed class LightProtoCSharpGenerator
             memberAttrArgs += $", DataFormat = global::LightProto.{dataFormat}";
 
         sb.AppendLine($"{indent}[global::LightProto.ProtoMember({memberAttrArgs})]");
+
+        // google.protobuf.Timestamp → DateTime and google.protobuf.Duration → TimeSpan
+        // must use CompatibilityLevel.Level240 to serialise with the Google Protobuf wire format.
+        var rawTypeName = field.TypeName?.TrimStart('.');
+        if (rawTypeName is "google.protobuf.Timestamp" or "google.protobuf.Duration")
+            sb.AppendLine($"{indent}[global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]");
         var fieldCsName = ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name));
 
         if (isRepeated)
