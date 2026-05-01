@@ -30,10 +30,12 @@ internal sealed class LightProtoCSharpGenerator
 
     private readonly string _indent = "    ";
     private readonly GeneratorOptions _options;
+    private readonly CaseStyleResolver _caseStyleResolver;
 
     public LightProtoCSharpGenerator(GeneratorOptions? options = null)
     {
         _options = options ?? new GeneratorOptions();
+        _caseStyleResolver = new CaseStyleResolver(_options.DefaultCaseStyle, _options.CaseStyleRules);
     }
 
     /// <summary>
@@ -75,7 +77,7 @@ internal sealed class LightProtoCSharpGenerator
             if (!firstItem)
                 sb.AppendLine();
             firstItem = false;
-            AppendEnum(sb, enumType, _indent);
+            AppendEnum(sb, enumType, _indent, package);
         }
 
         // Top-level messages
@@ -84,7 +86,7 @@ internal sealed class LightProtoCSharpGenerator
             if (!firstItem)
                 sb.AppendLine();
             firstItem = false;
-            AppendMessage(sb, message, mapEntries, package, protoIncludeInheritance, _indent, "");
+            AppendMessage(sb, message, mapEntries, package, protoIncludeInheritance, _indent, "", package);
         }
 
         sb.AppendLine("}");
@@ -95,13 +97,18 @@ internal sealed class LightProtoCSharpGenerator
     // Enum generation
     // -------------------------------------------------------------------------
 
-    private static void AppendEnum(System.Text.StringBuilder sb, EnumDescriptorProto enumType, string indent)
+    private void AppendEnum(System.Text.StringBuilder sb, EnumDescriptorProto enumType, string indent, string protoFullNamePrefix)
     {
-        sb.AppendLine($"{indent}public enum {ToPascalCase(enumType.Name)}");
+        var enumFullName = AppendProtoSegment(protoFullNamePrefix, enumType.Name);
+        var enumCsName = ConvertIdentifier(enumType.Name, enumFullName);
+
+        sb.AppendLine($"{indent}public enum {enumCsName}");
         sb.AppendLine($"{indent}{{");
         foreach (var value in enumType.Values)
         {
-            sb.AppendLine($"{indent}    {ToPascalCase(value.Name)} = {value.Number},");
+            var valueFullName = AppendProtoSegment(enumFullName, value.Name);
+            var valueCsName = ConvertIdentifier(value.Name, valueFullName);
+            sb.AppendLine($"{indent}    {valueCsName} = {value.Number},");
         }
         sb.AppendLine($"{indent}}}");
     }
@@ -117,7 +124,8 @@ internal sealed class LightProtoCSharpGenerator
         string package,
         Dictionary<string, string> protoIncludeInheritance,
         string indent,
-        string messagePrefix
+        string messagePrefix,
+        string protoFullNamePrefix
     )
     {
         // Skip map-entry synthetic messages (they are handled inline as Dictionary<K,V>)
@@ -146,7 +154,8 @@ internal sealed class LightProtoCSharpGenerator
 
         // The full dotted C# name used for the ProtoInclude inheritance lookup,
         // e.g. "Outer.Inner" for a nested message or just "Dog" for a top-level one.
-        var csMessageName = ToPascalCase(message.Name);
+        var messageFullName = AppendProtoSegment(protoFullNamePrefix, message.Name);
+        var csMessageName = ConvertIdentifier(message.Name, messageFullName);
         var fullCsName = string.IsNullOrEmpty(messagePrefix) ? csMessageName : $"{messagePrefix}.{csMessageName}";
 
         // Emit `: BaseType` when this message is a known sub-type of a ProtoInclude parent.
@@ -162,7 +171,7 @@ internal sealed class LightProtoCSharpGenerator
         // Nested enums
         foreach (var enumType in message.EnumTypes)
         {
-            AppendEnum(sb, enumType, innerIndent);
+            AppendEnum(sb, enumType, innerIndent, messageFullName);
             sb.AppendLine();
         }
 
@@ -171,7 +180,7 @@ internal sealed class LightProtoCSharpGenerator
         {
             if (nested.Options?.MapEntry == true)
                 continue;
-            AppendMessage(sb, nested, localMapEntries, package, protoIncludeInheritance, innerIndent, fullCsName);
+            AppendMessage(sb, nested, localMapEntries, package, protoIncludeInheritance, innerIndent, fullCsName, messageFullName);
             sb.AppendLine();
         }
 
@@ -193,7 +202,7 @@ internal sealed class LightProtoCSharpGenerator
             if (!firstField)
                 sb.AppendLine();
             firstField = false;
-            AppendField(sb, field, localMapEntries, package, innerIndent);
+            AppendField(sb, field, localMapEntries, package, innerIndent, messageFullName);
         }
 
         sb.AppendLine($"{indent}}}");
@@ -204,28 +213,30 @@ internal sealed class LightProtoCSharpGenerator
     /// message types that appear as [ProtoInclude] sub-types in message-only oneof groups.
     /// Keys use the full dotted path relative to the file (e.g. "Dog" or "Outer.Inner").
     /// </summary>
-    private static Dictionary<string, string> BuildProtoIncludeInheritance(
+    private Dictionary<string, string> BuildProtoIncludeInheritance(
         IList<DescriptorProto> messages,
         Dictionary<string, DescriptorProto> mapEntries,
         string package
     )
     {
         var result = new Dictionary<string, string>();
-        CollectProtoIncludeInheritance(messages, mapEntries, package, "", result);
+        CollectProtoIncludeInheritance(messages, mapEntries, package, "", package, result);
         return result;
     }
 
-    private static void CollectProtoIncludeInheritance(
+    private void CollectProtoIncludeInheritance(
         IList<DescriptorProto> messages,
         Dictionary<string, DescriptorProto> mapEntries,
         string package,
         string currentPrefix,
+        string currentProtoPrefix,
         Dictionary<string, string> result
     )
     {
         foreach (var message in messages)
         {
-            var csMessageName = ToPascalCase(message.Name);
+            var messageFullName = AppendProtoSegment(currentProtoPrefix, message.Name);
+            var csMessageName = ConvertIdentifier(message.Name, messageFullName);
             var fullCsName = string.IsNullOrEmpty(currentPrefix) ? csMessageName : $"{currentPrefix}.{csMessageName}";
 
             for (int i = 0; i < message.OneofDecls.Count; i++)
@@ -236,7 +247,7 @@ internal sealed class LightProtoCSharpGenerator
 
                 foreach (var field in oneofFields)
                 {
-                    var subCsName = ResolveTypeCsName(field.TypeName ?? "", package);
+                    var subCsName = ResolveTypeCsName(field.TypeName ?? "");
                     result.TryAdd(subCsName, fullCsName);
                 }
             }
@@ -253,6 +264,7 @@ internal sealed class LightProtoCSharpGenerator
                 localMapEntries,
                 package,
                 fullCsName,
+                messageFullName,
                 result
             );
         }
@@ -262,7 +274,7 @@ internal sealed class LightProtoCSharpGenerator
     /// Returns a set of oneof group indices where all fields are message-typed
     /// and thus promoted to [ProtoInclude].
     /// </summary>
-    private static HashSet<int> GetProtoIncludeOneofIndices(
+    private HashSet<int> GetProtoIncludeOneofIndices(
         DescriptorProto message,
         Dictionary<string, DescriptorProto> mapEntries,
         string package
@@ -281,7 +293,7 @@ internal sealed class LightProtoCSharpGenerator
     /// <summary>
     /// Collects (tag, CsTypeName) pairs for [ProtoInclude] attributes from message-only oneofs.
     /// </summary>
-    private static List<(int Tag, string TypeName)> CollectProtoIncludes(
+    private List<(int Tag, string TypeName)> CollectProtoIncludes(
         DescriptorProto message,
         Dictionary<string, DescriptorProto> mapEntries,
         string package
@@ -296,7 +308,7 @@ internal sealed class LightProtoCSharpGenerator
 
             foreach (var field in oneofFields)
             {
-                var typeName = ResolveTypeCsName(field.TypeName ?? "", package);
+                var typeName = ResolveTypeCsName(field.TypeName ?? "");
                 result.Add((field.Number, typeName));
             }
         }
@@ -331,7 +343,8 @@ internal sealed class LightProtoCSharpGenerator
         FieldDescriptorProto field,
         Dictionary<string, DescriptorProto> mapEntries,
         string package,
-        string indent
+        string indent,
+        string messageFullName
     )
     {
         // Detect map fields: repeated message whose type is a map-entry.
@@ -344,7 +357,7 @@ internal sealed class LightProtoCSharpGenerator
             && mapEntries.TryGetValue(normalizedTypeName, out var mapEntry)
         )
         {
-            AppendMapField(sb, field, mapEntry, package, indent);
+            AppendMapField(sb, field, mapEntry, package, indent, messageFullName);
             return;
         }
 
@@ -360,28 +373,27 @@ internal sealed class LightProtoCSharpGenerator
             memberAttrArgs += $", DataFormat = global::LightProto.{dataFormat}";
 
         sb.AppendLine($"{indent}[global::LightProto.ProtoMember({memberAttrArgs})]");
+        var fieldCsName = ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name));
 
         if (isRepeated)
         {
-            sb.AppendLine(
-                $"{indent}public global::System.Collections.Generic.List<{csType}> {ToPascalCase(field.Name)} {{ get; set; }} = new();"
-            );
+            sb.AppendLine($"{indent}public global::System.Collections.Generic.List<{csType}> {fieldCsName} {{ get; set; }} = new();");
         }
         else if (makeNullable)
         {
             // Emit nullable type with null default
             var nullableType = MakeNullable(csType);
-            sb.AppendLine($"{indent}public {nullableType} {ToPascalCase(field.Name)} {{ get; set; }}");
+            sb.AppendLine($"{indent}public {nullableType} {fieldCsName} {{ get; set; }}");
         }
         else
         {
             // Non-nullable: emit with appropriate default initializer
             if (csType == "string")
-                sb.AppendLine($"{indent}public string {ToPascalCase(field.Name)} {{ get; set; }} = string.Empty;");
+                sb.AppendLine($"{indent}public string {fieldCsName} {{ get; set; }} = string.Empty;");
             else if (csType == "byte[]")
-                sb.AppendLine($"{indent}public byte[] {ToPascalCase(field.Name)} {{ get; set; }} = global::System.Array.Empty<byte>();");
+                sb.AppendLine($"{indent}public byte[] {fieldCsName} {{ get; set; }} = global::System.Array.Empty<byte>();");
             else
-                sb.AppendLine($"{indent}public {csType} {ToPascalCase(field.Name)} {{ get; set; }}");
+                sb.AppendLine($"{indent}public {csType} {fieldCsName} {{ get; set; }}");
         }
     }
 
@@ -411,12 +423,13 @@ internal sealed class LightProtoCSharpGenerator
         return csType + "?";
     }
 
-    private static void AppendMapField(
+    private void AppendMapField(
         System.Text.StringBuilder sb,
         FieldDescriptorProto field,
         DescriptorProto mapEntry,
         string package,
-        string indent
+        string indent,
+        string messageFullName
     )
     {
         var keyField = mapEntry.Fields.First(f => f.Name == "key");
@@ -434,7 +447,7 @@ internal sealed class LightProtoCSharpGenerator
             sb.AppendLine($"{indent}[global::LightProto.ProtoMap]");
 
         sb.AppendLine(
-            $"{indent}public global::System.Collections.Generic.Dictionary<{keyCs}, {valueCs}> {ToPascalCase(field.Name)} {{ get; set; }} = new();"
+            $"{indent}public global::System.Collections.Generic.Dictionary<{keyCs}, {valueCs}> {ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name))} {{ get; set; }} = new();"
         );
     }
 
@@ -442,7 +455,7 @@ internal sealed class LightProtoCSharpGenerator
     // Type resolution helpers
     // -------------------------------------------------------------------------
 
-    private static (string CsType, string? DataFormat) ResolveType(
+    private (string CsType, string? DataFormat) ResolveType(
         FieldDescriptorProto field,
         Dictionary<string, DescriptorProto> mapEntries,
         string package
@@ -460,7 +473,7 @@ internal sealed class LightProtoCSharpGenerator
             if (wellKnown is not null)
                 return (wellKnown, null);
 
-            return (ResolveTypeCsName(rawTypeName, package), null);
+            return (ResolveTypeCsName(rawTypeName), null);
         }
 
         return ("object", null);
@@ -468,39 +481,31 @@ internal sealed class LightProtoCSharpGenerator
 
     /// <summary>
     /// Converts a fully-qualified proto type name (e.g. <c>.my.pkg.Outer.Inner</c>) to the
-    /// emitted C# name (<c>Outer.Inner</c>). The current file package is stripped when present,
-    /// and for foreign-package references we avoid carrying proto package segments into the C#
-    /// type path because those segments are not emitted as synthetic container types.
+    /// emitted C# type path, applying case-style rules on each type segment using the segment's
+    /// proto FullName.
     /// </summary>
-    private static string ResolveTypeCsName(string protoTypeName, string package)
+    private string ResolveTypeCsName(string protoTypeName)
     {
-        var stripped = StripPackagePrefix(protoTypeName, package).TrimStart('.');
+        var stripped = protoTypeName.TrimStart('.');
         if (string.IsNullOrEmpty(stripped))
             return "object";
 
-        var typeSegments = GetCSharpTypeSegments(stripped);
-        return typeSegments.Length == 0 ? "object" : string.Join(".", typeSegments.Select(ToPascalCase));
-    }
+        var sourceSegments = stripped.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (sourceSegments.Length == 0)
+            return "object";
 
-    /// <summary>
-    /// Returns only the type segments from a stripped proto type path, discarding any leading
-    /// all-lowercase package segments (e.g. "other.pkg.Foo" → ["Foo"]).
-    /// Package segments in proto are conventionally all-lowercase; message/enum names start
-    /// with an uppercase character.
-    /// </summary>
-    private static string[] GetCSharpTypeSegments(string strippedTypeName)
-    {
-        var segments = strippedTypeName.Split('.', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length == 0)
-            return Array.Empty<string>();
+        var firstTypeIndex = FindFirstTypeSegmentIndex(sourceSegments);
+        if (firstTypeIndex < 0 || firstTypeIndex >= sourceSegments.Length)
+            return "object";
 
-        var firstTypeIndex = FindFirstTypeSegmentIndex(segments);
-        if (firstTypeIndex == 0)
-            return segments;
+        var converted = new List<string>(sourceSegments.Length - firstTypeIndex);
+        for (int i = firstTypeIndex; i < sourceSegments.Length; i++)
+        {
+            var fullName = string.Join(".", sourceSegments.Take(i + 1));
+            converted.Add(ConvertIdentifier(sourceSegments[i], fullName));
+        }
 
-        var result = new string[segments.Length - firstTypeIndex];
-        Array.Copy(segments, firstTypeIndex, result, 0, result.Length);
-        return result;
+        return converted.Count == 0 ? "object" : string.Join(".", converted);
     }
 
     /// <summary>
@@ -604,6 +609,34 @@ internal sealed class LightProtoCSharpGenerator
     // -------------------------------------------------------------------------
     // Name conversion utilities
     // -------------------------------------------------------------------------
+
+    private string ConvertIdentifier(string protoName, string protoFullName)
+    {
+        var style = _caseStyleResolver.Resolve(protoFullName);
+        return style switch
+        {
+            CaseStyle.Camel => ToCamelCase(protoName),
+            CaseStyle.Preserve => string.IsNullOrEmpty(protoName) ? "Generated" : protoName,
+            _ => ToPascalCase(protoName),
+        };
+    }
+
+    private static string ToCamelCase(string name)
+    {
+        var pascal = ToPascalCase(name);
+        if (pascal.Length == 0)
+            return pascal;
+        return pascal.Length == 1 ? char.ToLowerInvariant(pascal[0]).ToString() : char.ToLowerInvariant(pascal[0]) + pascal[1..];
+    }
+
+    private static string AppendProtoSegment(string prefix, string segment)
+    {
+        if (string.IsNullOrEmpty(prefix))
+            return segment;
+        if (string.IsNullOrEmpty(segment))
+            return prefix;
+        return $"{prefix}.{segment}";
+    }
 
     /// <summary>
     /// Converts snake_case or ALL_CAPS to PascalCase.
