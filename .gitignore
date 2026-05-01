@@ -488,3 +488,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 /tests/LightProto.Tests/coverage
+*.lscache
