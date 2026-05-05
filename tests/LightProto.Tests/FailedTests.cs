@@ -207,7 +207,7 @@ public partial class FailedTests
             Serializer.Deserialize<RequiredFieldContract>(bytes);
             await Task.CompletedTask;
         });
-        await Assert.That(ex!.Message).Contains("is required but not found when deserialization");
+        await Assert.That(ex!.Message).Contains("is required but not found during deserialization");
     }
 
     [Test]

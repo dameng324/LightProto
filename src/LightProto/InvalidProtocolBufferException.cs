@@ -81,7 +81,7 @@ namespace LightProto
         /// </summary>
         public static InvalidProtocolBufferException MissingRequiredMember(string memberName)
         {
-            return new InvalidProtocolBufferException($"ProtoMember:{memberName} is required but not found when deserialization.");
+            return new InvalidProtocolBufferException($"ProtoMember:{memberName} is required but not found during deserialization.");
         }
     }
 }
