@@ -500,7 +500,7 @@ public partial class LightProtoGenerator : IIncrementalGenerator
             {
                 writer.WriteLine($"if(_{member.Name}HasValue==false)");
                 writer.WriteLine(
-                    $"    throw new InvalidProtocolBufferException(\"ProtoMember:{contract.Type}.{member.Name} is required but not found when deserialization.\");"
+                    $"    throw global::LightProto.InvalidProtocolBufferException.MissingRequiredMember(\"{contract.Type}.{member.Name}\");"
                 );
             }
 

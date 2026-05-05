@@ -11,6 +11,7 @@ static LightProto.CodedOutputStream.ComputeLongLengthSize(long length) -> int
 static LightProto.Serializer.CalculateLongMessageSize(this LightProto.IProtoWriter! writer, object! value) -> long
 static LightProto.Serializer.CalculateLongMessageSize<T>(this LightProto.IProtoWriter<T>! writer, T value) -> long
 static LightProto.Serializer.CalculateLongSize<T>(T message) -> long
+static LightProto.InvalidProtocolBufferException.MissingRequiredMember(string! memberName) -> LightProto.InvalidProtocolBufferException!
 LightProto.Parser.ImmutableQueueProtoReader<TItem>
 LightProto.Parser.ImmutableQueueProtoReader<TItem>.Empty.get -> System.Collections.Immutable.ImmutableQueue<TItem>!
 LightProto.Parser.ImmutableQueueProtoReader<TItem>.ImmutableQueueProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
