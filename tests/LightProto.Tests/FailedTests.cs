@@ -187,6 +187,29 @@ public partial class FailedTests
         await Assert.That(ex!.Message).Contains("malformed varint");
     }
 
+    [ProtoContract]
+    public partial class RequiredFieldContract
+    {
+        [ProtoMember(1, IsRequired = true)]
+        public int RequiredValue { get; set; }
+
+        [ProtoMember(2)]
+        public int OptionalValue { get; set; }
+    }
+
+    [Test]
+    public async Task MissingRequiredMember_WhenDeserializing()
+    {
+        var ex = await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+        {
+            // Serialize only field 2 (OptionalValue=42), omitting the required field 1
+            var bytes = new byte[] { 0x10, 0x2A };
+            Serializer.Deserialize<RequiredFieldContract>(bytes);
+            await Task.CompletedTask;
+        });
+        await Assert.That(ex!.Message).Contains("is required but not found during deserialization");
+    }
+
     [Test]
     public async Task Invalid_ticks_for_MINMAX_scale_WhenDeserializingDateTime()
     {

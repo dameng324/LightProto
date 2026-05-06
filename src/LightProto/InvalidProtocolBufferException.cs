@@ -75,5 +75,13 @@ namespace LightProto
                 "Protocol message was too large.  May be malicious.  " + "Use CodedInputStream.SetSizeLimit() to increase the size limit."
             );
         }
+
+        /// <summary>
+        /// Creates an exception indicating that a required field was not present in the serialized data.
+        /// </summary>
+        public static InvalidProtocolBufferException MissingRequiredMember(string memberName)
+        {
+            return new InvalidProtocolBufferException($"ProtoMember:{memberName} is required but not found during deserialization.");
+        }
     }
 }
