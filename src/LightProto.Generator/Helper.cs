@@ -117,9 +117,19 @@ internal static class Helper
     {
         if (elementType.SpecialType == SpecialType.System_Byte && IsArrayType(type))
             return false;
+        if (IsReadOnlyMemoryType(type))
+            return true;
         var baseCollectionType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")?.Construct(elementType)!;
         var conversion = compilation.ClassifyConversion(type, baseCollectionType);
         return conversion.IsImplicit;
+    }
+
+    internal static bool IsReadOnlyMemoryType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.OriginalDefinition.ToDisplayString() == "System.ReadOnlyMemory<T>";
     }
 
     internal static bool IsStackType(ITypeSymbol type)

@@ -275,6 +275,22 @@ LightProto.Parser.ReadOnlyDictionaryProtoReader<TKey, TValue>.ReadOnlyDictionary
 LightProto.Parser.ReadOnlyDictionaryProtoReader<TKey, TValue>.WireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ReadOnlyDictionaryProtoWriter<TKey, TValue>
 LightProto.Parser.ReadOnlyDictionaryProtoWriter<TKey, TValue>.ReadOnlyDictionaryProtoWriter(LightProto.IProtoWriter<TKey>! keyWriter, LightProto.IProtoWriter<TValue>! valueWriter, uint tag) -> void
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.Empty.get -> System.ReadOnlyMemory<TItem>
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.ReadOnlyMemory<TItem>
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.ReadOnlyMemoryProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.ReadOnlyMemoryProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ReadOnlyMemoryProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.CalculateLongSize(System.ReadOnlyMemory<T> value) -> long
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.CalculateSize(System.ReadOnlyMemory<T> value) -> int
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.IsMessage.get -> bool
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.ReadOnlyMemoryProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.WriteTo(ref LightProto.WriterContext output, System.ReadOnlyMemory<T> value) -> void
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.Empty.get -> System.Collections.ObjectModel.ReadOnlyObservableCollection<TItem>!
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.IsMessage.get -> bool

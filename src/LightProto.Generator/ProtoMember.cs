@@ -163,15 +163,9 @@ internal class ProtoMember
             return "true";
         }
 
-        if (Type.IsValueType)
-        {
-            return $"{messageName}.{Name} != default";
-        }
-
-        var check = $"{messageName}.{Name} != null";
-
         if (Helper.IsCollectionType(Compilation, Type) || Helper.IsDictionaryType(Compilation, Type))
         {
+            var check = Type.IsValueType ? "true" : $"{messageName}.{Name} != null";
             if (Helper.HasCountProperty(Type))
             {
                 return $"{check} && {messageName}.{Name}.Count > 0";
@@ -182,6 +176,11 @@ internal class ProtoMember
             }
         }
 
-        return check;
+        if (Type.IsValueType)
+        {
+            return $"{messageName}.{Name} != default";
+        }
+
+        return $"{messageName}.{Name} != null";
     }
 }
