@@ -245,6 +245,22 @@ LightProto.Parser.Matrix3x2ProtoParser
 LightProto.Parser.Matrix3x2ProtoParser.Matrix3x2ProtoParser() -> void
 LightProto.Parser.Matrix4x4ProtoParser
 LightProto.Parser.Matrix4x4ProtoParser.Matrix4x4ProtoParser() -> void
+LightProto.Parser.MemoryProtoReader<TItem>
+LightProto.Parser.MemoryProtoReader<TItem>.Empty.get -> System.Memory<TItem>
+LightProto.Parser.MemoryProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.MemoryProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.MemoryProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.MemoryProtoReader<TItem>.MemoryProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.MemoryProtoReader<TItem>.MemoryProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.MemoryProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Memory<TItem>
+LightProto.Parser.MemoryProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.MemoryProtoWriter<T>
+LightProto.Parser.MemoryProtoWriter<T>.CalculateLongSize(System.Memory<T> value) -> long
+LightProto.Parser.MemoryProtoWriter<T>.CalculateSize(System.Memory<T> value) -> int
+LightProto.Parser.MemoryProtoWriter<T>.IsMessage.get -> bool
+LightProto.Parser.MemoryProtoWriter<T>.MemoryProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
+LightProto.Parser.MemoryProtoWriter<T>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.MemoryProtoWriter<T>.WriteTo(ref LightProto.WriterContext output, System.Memory<T> value) -> void
 LightProto.Parser.NullableProtoReader<T>
 LightProto.Parser.NullableProtoReader<T>.IsMessage.get -> bool
 LightProto.Parser.NullableProtoReader<T>.NullableProtoReader(LightProto.IProtoReader<T>! valueReader) -> void
@@ -307,6 +323,22 @@ LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.IsMessage.get -> bool
 LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.ReadOnlyMemoryProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
 LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.WireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ReadOnlyMemoryProtoWriter<T>.WriteTo(ref LightProto.WriterContext output, System.ReadOnlyMemory<T> value) -> void
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.Empty.get -> System.Buffers.ReadOnlySequence<TItem>
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Buffers.ReadOnlySequence<TItem>
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.ReadOnlySequenceProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.ReadOnlySequenceProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ReadOnlySequenceProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>.CalculateLongSize(System.Buffers.ReadOnlySequence<T> value) -> long
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>.CalculateSize(System.Buffers.ReadOnlySequence<T> value) -> int
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>.IsMessage.get -> bool
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>.ReadOnlySequenceProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ReadOnlySequenceProtoWriter<T>.WriteTo(ref LightProto.WriterContext output, System.Buffers.ReadOnlySequence<T> value) -> void
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.Empty.get -> System.Collections.ObjectModel.ReadOnlyObservableCollection<TItem>!
 LightProto.Parser.ReadOnlyObservableCollectionProtoReader<TItem>.IsMessage.get -> bool
