@@ -7,6 +7,7 @@ namespace LightProto.Parser
         IProtoWriter<T> ItemWriter { get; }
         uint Tag { get; }
         int ItemFixedSize { get; }
+        static bool IsByte => typeof(T) == typeof(byte);
         bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
 
         public ReadOnlySequenceProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
@@ -35,6 +36,22 @@ namespace LightProto.Parser
 
         public long CalculateLongSize(ReadOnlySequence<T> value)
         {
+            if (IsByte)
+            {
+                long size = 0;
+                foreach (var segment in value)
+                {
+                    if (segment.IsEmpty)
+                        continue;
+                    var bytes = (ReadOnlyMemory<byte>)(object)segment;
+                    size +=
+                        CodedOutputStream.ComputeRawVarint32Size(Tag)
+                        + CodedOutputStream.ComputeLongLengthSize(bytes.Length)
+                        + bytes.Length;
+                }
+                return size;
+            }
+
             var count = value.Length;
             if (count == 0)
                 return 0;
@@ -52,6 +69,20 @@ namespace LightProto.Parser
         {
             if (value.IsEmpty)
                 return;
+
+            if (IsByte)
+            {
+                foreach (var segment in value)
+                {
+                    if (segment.IsEmpty)
+                        continue;
+                    var bytes = (ReadOnlyMemory<byte>)(object)segment;
+                    output.WriteTag(Tag);
+                    output.WriteLongLength(bytes.Length);
+                    WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, bytes.Span);
+                }
+                return;
+            }
 
             if (IsPacked && PackedRepeated.Support<T>())
             {
@@ -107,10 +138,11 @@ namespace LightProto.Parser
         private readonly ArrayProtoReader<TItem> _arrayProtoReader;
         public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
+        static bool IsByte => typeof(TItem) == typeof(byte);
 
         object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
-        public WireFormat.WireType ItemWireType => ItemReader.WireType;
+        public WireFormat.WireType ItemWireType => IsByte ? WireFormat.WireType.LengthDelimited : ItemReader.WireType;
         object ICollectionReader.Empty => Empty;
         public IProtoReader<TItem> ItemReader { get; }
 
@@ -125,6 +157,38 @@ namespace LightProto.Parser
 
         public ReadOnlySequence<TItem> ParseFrom(ref ReaderContext input)
         {
+            if (IsByte)
+            {
+                var tag = input.state.lastTag;
+                var segments = new List<byte[]>();
+                int totalLength = 0;
+                do
+                {
+                    var length = input.ReadLength();
+                    var bytes = ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
+                    segments.Add(bytes);
+                    checked
+                    {
+                        totalLength += bytes.Length;
+                    }
+                } while (ParsingPrimitives.MaybeConsumeTag(ref input.buffer, ref input.state, tag));
+
+                if (totalLength == 0)
+                    return default;
+
+                if (segments.Count == 1)
+                    return (ReadOnlySequence<TItem>)(object)new ReadOnlySequence<byte>(segments[0]);
+
+                var combined = new byte[totalLength];
+                int offset = 0;
+                foreach (var segment in segments)
+                {
+                    Buffer.BlockCopy(segment, 0, combined, offset, segment.Length);
+                    offset += segment.Length;
+                }
+                return (ReadOnlySequence<TItem>)(object)new ReadOnlySequence<byte>(combined);
+            }
+
             var array = _arrayProtoReader.ParseFrom(ref input);
             return array.Length == 0 ? default : new ReadOnlySequence<TItem>(array);
         }

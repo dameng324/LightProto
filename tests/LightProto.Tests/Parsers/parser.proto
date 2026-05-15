@@ -7,6 +7,9 @@ import "protobuf-net/bcl.proto";
 message ByteArrayTestsMessage {
   bytes Property = 1;
 }
+message RepeatedBytesTestsMessage {
+  repeated bytes Property = 1;
+}
 message ArrayTestsMessage {
   repeated int32 Property = 1 [packed = false];
 }

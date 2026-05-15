@@ -680,7 +680,13 @@ internal static class Helper
                     );
                     var fixedSize = GetFixedSize(elementType, format);
 
-                    if (!isPacked)
+                    if (
+                        !isPacked
+                        && !(
+                            elementType.SpecialType == SpecialType.System_Byte
+                            && (IsMemoryType(namedType) || IsReadOnlyMemoryType(namedType) || IsReadOnlySequenceType(namedType))
+                        )
+                    )
                     {
                         rawTag = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
                     }
