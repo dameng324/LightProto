@@ -165,14 +165,14 @@ internal class ProtoMember
 
         if (Helper.IsCollectionType(Compilation, Type) || Helper.IsDictionaryType(Compilation, Type))
         {
-            var check = Type.IsValueType ? "true" : $"{messageName}.{Name} != null";
+            var nullCheck = Type.IsValueType ? null : $"{messageName}.{Name} != null";
             if (Helper.HasCountProperty(Type))
             {
-                return $"{check} && {messageName}.{Name}.Count > 0";
+                return nullCheck is null ? $"{messageName}.{Name}.Count > 0" : $"{nullCheck} && {messageName}.{Name}.Count > 0";
             }
             if (Helper.HasLengthProperty(Type))
             {
-                return $"{check} && {messageName}.{Name}.Length > 0";
+                return nullCheck is null ? $"{messageName}.{Name}.Length > 0" : $"{nullCheck} && {messageName}.{Name}.Length > 0";
             }
         }
 

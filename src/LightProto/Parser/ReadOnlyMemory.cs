@@ -1,17 +1,20 @@
-﻿using System.Runtime.InteropServices;
-
 namespace LightProto.Parser
 {
     public sealed class ReadOnlyMemoryProtoWriter<T> : IProtoWriter, IProtoWriter<ReadOnlyMemory<T>>
     {
-        private readonly ArrayProtoWriter<T> _arrayProtoWriter;
+        IProtoWriter<T> ItemWriter { get; }
+        uint Tag { get; }
+        int ItemFixedSize { get; }
+        bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
 
         public ReadOnlyMemoryProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
         {
-            _arrayProtoWriter = new ArrayProtoWriter<T>(itemWriter, tag, itemFixedSize);
+            ItemWriter = itemWriter;
+            Tag = tag;
+            ItemFixedSize = itemFixedSize;
         }
 
-        public WireFormat.WireType WireType => _arrayProtoWriter.WireType;
+        public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;
         public bool IsMessage => false;
 
         int IProtoWriter.CalculateSize(object value) => CalculateSize((ReadOnlyMemory<T>)value);
@@ -22,31 +25,69 @@ namespace LightProto.Parser
 
         public int CalculateSize(ReadOnlyMemory<T> value)
         {
-            return _arrayProtoWriter.CalculateSize(ToArray(value));
+            var size = CalculateLongSize(value);
+            if (size > int.MaxValue)
+                throw new OverflowException("Calculated size exceeds Int32.MaxValue");
+            return (int)size;
         }
 
         public long CalculateLongSize(ReadOnlyMemory<T> value)
         {
-            return _arrayProtoWriter.CalculateLongSize(ToArray(value));
+            var count = value.Length;
+            if (count == 0)
+                return 0;
+
+            if (IsPacked && PackedRepeated.Support<T>())
+            {
+                var dataSize = CalculatePackedDataSize(value, count);
+                return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLongLengthSize(dataSize) + dataSize;
+            }
+
+            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + CalculateAllItemSize(value);
         }
 
         public void WriteTo(ref WriterContext output, ReadOnlyMemory<T> value)
         {
-            _arrayProtoWriter.WriteTo(ref output, ToArray(value));
+            if (value.IsEmpty)
+                return;
+
+            if (IsPacked && PackedRepeated.Support<T>())
+            {
+                var size = CalculatePackedDataSize(value, value.Length);
+                output.WriteTag(Tag);
+                output.WriteLongLength(size);
+
+                foreach (var item in value.Span)
+                {
+                    ItemWriter.WriteMessageTo(ref output, item);
+                }
+                return;
+            }
+
+            foreach (var item in value.Span)
+            {
+                if (item is null)
+                    throw new Exception("Sequence contained null element");
+                output.WriteTag(Tag);
+                ItemWriter.WriteMessageTo(ref output, item);
+            }
         }
 
-        private static T[] ToArray(ReadOnlyMemory<T> value)
+        private long CalculatePackedDataSize(ReadOnlyMemory<T> value, int count)
         {
-            if (value.IsEmpty)
-                return [];
-            if (MemoryMarshal.TryGetArray(value, out ArraySegment<T> segment))
+            return ItemFixedSize != 0 ? ItemFixedSize * count : CalculateAllItemSize(value);
+        }
+
+        private long CalculateAllItemSize(ReadOnlyMemory<T> value)
+        {
+            long size = 0;
+            foreach (var item in value.Span)
             {
-                if (segment.Array is null)
-                    return [];
-                if (segment.Offset == 0 && segment.Count == segment.Array.Length)
-                    return segment.Array;
+                if (item is null)
+                    throw new Exception("Sequence contained null element");
+                size += ItemWriter.CalculateLongMessageSize(item);
             }
-            return value.ToArray();
+            return size;
         }
     }
 
