@@ -55,5 +55,14 @@ public partial class FrozenSetTests : BaseTests<FrozenSetTests.Message, ArrayTes
         var deserialized = Serializer.Deserialize(bytes, new FrozenSetProtoReader<int>(Int32ProtoParser.ProtoReader, 0));
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
+
+    [Test]
+    [SkipAot]
+    public async Task EmptyNonGenericTest()
+    {
+        byte[] bytes = [];
+        var deserialized = (FrozenSet<int>)Serializer.DeserializeNonGeneric(typeof(FrozenSet<int>), bytes);
+        await Assert.That(deserialized.Count).IsEqualTo(0);
+    }
 }
 #endif

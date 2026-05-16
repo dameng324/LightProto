@@ -63,5 +63,14 @@ public partial class FrozenDictionaryTests : BaseTests<FrozenDictionaryTests.Mes
         );
         await Assert.That(deserialized.Count).IsEqualTo(0);
     }
+
+    [Test]
+    [SkipAot]
+    public async Task EmptyNonGenericTest()
+    {
+        byte[] bytes = [];
+        var deserialized = (FrozenDictionary<int, string>)Serializer.DeserializeNonGeneric(typeof(FrozenDictionary<int, string>), bytes);
+        await Assert.That(deserialized.Count).IsEqualTo(0);
+    }
 }
 #endif

@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -623,6 +624,25 @@ public partial class NonGenericSerializerTests
         yield return () => new KeyValuePair<string, int>("key", 123);
     }
 
+    public static IEnumerable<Func<(object value, Type type)>> GetAotUnsupportedValueTypes()
+    {
+#if NET8_0_OR_GREATER
+        yield return () => (new List<int>([1, 2, 3]).ToFrozenSet(), typeof(FrozenSet<int>));
+        yield return () =>
+            (
+                new Dictionary<string, int>() { ["frozen_a"] = 1, ["frozen_b"] = 2 }.ToFrozenDictionary(),
+                typeof(FrozenDictionary<string, int>)
+            );
+#endif
+        yield break;
+    }
+
+    [Test]
+    [MethodDataSource(nameof(GetAotUnsupportedValueTypes))]
+    [SkipAot]
+    public async Task LightProto_SerializeDeserialize_NonGeneric_NoAOT_WithType(object value, Type type) =>
+        await LightProto_SerializeDeserialize_NonGeneric_AOT_WithType(value, type);
+
     [Test]
     [MethodDataSource(nameof(GetAotUnsupportedValues))]
     [SkipAot]
@@ -685,7 +705,13 @@ public partial class NonGenericSerializerTests
     [MethodDataSource(nameof(GetAotSupportedValues))]
     public async Task LightProto_SerializeDeserialize_NonGeneric_AOT(object value)
     {
-        var type = value.GetType();
+        await LightProto_SerializeDeserialize_NonGeneric_AOT_WithType(value, value.GetType());
+    }
+
+    async Task LightProto_SerializeDeserialize_NonGeneric_AOT_WithType(object value, Type type)
+    {
+        var reader = Serializer.GetProtoReader(type);
+        var writer = Serializer.GetProtoWriter(type);
         var bytes1 = SerializeToArray();
         var bytes2 = SerializeToIBufferWriter();
         var bytes3 = SerializeToStream();
@@ -702,8 +728,6 @@ public partial class NonGenericSerializerTests
 
         deserialized = DeserializedFromSpan(bytes1);
         await AssertEquivalentTo(type, deserialized, value);
-
-        var reader = Serializer.GetProtoReader(type);
 
         static async Task AssertEquivalentTo(Type type, object deserialized, object original)
         {
@@ -734,18 +758,18 @@ public partial class NonGenericSerializerTests
         byte[] SerializeToStream()
         {
             using var ms = new MemoryStream();
-            Serializer.SerializeNonGeneric(ms, value);
+            Serializer.SerializeNonGeneric(ms, value, writer);
             return ms.ToArray();
         }
         byte[] SerializeToIBufferWriter()
         {
             var bufferWriter = new ArrayBufferWriter<byte>();
-            Serializer.SerializeNonGeneric(bufferWriter, value);
+            Serializer.SerializeNonGeneric(bufferWriter, value, writer);
             return bufferWriter.WrittenMemory.ToArray();
         }
         byte[] SerializeToArray()
         {
-            return Serializer.SerializeToArrayNonGeneric(value);
+            return Serializer.SerializeToArrayNonGeneric(value, writer);
         }
 
         object DeserializedFromStream(byte[] bytes)
