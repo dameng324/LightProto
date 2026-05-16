@@ -54,3 +54,23 @@ LightProto.Parser.ImmutableStackProtoReader<TItem>.ParseFrom(ref LightProto.Read
 LightProto.Parser.ImmutableStackProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ImmutableStackProtoWriter<T>
 LightProto.Parser.ImmutableStackProtoWriter<T>.ImmutableStackProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>.Empty.get -> System.Collections.Frozen.FrozenDictionary<TKey, TValue>!
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>.FrozenDictionaryProtoReader(LightProto.IProtoReader<TKey>! keyReader, LightProto.IProtoReader<TValue>! valueReader, uint tag) -> void
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>.IsMessage.get -> bool
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>.ItemReader.get -> LightProto.IProtoReader<System.Collections.Generic.KeyValuePair<TKey, TValue>>!
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.FrozenDictionaryProtoReader<TKey, TValue>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.FrozenDictionaryProtoWriter<TKey, TValue>
+LightProto.Parser.FrozenDictionaryProtoWriter<TKey, TValue>.FrozenDictionaryProtoWriter(LightProto.IProtoWriter<TKey>! keyWriter, LightProto.IProtoWriter<TValue>! valueWriter, uint tag) -> void
+LightProto.Parser.FrozenSetProtoReader<TItem>
+LightProto.Parser.FrozenSetProtoReader<TItem>.Empty.get -> System.Collections.Frozen.FrozenSet<TItem>!
+LightProto.Parser.FrozenSetProtoReader<TItem>.FrozenSetProtoReader(LightProto.IProtoReader<TItem>! itemReader, int itemFixedSize) -> void
+LightProto.Parser.FrozenSetProtoReader<TItem>.FrozenSetProtoReader(LightProto.IProtoReader<TItem>! itemReader, uint tag, int itemFixedSize) -> void
+LightProto.Parser.FrozenSetProtoReader<TItem>.IsMessage.get -> bool
+LightProto.Parser.FrozenSetProtoReader<TItem>.ItemReader.get -> LightProto.IProtoReader<TItem>!
+LightProto.Parser.FrozenSetProtoReader<TItem>.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.FrozenSetProtoReader<TItem>.ParseFrom(ref LightProto.ReaderContext input) -> System.Collections.Frozen.FrozenSet<TItem>!
+LightProto.Parser.FrozenSetProtoReader<TItem>.WireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.FrozenSetProtoWriter<T>
+LightProto.Parser.FrozenSetProtoWriter<T>.FrozenSetProtoWriter(LightProto.IProtoWriter<T>! itemWriter, uint tag, int itemFixedSize) -> void

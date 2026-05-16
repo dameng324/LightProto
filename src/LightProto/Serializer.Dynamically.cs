@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -273,6 +274,14 @@ namespace LightProto
                 typeof(ImmutableSortedDictionaryProtoReader<,>),
                 typeof(ImmutableSortedDictionaryProtoWriter<,>)
             );
+#if NET8_0_OR_GREATER
+            RegisterGenericParser(typeof(FrozenSet<>), typeof(FrozenSetProtoReader<>), typeof(FrozenSetProtoWriter<>));
+            RegisterGenericParser(
+                typeof(FrozenDictionary<,>),
+                typeof(FrozenDictionaryProtoReader<,>),
+                typeof(FrozenDictionaryProtoWriter<,>)
+            );
+#endif
         }
 
 #if NET7_0_OR_GREATER
