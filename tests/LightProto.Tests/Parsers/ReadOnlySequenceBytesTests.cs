@@ -6,7 +6,7 @@ using LightProto.Parser;
 namespace LightProto.Tests.Parsers;
 
 [InheritsTests]
-public partial class ReadOnlySequenceBytesTests : BaseTests<ReadOnlySequenceBytesTests.Message, RepeatedBytesTestsMessage>
+public partial class ReadOnlySequenceBytesTests : BaseTests<ReadOnlySequenceBytesTests.Message, ByteArrayTestsMessage>
 {
     [ProtoContract]
     [ProtoBuf.ProtoContract]
@@ -62,27 +62,14 @@ public partial class ReadOnlySequenceBytesTests : BaseTests<ReadOnlySequenceByte
         yield return new() { Property = default };
     }
 
-    public override IEnumerable<RepeatedBytesTestsMessage> GetGoogleMessages()
+    public override IEnumerable<ByteArrayTestsMessage> GetGoogleMessages()
     {
-        return GetMessages()
-            .Select(o =>
-            {
-                var message = new RepeatedBytesTestsMessage();
-                foreach (var segment in o.Property)
-                {
-                    if (segment.IsEmpty)
-                        continue;
-                    message.Property.Add(ByteString.CopyFrom(segment.Span));
-                }
-                return message;
-            });
+        return GetMessages().Select(o => new ByteArrayTestsMessage() { Property = ByteString.CopyFrom(o.Property.ToArray()) });
     }
 
-    public override async Task AssertGoogleResult(RepeatedBytesTestsMessage clone, Message message)
+    public override async Task AssertGoogleResult(ByteArrayTestsMessage clone, Message message)
     {
-        var expected = message.Property.ToArray();
-        var actual = clone.Property.SelectMany(x => x.ToByteArray()).ToArray();
-        await Assert.That(actual).IsEquivalentTo(expected);
+        await Assert.That(clone.Property.ToByteArray()).IsEquivalentTo(message.Property.ToArray());
     }
 
     public override async Task AssertResult(Message clone, Message message)

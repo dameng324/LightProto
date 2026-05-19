@@ -38,18 +38,10 @@ namespace LightProto.Parser
         {
             if (IsByte)
             {
-                long size = 0;
-                foreach (var segment in value)
-                {
-                    if (segment.IsEmpty)
-                        continue;
-                    var bytes = (ReadOnlyMemory<byte>)(object)segment;
-                    size +=
-                        CodedOutputStream.ComputeRawVarint32Size(Tag)
-                        + CodedOutputStream.ComputeLongLengthSize(bytes.Length)
-                        + bytes.Length;
-                }
-                return size;
+                var length = value.Length;
+                if (length == 0)
+                    return 0;
+                return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLongLengthSize(length) + length;
             }
 
             var count = value.Length;
@@ -72,14 +64,13 @@ namespace LightProto.Parser
 
             if (IsByte)
             {
+                output.WriteTag(Tag);
+                output.WriteLongLength(value.Length);
                 foreach (var segment in value)
                 {
                     if (segment.IsEmpty)
                         continue;
-                    var bytes = (ReadOnlyMemory<byte>)(object)segment;
-                    output.WriteTag(Tag);
-                    output.WriteLongLength(bytes.Length);
-                    WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, bytes.Span);
+                    WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, ((ReadOnlyMemory<byte>)(object)segment).Span);
                 }
                 return;
             }
@@ -159,34 +150,11 @@ namespace LightProto.Parser
         {
             if (IsByte)
             {
-                var tag = input.state.lastTag;
-                var segments = new List<byte[]>();
-                int totalLength = 0;
-                do
-                {
-                    var length = input.ReadLength();
-                    var bytes = ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
-                    segments.Add(bytes);
-                    checked
-                    {
-                        totalLength += bytes.Length;
-                    }
-                } while (ParsingPrimitives.MaybeConsumeTag(ref input.buffer, ref input.state, tag));
-
-                if (totalLength == 0)
+                var length = input.ReadLength();
+                if (length == 0)
                     return default;
-
-                if (segments.Count == 1)
-                    return (ReadOnlySequence<TItem>)(object)new ReadOnlySequence<byte>(segments[0]);
-
-                var combined = new byte[totalLength];
-                int offset = 0;
-                foreach (var segment in segments)
-                {
-                    Buffer.BlockCopy(segment, 0, combined, offset, segment.Length);
-                    offset += segment.Length;
-                }
-                return (ReadOnlySequence<TItem>)(object)new ReadOnlySequence<byte>(combined);
+                var bytes = ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
+                return (ReadOnlySequence<TItem>)(object)new ReadOnlySequence<byte>(bytes);
             }
 
             var array = _arrayProtoReader.ParseFrom(ref input);
