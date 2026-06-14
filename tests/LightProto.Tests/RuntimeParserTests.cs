@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Buffers;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using LightProto.Parser;
 
@@ -29,6 +30,16 @@ public partial class RuntimeParserTests
     public class RuntimeMemoryMessage
     {
         public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
+    }
+
+    public class RuntimeReadOnlyMemoryMessage
+    {
+        public ReadOnlyMemory<byte> Data { get; set; } = ReadOnlyMemory<byte>.Empty;
+    }
+
+    public class RuntimeReadOnlySequenceMessage
+    {
+        public ReadOnlySequence<byte> Data { get; set; } = ReadOnlySequence<byte>.Empty;
     }
 
     [Test]
@@ -74,6 +85,70 @@ public partial class RuntimeParserTests
 
         var cloned = Serializer.Deserialize(runtimeBytes, protoReader);
         await Assert.That(cloned.Data.ToArray()).IsEquivalentTo(runtimeMessage.Data.ToArray());
+    }
+
+    [Test]
+    public async Task RuntimeWriter_ReadOnlyMemoryByteMember_UsesSingleTag()
+    {
+        var protoReader = new RuntimeProtoReader<RuntimeReadOnlyMemoryMessage>(() => new());
+        protoReader.AddMember<ReadOnlyMemory<byte>>(
+            1,
+            (message, value) => message.Data = value,
+            new ReadOnlyMemoryProtoReader<byte>(ByteProtoParser.ProtoReader, 0)
+        );
+
+        var protoWriter = new RuntimeProtoWriter<RuntimeReadOnlyMemoryMessage>();
+        protoWriter.AddMember<ReadOnlyMemory<byte>>(
+            1,
+            message => message.Data,
+            new ReadOnlyMemoryProtoWriter<byte>(ByteProtoParser.ProtoWriter, WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited), 0)
+        );
+
+        var runtimeMessage = new RuntimeReadOnlyMemoryMessage { Data = new byte[] { 1, 2, 3, 4, 5 } };
+        var expectedMessage = new TestMemoryMessage { Data = [1, 2, 3, 4, 5] };
+
+        var runtimeBytes = runtimeMessage.ToByteArray(protoWriter);
+        var expectedBytes = expectedMessage.ToByteArray(TestMemoryMessage.ProtoWriter);
+
+        await Assert.That(runtimeBytes).IsEquivalentTo(expectedBytes);
+
+        var cloned = Serializer.Deserialize(runtimeBytes, protoReader);
+        await Assert.That(cloned.Data.ToArray()).IsEquivalentTo(runtimeMessage.Data.ToArray());
+    }
+
+    [Test]
+    public async Task RuntimeWriter_ReadOnlySequenceByteMember_UsesSingleTag()
+    {
+        var protoReader = new RuntimeProtoReader<RuntimeReadOnlySequenceMessage>(() => new());
+        protoReader.AddMember<ReadOnlySequence<byte>>(
+            1,
+            (message, value) => message.Data = value,
+            new ReadOnlySequenceProtoReader<byte>(ByteProtoParser.ProtoReader, 0)
+        );
+
+        var protoWriter = new RuntimeProtoWriter<RuntimeReadOnlySequenceMessage>();
+        protoWriter.AddMember<ReadOnlySequence<byte>>(
+            1,
+            message => message.Data,
+            new ReadOnlySequenceProtoWriter<byte>(
+                ByteProtoParser.ProtoWriter,
+                WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited),
+                0
+            )
+        );
+
+        var runtimeMessage = new RuntimeReadOnlySequenceMessage { Data = new ReadOnlySequence<byte>(new byte[] { 1, 2, 3, 4, 5 }) };
+        var expectedMessage = new TestMemoryMessage { Data = [1, 2, 3, 4, 5] };
+
+        var runtimeBytes = runtimeMessage.ToByteArray(protoWriter);
+        var expectedBytes = expectedMessage.ToByteArray(TestMemoryMessage.ProtoWriter);
+
+        await Assert.That(runtimeBytes).IsEquivalentTo(expectedBytes);
+
+        var cloned = Serializer.Deserialize(runtimeBytes, protoReader);
+        var clonedData = new byte[cloned.Data.Length];
+        cloned.Data.CopyTo(clonedData);
+        await Assert.That(clonedData).IsEquivalentTo(new byte[] { 1, 2, 3, 4, 5 });
     }
 
     [Test]

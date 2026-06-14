@@ -2,13 +2,20 @@ using System.Buffers;
 
 namespace LightProto.Parser
 {
-    public sealed class ReadOnlySequenceProtoWriter<T> : IProtoWriter, IProtoWriter<ReadOnlySequence<T>>
+    public sealed class ReadOnlySequenceProtoWriter<T> : IProtoWriter, IProtoWriter<ReadOnlySequence<T>>, ICollectionWriter
     {
         IProtoWriter<T> ItemWriter { get; }
-        uint Tag { get; }
+        uint Tag { get; set; }
         int ItemFixedSize { get; }
         static bool IsByte => typeof(T) == typeof(byte);
         bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
+        WireFormat.WireType ICollectionWriter.ItemWireType => IsByte ? WireFormat.WireType.LengthDelimited : ItemWriter.WireType;
+
+        uint ICollectionWriter.Tag
+        {
+            get => Tag;
+            set => Tag = value;
+        }
 
         public ReadOnlySequenceProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
         {

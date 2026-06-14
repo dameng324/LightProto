@@ -1,12 +1,19 @@
 namespace LightProto.Parser
 {
-    public sealed class ReadOnlyMemoryProtoWriter<T> : IProtoWriter, IProtoWriter<ReadOnlyMemory<T>>
+    public sealed class ReadOnlyMemoryProtoWriter<T> : IProtoWriter, IProtoWriter<ReadOnlyMemory<T>>, ICollectionWriter
     {
         IProtoWriter<T> ItemWriter { get; }
-        uint Tag { get; }
+        uint Tag { get; set; }
         int ItemFixedSize { get; }
         static bool IsByte => typeof(T) == typeof(byte);
         bool IsPacked => WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;
+        WireFormat.WireType ICollectionWriter.ItemWireType => IsByte ? WireFormat.WireType.LengthDelimited : ItemWriter.WireType;
+
+        uint ICollectionWriter.Tag
+        {
+            get => Tag;
+            set => Tag = value;
+        }
 
         public ReadOnlyMemoryProtoWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
         {
