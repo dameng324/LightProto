@@ -19,6 +19,18 @@ public partial class RuntimeParserTests
         public int[] IntArray { get; set; } = [];
     }
 
+    [ProtoContract]
+    public partial class TestMemoryMessage
+    {
+        [ProtoMember(1)]
+        public byte[] Data { get; set; } = [];
+    }
+
+    public class RuntimeMemoryMessage
+    {
+        public Memory<byte> Data { get; set; } = Memory<byte>.Empty;
+    }
+
     [Test]
     public async Task RuntimeParser_Serialization_Deserialization_ProducesEquivalentResults()
     {
@@ -33,6 +45,35 @@ public partial class RuntimeParserTests
             Int32ProtoParser.ProtoWriter.GetCollectionWriter()
         );
         await RuntimeReaderWriter_ProducesEquivalentResults(runtimeParser.ProtoReader, runtimeParser.ProtoWriter);
+    }
+
+    [Test]
+    public async Task RuntimeWriter_MemoryByteMember_UsesSingleTag()
+    {
+        var protoReader = new RuntimeProtoReader<RuntimeMemoryMessage>(() => new());
+        protoReader.AddMember<Memory<byte>>(
+            1,
+            (message, value) => message.Data = value,
+            new MemoryProtoReader<byte>(ByteProtoParser.ProtoReader, 0)
+        );
+
+        var protoWriter = new RuntimeProtoWriter<RuntimeMemoryMessage>();
+        protoWriter.AddMember<Memory<byte>>(
+            1,
+            message => message.Data,
+            new MemoryProtoWriter<byte>(ByteProtoParser.ProtoWriter, WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited), 0)
+        );
+
+        var runtimeMessage = new RuntimeMemoryMessage { Data = new byte[] { 1, 2, 3, 4, 5 } };
+        var expectedMessage = new TestMemoryMessage { Data = [1, 2, 3, 4, 5] };
+
+        var runtimeBytes = runtimeMessage.ToByteArray(protoWriter);
+        var expectedBytes = expectedMessage.ToByteArray(TestMemoryMessage.ProtoWriter);
+
+        await Assert.That(runtimeBytes).IsEquivalentTo(expectedBytes);
+
+        var cloned = Serializer.Deserialize(runtimeBytes, protoReader);
+        await Assert.That(cloned.Data.ToArray()).IsEquivalentTo(runtimeMessage.Data.ToArray());
     }
 
     [Test]
