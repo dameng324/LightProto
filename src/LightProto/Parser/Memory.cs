@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace LightProto.Parser
 {
     public sealed class MemoryProtoWriter<T> : IProtoWriter, IProtoWriter<Memory<T>>, ICollectionWriter
@@ -56,7 +58,7 @@ namespace LightProto.Parser
                 return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLongLengthSize(dataSize) + dataSize;
             }
 
-            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + CalculateAllItemSize(value);
+            return CodedOutputStream.ComputeRawVarint32Size(Tag) * count + CalculateAllItemSize(value.Span);
         }
 
         public void WriteTo(ref WriterContext output, Memory<T> value)
@@ -66,7 +68,7 @@ namespace LightProto.Parser
 
             if (IsByte)
             {
-                var bytes = (Memory<byte>)(object)value;
+                var bytes = Unsafe.As<Memory<T>, Memory<byte>>(ref value);
                 output.WriteTag(Tag);
                 output.WriteLongLength(bytes.Length);
                 WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, bytes.Span);
@@ -79,37 +81,21 @@ namespace LightProto.Parser
                 output.WriteTag(Tag);
                 output.WriteLongLength(size);
 
-                foreach (var item in value.Span)
-                {
-                    ItemWriter.WriteMessageTo(ref output, item);
-                }
+                CollectionWriteHelper<T>.WritePacked(ref output, value.Span, ItemWriter);
                 return;
             }
 
-            foreach (var item in value.Span)
-            {
-                if (item is null)
-                    throw new Exception("Sequence contained null element");
-                output.WriteTag(Tag);
-                ItemWriter.WriteMessageTo(ref output, item);
-            }
+            CollectionWriteHelper<T>.WriteUnpacked(ref output, value.Span, Tag, ItemWriter);
         }
 
         private long CalculatePackedDataSize(Memory<T> value, int count)
         {
-            return ItemFixedSize != 0 ? ItemFixedSize * count : CalculateAllItemSize(value);
+            return ItemFixedSize != 0 ? ItemFixedSize * count : CalculateAllItemSize(value.Span);
         }
 
-        private long CalculateAllItemSize(Memory<T> value)
+        private long CalculateAllItemSize(ReadOnlySpan<T> values)
         {
-            long size = 0;
-            foreach (var item in value.Span)
-            {
-                if (item is null)
-                    throw new Exception("Sequence contained null element");
-                size += ItemWriter.CalculateLongMessageSize(item);
-            }
-            return size;
+            return CollectionWriteHelper<T>.CalculateAllItemSize(values, ItemWriter);
         }
     }
 
@@ -141,7 +127,8 @@ namespace LightProto.Parser
             {
                 var length = input.ReadLength();
                 var bytes = ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
-                return (Memory<TItem>)(object)new Memory<byte>(bytes);
+                var result = new Memory<byte>(bytes);
+                return Unsafe.As<Memory<byte>, Memory<TItem>>(ref result);
             }
             return _arrayProtoReader.ParseFrom(ref input);
         }

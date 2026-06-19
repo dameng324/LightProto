@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace LightProto.Parser
 {
@@ -77,7 +78,9 @@ namespace LightProto.Parser
                 {
                     if (segment.IsEmpty)
                         continue;
-                    WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, ((ReadOnlyMemory<byte>)(object)segment).Span);
+                    var segmentBytes = segment;
+                    var bytes = Unsafe.As<ReadOnlyMemory<T>, ReadOnlyMemory<byte>>(ref segmentBytes);
+                    WritingPrimitives.WriteRawBytes(ref output.buffer, ref output.state, bytes.Span);
                 }
                 return;
             }
@@ -90,23 +93,14 @@ namespace LightProto.Parser
 
                 foreach (var item in value)
                 {
-                    foreach (var current in item.Span)
-                    {
-                        ItemWriter.WriteMessageTo(ref output, current);
-                    }
+                    CollectionWriteHelper<T>.WritePacked(ref output, item.Span, ItemWriter);
                 }
                 return;
             }
 
             foreach (var item in value)
             {
-                foreach (var current in item.Span)
-                {
-                    if (current is null)
-                        throw new Exception("Sequence contained null element");
-                    output.WriteTag(Tag);
-                    ItemWriter.WriteMessageTo(ref output, current);
-                }
+                CollectionWriteHelper<T>.WriteUnpacked(ref output, item.Span, Tag, ItemWriter);
             }
         }
 
@@ -120,12 +114,7 @@ namespace LightProto.Parser
             long size = 0;
             foreach (var item in value)
             {
-                foreach (var current in item.Span)
-                {
-                    if (current is null)
-                        throw new Exception("Sequence contained null element");
-                    size += ItemWriter.CalculateLongMessageSize(current);
-                }
+                size += CollectionWriteHelper<T>.CalculateAllItemSize(item.Span, ItemWriter);
             }
             return size;
         }
@@ -161,7 +150,8 @@ namespace LightProto.Parser
                 if (length == 0)
                     return default;
                 var bytes = ParsingPrimitives.ReadRawBytes(ref input.buffer, ref input.state, length);
-                return (ReadOnlySequence<TItem>)(object)new ReadOnlySequence<byte>(bytes);
+                var sequence = new ReadOnlySequence<byte>(bytes);
+                return Unsafe.As<ReadOnlySequence<byte>, ReadOnlySequence<TItem>>(ref sequence);
             }
 
             var array = _arrayProtoReader.ParseFrom(ref input);
