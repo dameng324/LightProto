@@ -40,7 +40,7 @@ jobs:
           cat ./BenchmarkResults/results/*.md >> $GITHUB_STEP_SUMMARY
         
       - name: Post benchmark result as PR comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
          path: ./BenchmarkResults/results/*.md
          hide_and_recreate: true
