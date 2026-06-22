@@ -6,6 +6,6 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions" # See documentation for possible values
-    directory: ".github/workflows" # Location of package manifests
+    directory: "/" # Repository root; GitHub Actions workflows are detected from .github/workflows
     schedule:
       interval: "weekly"
