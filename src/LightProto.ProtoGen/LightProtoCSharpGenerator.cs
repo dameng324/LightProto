@@ -86,7 +86,7 @@ internal sealed class LightProtoCSharpGenerator
             if (!firstItem)
                 sb.AppendLine();
             firstItem = false;
-            AppendMessage(sb, message, mapEntries, package, protoIncludeInheritance, _indent, "", package);
+            AppendMessage(sb, message, mapEntries, package, protoIncludeInheritance, _indent, "", package, file.Syntax);
         }
 
         sb.AppendLine("}");
@@ -125,7 +125,8 @@ internal sealed class LightProtoCSharpGenerator
         Dictionary<string, string> protoIncludeInheritance,
         string indent,
         string messagePrefix,
-        string protoFullNamePrefix
+        string protoFullNamePrefix,
+        string fileSyntax
     )
     {
         // Skip map-entry synthetic messages (they are handled inline as Dictionary<K,V>)
@@ -180,7 +181,17 @@ internal sealed class LightProtoCSharpGenerator
         {
             if (nested.Options?.MapEntry == true)
                 continue;
-            AppendMessage(sb, nested, localMapEntries, package, protoIncludeInheritance, innerIndent, fullCsName, messageFullName);
+            AppendMessage(
+                sb,
+                nested,
+                localMapEntries,
+                package,
+                protoIncludeInheritance,
+                innerIndent,
+                fullCsName,
+                messageFullName,
+                fileSyntax
+            );
             sb.AppendLine();
         }
 
@@ -202,7 +213,7 @@ internal sealed class LightProtoCSharpGenerator
             if (!firstField)
                 sb.AppendLine();
             firstField = false;
-            AppendField(sb, field, localMapEntries, package, innerIndent, messageFullName);
+            AppendField(sb, field, localMapEntries, package, innerIndent, messageFullName, fileSyntax);
         }
 
         sb.AppendLine($"{indent}}}");
@@ -344,7 +355,8 @@ internal sealed class LightProtoCSharpGenerator
         Dictionary<string, DescriptorProto> mapEntries,
         string package,
         string indent,
-        string messageFullName
+        string messageFullName,
+        string fileSyntax
     )
     {
         // Detect map fields: repeated message whose type is a map-entry.
@@ -371,6 +383,11 @@ internal sealed class LightProtoCSharpGenerator
         var memberAttrArgs = $"{field.Number}";
         if (dataFormat != null)
             memberAttrArgs += $", DataFormat = global::LightProto.{dataFormat}";
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (isRepeated && field.IsPacked(fileSyntax))
+            memberAttrArgs += ", IsPacked = true";
+#pragma warning restore CS0618 // Type or member is obsolete
 
         sb.AppendLine($"{indent}[global::LightProto.ProtoMember({memberAttrArgs})]");
 
