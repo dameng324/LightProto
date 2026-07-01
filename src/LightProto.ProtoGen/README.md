@@ -43,6 +43,10 @@ lightproto-gen --proto messages.proto
 | `--oneof <value>` | How `oneof` groups are translated to C# members. Values: `Default` (nullable properties, default), `ProtoInclude` (all-message oneofs become `[ProtoInclude]` attributes). |
 | `--default-case-style <style>` | Default style for all generated identifiers when no rule matches. Values: `Pascal` (default), `Camel`, `Preserve`. |
 | `--case-style "<pattern>=<style>"` | Repeatable case-style override rule matched against proto FullName (`package + nested types + member`). Glob supports `*` (single segment), `**` (0..N segments), and segment globs like `package*`. |
+| `--default-repeated-type <type>` | Default C# collection type for repeated fields. Default: `List`. |
+| `--repeated-type "<pattern>=<type>"` | Repeatable repeated-field type override rule matched against proto field FullName. Uses the same glob syntax and priority as `--case-style`. |
+| `--default-map-type <type>` | Default C# dictionary type for map fields. Default: `Dictionary`. |
+| `--map-type "<pattern>=<type>"` | Repeatable map-field type override rule matched against proto field FullName. Uses the same glob syntax and priority as `--case-style`. |
 
 ## Examples
 
@@ -71,6 +75,15 @@ lightproto-gen --proto api.proto --output ./Generated \
   --case-style "market.exchange.ExchangeType.SSE=Preserve" \
   --case-style "market.exchange.Trade.exchange_type=Camel"
 
+# Generate repeated/map fields with selected collection shapes
+lightproto-gen --proto api.proto --output ./Generated \
+  --default-repeated-type Array \
+  --repeated-type "market.exchange.Trade.tags=HashSet" \
+  --repeated-type "market.exchange.Trade.orders=IReadOnlyList" \
+  --default-map-type Dictionary \
+  --map-type "market.exchange.Book.metadata=ImmutableDictionary" \
+  --map-type "market.exchange.Book.readonly_counts=ReadOnlyDictionary"
+
 # Pipe mode: read schema from stdin, write C# to stdout
 cat messages.proto | lightproto-gen --namespace MyApp.Models
 
@@ -94,6 +107,32 @@ cat messages.proto | lightproto-gen --namespace MyApp.Models --output ./Generate
   4. then fewer `**`
   5. then deeper path
   6. then later rule overrides earlier rule
+
+## Repeated and map type selectors
+
+`--repeated-type` and `--map-type` use the same selector rules as `--case-style`.
+The pattern target is the proto field FullName, for example:
+
+```bash
+lightproto-gen --proto market.proto \
+  --repeated-type "market.exchange.Trade.tags=HashSet" \
+  --map-type "market.exchange.Book.metadata=ImmutableDictionary"
+```
+
+Supported repeated-field types:
+
+`List`, `Array`, `HashSet`, `IList`, `IReadOnlyList`, `ICollection`,
+`IReadOnlyCollection`, `IEnumerable`, `ISet`, `Queue`, `Stack`, `LinkedList`,
+`SortedSet`, `Collection`, `ReadOnlyCollection`, `ObservableCollection`,
+`ReadOnlyObservableCollection`, `ConcurrentQueue`, `ConcurrentStack`, `ConcurrentBag`,
+`BlockingCollection`, `ImmutableArray`, `ImmutableList`, `ImmutableHashSet`,
+`ImmutableSortedSet`, `ImmutableQueue`, `ImmutableStack`, `FrozenSet`.
+
+Supported map-field types:
+
+`Dictionary`, `IDictionary`, `IReadOnlyDictionary`, `SortedDictionary`, `SortedList`,
+`ConcurrentDictionary`, `ReadOnlyDictionary`, `ImmutableDictionary`,
+`ImmutableSortedDictionary`, `FrozenDictionary`.
 
 ## Type shape details
 

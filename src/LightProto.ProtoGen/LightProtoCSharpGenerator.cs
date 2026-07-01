@@ -31,11 +31,21 @@ internal sealed class LightProtoCSharpGenerator
     private readonly string _indent = "    ";
     private readonly GeneratorOptions _options;
     private readonly CaseStyleResolver _caseStyleResolver;
+    private readonly SelectorResolver<RepeatedFieldType> _repeatedFieldTypeResolver;
+    private readonly SelectorResolver<MapFieldType> _mapFieldTypeResolver;
 
     public LightProtoCSharpGenerator(GeneratorOptions? options = null)
     {
         _options = options ?? new GeneratorOptions();
         _caseStyleResolver = new CaseStyleResolver(_options.DefaultCaseStyle, _options.CaseStyleRules);
+        _repeatedFieldTypeResolver = new SelectorResolver<RepeatedFieldType>(
+            _options.DefaultRepeatedType,
+            _options.RepeatedFieldTypeRules.Select(rule => (rule.Pattern, rule.Type))
+        );
+        _mapFieldTypeResolver = new SelectorResolver<MapFieldType>(
+            _options.DefaultMapType,
+            _options.MapFieldTypeRules.Select(rule => (rule.Pattern, rule.Type))
+        );
     }
 
     /// <summary>
@@ -396,11 +406,14 @@ internal sealed class LightProtoCSharpGenerator
         var rawTypeName = field.TypeName?.TrimStart('.');
         if (rawTypeName is "google.protobuf.Timestamp" or "google.protobuf.Duration")
             sb.AppendLine($"{indent}[global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]");
-        var fieldCsName = ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name));
+        var fieldFullName = AppendProtoSegment(messageFullName, field.Name);
+        var fieldCsName = ConvertIdentifier(field.Name, fieldFullName);
 
         if (isRepeated)
         {
-            sb.AppendLine($"{indent}public global::System.Collections.Generic.List<{csType}> {fieldCsName} {{ get; set; }} = new();");
+            var repeatedFieldType = _repeatedFieldTypeResolver.Resolve(fieldFullName);
+            var repeatedType = GetRepeatedType(repeatedFieldType, csType);
+            sb.AppendLine($"{indent}public {repeatedType.TypeName} {fieldCsName} {{ get; set; }} = {repeatedType.Initializer};");
         }
         else if (makeNullable)
         {
@@ -480,14 +493,142 @@ internal sealed class LightProtoCSharpGenerator
         )
             sb.AppendLine($"{indent}[global::LightProto.CompatibilityLevel(global::LightProto.CompatibilityLevel.Level240)]");
 
+        var fieldFullName = AppendProtoSegment(messageFullName, field.Name);
+        var mapFieldType = _mapFieldTypeResolver.Resolve(fieldFullName);
+        var mapType = GetMapType(mapFieldType, keyCs, valueCs);
         sb.AppendLine(
-            $"{indent}public global::System.Collections.Generic.Dictionary<{keyCs}, {valueCs}> {ConvertIdentifier(field.Name, AppendProtoSegment(messageFullName, field.Name))} {{ get; set; }} = new();"
+            $"{indent}public {mapType.TypeName} {ConvertIdentifier(field.Name, fieldFullName)} {{ get; set; }} = {mapType.Initializer};"
         );
     }
 
     // -------------------------------------------------------------------------
     // Type resolution helpers
     // -------------------------------------------------------------------------
+
+    private static CollectionTypeSpec GetRepeatedType(RepeatedFieldType fieldType, string itemType)
+    {
+        return fieldType switch
+        {
+            RepeatedFieldType.Array => new($"{itemType}[]", $"global::System.Array.Empty<{itemType}>()"),
+            RepeatedFieldType.HashSet => new($"global::System.Collections.Generic.HashSet<{itemType}>", "new()"),
+            RepeatedFieldType.IList => new(
+                $"global::System.Collections.Generic.IList<{itemType}>",
+                $"new global::System.Collections.Generic.List<{itemType}>()"
+            ),
+            RepeatedFieldType.IReadOnlyList => new(
+                $"global::System.Collections.Generic.IReadOnlyList<{itemType}>",
+                $"global::System.Array.Empty<{itemType}>()"
+            ),
+            RepeatedFieldType.ICollection => new(
+                $"global::System.Collections.Generic.ICollection<{itemType}>",
+                $"new global::System.Collections.Generic.List<{itemType}>()"
+            ),
+            RepeatedFieldType.IReadOnlyCollection => new(
+                $"global::System.Collections.Generic.IReadOnlyCollection<{itemType}>",
+                $"global::System.Array.Empty<{itemType}>()"
+            ),
+            RepeatedFieldType.IEnumerable => new(
+                $"global::System.Collections.Generic.IEnumerable<{itemType}>",
+                $"new global::System.Collections.Generic.List<{itemType}>()"
+            ),
+            RepeatedFieldType.ISet => new(
+                $"global::System.Collections.Generic.ISet<{itemType}>",
+                $"new global::System.Collections.Generic.HashSet<{itemType}>()"
+            ),
+            RepeatedFieldType.Queue => new($"global::System.Collections.Generic.Queue<{itemType}>", "new()"),
+            RepeatedFieldType.Stack => new($"global::System.Collections.Generic.Stack<{itemType}>", "new()"),
+            RepeatedFieldType.LinkedList => new($"global::System.Collections.Generic.LinkedList<{itemType}>", "new()"),
+            RepeatedFieldType.SortedSet => new($"global::System.Collections.Generic.SortedSet<{itemType}>", "new()"),
+            RepeatedFieldType.Collection => new($"global::System.Collections.ObjectModel.Collection<{itemType}>", "new()"),
+            RepeatedFieldType.ReadOnlyCollection => new(
+                $"global::System.Collections.ObjectModel.ReadOnlyCollection<{itemType}>",
+                $"new(new global::System.Collections.Generic.List<{itemType}>())"
+            ),
+            RepeatedFieldType.ObservableCollection => new(
+                $"global::System.Collections.ObjectModel.ObservableCollection<{itemType}>",
+                "new()"
+            ),
+            RepeatedFieldType.ReadOnlyObservableCollection => new(
+                $"global::System.Collections.ObjectModel.ReadOnlyObservableCollection<{itemType}>",
+                $"new(new global::System.Collections.ObjectModel.ObservableCollection<{itemType}>())"
+            ),
+            RepeatedFieldType.ConcurrentQueue => new($"global::System.Collections.Concurrent.ConcurrentQueue<{itemType}>", "new()"),
+            RepeatedFieldType.ConcurrentStack => new($"global::System.Collections.Concurrent.ConcurrentStack<{itemType}>", "new()"),
+            RepeatedFieldType.ConcurrentBag => new($"global::System.Collections.Concurrent.ConcurrentBag<{itemType}>", "new()"),
+            RepeatedFieldType.BlockingCollection => new($"global::System.Collections.Concurrent.BlockingCollection<{itemType}>", "new()"),
+            RepeatedFieldType.ImmutableArray => new(
+                $"global::System.Collections.Immutable.ImmutableArray<{itemType}>",
+                $"global::System.Collections.Immutable.ImmutableArray<{itemType}>.Empty"
+            ),
+            RepeatedFieldType.ImmutableList => new(
+                $"global::System.Collections.Immutable.ImmutableList<{itemType}>",
+                $"global::System.Collections.Immutable.ImmutableList<{itemType}>.Empty"
+            ),
+            RepeatedFieldType.ImmutableHashSet => new(
+                $"global::System.Collections.Immutable.ImmutableHashSet<{itemType}>",
+                $"global::System.Collections.Immutable.ImmutableHashSet<{itemType}>.Empty"
+            ),
+            RepeatedFieldType.ImmutableSortedSet => new(
+                $"global::System.Collections.Immutable.ImmutableSortedSet<{itemType}>",
+                $"global::System.Collections.Immutable.ImmutableSortedSet<{itemType}>.Empty"
+            ),
+            RepeatedFieldType.ImmutableQueue => new(
+                $"global::System.Collections.Immutable.ImmutableQueue<{itemType}>",
+                $"global::System.Collections.Immutable.ImmutableQueue<{itemType}>.Empty"
+            ),
+            RepeatedFieldType.ImmutableStack => new(
+                $"global::System.Collections.Immutable.ImmutableStack<{itemType}>",
+                $"global::System.Collections.Immutable.ImmutableStack<{itemType}>.Empty"
+            ),
+            RepeatedFieldType.FrozenSet => new(
+                $"global::System.Collections.Frozen.FrozenSet<{itemType}>",
+                $"global::System.Collections.Frozen.FrozenSet<{itemType}>.Empty"
+            ),
+            _ => new($"global::System.Collections.Generic.List<{itemType}>", "new()"),
+        };
+    }
+
+    private static CollectionTypeSpec GetMapType(MapFieldType fieldType, string keyType, string valueType)
+    {
+        var dictionaryType = $"global::System.Collections.Generic.Dictionary<{keyType}, {valueType}>";
+
+        return fieldType switch
+        {
+            MapFieldType.IDictionary => new(
+                $"global::System.Collections.Generic.IDictionary<{keyType}, {valueType}>",
+                $"new {dictionaryType}()"
+            ),
+            MapFieldType.IReadOnlyDictionary => new(
+                $"global::System.Collections.Generic.IReadOnlyDictionary<{keyType}, {valueType}>",
+                $"new {dictionaryType}()"
+            ),
+            MapFieldType.SortedDictionary => new($"global::System.Collections.Generic.SortedDictionary<{keyType}, {valueType}>", "new()"),
+            MapFieldType.SortedList => new($"global::System.Collections.Generic.SortedList<{keyType}, {valueType}>", "new()"),
+            MapFieldType.ConcurrentDictionary => new(
+                $"global::System.Collections.Concurrent.ConcurrentDictionary<{keyType}, {valueType}>",
+                "new()"
+            ),
+            MapFieldType.ReadOnlyDictionary => new(
+                $"global::System.Collections.ObjectModel.ReadOnlyDictionary<{keyType}, {valueType}>",
+                $"new(new {dictionaryType}())"
+            ),
+            MapFieldType.ImmutableDictionary => new(
+                $"global::System.Collections.Immutable.ImmutableDictionary<{keyType}, {valueType}>",
+                $"global::System.Collections.Immutable.ImmutableDictionary<{keyType}, {valueType}>.Empty"
+            ),
+            MapFieldType.ImmutableSortedDictionary => new(
+                $"global::System.Collections.Immutable.ImmutableSortedDictionary<{keyType}, {valueType}>",
+                $"global::System.Collections.Immutable.ImmutableSortedDictionary<{keyType}, {valueType}>.Empty"
+            ),
+            MapFieldType.FrozenDictionary => new(
+                $"global::System.Collections.Frozen.FrozenDictionary<{keyType}, {valueType}>",
+                $"global::System.Collections.Frozen.FrozenDictionary<{keyType}, {valueType}>.Empty"
+            ),
+            _ => new(dictionaryType, "new()"),
+        };
+    }
+
+    private readonly record struct CollectionTypeSpec(string TypeName, string Initializer);
 
     private (string CsType, string? DataFormat) ResolveType(
         FieldDescriptorProto field,
