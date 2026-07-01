@@ -71,11 +71,147 @@ internal enum CaseStyle
 }
 
 /// <summary>
+/// Controls the C# collection type emitted for repeated fields.
+/// </summary>
+internal enum RepeatedFieldType
+{
+    /// <summary>Emit <c>List&lt;T&gt;</c> (the default).</summary>
+    List = 0,
+
+    /// <summary>Emit <c>T[]</c>.</summary>
+    Array,
+
+    /// <summary>Emit <c>HashSet&lt;T&gt;</c>.</summary>
+    HashSet,
+
+    /// <summary>Emit <c>IList&lt;T&gt;</c>.</summary>
+    IList,
+
+    /// <summary>Emit <c>IReadOnlyList&lt;T&gt;</c>.</summary>
+    IReadOnlyList,
+
+    /// <summary>Emit <c>ICollection&lt;T&gt;</c>.</summary>
+    ICollection,
+
+    /// <summary>Emit <c>IReadOnlyCollection&lt;T&gt;</c>.</summary>
+    IReadOnlyCollection,
+
+    /// <summary>Emit <c>IEnumerable&lt;T&gt;</c>.</summary>
+    IEnumerable,
+
+    /// <summary>Emit <c>ISet&lt;T&gt;</c>.</summary>
+    ISet,
+
+    /// <summary>Emit <c>Queue&lt;T&gt;</c>.</summary>
+    Queue,
+
+    /// <summary>Emit <c>Stack&lt;T&gt;</c>.</summary>
+    Stack,
+
+    /// <summary>Emit <c>LinkedList&lt;T&gt;</c>.</summary>
+    LinkedList,
+
+    /// <summary>Emit <c>SortedSet&lt;T&gt;</c>.</summary>
+    SortedSet,
+
+    /// <summary>Emit <c>Collection&lt;T&gt;</c>.</summary>
+    Collection,
+
+    /// <summary>Emit <c>ReadOnlyCollection&lt;T&gt;</c>.</summary>
+    ReadOnlyCollection,
+
+    /// <summary>Emit <c>ObservableCollection&lt;T&gt;</c>.</summary>
+    ObservableCollection,
+
+    /// <summary>Emit <c>ReadOnlyObservableCollection&lt;T&gt;</c>.</summary>
+    ReadOnlyObservableCollection,
+
+    /// <summary>Emit <c>ConcurrentQueue&lt;T&gt;</c>.</summary>
+    ConcurrentQueue,
+
+    /// <summary>Emit <c>ConcurrentStack&lt;T&gt;</c>.</summary>
+    ConcurrentStack,
+
+    /// <summary>Emit <c>ConcurrentBag&lt;T&gt;</c>.</summary>
+    ConcurrentBag,
+
+    /// <summary>Emit <c>BlockingCollection&lt;T&gt;</c>.</summary>
+    BlockingCollection,
+
+    /// <summary>Emit <c>ImmutableArray&lt;T&gt;</c>.</summary>
+    ImmutableArray,
+
+    /// <summary>Emit <c>ImmutableList&lt;T&gt;</c>.</summary>
+    ImmutableList,
+
+    /// <summary>Emit <c>ImmutableHashSet&lt;T&gt;</c>.</summary>
+    ImmutableHashSet,
+
+    /// <summary>Emit <c>ImmutableSortedSet&lt;T&gt;</c>.</summary>
+    ImmutableSortedSet,
+
+    /// <summary>Emit <c>ImmutableQueue&lt;T&gt;</c>.</summary>
+    ImmutableQueue,
+
+    /// <summary>Emit <c>ImmutableStack&lt;T&gt;</c>.</summary>
+    ImmutableStack,
+
+    /// <summary>Emit <c>FrozenSet&lt;T&gt;</c>.</summary>
+    FrozenSet,
+}
+
+/// <summary>
+/// Controls the C# dictionary type emitted for map fields.
+/// </summary>
+internal enum MapFieldType
+{
+    /// <summary>Emit <c>Dictionary&lt;TKey, TValue&gt;</c> (the default).</summary>
+    Dictionary = 0,
+
+    /// <summary>Emit <c>IDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    IDictionary,
+
+    /// <summary>Emit <c>IReadOnlyDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    IReadOnlyDictionary,
+
+    /// <summary>Emit <c>SortedDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    SortedDictionary,
+
+    /// <summary>Emit <c>SortedList&lt;TKey, TValue&gt;</c>.</summary>
+    SortedList,
+
+    /// <summary>Emit <c>ConcurrentDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    ConcurrentDictionary,
+
+    /// <summary>Emit <c>ReadOnlyDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    ReadOnlyDictionary,
+
+    /// <summary>Emit <c>ImmutableDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    ImmutableDictionary,
+
+    /// <summary>Emit <c>ImmutableSortedDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    ImmutableSortedDictionary,
+
+    /// <summary>Emit <c>FrozenDictionary&lt;TKey, TValue&gt;</c>.</summary>
+    FrozenDictionary,
+}
+
+/// <summary>
 /// A naming rule that maps a proto FullName glob <see cref="Pattern"/> to a <see cref="Style"/>.
 /// </summary>
 /// <param name="Pattern">A glob pattern matched against proto FullName.</param>
 /// <param name="Style">The style to apply when matched.</param>
 internal sealed record CaseStyleRule(string Pattern, CaseStyle Style);
+
+/// <summary>
+/// A type-shape rule that maps a proto repeated-field FullName glob <see cref="Pattern"/> to a <see cref="Type"/>.
+/// </summary>
+internal sealed record RepeatedFieldTypeRule(string Pattern, RepeatedFieldType Type);
+
+/// <summary>
+/// A type-shape rule that maps a proto map-field FullName glob <see cref="Pattern"/> to a <see cref="Type"/>.
+/// </summary>
+internal sealed record MapFieldTypeRule(string Pattern, MapFieldType Type);
 
 /// <summary>
 /// Controls how <see cref="LightProtoCSharpGenerator"/> produces C# code.
@@ -111,6 +247,30 @@ internal sealed class GeneratorOptions
     /// When multiple rules match, the most specific one wins; ties are resolved by later rules.
     /// </summary>
     public List<CaseStyleRule> CaseStyleRules { get; } = [];
+
+    /// <summary>
+    /// Default repeated-field collection type applied when no <see cref="RepeatedFieldTypeRules"/> match.
+    /// Defaults to <see cref="RepeatedFieldType.List"/>.
+    /// </summary>
+    public RepeatedFieldType DefaultRepeatedType { get; set; } = RepeatedFieldType.List;
+
+    /// <summary>
+    /// Ordered glob rules matched against proto repeated-field FullName.
+    /// When multiple rules match, the most specific one wins; ties are resolved by later rules.
+    /// </summary>
+    public List<RepeatedFieldTypeRule> RepeatedFieldTypeRules { get; } = [];
+
+    /// <summary>
+    /// Default map-field dictionary type applied when no <see cref="MapFieldTypeRules"/> match.
+    /// Defaults to <see cref="MapFieldType.Dictionary"/>.
+    /// </summary>
+    public MapFieldType DefaultMapType { get; set; } = MapFieldType.Dictionary;
+
+    /// <summary>
+    /// Ordered glob rules matched against proto map-field FullName.
+    /// When multiple rules match, the most specific one wins; ties are resolved by later rules.
+    /// </summary>
+    public List<MapFieldTypeRule> MapFieldTypeRules { get; } = [];
 
     /// <summary>Returns the C# type keyword for message/record declarations.</summary>
     public string TypeKeyword =>

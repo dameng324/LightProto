@@ -78,6 +78,38 @@ internal class Program
         };
         caseStyleOption.Arity = ArgumentArity.ZeroOrMore;
 
+        var defaultRepeatedTypeOption = new Option<RepeatedFieldType>("--default-repeated-type")
+        {
+            Description = "Default C# collection type for repeated fields. Default: List.",
+            DefaultValueFactory = _ => RepeatedFieldType.List,
+        };
+
+        var repeatedTypeOption = new Option<string[]>("--repeated-type")
+        {
+            Description =
+                "Repeated-field type rule in the format <Pattern>=<Type>. "
+                + "Repeat to add multiple rules. Pattern matches proto repeated-field FullName segments with glob "
+                + "(* matches one segment, ** matches 0..N segments).",
+            AllowMultipleArgumentsPerToken = false,
+        };
+        repeatedTypeOption.Arity = ArgumentArity.ZeroOrMore;
+
+        var defaultMapTypeOption = new Option<MapFieldType>("--default-map-type")
+        {
+            Description = "Default C# dictionary type for map fields. Default: Dictionary.",
+            DefaultValueFactory = _ => MapFieldType.Dictionary,
+        };
+
+        var mapTypeOption = new Option<string[]>("--map-type")
+        {
+            Description =
+                "Map-field type rule in the format <Pattern>=<Type>. "
+                + "Repeat to add multiple rules. Pattern matches proto map-field FullName segments with glob "
+                + "(* matches one segment, ** matches 0..N segments).",
+            AllowMultipleArgumentsPerToken = false,
+        };
+        mapTypeOption.Arity = ArgumentArity.ZeroOrMore;
+
         var rootCommand = new RootCommand
         {
             Description = "lightproto-gen - Generate LightProto [ProtoContract] C# classes from .proto files.",
@@ -90,6 +122,10 @@ internal class Program
         rootCommand.Options.Add(oneofOption);
         rootCommand.Options.Add(defaultCaseStyleOption);
         rootCommand.Options.Add(caseStyleOption);
+        rootCommand.Options.Add(defaultRepeatedTypeOption);
+        rootCommand.Options.Add(repeatedTypeOption);
+        rootCommand.Options.Add(defaultMapTypeOption);
+        rootCommand.Options.Add(mapTypeOption);
 
         rootCommand.SetAction(
             (ParseResult parseResult) =>
@@ -102,11 +138,19 @@ internal class Program
                 var oneofHandling = parseResult.GetValue(oneofOption);
                 var defaultCaseStyle = parseResult.GetValue(defaultCaseStyleOption);
                 var caseStyleAssignments = parseResult.GetValue(caseStyleOption) ?? [];
+                var defaultRepeatedType = parseResult.GetValue(defaultRepeatedTypeOption);
+                var repeatedTypeAssignments = parseResult.GetValue(repeatedTypeOption) ?? [];
+                var defaultMapType = parseResult.GetValue(defaultMapTypeOption);
+                var mapTypeAssignments = parseResult.GetValue(mapTypeOption) ?? [];
 
                 List<CaseStyleRule> caseStyleRules;
+                List<RepeatedFieldTypeRule> repeatedTypeRules;
+                List<MapFieldTypeRule> mapTypeRules;
                 try
                 {
                     caseStyleRules = caseStyleAssignments.Select(CaseStyleRuleParser.ParseAssignment).ToList();
+                    repeatedTypeRules = repeatedTypeAssignments.Select(RepeatedFieldTypeRuleParser.ParseAssignment).ToList();
+                    mapTypeRules = mapTypeAssignments.Select(MapFieldTypeRuleParser.ParseAssignment).ToList();
                 }
                 catch (ArgumentException ex)
                 {
@@ -120,8 +164,12 @@ internal class Program
                     Nullability = nullability,
                     OneofHandling = oneofHandling,
                     DefaultCaseStyle = defaultCaseStyle,
+                    DefaultRepeatedType = defaultRepeatedType,
+                    DefaultMapType = defaultMapType,
                 };
                 options.CaseStyleRules.AddRange(caseStyleRules);
+                options.RepeatedFieldTypeRules.AddRange(repeatedTypeRules);
+                options.MapFieldTypeRules.AddRange(mapTypeRules);
 
                 var generator = new LightProtoCSharpGenerator(options);
                 bool useStdout = outputDir is null;
