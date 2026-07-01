@@ -66,7 +66,7 @@ internal static class Helper
             return true;
         }
 
-        return HasProperty(type, "Length", SpecialType.System_Int32);
+        return HasProperty(type, "Length", SpecialType.System_Int32) || HasProperty(type, "Length", SpecialType.System_Int64);
     }
 
     public static bool HasProperty(ITypeSymbol type, string name, SpecialType specialType)
@@ -117,9 +117,35 @@ internal static class Helper
     {
         if (elementType.SpecialType == SpecialType.System_Byte && IsArrayType(type))
             return false;
+        if (IsReadOnlyMemoryType(type) || IsMemoryType(type) || IsReadOnlySequenceType(type))
+            return true;
         var baseCollectionType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")?.Construct(elementType)!;
         var conversion = compilation.ClassifyConversion(type, baseCollectionType);
         return conversion.IsImplicit;
+    }
+
+    internal static bool IsReadOnlyMemoryType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.OriginalDefinition.ToDisplayString() == "System.ReadOnlyMemory<T>";
+    }
+
+    internal static bool IsMemoryType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.OriginalDefinition.ToDisplayString() == "System.Memory<T>";
+    }
+
+    internal static bool IsReadOnlySequenceType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.OriginalDefinition.ToDisplayString() == "System.Buffers.ReadOnlySequence<T>";
     }
 
     internal static bool IsStackType(ITypeSymbol type)
@@ -671,7 +697,13 @@ internal static class Helper
                     );
                     var fixedSize = GetFixedSize(elementType, format);
 
-                    if (!isPacked)
+                    if (
+                        !isPacked
+                        && !(
+                            elementType.SpecialType == SpecialType.System_Byte
+                            && (IsMemoryType(namedType) || IsReadOnlyMemoryType(namedType) || IsReadOnlySequenceType(namedType))
+                        )
+                    )
                     {
                         rawTag = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
                     }
