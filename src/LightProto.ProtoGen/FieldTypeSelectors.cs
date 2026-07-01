@@ -64,11 +64,10 @@ internal sealed class SelectorResolver<TValue>
         if (rules is null)
             return;
 
-        int order = 0;
         foreach (var rule in rules)
         {
             var pattern = CaseStyleResolver.GlobPattern.Parse(rule.Pattern);
-            _rules.Add(new CompiledSelectorRule(order++, rule.Pattern, rule.Value, pattern, pattern.Specificity));
+            _rules.Add(new CompiledSelectorRule(rule.Value, pattern, pattern.Specificity));
         }
     }
 
@@ -90,8 +89,6 @@ internal sealed class SelectorResolver<TValue>
     }
 
     private sealed record CompiledSelectorRule(
-        int Order,
-        string RawPattern,
         TValue Value,
         CaseStyleResolver.GlobPattern Pattern,
         CaseStyleResolver.Specificity Specificity
@@ -100,7 +97,7 @@ internal sealed class SelectorResolver<TValue>
         public bool IsMoreSpecificThan(CompiledSelectorRule other)
         {
             var score = Specificity.CompareTo(other.Specificity);
-            return score > 0 || (score == 0 && Order > other.Order);
+            return score >= 0;
         }
     }
 }

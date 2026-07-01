@@ -40,6 +40,72 @@ public class FieldTypeSelectorTests
     }
 
     [Test]
+    public async Task SelectorResolver_NullRulesUsesDefaultValue()
+    {
+        var resolver = new SelectorResolver<MapFieldType>(MapFieldType.Dictionary, null);
+
+        await Assert.That(resolver.Resolve("pkg.Message.items")).IsEqualTo(MapFieldType.Dictionary);
+    }
+
+    [Test]
+    public async Task SelectorResolver_SameSpecificityLaterRuleWins()
+    {
+        var resolver = new SelectorResolver<MapFieldType>(
+            MapFieldType.Dictionary,
+            [("pkg.Message.items", MapFieldType.IDictionary), ("pkg.Message.items", MapFieldType.IReadOnlyDictionary)]
+        );
+
+        await Assert.That(resolver.Resolve("pkg.Message.items")).IsEqualTo(MapFieldType.IReadOnlyDictionary);
+    }
+
+    [Test]
+    public async Task SelectorResolver_LessSpecificLaterRuleDoesNotWin()
+    {
+        var resolver = new SelectorResolver<MapFieldType>(
+            MapFieldType.Dictionary,
+            [("pkg.Message.items", MapFieldType.IDictionary), ("pkg.**", MapFieldType.IReadOnlyDictionary)]
+        );
+
+        await Assert.That(resolver.Resolve("pkg.Message.items")).IsEqualTo(MapFieldType.IDictionary);
+    }
+
+    [Test]
+    public async Task RepeatedTypeParser_EmptyRuleThrowsFriendlyError()
+    {
+        await Assert
+            .That(() => RepeatedFieldTypeRuleParser.ParseAssignment(" "))
+            .Throws<ArgumentException>()
+            .WithMessage("Repeated-field type rule cannot be empty. Expected '<Pattern>=<Type>'.");
+    }
+
+    [Test]
+    public async Task RepeatedTypeParser_MissingSeparatorThrowsFriendlyError()
+    {
+        await Assert
+            .That(() => RepeatedFieldTypeRuleParser.ParseAssignment("pkg.Message.tags"))
+            .Throws<ArgumentException>()
+            .WithMessage("Invalid --repeated-type 'pkg.Message.tags'. Expected '<Pattern>=<Type>'.");
+    }
+
+    [Test]
+    public async Task RepeatedTypeParser_EmptyValueThrowsFriendlyError()
+    {
+        await Assert
+            .That(() => RepeatedFieldTypeRuleParser.ParseAssignment("pkg.Message.tags= "))
+            .Throws<ArgumentException>()
+            .WithMessage("Invalid --repeated-type 'pkg.Message.tags= '. Expected '<Pattern>=<Type>'.");
+    }
+
+    [Test]
+    public async Task MapTypeParser_EmptyPatternThrowsFriendlyError()
+    {
+        await Assert
+            .That(() => MapFieldTypeRuleParser.ParseAssignment(" =Dictionary"))
+            .Throws<ArgumentException>()
+            .WithMessage("Invalid --map-type ' =Dictionary'. Expected '<Pattern>=<Type>'.");
+    }
+
+    [Test]
     public async Task RepeatedTypeParser_InvalidTypeThrowsFriendlyError()
     {
         await Assert
@@ -47,6 +113,17 @@ public class FieldTypeSelectorTests
             .Throws<ArgumentException>()
             .WithMessage(
                 "Invalid repeated-field type 'UnknownType'. Supported values: List, Array, HashSet, IList, IReadOnlyList, ICollection, IReadOnlyCollection, IEnumerable, ISet, Queue, Stack, LinkedList, SortedSet, Collection, ReadOnlyCollection, ObservableCollection, ReadOnlyObservableCollection, ConcurrentQueue, ConcurrentStack, ConcurrentBag, BlockingCollection, ImmutableArray, ImmutableList, ImmutableHashSet, ImmutableSortedSet, ImmutableQueue, ImmutableStack, FrozenSet."
+            );
+    }
+
+    [Test]
+    public async Task MapTypeParser_InvalidTypeThrowsFriendlyError()
+    {
+        await Assert
+            .That(() => MapFieldTypeRuleParser.ParseAssignment("pkg.Message.items=UnknownType"))
+            .Throws<ArgumentException>()
+            .WithMessage(
+                "Invalid map-field type 'UnknownType'. Supported values: Dictionary, IDictionary, IReadOnlyDictionary, SortedDictionary, SortedList, ConcurrentDictionary, ReadOnlyDictionary, ImmutableDictionary, ImmutableSortedDictionary, FrozenDictionary."
             );
     }
 
