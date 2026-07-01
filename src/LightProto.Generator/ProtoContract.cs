@@ -356,7 +356,14 @@ class ProtoContract
                     else if (memberType.TypeKind == TypeKind.Interface || memberType.IsAbstract)
                     {
                         var concreteType = Helper.ResolveConcreteTypeSymbol(compilation, (memberType as INamedTypeSymbol)!);
-                        initializer = $"new {concreteType.ToDisplayString()}()";
+                        if (concreteType is IArrayTypeSymbol arrayTypeSymbol2)
+                        {
+                            initializer = $"Array.Empty<{arrayTypeSymbol2.ElementType}>()";
+                        }
+                        else
+                        {
+                            initializer = $"new {concreteType.ToDisplayString()}()";
+                        }
                     }
                     else
                     {
