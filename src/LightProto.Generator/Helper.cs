@@ -184,6 +184,24 @@ internal static class Helper
         return type.TypeKind == TypeKind.Array;
     }
 
+    internal static bool IsArrayImplicitType(Compilation compilation, ITypeSymbol type)
+    {
+        if (IsArrayType(type))
+            return true;
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var typeArguments = namedType.TypeArguments;
+        if (typeArguments.Length != 1)
+        {
+            return false;
+        }
+
+        return namedType.OriginalDefinition.ToDisplayString()
+            is "System.Collections.Generic.IReadOnlyList<T>"
+                or "System.Collections.Generic.IReadOnlyCollection<T>";
+    }
+
     internal static bool IsListType(Compilation compilation, ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
@@ -220,17 +238,16 @@ internal static class Helper
         return conversion.IsImplicit;
     }
 
-    internal static INamedTypeSymbol ResolveConcreteTypeSymbol(Compilation compilation, INamedTypeSymbol type)
+    internal static ITypeSymbol ResolveConcreteTypeSymbol(Compilation compilation, INamedTypeSymbol type)
     {
         // 如果是接口，就手动映射到具体类型
         var constructedFrom = type.OriginalDefinition.ToDisplayString();
 
         return constructedFrom switch
         {
-            "System.Collections.Generic.IList<T>"
-            or "System.Collections.Generic.IReadOnlyList<T>"
-            or "System.Collections.Generic.ICollection<T>"
-            or "System.Collections.Generic.IReadOnlyCollection<T>" => compilation
+            "System.Collections.Generic.IReadOnlyList<T>" or "System.Collections.Generic.IReadOnlyCollection<T>" =>
+                compilation.CreateArrayTypeSymbol(type.TypeArguments[0]),
+            "System.Collections.Generic.IList<T>" or "System.Collections.Generic.ICollection<T>" => compilation
                 .GetTypeByMetadataName("System.Collections.Generic.List`1")
                 ?.Construct(type.TypeArguments.ToArray())
                 ?? type,
@@ -519,7 +536,7 @@ internal static class Helper
                 member
             );
             var fixedSize = GetFixedSize(elementType, format);
-            return $"new LightProto.Parser.ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
+            return $"new global::LightProto.Parser.ArrayProto{readerOrWriter}<{elementType}>({elementWriter},{rawTag},{fixedSize})";
         }
 
         if (memberType is INamedTypeSymbol namedType)
@@ -662,6 +679,10 @@ internal static class Helper
                     {
                         if (readerOrWriter == "Reader")
                         {
+                            if (IsArrayImplicitType(compilation, namedType))
+                            {
+                                return $"new global::LightProto.Parser.ArrayProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
+                            }
                             if (IsListType(compilation, namedType))
                             {
                                 return $"new global::LightProto.Parser.ListProto{readerOrWriter}<{elementType}>({elementParser},{rawTag},{fixedSize})";
