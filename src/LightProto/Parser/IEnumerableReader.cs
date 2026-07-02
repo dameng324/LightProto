@@ -3,7 +3,7 @@
     public interface ICollectionReader
     {
         public WireFormat.WireType ItemWireType { get; }
-        internal object Empty { get; }
+        public object Empty { get; }
     }
 
     public interface ICollectionReader<out TCollection> : ICollectionReader

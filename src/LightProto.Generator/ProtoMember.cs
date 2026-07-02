@@ -153,6 +153,11 @@ internal class ProtoMember
             return $"{messageName}.{Name}.HasValue";
         }
 
+        if (Helper.IsInlineArrayType(Type))
+        {
+            return "true";
+        }
+
         if (Type.SpecialType == SpecialType.System_DateTime)
         {
             return "true";
