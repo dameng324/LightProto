@@ -2,8 +2,8 @@ namespace LightProto.Parser
 {
     public interface ICollectionWriter
     {
-        internal uint Tag { get; set; }
-        internal WireFormat.WireType ItemWireType { get; }
+        public uint Tag { get; set; }
+        public WireFormat.WireType ItemWireType { get; }
     }
 
     public class IEnumerableProtoWriter<TCollection, TItem> : IProtoWriter, IProtoWriter<TCollection>, ICollectionWriter

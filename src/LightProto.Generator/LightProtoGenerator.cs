@@ -409,10 +409,20 @@ public partial class LightProtoGenerator : IIncrementalGenerator
         string readerOrWriter
     )
     {
+        var generatedInlineArrayParsers = new HashSet<string>();
         foreach (
             var member in protoMembers.Where(member => !TryGetInternalTypeName(member.Type, member.DataFormat, member.StringIntern, out _))
         )
         {
+            if (Helper.TryGetInlineArrayInfo(member.Type, out var inlineArrayInfo))
+            {
+                var parserTypeName = Helper.GetInlineArrayProtoParserTypeName(inlineArrayInfo, readerOrWriter, member.Name);
+                if (generatedInlineArrayParsers.Add(parserTypeName))
+                {
+                    Helper.GenerateInlineArrayProtoParser(writer, inlineArrayInfo, readerOrWriter, member.Name);
+                }
+            }
+
             Helper.GetProtoParserMember(writer, compilation, member, readerOrWriter, targetType);
         }
     }

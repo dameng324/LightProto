@@ -7,6 +7,22 @@ namespace LightProto.Generator;
 
 internal static class Helper
 {
+    internal readonly struct InlineArrayInfo
+    {
+        public InlineArrayInfo(INamedTypeSymbol type, ITypeSymbol elementType, int length)
+        {
+            Type = type;
+            ElementType = elementType;
+            Length = length;
+        }
+
+        public INamedTypeSymbol Type { get; }
+
+        public ITypeSymbol ElementType { get; }
+
+        public int Length { get; }
+    }
+
     internal static bool IsGuidType(ITypeSymbol type)
     {
         var displayString = type.ToDisplayString();
@@ -90,6 +106,12 @@ internal static class Helper
 
     internal static bool IsCollectionType(Compilation compilation, ITypeSymbol type, out ITypeSymbol? itemType)
     {
+        if (TryGetInlineArrayInfo(type, out var inlineArrayInfo))
+        {
+            itemType = inlineArrayInfo.ElementType;
+            return true;
+        }
+
         if (type is IArrayTypeSymbol arrayType)
         {
             itemType = arrayType.ElementType;
@@ -166,6 +188,11 @@ internal static class Helper
 
     internal static ITypeSymbol GetElementType(Compilation compilation, ITypeSymbol collectionType)
     {
+        if (TryGetInlineArrayInfo(collectionType, out var inlineArrayInfo))
+        {
+            return inlineArrayInfo.ElementType;
+        }
+
         if (IsArrayType(collectionType))
         {
             return ((IArrayTypeSymbol)collectionType).ElementType;
@@ -177,6 +204,64 @@ internal static class Helper
         }
 
         throw new ArgumentException("Type is not an array, list, set, or concurrent collection type", nameof(collectionType));
+    }
+
+    internal static bool TryGetInlineArrayInfo(ITypeSymbol type, out InlineArrayInfo info)
+    {
+        info = default;
+
+        if (type is not INamedTypeSymbol namedType)
+        {
+            return false;
+        }
+
+        var inlineArrayAttribute = namedType
+            .GetAttributes()
+            .FirstOrDefault(attribute =>
+                attribute.AttributeClass?.ToDisplayString() == "System.Runtime.CompilerServices.InlineArrayAttribute"
+            );
+        if (
+            inlineArrayAttribute is null
+            || inlineArrayAttribute.ConstructorArguments.Length != 1
+            || inlineArrayAttribute.ConstructorArguments[0].Value is not int length
+            || length <= 0
+        )
+        {
+            return false;
+        }
+
+        var elementType = GetInlineArrayElementType(namedType);
+        if (elementType is null)
+        {
+            return false;
+        }
+
+        info = new InlineArrayInfo(namedType, elementType, length);
+        return true;
+    }
+
+    internal static bool IsInlineArrayType(ITypeSymbol type) => TryGetInlineArrayInfo(type, out _);
+
+    private static ITypeSymbol? GetInlineArrayElementType(INamedTypeSymbol type)
+    {
+        var field = type.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(field => !field.IsStatic && !field.IsConst);
+        if (field is null)
+        {
+            return null;
+        }
+
+        if (field.Type is ITypeParameterSymbol typeParameter && type.TypeParameters.Length == type.TypeArguments.Length)
+        {
+            for (var index = 0; index < type.TypeParameters.Length; index++)
+            {
+                if (SymbolEqualityComparer.Default.Equals(type.TypeParameters[index], typeParameter))
+                {
+                    return type.TypeArguments[index];
+                }
+            }
+        }
+
+        return field.Type;
     }
 
     internal static bool IsArrayType(ITypeSymbol type)
@@ -451,6 +536,262 @@ internal static class Helper
         );
     }
 
+    internal static string GetInlineArrayProtoParserTypeName(InlineArrayInfo info, string readerOrWriter, string? memberName = null)
+    {
+        var typeName = SanitizeIdentifier(info.Type.Name);
+        var lengthText = info.Length.ToString();
+        if (!typeName.Contains(lengthText))
+        {
+            typeName += lengthText;
+        }
+
+        if (info.Type.TypeArguments.Length > 0)
+        {
+            typeName += "Of" + string.Join("And", info.Type.TypeArguments.Select(GetTypeNameForIdentifier));
+        }
+
+        if (!string.IsNullOrWhiteSpace(memberName))
+        {
+            typeName = SanitizeIdentifier(memberName!) + typeName;
+        }
+
+        return $"{typeName}Proto{readerOrWriter}";
+    }
+
+    internal static void GenerateInlineArrayProtoParser(
+        CodeWriter writer,
+        InlineArrayInfo info,
+        string readerOrWriter,
+        string? memberName = null
+    )
+    {
+        if (readerOrWriter == "Writer")
+        {
+            GenerateInlineArrayProtoWriter(writer, info, memberName);
+        }
+        else
+        {
+            GenerateInlineArrayProtoReader(writer, info, memberName);
+        }
+    }
+
+    private static void GenerateInlineArrayProtoWriter(CodeWriter writer, InlineArrayInfo info, string? memberName)
+    {
+        var parserTypeName = GetInlineArrayProtoParserTypeName(info, "Writer", memberName);
+        var inlineArrayType = info.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var elementType = info.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var itemSupportsPacked = SupportsPackedEncoding(info.ElementType).ToString().ToLowerInvariant();
+        var shouldCheckNullItem = !info.ElementType.IsValueType || IsNullableType(info.ElementType);
+
+        writer.WriteLine(
+            $"private sealed class {parserTypeName}: IProtoWriter,IProtoWriter<{inlineArrayType}>,global::LightProto.Parser.ICollectionWriter"
+        );
+        using (writer.IndentScope())
+        {
+            writer.WriteLine($"int IProtoWriter.CalculateSize(object value) => CalculateSize(({inlineArrayType})value);");
+            writer.WriteLine($"long IProtoWriter.CalculateLongSize(object value) => CalculateLongSize(({inlineArrayType})value);");
+            writer.WriteLine(
+                $"void IProtoWriter.WriteTo(ref WriterContext output, object value) => WriteTo(ref output, ({inlineArrayType})value);"
+            );
+            writer.WriteLine("public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;");
+            writer.WriteLine("public bool IsMessage => false;");
+            writer.WriteLine($"private const int Length = {info.Length};");
+            writer.WriteLine($"private const bool ItemSupportsPacked = {itemSupportsPacked};");
+            writer.WriteLine("WireFormat.WireType global::LightProto.Parser.ICollectionWriter.ItemWireType => ItemWriter.WireType;");
+            writer.WriteLine($"private IProtoWriter<{elementType}> ItemWriter {{ get; }}");
+            writer.WriteLine("public uint Tag { get; set; }");
+            writer.WriteLine("private int ItemFixedSize { get; }");
+            writer.WriteLine($"public {parserTypeName}(IProtoWriter<{elementType}> itemWriter, uint tag, int itemFixedSize)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("ItemWriter = itemWriter;");
+                writer.WriteLine("Tag = tag;");
+                writer.WriteLine("ItemFixedSize = itemFixedSize;");
+            }
+
+            writer.WriteLine($"private long GetAllItemSize({inlineArrayType} collection)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("long size = 0;");
+                writer.WriteLine("for (var index = 0; index < Length; index++)");
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("var item = collection[index];");
+                    if (shouldCheckNullItem)
+                    {
+                        writer.WriteLine("if (item is null)");
+                        using (writer.IndentScope())
+                        {
+                            writer.WriteLine("throw new Exception(\"Sequence contained null element\");");
+                        }
+                    }
+                    writer.WriteLine("size += ItemWriter.CalculateLongMessageSize(item);");
+                }
+                writer.WriteLine("return size;");
+            }
+
+            writer.WriteLine($"private long CalculatePackedDataSize({inlineArrayType} collection)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("return ItemFixedSize != 0 ? (long)ItemFixedSize * Length : GetAllItemSize(collection);");
+            }
+
+            writer.WriteLine(
+                "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
+            );
+            writer.WriteLine($"public int CalculateSize({inlineArrayType} value)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("var longSize = CalculateLongSize(value);");
+                writer.WriteLine("if (longSize > int.MaxValue)");
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("throw new OverflowException(\"Calculated size exceeds Int32.MaxValue\");");
+                }
+                writer.WriteLine("return (int)longSize;");
+            }
+
+            writer.WriteLine(
+                "[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]"
+            );
+            writer.WriteLine($"public long CalculateLongSize({inlineArrayType} value)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("if (IsPacked)");
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("var dataSize = CalculatePackedDataSize(value);");
+                    writer.WriteLine(
+                        "return CodedOutputStream.ComputeRawVarint32Size(Tag) + CodedOutputStream.ComputeLongLengthSize(dataSize) + dataSize;"
+                    );
+                }
+                writer.WriteLine("return CodedOutputStream.ComputeRawVarint32Size(Tag) * Length + GetAllItemSize(value);");
+            }
+
+            writer.WriteLine(
+                "private bool IsPacked => ItemSupportsPacked && WireFormat.GetTagWireType(Tag) == WireFormat.WireType.LengthDelimited;"
+            );
+            writer.WriteLine($"public void WriteTo(ref WriterContext output, {inlineArrayType} collection)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("if (IsPacked)");
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("long size = CalculatePackedDataSize(collection);");
+                    writer.WriteLine("output.WriteTag(Tag);");
+                    writer.WriteLine("output.WriteLongLength(size);");
+                    writer.WriteLine("for (var index = 0; index < Length; index++)");
+                    using (writer.IndentScope())
+                    {
+                        writer.WriteLine("ItemWriter.WriteMessageTo(ref output, collection[index]);");
+                    }
+                    writer.WriteLine("return;");
+                }
+
+                writer.WriteLine("for (var index = 0; index < Length; index++)");
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("var item = collection[index];");
+                    if (shouldCheckNullItem)
+                    {
+                        writer.WriteLine("if (item is null)");
+                        using (writer.IndentScope())
+                        {
+                            writer.WriteLine("throw new Exception(\"Sequence contained null element\");");
+                        }
+                    }
+                    writer.WriteLine("output.WriteTag(Tag);");
+                    writer.WriteLine("ItemWriter.WriteMessageTo(ref output, item);");
+                }
+            }
+        }
+    }
+
+    private static void GenerateInlineArrayProtoReader(CodeWriter writer, InlineArrayInfo info, string? memberName)
+    {
+        var parserTypeName = GetInlineArrayProtoParserTypeName(info, "Reader", memberName);
+        var inlineArrayType = info.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var elementType = info.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        writer.WriteLine(
+            $"private sealed class {parserTypeName}: global::LightProto.Parser.ICollectionReader<{inlineArrayType},{elementType}>"
+        );
+        using (writer.IndentScope())
+        {
+            writer.WriteLine($"object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);");
+            writer.WriteLine("public WireFormat.WireType WireType => WireFormat.WireType.LengthDelimited;");
+            writer.WriteLine("public bool IsMessage => false;");
+            writer.WriteLine($"private const int Length = {info.Length};");
+            writer.WriteLine("public WireFormat.WireType ItemWireType => ItemReader.WireType;");
+            writer.WriteLine("object global::LightProto.Parser.ICollectionReader.Empty => Empty;");
+            writer.WriteLine($"public IProtoReader<{elementType}> ItemReader {{ get; }}");
+            writer.WriteLine($"public {inlineArrayType} Empty => new {inlineArrayType}();");
+            writer.WriteLine($"private global::LightProto.Parser.ArrayProtoReader<{elementType}> ArrayReader {{ get; }}");
+            writer.WriteLine($"public {parserTypeName}(IProtoReader<{elementType}> itemReader, uint tag, int itemFixedSize)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("ItemReader = itemReader;");
+                writer.WriteLine(
+                    "ArrayReader = new global::LightProto.Parser.ArrayProtoReader<" + elementType + ">(itemReader, tag, itemFixedSize);"
+                );
+            }
+
+            writer.WriteLine($"public {inlineArrayType} ParseFrom(ref ReaderContext input)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine("var items = ArrayReader.ParseFrom(ref input);");
+                writer.WriteLine($"var collection = default({inlineArrayType});");
+                writer.WriteLine("var count = Math.Min(items.Length, Length);");
+                writer.WriteLine("for (var index = 0; index < count; index++)");
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("collection[index] = items[index];");
+                }
+                writer.WriteLine("return collection;");
+            }
+        }
+    }
+
+    private static string GetTypeNameForIdentifier(ITypeSymbol type)
+    {
+        var name = type.SpecialType switch
+        {
+            SpecialType.System_Boolean => "Boolean",
+            SpecialType.System_Byte => "Byte",
+            SpecialType.System_SByte => "SByte",
+            SpecialType.System_Int16 => "Int16",
+            SpecialType.System_UInt16 => "UInt16",
+            SpecialType.System_Int32 => "Int32",
+            SpecialType.System_UInt32 => "UInt32",
+            SpecialType.System_Int64 => "Int64",
+            SpecialType.System_UInt64 => "UInt64",
+            SpecialType.System_Single => "Single",
+            SpecialType.System_Double => "Double",
+            SpecialType.System_Char => "Char",
+            SpecialType.System_String => "String",
+            _ => type.Name,
+        };
+
+        if (type is INamedTypeSymbol { TypeArguments.Length: > 0 } namedType)
+        {
+            name += string.Concat(namedType.TypeArguments.Select(GetTypeNameForIdentifier));
+        }
+
+        return SanitizeIdentifier(name);
+    }
+
+    private static string SanitizeIdentifier(string value)
+    {
+        var chars = value.Where(ch => char.IsLetterOrDigit(ch) || ch == '_').ToArray();
+        if (chars.Length == 0)
+        {
+            return "InlineArray";
+        }
+
+        var result = new string(chars);
+        return char.IsDigit(result[0]) ? "_" + result : result;
+    }
+
     static uint GetFieldNumber(uint rawTag)
     {
         return rawTag >> 3;
@@ -503,6 +844,37 @@ internal static class Helper
         }
 
         var fieldNumber = GetFieldNumber(rawTag);
+        if (TryGetInlineArrayInfo(memberType, out var inlineArrayInfo))
+        {
+            if (rawTag == 0)
+            {
+                throw new Exception("rawTag==0");
+            }
+
+            var elementType = inlineArrayInfo.ElementType;
+            if (!isPacked)
+            {
+                rawTag = ProtoMember.GetRawTag(fieldNumber, ProtoMember.GetPbWireType(compilation, elementType, format));
+            }
+
+            var elementParser = GetProtoParser(
+                compilation,
+                elementType,
+                format,
+                mapFormat,
+                readerOrWriter,
+                0,
+                targetType,
+                isPacked,
+                depth,
+                compatibilityLevel,
+                stringIntern,
+                member
+            );
+            var fixedSize = GetFixedSize(elementType, format);
+            return $"new {GetInlineArrayProtoParserTypeName(inlineArrayInfo, readerOrWriter, member?.Name)}({elementParser},{rawTag},{fixedSize})";
+        }
+
         if (memberType is IArrayTypeSymbol arrayType)
         {
             if (rawTag == 0)

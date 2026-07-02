@@ -1,6 +1,10 @@
 ﻿#nullable enable
 LightProto.IProtoWriter.CalculateLongSize(object! value) -> long
 LightProto.IProtoWriter<T>.CalculateLongSize(T value) -> long
+LightProto.Parser.ICollectionReader.Empty.get -> object!
+LightProto.Parser.ICollectionWriter.ItemWireType.get -> LightProto.WireFormat.WireType
+LightProto.Parser.ICollectionWriter.Tag.get -> uint
+LightProto.Parser.ICollectionWriter.Tag.set -> void
 LightProto.Parser.IEnumerableProtoWriter<TCollection, TItem>.CalculateLongSize(TCollection value) -> long
 LightProto.Parser.KeyValuePairProtoWriter<TKey, TValue>.CalculateLongSize(System.Collections.Generic.KeyValuePair<TKey, TValue> value) -> long
 LightProto.Parser.LazyProtoWriter<T>.CalculateLongSize(System.Lazy<T>! value) -> long
