@@ -124,20 +124,21 @@ namespace LightProto.Parser
                 output.WriteTag(Tag);
                 output.WriteLongLength(size);
 
-                // if littleEndian and elements has fixed size, treat array as bytes (and write it as bytes to buffer) for improved performance
-                // if(TryGetArrayAsSpanPinnedUnsafe(codec, out Span<byte> span, out GCHandle handle))
-                // {
-                //     span = span.Slice(0, Count * codec.FixedSize);
-                //
-                //     WritingPrimitives.WriteRawBytes(ref ctx.buffer, ref ctx.state, span);
-                //     handle.Free();
-                // }
-                // else
+                if (
+                    PackedRepeatedOptimizer.TryWritePackedRepeatedFieldLittleEndian<TCollection, TItem>(
+                        ref output,
+                        collection,
+                        count,
+                        ItemFixedSize
+                    )
+                )
                 {
-                    foreach (var item in collection)
-                    {
-                        ItemWriter.WriteMessageTo(ref output, item);
-                    }
+                    return;
+                }
+
+                foreach (var item in collection)
+                {
+                    ItemWriter.WriteMessageTo(ref output, item);
                 }
             }
             else

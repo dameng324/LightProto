@@ -28,6 +28,25 @@ public partial class FixedSizePackedArrayTests : BaseTests<FixedSizePackedArrayT
         yield return new() { Property = [] };
     }
 
+    [Test]
+    public async Task LightProto_Serialize_WritesPackedFixed32Bytes()
+    {
+        var bytes = new Message { Property = [1, -2] }.ToByteArray(Message.ProtoWriter);
+
+        await Assert.That(bytes).IsEquivalentTo(new byte[] { 10, 8, 1, 0, 0, 0, 254, 255, 255, 255 });
+    }
+
+    [Test]
+    public async Task LightProto_Deserialize_ReadOnlySequenceSplitInsideFixed32Values()
+    {
+        var bytes = new Message { Property = [1, -2, 3] }.ToByteArray(Message.ProtoWriter);
+        var sequence = LightProto.Tests.SerializerTests.GetReadonlySequence(bytes.Chunk(1).ToArray());
+
+        var parsed = Serializer.Deserialize(sequence, Message.ProtoReader);
+
+        await Assert.That(parsed.Property).IsEquivalentTo(new[] { 1, -2, 3 });
+    }
+
     public override IEnumerable<FixedSizeArrayTestsMessage> GetGoogleMessages()
     {
         return GetMessages().Select(o => new FixedSizeArrayTestsMessage() { Property = { o.Property } });

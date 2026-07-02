@@ -680,6 +680,13 @@ internal static class Helper
                     writer.WriteLine("long size = CalculatePackedDataSize(collection);");
                     writer.WriteLine("output.WriteTag(Tag);");
                     writer.WriteLine("output.WriteLongLength(size);");
+                    writer.WriteLine(
+                        "if (global::LightProto.PackedRepeatedOptimizer.TryWritePackedRepeatedFieldLittleEndian(ref output, global::System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref collection[0], Length), ItemFixedSize))"
+                    );
+                    using (writer.IndentScope())
+                    {
+                        writer.WriteLine("return;");
+                    }
                     writer.WriteLine("for (var index = 0; index < Length; index++)");
                     using (writer.IndentScope())
                     {
@@ -726,27 +733,21 @@ internal static class Helper
             writer.WriteLine("object global::LightProto.Parser.ICollectionReader.Empty => Empty;");
             writer.WriteLine($"public IProtoReader<{elementType}> ItemReader {{ get; }}");
             writer.WriteLine($"public {inlineArrayType} Empty => new {inlineArrayType}();");
-            writer.WriteLine($"private global::LightProto.Parser.ArrayProtoReader<{elementType}> ArrayReader {{ get; }}");
+            writer.WriteLine("private int ItemFixedSize { get; }");
             writer.WriteLine($"public {parserTypeName}(IProtoReader<{elementType}> itemReader, uint tag, int itemFixedSize)");
             using (writer.IndentScope())
             {
                 writer.WriteLine("ItemReader = itemReader;");
-                writer.WriteLine(
-                    "ArrayReader = new global::LightProto.Parser.ArrayProtoReader<" + elementType + ">(itemReader, tag, itemFixedSize);"
-                );
+                writer.WriteLine("ItemFixedSize = itemFixedSize;");
             }
 
             writer.WriteLine($"public {inlineArrayType} ParseFrom(ref ReaderContext input)");
             using (writer.IndentScope())
             {
-                writer.WriteLine("var items = ArrayReader.ParseFrom(ref input);");
                 writer.WriteLine($"var collection = default({inlineArrayType});");
-                writer.WriteLine("var count = Math.Min(items.Length, Length);");
-                writer.WriteLine("for (var index = 0; index < count; index++)");
-                using (writer.IndentScope())
-                {
-                    writer.WriteLine("collection[index] = items[index];");
-                }
+                writer.WriteLine(
+                    "global::LightProto.PackedRepeatedOptimizer.ParseRepeatedFieldIntoSpan(ref input, ItemReader, global::System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref collection[0], Length), ItemFixedSize);"
+                );
                 writer.WriteLine("return collection;");
             }
         }

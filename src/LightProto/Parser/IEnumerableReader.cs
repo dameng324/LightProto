@@ -76,28 +76,15 @@
                     {
                         var count = length / fixedSize;
                         var collection = CreateWithCapacity((int)count);
-                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
-                        // if (
-                        //     collection is List<TItem> list
-                        //     && BitConverter.IsLittleEndian
-                        //     && Marshal.SizeOf<TItem>() == fixedSize
-                        // )
-                        // {
-                        //     var itemSpan = CollectionsMarshal.AsSpan(list);
-                        //
-                        //     var byteSpan = MemoryMarshal.CreateSpan(
-                        //         ref Unsafe.As<TItem, byte>(ref MemoryMarshal.GetReference(itemSpan)),
-                        //         checked(itemSpan.Length * fixedSize)
-                        //     );
-                        //     ParsingPrimitives.ReadPackedFieldLittleEndian(
-                        //         ref ctx.buffer,
-                        //         ref ctx.state,
-                        //         length,
-                        //         byteSpan
-                        //     );
-                        //     CollectionsMarshal.SetCount(list, count);
-                        // }
-                        // else
+#if NET8_0_OR_GREATER
+                        if (
+                            collection is List<TItem> list
+                            && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, list, (int)count, fixedSize)
+                        )
+                        {
+                            return collection;
+                        }
+#endif
                         {
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                             {
