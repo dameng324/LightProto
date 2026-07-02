@@ -120,8 +120,8 @@ public partial class FixedSizeInlineArrayTests : BaseTests<FixedSizeInlineArrayT
     [ProtoBuf.ProtoContract]
     public partial class Message
     {
-        [ProtoMember(1)]
-        [ProtoBuf.ProtoMember(1, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        [ProtoMember(1, DataFormat = DataFormat.FixedSize, IsPacked = true)]
+        [ProtoBuf.ProtoMember(1, DataFormat = ProtoBuf.DataFormat.FixedSize, IsPacked = true)]
         public IntInlineArray10 Property { get; set; } = new();
 
         public override string ToString()
