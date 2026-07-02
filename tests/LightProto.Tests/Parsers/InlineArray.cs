@@ -113,6 +113,85 @@ public partial class InlineArrayTests : BaseTests<InlineArrayTests.Message, Arra
     }
 }
 
+[InheritsTests]
+public partial class FixedSizeInlineArrayTests : BaseTests<FixedSizeInlineArrayTests.Message, FixedSizeArrayTestsMessage>
+{
+    [ProtoContract]
+    [ProtoBuf.ProtoContract]
+    public partial class Message
+    {
+        [ProtoMember(1)]
+        [ProtoBuf.ProtoMember(1, DataFormat = ProtoBuf.DataFormat.FixedSize)]
+        public IntInlineArray10 Property { get; set; } = new();
+
+        public override string ToString()
+        {
+            return $"Property: {string.Join(", ", InlineArray10ToEnumerable(Property))}";
+        }
+    }
+
+    protected override bool ProtoBuf_net_Serialize_Disabled => true;
+
+    protected override bool ProtoBuf_net_Deserialize_Disabled => true;
+
+    public IEnumerable<int[]> GetIntArrays()
+    {
+        yield return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        yield return [-1, -2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        yield return [-1, -2, -3, -4, -5];
+        yield return [0, 0, 0, 0, 0];
+        yield return [0];
+        yield return [];
+    }
+
+    public override IEnumerable<Message> GetMessages()
+    {
+        return GetIntArrays().Select(x => new Message() { Property = FillInlineArray10(x) });
+    }
+
+    static IntInlineArray10 FillInlineArray10(int[] array)
+    {
+        var inlineArray = new IntInlineArray10();
+        for (int i = 0; i < 10; i++)
+        {
+            if (i < array.Length)
+            {
+                inlineArray[i] = array[i];
+            }
+        }
+        return inlineArray;
+    }
+
+    static IEnumerable<int> InlineArray10ToEnumerable(IntInlineArray10 inlineArray10)
+    {
+        for (var index = 0; index < 10; index++)
+        {
+            yield return inlineArray10[index];
+        }
+    }
+
+    public override IEnumerable<FixedSizeArrayTestsMessage> GetGoogleMessages()
+    {
+        return GetIntArrays()
+            .Select(o =>
+            {
+                return new FixedSizeArrayTestsMessage() { Property = { InlineArray10ToEnumerable(FillInlineArray10(o)) } };
+            });
+    }
+
+    public override async Task AssertGoogleResult(FixedSizeArrayTestsMessage clone, Message message)
+    {
+        await Assert.That(clone.Property.ToArray()).IsEquivalentTo(InlineArray10ToEnumerable(message.Property).ToArray());
+    }
+
+    public override async Task AssertResult(Message clone, Message message)
+    {
+        await Assert
+            .That(InlineArray10ToEnumerable(clone.Property).ToArray())
+            .IsEquivalentTo(InlineArray10ToEnumerable(message.Property).ToArray());
+    }
+}
+
 [InlineArray(4)]
 public struct GenericInlineArray<T>
 {
