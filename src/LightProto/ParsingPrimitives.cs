@@ -758,6 +758,23 @@ namespace LightProto
             }
         }
 
+        internal static void ReadPackedFieldLittleEndian(
+            ref ReadOnlySpan<byte> buffer,
+            ref ParserInternalState state,
+            int length,
+            Span<byte> destination
+        )
+        {
+            if (length <= state.bufferSize - state.bufferPos)
+            {
+                buffer.Slice(state.bufferPos, length).CopyTo(destination);
+                state.bufferPos += length;
+                return;
+            }
+
+            ReadRawBytesIntoSpan(ref buffer, ref state, length, destination);
+        }
+
         public static void SkipLastField(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.lastTag == 0)

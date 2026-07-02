@@ -56,28 +56,7 @@ namespace LightProto.Parser
                     {
                         var count = length / fixedSize;
                         var collection = new TItem[count];
-                        // if littleEndian treat array as bytes and directly copy from buffer for improved performance
-                        // if (
-                        //     collection is List<TItem> list
-                        //     && BitConverter.IsLittleEndian
-                        //     && Marshal.SizeOf<TItem>() == fixedSize
-                        // )
-                        // {
-                        //     var itemSpan = CollectionsMarshal.AsSpan(list);
-                        //
-                        //     var byteSpan = MemoryMarshal.CreateSpan(
-                        //         ref Unsafe.As<TItem, byte>(ref MemoryMarshal.GetReference(itemSpan)),
-                        //         checked(itemSpan.Length * fixedSize)
-                        //     );
-                        //     ParsingPrimitives.ReadPackedFieldLittleEndian(
-                        //         ref ctx.buffer,
-                        //         ref ctx.state,
-                        //         length,
-                        //         byteSpan
-                        //     );
-                        //     CollectionsMarshal.SetCount(list, count);
-                        // }
-                        // else
+                        if (!Serializer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, collection.AsSpan(), fixedSize))
                         {
                             int i = 0;
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
