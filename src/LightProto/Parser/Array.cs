@@ -56,7 +56,9 @@ namespace LightProto.Parser
                     {
                         var count = length / fixedSize;
                         var collection = new TItem[count];
-                        if (!Serializer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, collection.AsSpan(), fixedSize))
+                        if (
+                            !PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, collection.AsSpan(), fixedSize)
+                        )
                         {
                             int i = 0;
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))

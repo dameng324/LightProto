@@ -79,7 +79,7 @@
 #if NET8_0_OR_GREATER
                         if (
                             collection is List<TItem> list
-                            && Serializer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, list, (int)count, fixedSize)
+                            && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, list, (int)count, fixedSize)
                         )
                         {
                             return collection;

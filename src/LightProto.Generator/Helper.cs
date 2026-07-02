@@ -681,7 +681,7 @@ internal static class Helper
                     writer.WriteLine("output.WriteTag(Tag);");
                     writer.WriteLine("output.WriteLongLength(size);");
                     writer.WriteLine(
-                        "if (global::LightProto.Serializer.TryWritePackedRepeatedFieldLittleEndian(ref output, global::System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref collection[0], Length), ItemFixedSize))"
+                        "if (global::LightProto.PackedRepeatedOptimizer.TryWritePackedRepeatedFieldLittleEndian(ref output, global::System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref collection[0], Length), ItemFixedSize))"
                     );
                     using (writer.IndentScope())
                     {
@@ -746,7 +746,7 @@ internal static class Helper
             {
                 writer.WriteLine($"var collection = default({inlineArrayType});");
                 writer.WriteLine(
-                    "global::LightProto.Serializer.ParseRepeatedFieldIntoSpan(ref input, ItemReader, global::System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref collection[0], Length), ItemFixedSize);"
+                    "global::LightProto.PackedRepeatedOptimizer.ParseRepeatedFieldIntoSpan(ref input, ItemReader, global::System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref collection[0], Length), ItemFixedSize);"
                 );
                 writer.WriteLine("return collection;");
             }

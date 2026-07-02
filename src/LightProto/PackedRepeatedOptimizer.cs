@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace LightProto
 {
-    public static partial class Serializer
+    public static class PackedRepeatedOptimizer
     {
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool TryWritePackedRepeatedFieldLittleEndian<T>(ref WriterContext output, ReadOnlySpan<T> values, int itemFixedSize)
@@ -54,7 +54,7 @@ namespace LightProto
 
                     while (!SegmentedBufferHelper.IsReachedLimit(ref input.state))
                     {
-                        var item = ParseMessageFrom(itemReader, ref input);
+                        var item = itemReader.ParseMessageFrom(ref input);
                         if (writtenCount < destination.Length)
                         {
                             destination[writtenCount] = item;
@@ -73,7 +73,7 @@ namespace LightProto
 
             do
             {
-                var item = ParseMessageFrom(itemReader, ref input);
+                var item = itemReader.ParseMessageFrom(ref input);
                 if (writtenCount < destination.Length)
                 {
                     destination[writtenCount] = item;
@@ -168,10 +168,7 @@ namespace LightProto
                 return true;
             }
 
-            bytes = MemoryMarshal.CreateSpan(
-                ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(values)),
-                checked(values.Length * itemFixedSize)
-            );
+            bytes = CreateSpan(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(values)), checked(values.Length * itemFixedSize));
             return true;
         }
 
@@ -189,12 +186,25 @@ namespace LightProto
                 return true;
             }
 
-            bytes = MemoryMarshal.CreateSpan(
-                ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(values)),
-                checked(values.Length * itemFixedSize)
-            );
+            bytes = CreateSpan(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(values)), checked(values.Length * itemFixedSize));
             return true;
         }
+
+#if NETSTANDARD2_0
+        private static unsafe Span<T> CreateSpan<T>(ref T reference, int length)
+            where T : unmanaged
+        {
+            fixed (T* ptr = &reference)
+            {
+                return new Span<T>(ptr, length);
+            }
+        }
+#else
+        private static Span<T> CreateSpan<T>(ref T reference, int length)
+        {
+            return MemoryMarshal.CreateSpan(ref reference, length);
+        }
+#endif
 
         private static bool CanUseLittleEndianPackedMemoryCopy<T>(int itemFixedSize)
         {

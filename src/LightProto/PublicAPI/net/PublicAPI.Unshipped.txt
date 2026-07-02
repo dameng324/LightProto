@@ -1,6 +1,7 @@
 #nullable enable
 LightProto.IProtoWriter.CalculateLongSize(object! value) -> long
 LightProto.IProtoWriter<T>.CalculateLongSize(T value) -> long
+LightProto.PackedRepeatedOptimizer
 LightProto.Parser.ICollectionReader.Empty.get -> object!
 LightProto.Parser.ICollectionWriter.ItemWireType.get -> LightProto.WireFormat.WireType
 LightProto.Parser.ICollectionWriter.Tag.get -> uint
@@ -15,8 +16,8 @@ static LightProto.CodedOutputStream.ComputeLongLengthSize(long length) -> int
 static LightProto.Serializer.CalculateLongMessageSize(this LightProto.IProtoWriter! writer, object! value) -> long
 static LightProto.Serializer.CalculateLongMessageSize<T>(this LightProto.IProtoWriter<T>! writer, T value) -> long
 static LightProto.Serializer.CalculateLongSize<T>(T message) -> long
-static LightProto.Serializer.ParseRepeatedFieldIntoSpan<T>(ref LightProto.ReaderContext input, LightProto.IProtoReader<T>! itemReader, System.Span<T> destination, int itemFixedSize) -> int
-static LightProto.Serializer.TryWritePackedRepeatedFieldLittleEndian<T>(ref LightProto.WriterContext output, System.ReadOnlySpan<T> values, int itemFixedSize) -> bool
+static LightProto.PackedRepeatedOptimizer.ParseRepeatedFieldIntoSpan<T>(ref LightProto.ReaderContext input, LightProto.IProtoReader<T>! itemReader, System.Span<T> destination, int itemFixedSize) -> int
+static LightProto.PackedRepeatedOptimizer.TryWritePackedRepeatedFieldLittleEndian<T>(ref LightProto.WriterContext output, System.ReadOnlySpan<T> values, int itemFixedSize) -> bool
 static LightProto.InvalidProtocolBufferException.MissingRequiredMember(string! memberName) -> LightProto.InvalidProtocolBufferException!
 LightProto.Parser.ImmutableQueueProtoReader<TItem>
 LightProto.Parser.ImmutableQueueProtoReader<TItem>.Empty.get -> System.Collections.Immutable.ImmutableQueue<TItem>!

@@ -124,7 +124,14 @@ namespace LightProto.Parser
                 output.WriteTag(Tag);
                 output.WriteLongLength(size);
 
-                if (Serializer.TryWritePackedRepeatedFieldLittleEndian<TCollection, TItem>(ref output, collection, count, ItemFixedSize))
+                if (
+                    PackedRepeatedOptimizer.TryWritePackedRepeatedFieldLittleEndian<TCollection, TItem>(
+                        ref output,
+                        collection,
+                        count,
+                        ItemFixedSize
+                    )
+                )
                 {
                     return;
                 }
