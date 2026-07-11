@@ -1,15 +1,4 @@
 #nullable enable
-static LightProto.Serializer.DeserializeAsync<T>(System.IO.Stream! source, LightProto.IProtoReader<T>! reader, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
-static LightProto.Serializer.DeserializeAsync<T>(System.IO.Stream! source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
-static LightProto.Serializer.DeserializeDynamicallyAsync<T>(System.IO.Stream! source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
-static LightProto.Serializer.DeserializeNonGenericAsync(System.IO.Stream! source, LightProto.IProtoReader! reader, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<object!>!
-static LightProto.Serializer.DeserializeNonGenericAsync(System.Type! type, System.IO.Stream! source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<object!>!
-static LightProto.Serializer.SerializeAsync<T>(System.IO.Stream! destination, T instance, LightProto.IProtoWriter<T>! writer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-static LightProto.Serializer.SerializeAsync<T>(System.IO.Stream! destination, T instance, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-static LightProto.Serializer.SerializeDynamicallyAsync<T>(System.IO.Stream! destination, T instance, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-static LightProto.Serializer.SerializeNonGenericAsync(System.IO.Stream! destination, object? instance, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-static LightProto.Serializer.SerializeNonGenericAsync(System.IO.Stream! destination, object? instance, LightProto.IProtoWriter! writer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-static LightProto.Serializer.SerializeToAsync<T>(this T instance, System.IO.Stream! destination, LightProto.IProtoWriter<T>! writer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 LightProto.IProtoWriter.CalculateLongSize(object! value) -> long
 LightProto.IProtoWriter<T>.CalculateLongSize(T value) -> long
 LightProto.PackedRepeatedOptimizer
