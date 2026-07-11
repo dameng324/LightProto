@@ -111,6 +111,55 @@ public partial class SerializerTests
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
+    [Test]
+    public async Task AsyncConvenienceMethods_ShouldRoundTripAndValidateArguments()
+    {
+        var original = CreateTestContract();
+
+        using var dynamicDestination = new AsyncOnlyStream();
+        await Serializer.SerializeDynamicallyAsync(dynamicDestination, original);
+        using var dynamicSource = new AsyncOnlyStream(dynamicDestination.ToArray());
+        var dynamicParsed = await Serializer.DeserializeDynamicallyAsync<TestContract>(dynamicSource);
+        await Assert.That(dynamicParsed).IsEquivalentTo(original);
+
+        using var extensionDestination = new AsyncOnlyStream();
+        await original.SerializeToAsync(extensionDestination, TestContract.ProtoWriter);
+        using var extensionSource = new AsyncOnlyStream(extensionDestination.ToArray());
+        var extensionParsed = await Serializer.DeserializeAsync(extensionSource, TestContract.ProtoReader);
+        await Assert.That(extensionParsed).IsEquivalentTo(original);
+
+        var writer = Serializer.GetProtoWriter(typeof(TestContract));
+        var reader = Serializer.GetProtoReader(typeof(TestContract));
+        using var nonGenericDestination = new AsyncOnlyStream();
+        await Serializer.SerializeNonGenericAsync(nonGenericDestination, original, writer);
+        await Serializer.SerializeNonGenericAsync(nonGenericDestination, null, writer);
+        await Serializer.SerializeNonGenericAsync(nonGenericDestination, null);
+        using var nonGenericSource = new AsyncOnlyStream(nonGenericDestination.ToArray());
+        var nonGenericParsed = (TestContract)await Serializer.DeserializeNonGenericAsync(nonGenericSource, reader);
+        await Assert.That(nonGenericParsed).IsEquivalentTo(original);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.SerializeAsync<TestContract>(null!, original, TestContract.ProtoWriter)
+        );
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.SerializeAsync(new AsyncOnlyStream(), original, null!)
+        );
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.DeserializeAsync<TestContract>(null!, TestContract.ProtoReader)
+        );
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.DeserializeAsync<TestContract>(new AsyncOnlyStream(), null!)
+        );
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await Serializer.SerializeNonGenericAsync(null!, original, writer));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.SerializeNonGenericAsync(new AsyncOnlyStream(), original, null!)
+        );
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await Serializer.DeserializeNonGenericAsync(null!, reader));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.DeserializeNonGenericAsync(new AsyncOnlyStream(), null!)
+        );
+    }
+
     sealed class AsyncOnlyStream : Stream
     {
         readonly MemoryStream inner;
@@ -168,6 +217,19 @@ public partial class SerializerTests
             AsyncWriteCount++;
             return inner.WriteAsync(buffer, offset, count, cancellationToken);
         }
+    }
+
+    sealed class OversizedWriter : IProtoWriter<int>
+    {
+        public WireFormat.WireType WireType => WireFormat.WireType.Varint;
+
+        public bool IsMessage => true;
+
+        public int CalculateSize(int value) => throw new NotSupportedException();
+
+        public long CalculateLongSize(int value) => (long)uint.MaxValue + 1;
+
+        public void WriteTo(ref WriterContext output, int value) => throw new NotSupportedException();
     }
 
     class BufferSegment : ReadOnlySequenceSegment<byte>
@@ -761,6 +823,27 @@ public partial class SerializerTests
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             await Serializer.SerializeWithLengthPrefixAsync(new AsyncOnlyStream(), CreateTestContract(), PrefixStyle.Base128, null!)
         );
+
+        var oversizedWriter = new OversizedWriter();
+        await Assert.ThrowsAsync<OverflowException>(async () =>
+            await Serializer.SerializeWithLengthPrefixAsync(new AsyncOnlyStream(), 0, PrefixStyle.Fixed32, oversizedWriter)
+        );
+        await Assert.ThrowsAsync<OverflowException>(async () =>
+            await Serializer.SerializeWithLengthPrefixAsync(new AsyncOnlyStream(), 0, PrefixStyle.Fixed32BigEndian, oversizedWriter)
+        );
+
+        using var mismatchedTruncatedFrame = new AsyncOnlyStream([0x0a, 0x01]);
+        await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+        {
+            await foreach (
+                var _ in Serializer.DeserializeItemsAsync<TestContract>(
+                    mismatchedTruncatedFrame,
+                    PrefixStyle.Base128,
+                    2,
+                    TestContract.ProtoReader
+                )
+            ) { }
+        });
     }
 
     [Test]
