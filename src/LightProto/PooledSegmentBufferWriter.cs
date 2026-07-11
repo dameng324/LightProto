@@ -84,6 +84,30 @@ namespace LightProto
             }
         }
 
+        public async Task ReadExactlyAsync(Stream source, int length, CancellationToken cancellationToken)
+        {
+            var remaining = length;
+            while (remaining > 0)
+            {
+                var segment = GetWritableSegment(Math.Min(remaining, MinimumSegmentSize));
+                var read = await source
+                    .ReadAsync(
+                        segment.Buffer,
+                        segment.Written,
+                        Math.Min(remaining, segment.Buffer.Length - segment.Written),
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                if (read == 0)
+                {
+                    throw InvalidProtocolBufferException.TruncatedMessage();
+                }
+
+                segment.Written += read;
+                remaining -= read;
+            }
+        }
+
         public async Task WriteToAsync(Stream destination, CancellationToken cancellationToken)
         {
             for (var segment = first; segment is not null; segment = segment.NextSegment)

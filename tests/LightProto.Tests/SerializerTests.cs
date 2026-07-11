@@ -96,6 +96,21 @@ public partial class SerializerTests
         await Assert.That(parsed).IsEquivalentTo(original);
     }
 
+    [Test]
+    public async Task NonGenericAsyncStreamMethods_ShouldUseAsyncIoAndRoundTrip()
+    {
+        var original = CreateTestContract();
+        using var destination = new AsyncOnlyStream();
+        await Serializer.SerializeNonGenericAsync(destination, original);
+
+        using var source = new AsyncOnlyStream(destination.ToArray());
+        var parsed = (TestContract)await Serializer.DeserializeNonGenericAsync(typeof(TestContract), source);
+
+        await Assert.That(destination.AsyncWriteCount).IsGreaterThan(0);
+        await Assert.That(source.AsyncReadCount).IsGreaterThan(0);
+        await Assert.That(parsed).IsEquivalentTo(original);
+    }
+
     sealed class AsyncOnlyStream : Stream
     {
         readonly MemoryStream inner;
@@ -563,6 +578,189 @@ public partial class SerializerTests
 #endif
         await Assert.That(cloned1).IsNotNull();
         await Assert.That(cloned.Count).IsEqualTo(2);
+    }
+
+    [Test]
+    [Arguments(PrefixStyle.Base128)]
+    [Arguments(PrefixStyle.Fixed32)]
+    [Arguments(PrefixStyle.Fixed32BigEndian)]
+    public async Task AsyncLengthPrefixMethods_ShouldUseAsyncIoAndRoundTrip(PrefixStyle prefixStyle)
+    {
+        using var destination = new AsyncOnlyStream();
+        var first = CreateTestContract();
+        var second = CreateTestContract();
+        var third = CreateTestContract();
+
+#if NET6_0_OR_GREATER
+        await Serializer.SerializeWithLengthPrefixAsync(destination, first, prefixStyle);
+        await Serializer.SerializeWithLengthPrefixAsync(destination, second, prefixStyle);
+        await Serializer.SerializeWithLengthPrefixAsync(destination, third, prefixStyle);
+#else
+        await Serializer.SerializeWithLengthPrefixAsync(destination, first, prefixStyle, TestContract.ProtoWriter);
+        await Serializer.SerializeWithLengthPrefixAsync(destination, second, prefixStyle, TestContract.ProtoWriter);
+        await Serializer.SerializeWithLengthPrefixAsync(destination, third, prefixStyle, TestContract.ProtoWriter);
+#endif
+
+        await Assert.That(destination.AsyncWriteCount).IsGreaterThan(0);
+
+        using var source = new AsyncOnlyStream(destination.ToArray());
+#if NET6_0_OR_GREATER
+        var parsedFirst = await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(source, prefixStyle);
+        var remaining = new List<TestContract>();
+        await foreach (var item in Serializer.DeserializeItemsAsync<TestContract>(source, prefixStyle))
+        {
+            remaining.Add(item);
+        }
+#else
+        var parsedFirst = await Serializer.DeserializeWithLengthPrefixAsync(source, prefixStyle, TestContract.ProtoReader);
+        var remaining = new List<TestContract>();
+        await foreach (var item in Serializer.DeserializeItemsAsync(source, prefixStyle, TestContract.ProtoReader))
+        {
+            remaining.Add(item);
+        }
+#endif
+
+        await Assert.That(source.AsyncReadCount).IsGreaterThan(0);
+        await Assert.That(parsedFirst).IsEquivalentTo(first);
+        await Assert.That(remaining).IsEquivalentTo([second, third]);
+    }
+
+    [Test]
+    public async Task AsyncLengthPrefixMethods_ShouldSupportNoneAndNonMessageValues()
+    {
+        var original = CreateTestContract();
+        using var unprefixedDestination = new AsyncOnlyStream();
+        await Serializer.SerializeWithLengthPrefixAsync(unprefixedDestination, original, PrefixStyle.None, TestContract.ProtoWriter);
+
+        using var unprefixedSource = new AsyncOnlyStream(unprefixedDestination.ToArray());
+        var parsed = await Serializer.DeserializeWithLengthPrefixAsync(unprefixedSource, PrefixStyle.None, TestContract.ProtoReader);
+        await Assert.That(parsed).IsEquivalentTo(original);
+
+        using var valueDestination = new AsyncOnlyStream();
+        await Serializer.SerializeWithLengthPrefixAsync(valueDestination, 42, PrefixStyle.Base128, Int32ProtoParser.ProtoWriter);
+
+        using var valueSource = new AsyncOnlyStream(valueDestination.ToArray());
+        var value = await Serializer.DeserializeWithLengthPrefixAsync(valueSource, PrefixStyle.Base128, Int32ProtoParser.ProtoReader);
+        await Assert.That(value).IsEqualTo(42);
+    }
+
+    [Test]
+    public async Task AsyncLengthPrefixMethods_ShouldSkipMismatchedFieldsAndHandleEndOfStream()
+    {
+        var skipped = CreateTestContract();
+        var expected = CreateTestContract();
+        using var destination = new AsyncOnlyStream();
+        await Serializer.SerializeWithLengthPrefixAsync(destination, skipped, PrefixStyle.Base128, 1, TestContract.ProtoWriter);
+        await Serializer.SerializeWithLengthPrefixAsync(destination, expected, PrefixStyle.Base128, 2, TestContract.ProtoWriter);
+
+        using var source = new AsyncOnlyStream(destination.ToArray());
+        var items = new List<TestContract>();
+        await foreach (var item in Serializer.DeserializeItemsAsync(source, PrefixStyle.Base128, 2, TestContract.ProtoReader))
+        {
+            items.Add(item);
+        }
+
+        await Assert.That(items).IsEquivalentTo([expected]);
+
+        using var emptyBase128 = new AsyncOnlyStream();
+        var base128Items = new List<TestContract>();
+        await foreach (var item in Serializer.DeserializeItemsAsync(emptyBase128, PrefixStyle.Base128, 2, TestContract.ProtoReader))
+        {
+            base128Items.Add(item);
+        }
+
+        await Assert.That(base128Items).IsEmpty();
+
+        using var emptyFixed32 = new AsyncOnlyStream();
+        var emptyValue = await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(
+            emptyFixed32,
+            PrefixStyle.Fixed32,
+            TestContract.ProtoReader
+        );
+        await Assert.That(emptyValue).IsNull();
+    }
+
+#if NET7_0_OR_GREATER
+    [Test]
+    public async Task AsyncLengthPrefixMethods_ShouldSupportStaticAbstractOverloadsWithFieldNumbers()
+    {
+        var original = CreateTestContract();
+        using var destination = new AsyncOnlyStream();
+        await Serializer.SerializeWithLengthPrefixAsync(destination, original, PrefixStyle.Base128, fieldNumber: 1);
+
+        using var source = new AsyncOnlyStream(destination.ToArray());
+        var parsed = await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(source, PrefixStyle.Base128, fieldNumber: 1);
+        await Assert.That(parsed).IsEquivalentTo(original);
+
+        using var itemsSource = new AsyncOnlyStream(destination.ToArray());
+        var items = new List<TestContract>();
+        await foreach (var item in Serializer.DeserializeItemsAsync<TestContract>(itemsSource, PrefixStyle.Base128, fieldNumber: 1))
+        {
+            items.Add(item);
+        }
+
+        await Assert.That(items).IsEquivalentTo([original]);
+    }
+#endif
+
+    [Test]
+    public async Task AsyncLengthPrefixMethods_ShouldRejectMalformedAndIncompleteFrames()
+    {
+        using var incompletePrefix = new AsyncOnlyStream([0x80]);
+        await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+            await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(incompletePrefix, PrefixStyle.Base128, TestContract.ProtoReader)
+        );
+
+        using var malformedPrefix = new AsyncOnlyStream([0x80, 0x80, 0x80, 0x80, 0x80]);
+        await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+            await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(malformedPrefix, PrefixStyle.Base128, TestContract.ProtoReader)
+        );
+
+        using var incompletePayload = new AsyncOnlyStream([0x01]);
+        await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+            await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(
+                incompletePayload,
+                PrefixStyle.Base128,
+                TestContract.ProtoReader
+            )
+        );
+
+        using var incompleteFixed32Prefix = new AsyncOnlyStream([0x00]);
+        await Assert.ThrowsAsync<InvalidProtocolBufferException>(async () =>
+            await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(
+                incompleteFixed32Prefix,
+                PrefixStyle.Fixed32,
+                TestContract.ProtoReader
+            )
+        );
+
+        using var invalidStyleDestination = new AsyncOnlyStream();
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            await Serializer.SerializeWithLengthPrefixAsync(
+                invalidStyleDestination,
+                CreateTestContract(),
+                (PrefixStyle)4,
+                TestContract.ProtoWriter
+            )
+        );
+
+        using var invalidStyleSource = new AsyncOnlyStream();
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            await Serializer.DeserializeWithLengthPrefixAsync<TestContract>(invalidStyleSource, (PrefixStyle)4, TestContract.ProtoReader)
+        );
+
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.SerializeWithLengthPrefixAsync<TestContract>(
+                null!,
+                CreateTestContract(),
+                PrefixStyle.Base128,
+                TestContract.ProtoWriter
+            )
+        );
+
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Serializer.SerializeWithLengthPrefixAsync(new AsyncOnlyStream(), CreateTestContract(), PrefixStyle.Base128, null!)
+        );
     }
 
     [Test]

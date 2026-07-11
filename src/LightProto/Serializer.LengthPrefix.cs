@@ -1,10 +1,12 @@
 ﻿using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using LightProto.Parser;
 
 namespace LightProto
 {
+#pragma warning disable RS0026 // CancellationToken is intentionally optional for the asynchronous API surface.
     public static partial class Serializer
     {
         public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style, IProtoReader<T> reader)
@@ -45,6 +47,229 @@ namespace LightProto
             PrefixStyleIsNone,
             FieldNumberIsMismatched,
             NoMoreData,
+        }
+
+        public static async IAsyncEnumerable<T> DeserializeItemsAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            int fieldNumber,
+            IProtoReader<T> reader,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default
+        )
+        {
+            while (true)
+            {
+                var (result, instance) = await DeserializeWithLengthPrefixInternalAsync(
+                        source,
+                        style,
+                        fieldNumber,
+                        reader,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                switch (result)
+                {
+                    case DeserializeWithLengthPrefixResult.NoMoreData:
+                    case DeserializeWithLengthPrefixResult.PrefixStyleIsNone:
+                        yield break;
+                    case DeserializeWithLengthPrefixResult.Success:
+                        yield return instance;
+                        break;
+                    case DeserializeWithLengthPrefixResult.FieldNumberIsMismatched:
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unreachable code");
+                }
+            }
+        }
+
+        public static IAsyncEnumerable<T> DeserializeItemsAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            IProtoReader<T> reader,
+            CancellationToken cancellationToken = default
+        ) => DeserializeItemsAsync(source, style, 0, reader, cancellationToken);
+
+        public static async Task<T> DeserializeWithLengthPrefixAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            int fieldNumber,
+            IProtoReader<T> reader,
+            CancellationToken cancellationToken = default
+        )
+        {
+            var (_, instance) = await DeserializeWithLengthPrefixInternalAsync(source, style, fieldNumber, reader, cancellationToken)
+                .ConfigureAwait(false);
+            return instance;
+        }
+
+        public static Task<T> DeserializeWithLengthPrefixAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            IProtoReader<T> reader,
+            CancellationToken cancellationToken = default
+        ) => DeserializeWithLengthPrefixAsync(source, style, 0, reader, cancellationToken);
+
+        static async Task<(DeserializeWithLengthPrefixResult Result, T Instance)> DeserializeWithLengthPrefixInternalAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            int fieldNumber,
+            IProtoReader<T> reader,
+            CancellationToken cancellationToken
+        )
+        {
+            if (style is PrefixStyle.None)
+            {
+                return (
+                    DeserializeWithLengthPrefixResult.PrefixStyleIsNone,
+                    await DeserializeAsync(source, reader, cancellationToken).ConfigureAwait(false)
+                );
+            }
+
+            if (!reader.IsMessage)
+            {
+                reader = MessageWrapper<T>.ProtoReader.From(reader);
+            }
+
+            var prefixBuffer = ArrayPool<byte>.Shared.Rent(5);
+            try
+            {
+                int length;
+                var fieldNumberIsMatched = true;
+                if (style is PrefixStyle.Base128)
+                {
+                    if (fieldNumber > 0)
+                    {
+                        var tag = await ReadVarintFromStreamAsync(source, prefixBuffer, cancellationToken).ConfigureAwait(false);
+                        if (tag < 0)
+                        {
+                            return (DeserializeWithLengthPrefixResult.NoMoreData, default!);
+                        }
+
+                        fieldNumberIsMatched = WireFormat.GetTagFieldNumber((uint)tag) == fieldNumber;
+                    }
+
+                    length = await ReadVarintFromStreamAsync(source, prefixBuffer, cancellationToken).ConfigureAwait(false);
+                    if (length < 0)
+                    {
+                        return (DeserializeWithLengthPrefixResult.NoMoreData, default!);
+                    }
+                }
+                else if (style is PrefixStyle.Fixed32 || style is PrefixStyle.Fixed32BigEndian)
+                {
+                    if (!await TryReadExactlyAsync(source, prefixBuffer, 4, cancellationToken).ConfigureAwait(false))
+                    {
+                        return (DeserializeWithLengthPrefixResult.NoMoreData, default!);
+                    }
+
+                    var uintLength =
+                        style is PrefixStyle.Fixed32
+                            ? BinaryPrimitives.ReadUInt32LittleEndian(prefixBuffer)
+                            : BinaryPrimitives.ReadUInt32BigEndian(prefixBuffer);
+                    length = (int)uintLength;
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException(nameof(style));
+                }
+
+                if (!fieldNumberIsMatched)
+                {
+                    await SkipBytesAsync(source, length, cancellationToken).ConfigureAwait(false);
+                    return (DeserializeWithLengthPrefixResult.FieldNumberIsMismatched, default!);
+                }
+
+                var buffer = PooledSegmentBufferWriter.Rent();
+                try
+                {
+                    await buffer.ReadExactlyAsync(source, length, cancellationToken).ConfigureAwait(false);
+                    return (DeserializeWithLengthPrefixResult.Success, Deserialize(buffer.GetReadOnlySequence(), reader));
+                }
+                finally
+                {
+                    PooledSegmentBufferWriter.Return(buffer);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(prefixBuffer);
+            }
+        }
+
+        static async Task<int> ReadVarintFromStreamAsync(Stream source, byte[] buffer, CancellationToken cancellationToken)
+        {
+            var result = 0;
+            var shift = 0;
+            for (var i = 0; i < 5; i++)
+            {
+                if (!await TryReadExactlyAsync(source, buffer, 1, cancellationToken).ConfigureAwait(false))
+                {
+                    if (i == 0)
+                    {
+                        return -1;
+                    }
+
+                    throw InvalidProtocolBufferException.TruncatedMessage();
+                }
+
+                var value = buffer[0];
+                result |= (value & 0x7f) << shift;
+                if ((value & 0x80) == 0)
+                {
+                    return result;
+                }
+
+                shift += 7;
+            }
+
+            throw InvalidProtocolBufferException.MalformedVarint();
+        }
+
+        static async Task<bool> TryReadExactlyAsync(Stream source, byte[] buffer, int count, CancellationToken cancellationToken)
+        {
+            var total = 0;
+            while (total < count)
+            {
+                var read = await source.ReadAsync(buffer, total, count - total, cancellationToken).ConfigureAwait(false);
+                if (read == 0)
+                {
+                    if (total == 0)
+                    {
+                        return false;
+                    }
+
+                    throw InvalidProtocolBufferException.TruncatedMessage();
+                }
+
+                total += read;
+            }
+
+            return true;
+        }
+
+        static async Task SkipBytesAsync(Stream source, int length, CancellationToken cancellationToken)
+        {
+            var buffer = ArrayPool<byte>.Shared.Rent(Math.Min(length, 8192));
+            try
+            {
+                var remaining = length;
+                while (remaining > 0)
+                {
+                    var read = await source
+                        .ReadAsync(buffer, 0, Math.Min(remaining, buffer.Length), cancellationToken)
+                        .ConfigureAwait(false);
+                    if (read == 0)
+                    {
+                        throw InvalidProtocolBufferException.TruncatedMessage();
+                    }
+
+                    remaining -= read;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         static DeserializeWithLengthPrefixResult DeserializeWithLengthPrefixInternal<T>(
@@ -303,7 +528,150 @@ namespace LightProto
             SerializeWithLengthPrefix(destination, instance, style, 0, writer);
         }
 
+        public static async Task SerializeWithLengthPrefixAsync<T>(
+            Stream destination,
+            T instance,
+            PrefixStyle style,
+            int fieldNumber,
+            IProtoWriter<T> writer,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (destination is null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (writer is null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            var buffer = PooledSegmentBufferWriter.Rent();
+            try
+            {
+                SerializeWithLengthPrefix(buffer, instance, style, fieldNumber, writer);
+                await buffer.WriteToAsync(destination, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                PooledSegmentBufferWriter.Return(buffer);
+            }
+        }
+
+        public static Task SerializeWithLengthPrefixAsync<T>(
+            Stream destination,
+            T instance,
+            PrefixStyle style,
+            IProtoWriter<T> writer,
+            CancellationToken cancellationToken = default
+        ) => SerializeWithLengthPrefixAsync(destination, instance, style, 0, writer, cancellationToken);
+
+        static void SerializeWithLengthPrefix<T>(
+            IBufferWriter<byte> destination,
+            T instance,
+            PrefixStyle style,
+            int fieldNumber,
+            IProtoWriter<T> writer
+        )
+        {
+            if (style is PrefixStyle.None)
+            {
+                Serialize(destination, instance, writer);
+                return;
+            }
+
+            if (!writer.IsMessage && writer is not ICollectionWriter)
+            {
+                writer = MessageWrapper<T>.ProtoWriter.From(writer);
+            }
+
+            WriterContext.Initialize(destination, out var ctx);
+            var length = writer.CalculateLongSize(instance);
+            if (style is PrefixStyle.Base128)
+            {
+                if (fieldNumber > 0)
+                {
+                    ctx.WriteTag(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited));
+                }
+
+                ctx.WriteLongLength(length);
+            }
+            else if (style is PrefixStyle.Fixed32)
+            {
+                if (length > uint.MaxValue)
+                {
+                    throw new OverflowException("Serialized message is too large for Fixed32 length prefix.");
+                }
+
+                ctx.WriteFixed32((uint)length);
+            }
+            else if (style is PrefixStyle.Fixed32BigEndian)
+            {
+                if (length > uint.MaxValue)
+                {
+                    throw new OverflowException("Serialized message is too large for Fixed32BigEndian length prefix.");
+                }
+
+                ctx.WriteFixedBigEndian32((uint)length);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(style));
+            }
+
+            writer.WriteTo(ref ctx, instance);
+            ctx.Flush();
+        }
+
 #if NET7_0_OR_GREATER
+        public static IAsyncEnumerable<T> DeserializeItemsAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            int fieldNumber,
+            CancellationToken cancellationToken = default
+        )
+            where T : IProtoParser<T> => DeserializeItemsAsync(source, style, fieldNumber, T.ProtoReader, cancellationToken);
+
+        public static IAsyncEnumerable<T> DeserializeItemsAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            CancellationToken cancellationToken = default
+        )
+            where T : IProtoParser<T> => DeserializeItemsAsync(source, style, 0, T.ProtoReader, cancellationToken);
+
+        public static Task<T> DeserializeWithLengthPrefixAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            int fieldNumber,
+            CancellationToken cancellationToken = default
+        )
+            where T : IProtoParser<T> => DeserializeWithLengthPrefixAsync(source, style, fieldNumber, T.ProtoReader, cancellationToken);
+
+        public static Task<T> DeserializeWithLengthPrefixAsync<T>(
+            Stream source,
+            PrefixStyle style,
+            CancellationToken cancellationToken = default
+        )
+            where T : IProtoParser<T> => DeserializeWithLengthPrefixAsync(source, style, T.ProtoReader, cancellationToken);
+
+        public static Task SerializeWithLengthPrefixAsync<T>(
+            Stream destination,
+            T instance,
+            PrefixStyle style,
+            int fieldNumber,
+            CancellationToken cancellationToken = default
+        )
+            where T : IProtoParser<T> =>
+            SerializeWithLengthPrefixAsync(destination, instance, style, fieldNumber, T.ProtoWriter, cancellationToken);
+
+        public static Task SerializeWithLengthPrefixAsync<T>(
+            Stream destination,
+            T instance,
+            PrefixStyle style,
+            CancellationToken cancellationToken = default
+        )
+            where T : IProtoParser<T> => SerializeWithLengthPrefixAsync(destination, instance, style, T.ProtoWriter, cancellationToken);
+
         public static IEnumerable<T> DeserializeItems<T>(Stream source, PrefixStyle style, int fieldNumber)
             where T : IProtoParser<T>
         {
