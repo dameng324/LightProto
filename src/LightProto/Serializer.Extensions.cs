@@ -179,17 +179,6 @@ namespace LightProto
             Serialize(destination, instance, writer);
 
         /// <summary>
-        /// Asynchronously serializes the instance to the given destination stream.
-        /// The instance is encoded synchronously into a pooled buffer before asynchronous I/O begins.
-        /// </summary>
-        public static Task SerializeToAsync<T>(
-            this T instance,
-            Stream destination,
-            IProtoWriter<T> writer,
-            CancellationToken cancellationToken = default
-        ) => SerializeAsync(destination, instance, writer, cancellationToken);
-
-        /// <summary>
         /// Serializes the instance to the given destination buffer.
         /// </summary>
         /// <param name="instance"> The instance to serialize. </param>

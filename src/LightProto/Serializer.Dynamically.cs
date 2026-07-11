@@ -44,20 +44,6 @@ namespace LightProto
             T>(Stream destination, T instance) => Serialize(destination, instance, GetProtoWriter<T>());
 
         /// <summary>
-        /// Asynchronously writes a fully serialized protocol-buffer message to the supplied stream.
-        /// The message is encoded synchronously into a pooled buffer before asynchronous I/O begins.
-        /// </summary>
-#if NET7_0_OR_GREATER
-        [RequiresDynamicCode(AOTWarning)]
-#endif
-        public static Task SerializeDynamicallyAsync<
-#if NET7_0_OR_GREATER
-            [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
-#endif
-            T>(Stream destination, T instance, CancellationToken cancellationToken = default) =>
-            SerializeAsync(destination, instance, GetProtoWriter<T>(), cancellationToken);
-
-        /// <summary>
         /// Creates a new instance from a protocol-buffer stream
         /// </summary>
         /// <typeparam name="T">The type to be created.</typeparam>
@@ -71,20 +57,6 @@ namespace LightProto
             [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
 #endif
             T>(Stream source) => Deserialize(source, GetProtoReader<T>());
-
-        /// <summary>
-        /// Asynchronously reads a protocol-buffer message from the supplied stream until the end of the stream.
-        /// The accumulated message is decoded synchronously after all input has been received.
-        /// </summary>
-#if NET7_0_OR_GREATER
-        [RequiresDynamicCode(AOTWarning)]
-#endif
-        public static Task<T> DeserializeDynamicallyAsync<
-#if NET7_0_OR_GREATER
-            [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
-#endif
-            T>(Stream source, CancellationToken cancellationToken = default) =>
-            DeserializeAsync(source, GetProtoReader<T>(), cancellationToken);
 
         /// <summary>
         /// Serializes the given message to a byte array.
