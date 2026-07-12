@@ -4,6 +4,7 @@ using LightProto.Parser;
 
 namespace LightProto
 {
+#pragma warning disable RS0026 // CancellationToken is intentionally optional for the asynchronous API surface.
     public static partial class Serializer
     {
         /// <summary>
@@ -40,6 +41,60 @@ namespace LightProto
             WriterContext.Initialize(codedOutputStream, out var ctx);
             writer.WriteTo(ref ctx, instance);
             ctx.Flush();
+        }
+
+        /// <summary>
+        /// Asynchronously writes a fully serialized protocol-buffer message to the supplied stream.
+        /// The message is encoded synchronously into a pooled buffer before asynchronous I/O begins.
+        /// </summary>
+#if NET7_0_OR_GREATER
+        [RequiresDynamicCode(AOTWarning)]
+        [RequiresUnreferencedCode(AOTWarning)]
+#endif
+        public static Task SerializeNonGenericAsync(Stream destination, object? instance, CancellationToken cancellationToken = default)
+        {
+            if (instance is null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return SerializeNonGenericAsync(destination, instance, GetProtoWriter(instance.GetType()), cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously writes a fully serialized protocol-buffer message to the supplied stream.
+        /// The message is encoded synchronously into a pooled buffer before asynchronous I/O begins.
+        /// </summary>
+        public static async Task SerializeNonGenericAsync(
+            Stream destination,
+            object? instance,
+            IProtoWriter writer,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (destination is null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (writer is null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+            if (instance is null)
+            {
+                return;
+            }
+
+            var buffer = PooledSegmentBufferWriter.Rent();
+            try
+            {
+                SerializeNonGeneric(buffer, instance, writer);
+                await buffer.WriteToAsync(destination, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                PooledSegmentBufferWriter.Return(buffer);
+            }
         }
 
         /// <summary>
@@ -149,6 +204,53 @@ namespace LightProto
         }
 
         /// <summary>
+        /// Asynchronously reads a protocol-buffer message from the supplied stream until the end of the stream.
+        /// The accumulated message is decoded synchronously after all input has been received.
+        /// </summary>
+#if NET7_0_OR_GREATER
+        [RequiresDynamicCode(AOTWarning)]
+#endif
+        public static Task<object> DeserializeNonGenericAsync(
+#if NET7_0_OR_GREATER
+            [DynamicallyAccessedMembers(LightProtoRequiredMembers)]
+#endif
+            Type type,
+            Stream source,
+            CancellationToken cancellationToken = default
+        ) => DeserializeNonGenericAsync(source, GetProtoReader(type), cancellationToken);
+
+        /// <summary>
+        /// Asynchronously reads a protocol-buffer message from the supplied stream until the end of the stream.
+        /// The accumulated message is decoded synchronously after all input has been received.
+        /// </summary>
+        public static async Task<object> DeserializeNonGenericAsync(
+            Stream source,
+            IProtoReader reader,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+            if (reader is null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            var buffer = PooledSegmentBufferWriter.Rent();
+            try
+            {
+                await buffer.ReadToEndAsync(source, cancellationToken).ConfigureAwait(false);
+                return DeserializeNonGeneric(buffer.GetReadOnlySequence(), reader);
+            }
+            finally
+            {
+                PooledSegmentBufferWriter.Return(buffer);
+            }
+        }
+
+        /// <summary>
         /// Creates a new instance from a protocol-buffer stream
         /// </summary>
         /// <param name="type">The type to be created.</param>
@@ -242,4 +344,5 @@ namespace LightProto
 #endif
             Type type) => (IProtoWriter)GetProtoParser(type, isReader: false);
     }
+#pragma warning restore RS0026
 }

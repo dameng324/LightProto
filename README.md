@@ -24,12 +24,13 @@ A high-performance, Native AOT–friendly, production-ready Protocol Buffers imp
 - Source generator–powered serializers/parsers generated at compile time
 - AOT-friendly by design, no IL warnings
 - Minimum C# 9.0 requirement for broader compatibility (including Unity)
-- No third-party dependencies
+- Minimal runtime dependencies
 - protobuf-net–style Serializer API and familiar attributes
 - Performance is about 20% to 50% better than protobuf-net; see [benchmarks](#performance--benchmarks-) below
 - Target frameworks: netstandard2.0, net8.0, net9.0, net10.0
 - Serialize to Stream or IBufferWriter<byte>, or use ToByteArray
 - ReadOnlySpan<byte>/ReadOnlySequence<byte>/Stream deserialization
+- Async Stream I/O APIs backed by pooled buffers, including length-prefixed messages
 - Dynamic and non-generic serialization/deserialization APIs
 - RuntimeTypeModel-like APIs for dynamic message types
 - Surrogates supported
@@ -95,6 +96,32 @@ using var input = new MemoryStream(data);
 Person fromStream = Serializer.Deserialize<Person>(input);
 // Person fromStream = Serializer.Deserialize<Person>(input, Person.ProtoReader); // use this overload when targeting .netstandard2.0
 ```
+
+### Async Stream APIs
+
+`SerializeAsync` and `DeserializeAsync` support streams that allow only asynchronous I/O. They use pooled segmented buffers: encoding and decoding remain synchronous, while the final Stream reads and writes are asynchronous. `DeserializeAsync` reads one unframed message to the end of the stream, so it is intended for one-shot streams such as files or a single HTTP body.
+
+```csharp
+await Serializer.SerializeAsync(stream, person, cancellationToken);
+Person person = await Serializer.DeserializeAsync<Person>(stream, cancellationToken);
+
+// .NET Standard 2.0: pass the generated parser explicitly.
+await Serializer.SerializeAsync(stream, person, Person.ProtoWriter, cancellationToken);
+Person person = await Serializer.DeserializeAsync(stream, Person.ProtoReader, cancellationToken);
+```
+
+For long-lived connections or multiple messages on the same stream, use a length prefix. The async length-prefix APIs read and write one complete frame at a time; `DeserializeItemsAsync` yields each frame as it arrives.
+
+```csharp
+await Serializer.SerializeWithLengthPrefixAsync(stream, person, PrefixStyle.Base128, cancellationToken);
+
+await foreach (var item in Serializer.DeserializeItemsAsync<Person>(stream, PrefixStyle.Base128, cancellationToken))
+{
+    Process(item);
+}
+```
+
+The cancellation token applies to pending Stream I/O. It cannot interrupt an encoding or decoding operation after the synchronous codec has started. For backpressure-aware network protocols, prefer `PipeReader`/`PipeWriter` in the application layer and pass complete `ReadOnlySequence<byte>` frames or a `PipeWriter` (which implements `IBufferWriter<byte>`) to LightProto.
 
 ## Migration from protobuf-net 🔁
 
