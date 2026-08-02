@@ -144,4 +144,34 @@ namespace LightProto
         public Type MessageType { get; } = messageType;
         public Type ParserType { get; } = parserType;
     }
+
+    /// <summary>
+    /// Specifies reader and writer types for a repeated collection.
+    /// </summary>
+    /// <remarks>
+    /// The reader type must have a constructor accepting <c>IProtoReader&lt;TItem&gt;</c> and an item fixed size.
+    /// The writer type must have a constructor accepting <c>IProtoWriter&lt;TItem&gt;</c>, the field tag, and an item fixed size.
+    /// </remarks>
+    [ExcludeFromCodeCoverage]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct)]
+    public sealed class ProtoRepeatedParserTypeAttribute(Type protoReaderType, Type protoWriterType) : Attribute
+    {
+        public Type ProtoReaderType { get; } = protoReaderType;
+        public Type ProtoWriterType { get; } = protoWriterType;
+    }
+
+    /// <summary>
+    /// Specifies reader and writer types for a repeated collection type.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    [AttributeUsage(
+        AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class | AttributeTargets.Struct,
+        AllowMultiple = true
+    )]
+    public sealed class ProtoRepeatedParserTypeMapAttribute(Type collectionType, Type protoReaderType, Type protoWriterType) : Attribute
+    {
+        public Type CollectionType { get; } = collectionType;
+        public Type ProtoReaderType { get; } = protoReaderType;
+        public Type ProtoWriterType { get; } = protoWriterType;
+    }
 }

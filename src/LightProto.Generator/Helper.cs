@@ -436,6 +436,60 @@ internal static class Helper
         return parser;
     }
 
+    internal static bool TryGetRepeatedProtoParserTypes(
+        ITypeSymbol memberType,
+        ProtoMember member,
+        ITypeSymbol targetType,
+        out INamedTypeSymbol protoReaderType,
+        out INamedTypeSymbol protoWriterType
+    )
+    {
+        var attribute =
+            GetRepeatedParserTypeAttribute(member.AttributeData)
+            ?? GetRepeatedParserTypeMapAttribute(targetType.GetAttributes(), memberType)
+            ?? GetRepeatedParserTypeMapAttribute(targetType.ContainingModule.GetAttributes(), memberType)
+            ?? GetRepeatedParserTypeMapAttribute(targetType.ContainingAssembly.GetAttributes(), memberType)
+            ?? GetRepeatedParserTypeAttribute(memberType.GetAttributes());
+
+        if (attribute is null)
+        {
+            protoReaderType = null!;
+            protoWriterType = null!;
+            return false;
+        }
+
+        var readerIndex = attribute.AttributeClass?.ToDisplayString() == "LightProto.ProtoRepeatedParserTypeMapAttribute" ? 1 : 0;
+        protoReaderType = ConstructRepeatedParserType(
+            (INamedTypeSymbol)attribute.ConstructorArguments[readerIndex].Value!,
+            GetElementType(member.Compilation, memberType)
+        );
+        protoWriterType = ConstructRepeatedParserType(
+            (INamedTypeSymbol)attribute.ConstructorArguments[readerIndex + 1].Value!,
+            GetElementType(member.Compilation, memberType)
+        );
+        return true;
+    }
+
+    private static AttributeData? GetRepeatedParserTypeAttribute(ImmutableArray<AttributeData> attributes) =>
+        attributes.FirstOrDefault(attribute =>
+            attribute.AttributeClass?.ToDisplayString() == "LightProto.ProtoRepeatedParserTypeAttribute"
+        );
+
+    private static AttributeData? GetRepeatedParserTypeMapAttribute(ImmutableArray<AttributeData> attributes, ITypeSymbol collectionType) =>
+        attributes.FirstOrDefault(attribute =>
+            attribute.AttributeClass?.ToDisplayString() == "LightProto.ProtoRepeatedParserTypeMapAttribute"
+            && IsCollectionTypeMatch((ITypeSymbol)attribute.ConstructorArguments[0].Value!, collectionType)
+        );
+
+    private static bool IsCollectionTypeMatch(ITypeSymbol mappedType, ITypeSymbol collectionType) =>
+        SymbolEqualityComparer.Default.Equals(mappedType, collectionType)
+        || mappedType is INamedTypeSymbol mappedNamedType
+            && collectionType is INamedTypeSymbol collectionNamedType
+            && SymbolEqualityComparer.Default.Equals(mappedNamedType.OriginalDefinition, collectionNamedType.OriginalDefinition);
+
+    private static INamedTypeSymbol ConstructRepeatedParserType(INamedTypeSymbol parserType, ITypeSymbol itemType) =>
+        parserType.IsUnboundGenericType ? parserType.OriginalDefinition.Construct(itemType) : parserType;
+
     internal static int GetFixedSize(ITypeSymbol elementType, DataFormat dataFormat)
     {
         return elementType.SpecialType switch
@@ -835,6 +889,43 @@ internal static class Helper
                 stringIntern,
                 member
             );
+        }
+
+        if (
+            rawTag != 0
+            && IsCollectionType(compilation, memberType)
+            && TryGetRepeatedProtoParserTypes(memberType, member, targetType, out var protoReaderType, out var protoWriterType)
+        )
+        {
+            var elementType = GetElementType(compilation, memberType);
+            if (!isPacked)
+            {
+                rawTag = ProtoMember.GetRawTag(
+                    fieldNumber: GetFieldNumber(rawTag),
+                    ProtoMember.GetPbWireType(compilation, elementType, format)
+                );
+            }
+
+            var elementParser = GetProtoParser(
+                compilation,
+                elementType,
+                format,
+                mapFormat,
+                readerOrWriter,
+                0,
+                targetType,
+                isPacked,
+                depth,
+                compatibilityLevel,
+                stringIntern,
+                member
+            );
+            var itemFixedSize = GetFixedSize(elementType, format);
+            var parserType = readerOrWriter == "Reader" ? protoReaderType : protoWriterType;
+            var parserTypeName = parserType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var constructorArguments =
+                readerOrWriter == "Reader" ? $"{elementParser},{itemFixedSize}" : $"{elementParser},{rawTag},{itemFixedSize}";
+            return $"new {parserTypeName}({constructorArguments})";
         }
 
         if (IsProtoBufMessage(memberType))

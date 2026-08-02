@@ -22,6 +22,15 @@ static LightProto.Serializer.SerializeDynamicallyAsync<T>(System.IO.Stream! dest
 static LightProto.Serializer.SerializeNonGenericAsync(System.IO.Stream! destination, object? instance, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static LightProto.Serializer.SerializeNonGenericAsync(System.IO.Stream! destination, object? instance, LightProto.IProtoWriter! writer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static LightProto.Serializer.SerializeToAsync<T>(this T instance, System.IO.Stream! destination, LightProto.IProtoWriter<T>! writer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+LightProto.ProtoRepeatedParserTypeAttribute
+LightProto.ProtoRepeatedParserTypeAttribute.ProtoReaderType.get -> System.Type!
+LightProto.ProtoRepeatedParserTypeAttribute.ProtoRepeatedParserTypeAttribute(System.Type! protoReaderType, System.Type! protoWriterType) -> void
+LightProto.ProtoRepeatedParserTypeAttribute.ProtoWriterType.get -> System.Type!
+LightProto.ProtoRepeatedParserTypeMapAttribute
+LightProto.ProtoRepeatedParserTypeMapAttribute.CollectionType.get -> System.Type!
+LightProto.ProtoRepeatedParserTypeMapAttribute.ProtoReaderType.get -> System.Type!
+LightProto.ProtoRepeatedParserTypeMapAttribute.ProtoRepeatedParserTypeMapAttribute(System.Type! collectionType, System.Type! protoReaderType, System.Type! protoWriterType) -> void
+LightProto.ProtoRepeatedParserTypeMapAttribute.ProtoWriterType.get -> System.Type!
 LightProto.IProtoWriter.CalculateLongSize(object! value) -> long
 LightProto.IProtoWriter<T>.CalculateLongSize(T value) -> long
 LightProto.PackedRepeatedOptimizer

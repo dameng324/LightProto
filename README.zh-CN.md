@@ -251,6 +251,55 @@ public class MessageContract
 
 你也可以读写原始二进制数据，但目前仅支持 WireType.LengthDelimited，因为 LightProtoGenerator 需要在编译期计算 tag，未知类型会被视为 LengthDelimited。
 
+## 自定义 repeated 集合 🔁
+
+当自定义的 `IEnumerable<T>` 集合需要编码为 protobuf 的 `repeated` 字段，而不是作为 Surrogate message 时，使用 `ProtoRepeatedParserType`。源代码生成器会将元素 parser、字段 tag 和元素固定长度传给适配器，因此 packed 和 unpacked 字段仍遵循标准 protobuf wire format。
+
+```csharp
+[ProtoRepeatedParserType(typeof(MyListReader<>), typeof(MyListWriter<>))]
+public sealed class MyList<T> : IEnumerable<T>
+{
+    // 实现 IEnumerable<T>、Add(T)、Count，以及可接收 capacity 的构造函数。
+}
+
+public sealed class MyListReader<T> : IEnumerableProtoReader<MyList<T>, T>
+{
+    public MyListReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(
+            itemReader,
+            static capacity => new MyList<T>(capacity),
+            static (collection, item) => { collection.Add(item); return collection; },
+            itemFixedSize) { }
+}
+
+public sealed class MyListWriter<T> : IEnumerableProtoWriter<MyList<T>, T>
+{
+    public MyListWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
+        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
+}
+
+[ProtoContract]
+public partial class Message
+{
+    [ProtoMember(1, IsPacked = true)]
+    public MyList<int> Values { get; set; } = new(0);
+}
+```
+
+对于无法直接添加特性的第三方集合类型，可以在包含它的 contract、module 或 assembly 上使用 `ProtoRepeatedParserTypeMap`：
+
+```csharp
+[ProtoRepeatedParserTypeMap(typeof(MyList<>), typeof(MyListReader<>), typeof(MyListWriter<>))]
+[ProtoContract]
+public partial class Message
+{
+    [ProtoMember(1)]
+    public MyList<int> Values { get; set; } = new(0);
+}
+```
+
+也可以直接把 `ProtoRepeatedParserType` 标记在单个成员上。解析优先级依次为成员、包含该成员的 contract、module/assembly、集合类型。Reader 适配器必须接收 `(IProtoReader<TItem>, int itemFixedSize)`；Writer 适配器必须接收 `(IProtoWriter<TItem>, uint tag, int itemFixedSize)`。
+
 ## StringIntern 🧵
 
 `[StringIntern]` 特性可用于单个字符串成员、类、模块或程序集。
