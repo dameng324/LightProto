@@ -295,6 +295,55 @@ public class MessageContract
 
 You can also read/write raw binary data, but only WireType.LengthDelimited is supported for now because LightProtoGenerator needs to compute tags at compile time and any unknown type will be treated as LengthDelimited.
 
+## Custom repeated collections 🔁
+
+Use `ProtoRepeatedParserType` when a custom `IEnumerable<T>` collection must be written as a protobuf `repeated` field rather than as a surrogate message. The source generator supplies the element parser, field tag, and fixed item size to your adapters, so packed and unpacked fields keep their normal protobuf wire format.
+
+```csharp
+[ProtoRepeatedParserType(typeof(MyListReader<>), typeof(MyListWriter<>))]
+public sealed class MyList<T> : IEnumerable<T>
+{
+    // Implement IEnumerable<T>, Add(T), Count, and construction with capacity.
+}
+
+public sealed class MyListReader<T> : IEnumerableProtoReader<MyList<T>, T>
+{
+    public MyListReader(IProtoReader<T> itemReader, int itemFixedSize)
+        : base(
+            itemReader,
+            static capacity => new MyList<T>(capacity),
+            static (collection, item) => { collection.Add(item); return collection; },
+            itemFixedSize) { }
+}
+
+public sealed class MyListWriter<T> : IEnumerableProtoWriter<MyList<T>, T>
+{
+    public MyListWriter(IProtoWriter<T> itemWriter, uint tag, int itemFixedSize)
+        : base(itemWriter, tag, static collection => collection.Count, itemFixedSize) { }
+}
+
+[ProtoContract]
+public partial class Message
+{
+    [ProtoMember(1, IsPacked = true)]
+    public MyList<int> Values { get; set; } = new(0);
+}
+```
+
+For a collection type you cannot annotate, use `ProtoRepeatedParserTypeMap` on the containing contract, module, or assembly:
+
+```csharp
+[ProtoRepeatedParserTypeMap(typeof(MyList<>), typeof(MyListReader<>), typeof(MyListWriter<>))]
+[ProtoContract]
+public partial class Message
+{
+    [ProtoMember(1)]
+    public MyList<int> Values { get; set; } = new(0);
+}
+```
+
+You may instead put `ProtoRepeatedParserType` directly on an individual member. Resolution order is member, containing contract, module/assembly, then collection type. Reader adapters must accept `(IProtoReader<TItem>, int itemFixedSize)`; writer adapters must accept `(IProtoWriter<TItem>, uint tag, int itemFixedSize)`.
+
 ## StringIntern 🧵
 
 `[StringIntern]` attribute can be applied to individual string members, classes, modules, or assemblies.
