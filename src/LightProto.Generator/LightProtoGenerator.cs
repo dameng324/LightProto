@@ -649,6 +649,7 @@ public partial class LightProtoGenerator : IIncrementalGenerator
         }
 
         var unsafeAccessorMember = new List<ProtoMember>();
+        var readonlyListMembers = new List<ProtoMember>();
         var generalMembers = new List<ProtoMember>();
         writer.WriteLine($"var parsed = new {className}()");
         using (writer.IndentScope(braceEnd: "};"))
@@ -657,7 +658,12 @@ public partial class LightProtoGenerator : IIncrementalGenerator
             {
                 if (member.IsReadOnly)
                 {
-                    if (net8OrGreater)
+                    if (net8OrGreater && Helper.IsListType(compilation, member.Type))
+                    {
+                        readonlyListMembers.Add(member);
+                        writer.WriteLine($"// {member.Name} is readonly; reuse its initialized list");
+                    }
+                    else if (net8OrGreater)
                     {
                         unsafeAccessorMember.Add(member);
                         writer.WriteLine($"// {member.Name} is readonly use UnsafeAccessor to assign value");
@@ -681,6 +687,27 @@ public partial class LightProtoGenerator : IIncrementalGenerator
                 else
                 {
                     generalMembers.Add(member);
+                }
+            }
+        }
+        foreach (var member in readonlyListMembers)
+        {
+            var elementType = Helper.GetElementType(compilation, member.Type).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            writer.WriteLine($"if (_{member.Name}HasValue)");
+            using (writer.IndentScope())
+            {
+                writer.WriteLine(
+                    $"if (parsed.{member.Name} is global::System.Collections.Generic.ICollection<{elementType}> mutableCollection && !mutableCollection.IsReadOnly)"
+                );
+                using (writer.IndentScope())
+                {
+                    writer.WriteLine("mutableCollection.Clear();");
+                    writer.WriteLine($"foreach (var item in _{member.Name}) mutableCollection.Add(item);");
+                }
+                writer.WriteLine("else");
+                using (writer.IndentScope())
+                {
+                    AssignReadonlyMemberWithUnsafeAccessor(writer, member, $"_{member.Name}");
                 }
             }
         }
