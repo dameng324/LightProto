@@ -27,7 +27,7 @@ public partial class OptimizedListCollectionTests
             UnpackedStrings = ["first", "second"],
         };
 
-        var parsed = Serializer.Deserialize<Message>(message.ToByteArray());
+        var parsed = Serializer.Deserialize(message.ToByteArray(Message.ProtoWriter), Message.ProtoReader);
 
         await Assert.That(parsed.PackedBooleans).IsEquivalentTo(message.PackedBooleans);
         await Assert.That(parsed.PackedFixedBytes).IsEquivalentTo(message.PackedFixedBytes);
