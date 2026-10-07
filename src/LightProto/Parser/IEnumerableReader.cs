@@ -31,6 +31,7 @@
         object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
         private readonly Func<TCollection, TCollection>? _completeAction;
+        private readonly bool _useListFastPath;
         public IProtoReader<TItem> ItemReader { get; }
         public Func<int, TCollection> CreateWithCapacity { get; }
         public TCollection Empty => CreateWithCapacity(0);
@@ -48,6 +49,8 @@
         )
         {
             _completeAction = completeAction;
+            // Custom readers may provide AddItem behavior beyond List.Add.
+            _useListFastPath = GetType() == typeof(ListProtoReader<TItem>);
             ItemReader = itemReader;
             CreateWithCapacity = createWithCapacity;
             AddItem = addItem;
@@ -78,19 +81,32 @@
                         var collection = CreateWithCapacity((int)count);
 #if NET8_0_OR_GREATER
                         if (
-                            collection is List<TItem> list
-                            && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, list, (int)count, fixedSize)
+                            _useListFastPath
+                            && collection is List<TItem> optimizedList
+                            && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(
+                                ref ctx,
+                                length,
+                                optimizedList,
+                                (int)count,
+                                fixedSize
+                            )
                         )
                         {
                             return collection;
                         }
 #endif
+                        if (_useListFastPath && collection is List<TItem> list)
                         {
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                             {
-                                // Only FieldCodecs with a fixed size can reach here, and they are all known
-                                // types that don't allow the user to specify a custom reader action.
-                                // reader action will never return null.
+                                // Only fixed-size built-in field codecs reach this path.
+                                list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                            }
+                        }
+                        else
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
                                 collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                             }
                         }
@@ -101,9 +117,19 @@
                     {
                         var collection = CreateWithCapacity(4);
                         // Content is variable size so add until we reach the limit.
-                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                        if (_useListFastPath && collection is List<TItem> list)
                         {
-                            collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                            }
+                        }
+                        else
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            }
                         }
 
                         return collection;
@@ -118,10 +144,20 @@
             {
                 // Not packed... (possibly not packable)
                 var collection = CreateWithCapacity(4);
-                do
+                if (_useListFastPath && collection is List<TItem> list)
                 {
-                    collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-                } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                    do
+                    {
+                        list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                    } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                }
+                else
+                {
+                    do
+                    {
+                        collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                    } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                }
 
                 return _completeAction is null ? collection : _completeAction.Invoke(collection);
             }
