@@ -226,14 +226,7 @@ namespace LightProto
                 return false;
             }
 
-            try
-            {
-                return Marshal.SizeOf<T>() == itemFixedSize;
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
+            return Unsafe.SizeOf<T>() == itemFixedSize;
         }
     }
 }
