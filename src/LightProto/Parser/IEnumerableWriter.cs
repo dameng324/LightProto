@@ -32,7 +32,7 @@ namespace LightProto.Parser
 
         private long CalculatePackedDataSize(TCollection collection, int count)
         {
-            return ItemFixedSize != 0 ? ItemFixedSize * count : GetAllItemSize(collection);
+            return ItemFixedSize != 0 ? (long)ItemFixedSize * count : GetAllItemSize(collection);
         }
 
         long GetAllItemSize(TCollection collection)
