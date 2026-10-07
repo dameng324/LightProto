@@ -7,6 +7,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+using System.Buffers;
 using System.Security;
 
 namespace LightProto
@@ -40,6 +41,7 @@ namespace LightProto
         /// Buffer of data read from the stream or provided at construction time.
         /// </summary>
         private readonly byte[] buffer;
+        private bool returnBufferToPool;
 
         /// <summary>
         /// The stream to read further input from, or null if the byte array buffer was provided
@@ -68,16 +70,33 @@ namespace LightProto
         /// returned object is disposed.</param>
         /// <param name="maxSize"></param>
         internal CodedInputStream(Stream input, bool leaveOpen, long maxSize = long.MaxValue)
-            : this(ProtoPreconditions.CheckNotNull(input, "input"), new byte[BufferSize], 0, 0, leaveOpen, maxSize) { }
+            : this(
+                ProtoPreconditions.CheckNotNull(input, "input"),
+                ArrayPool<byte>.Shared.Rent(BufferSize),
+                0,
+                0,
+                leaveOpen,
+                maxSize,
+                returnBufferToPool: true
+            ) { }
 
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen, long maxSize)
+        internal CodedInputStream(
+            Stream input,
+            byte[] buffer,
+            int bufferPos,
+            int bufferSize,
+            bool leaveOpen,
+            long maxSize,
+            bool returnBufferToPool = false
+        )
         {
             this.input = input;
             this.buffer = buffer;
+            this.returnBufferToPool = returnBufferToPool;
             this.state.bufferPos = bufferPos;
             this.state.bufferSize = bufferSize;
             this.state.sizeLimit = DefaultSizeLimit;
@@ -106,9 +125,20 @@ namespace LightProto
         /// </remarks>
         public void Dispose()
         {
-            if (!leaveOpen)
+            try
             {
-                input.Dispose();
+                if (!leaveOpen)
+                {
+                    input.Dispose();
+                }
+            }
+            finally
+            {
+                if (returnBufferToPool)
+                {
+                    returnBufferToPool = false;
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
             }
         }
     }
