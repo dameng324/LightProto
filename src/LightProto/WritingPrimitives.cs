@@ -7,6 +7,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -182,8 +183,17 @@ namespace LightProto
                 // Large strings that don't fit into the current buffer segment
                 // can probably be optimized by using Utf8Encoding.GetEncoder()
                 // but more benchmarks would need to be added as evidence.
-                byte[] bytes = Utf8Encoding.GetBytes(value);
-                WriteRawBytes(ref buffer, ref state, bytes);
+                byte[] bytes = ArrayPool<byte>.Shared.Rent(length);
+                try
+                {
+                    var temporaryState = default(WriterInternalState);
+                    WriteStringToBuffer(bytes.AsSpan(0, length), ref temporaryState, value);
+                    WriteRawBytes(ref buffer, ref state, bytes.AsSpan(0, length));
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(bytes);
+                }
             }
         }
 
