@@ -6,8 +6,8 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using LightProto;
 
-BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
-return;
+var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+return summaries.Any(summary => summary.HasCriticalValidationErrors || summary.Reports.Any(report => !report.Success)) ? 1 : 0;
 
 // BenchmarkRunner.Run<SerializeAot>();
 // return;

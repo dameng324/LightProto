@@ -11,13 +11,16 @@
     <!-- above 3.31 cause aot issue see: https://github.com/protocolbuffers/protobuf/issues/21824 -->
     <PackageReference Include="protobuf-net" Version="3.2.56" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(LightProtoBenchmarkVersion)' != '1.4.0'">
     <ProjectReference Include="..\..\src\LightProto\LightProto.csproj" />
     <ProjectReference
       Include="..\..\src\LightProto.Generator\LightProto.Generator.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
     />
+  </ItemGroup>
+  <ItemGroup Condition="'$(LightProtoBenchmarkVersion)' == '1.4.0'">
+    <PackageReference Include="LightProto" Version="1.4.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="test.bin">
