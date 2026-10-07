@@ -5,18 +5,66 @@ namespace LightProto;
 
 public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
 {
-    private record ProtoMember
+    private abstract class ProtoMember
     {
-        public ProtoMember(uint tag, IProtoWriter writer, Func<T, object> getter)
+        protected ProtoMember(uint tag, bool writeTag)
         {
             Tag = tag;
-            Writer = writer;
-            Getter = getter;
+            WriteTag = writeTag;
         }
 
-        public uint Tag { get; set; }
-        public IProtoWriter Writer { get; set; }
-        public Func<T, object> Getter { get; }
+        public uint Tag { get; }
+        public bool WriteTag { get; }
+        public abstract long CalculateLongSize(T value);
+        public abstract void WriteTo(ref WriterContext output, T value);
+    }
+
+    private sealed class ProtoMember<TValue> : ProtoMember
+    {
+        private readonly IProtoWriter<TValue> _writer;
+        private readonly Func<T, TValue> _getter;
+
+        public ProtoMember(uint tag, bool writeTag, IProtoWriter<TValue> writer, Func<T, TValue> getter)
+            : base(tag, writeTag)
+        {
+            _writer = writer;
+            _getter = getter;
+        }
+
+        public override long CalculateLongSize(T value) => _writer.CalculateLongMessageSize(_getter(value));
+
+        public override void WriteTo(ref WriterContext output, T value)
+        {
+            if (WriteTag)
+            {
+                output.WriteTag(Tag);
+            }
+            _writer.WriteMessageTo(ref output, _getter(value));
+        }
+    }
+
+    private sealed class ObjectProtoMember : ProtoMember
+    {
+        private readonly IProtoWriter _writer;
+        private readonly Func<T, object> _getter;
+
+        public ObjectProtoMember(uint tag, bool writeTag, IProtoWriter writer, Func<T, object> getter)
+            : base(tag, writeTag)
+        {
+            _writer = writer;
+            _getter = getter;
+        }
+
+        public override long CalculateLongSize(T value) => _writer.CalculateLongMessageSize(_getter(value));
+
+        public override void WriteTo(ref WriterContext output, T value)
+        {
+            if (WriteTag)
+            {
+                output.WriteTag(Tag);
+            }
+            _writer.WriteMessageTo(ref output, _getter(value));
+        }
     }
 
     private readonly List<ProtoMember> _members = new();
@@ -44,7 +92,10 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
 
     public void AddMember<TValue>(int fieldNumber, Func<T, TValue> getter, IProtoWriter<TValue> writer)
     {
-        AddMember(typeof(TValue), fieldNumber, x => getter(x)!, (IProtoWriter)writer);
+        uint tag = writer is ICollectionWriter collectionWriter
+            ? collectionWriter.Tag = WireFormat.MakeTag(fieldNumber, collectionWriter.ItemWireType)
+            : WireFormat.MakeTag(fieldNumber, writer.WireType);
+        _members.Add(new ProtoMember<TValue>(tag, writer is not ICollectionWriter, writer, getter));
     }
 
     public void AddMember(Type type, int fieldNumber, Func<T, object> getter, IProtoWriter writer)
@@ -52,7 +103,7 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
         uint tag = writer is ICollectionWriter collectionWriter
             ? collectionWriter.Tag = WireFormat.MakeTag(fieldNumber, collectionWriter.ItemWireType)
             : WireFormat.MakeTag(fieldNumber, writer.WireType);
-        var member = new ProtoMember(tag, writer, x => getter(x)!);
+        var member = new ObjectProtoMember(tag, writer is not ICollectionWriter, writer, getter);
         _members.Add(member);
     }
 
@@ -74,11 +125,11 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
         long size = 0;
         foreach (var member in _members)
         {
-            if (member.Writer is not ICollectionWriter)
+            if (member.WriteTag)
             {
                 size += CodedOutputStream.ComputeUInt32Size(member.Tag);
             }
-            size += member.Writer.CalculateLongMessageSize(member.Getter(value));
+            size += member.CalculateLongSize(value);
         }
 
         return size;
@@ -88,11 +139,7 @@ public class RuntimeProtoWriter<T> : IProtoWriter, IProtoWriter<T>
     {
         foreach (var member in _members)
         {
-            if (member.Writer is not ICollectionWriter)
-            {
-                output.WriteTag(member.Tag);
-            }
-            member.Writer.WriteMessageTo(ref output, member.Getter(value));
+            member.WriteTo(ref output, value);
         }
     }
 
