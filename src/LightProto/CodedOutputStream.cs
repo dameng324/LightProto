@@ -7,6 +7,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+using System.Buffers;
 using System.Security;
 
 namespace LightProto
@@ -39,6 +40,7 @@ namespace LightProto
 
         private readonly bool leaveOpen;
         private readonly byte[] buffer;
+        private bool returnBufferToPool;
         private WriterInternalState state;
 
         private readonly Stream? output;
@@ -67,10 +69,11 @@ namespace LightProto
             leaveOpen = true; // Simple way of avoiding trying to dispose of a null reference
         }
 
-        private CodedOutputStream(Stream output, byte[] buffer, bool leaveOpen)
+        private CodedOutputStream(Stream output, byte[] buffer, bool leaveOpen, bool returnBufferToPool = false)
         {
             this.output = ProtoPreconditions.CheckNotNull(output, nameof(output));
             this.buffer = buffer;
+            this.returnBufferToPool = returnBufferToPool;
             this.state.position = 0;
             this.state.limit = buffer.Length;
             WriteBufferHelper.Initialize(this, out this.state.writeBufferHelper);
@@ -84,7 +87,7 @@ namespace LightProto
         /// <param name="leaveOpen">If <c>true</c>, <paramref name="output"/> is left open when the returned <c>CodedOutputStream</c> is disposed;
         /// if <c>false</c>, the provided stream is disposed as well.</param>
         public CodedOutputStream(Stream output, bool leaveOpen)
-            : this(output, DefaultBufferSize, leaveOpen) { }
+            : this(output, ArrayPool<byte>.Shared.Rent(DefaultBufferSize), leaveOpen, returnBufferToPool: true) { }
 
         /// <summary>
         /// Creates a new CodedOutputStream which write to the given stream and uses
@@ -125,10 +128,22 @@ namespace LightProto
         /// </remarks>
         public void Dispose()
         {
-            Flush();
-            if (!leaveOpen)
+            try
             {
-                output?.Dispose();
+                Flush();
+            }
+            finally
+            {
+                if (returnBufferToPool)
+                {
+                    returnBufferToPool = false;
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+
+                if (!leaveOpen)
+                {
+                    output?.Dispose();
+                }
             }
         }
 
