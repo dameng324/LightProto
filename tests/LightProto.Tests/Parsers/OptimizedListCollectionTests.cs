@@ -24,6 +24,9 @@ public partial class OptimizedListCollectionTests
 
         [ProtoMember(6)]
         public Queue<string> UnpackedStringQueue { get; set; } = new();
+
+        [ProtoMember(7, DataFormat = DataFormat.FixedSize, IsPacked = true)]
+        public List<int> PackedFixedIntegers { get; set; } = [];
     }
 
     [Test]
@@ -37,6 +40,7 @@ public partial class OptimizedListCollectionTests
             PackedBooleanQueue = new Queue<bool>([true, false, true]),
             PackedFixedByteQueue = new Queue<byte>([1, 255]),
             UnpackedStringQueue = new Queue<string>(["first", "second"]),
+            PackedFixedIntegers = [1, -100, int.MaxValue],
         };
 
         var parsed = Serializer.Deserialize(message.ToByteArray(Message.ProtoWriter), Message.ProtoReader);
@@ -47,5 +51,6 @@ public partial class OptimizedListCollectionTests
         await Assert.That(parsed.PackedBooleanQueue).IsEquivalentTo(message.PackedBooleanQueue);
         await Assert.That(parsed.PackedFixedByteQueue).IsEquivalentTo(message.PackedFixedByteQueue);
         await Assert.That(parsed.UnpackedStringQueue).IsEquivalentTo(message.UnpackedStringQueue);
+        await Assert.That(parsed.PackedFixedIntegers).IsEquivalentTo(message.PackedFixedIntegers);
     }
 }
