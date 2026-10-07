@@ -7,10 +7,19 @@ public class RuntimeProtoReader<T> : IProtoReader, IProtoReader<T>
 {
     private readonly Func<T> _factory;
 
-    private record ProtoMember(IProtoReader Reader, Action<T, object> Setter)
+    private abstract class ProtoMember
     {
-        public IProtoReader Reader { get; } = Reader;
-        public Action<T, object> Setter { get; } = Setter;
+        public abstract void ReadFrom(ref ReaderContext input, T target);
+    }
+
+    private sealed class ProtoMember<TValue>(IProtoReader<TValue> reader, Action<T, TValue> setter) : ProtoMember
+    {
+        public override void ReadFrom(ref ReaderContext input, T target) => setter(target, reader.ParseMessageFrom(ref input));
+    }
+
+    private sealed class ObjectProtoMember(IProtoReader reader, Action<T, object> setter) : ProtoMember
+    {
+        public override void ReadFrom(ref ReaderContext input, T target) => setter(target, reader.ParseMessageFrom(ref input));
     }
 
     public RuntimeProtoReader(Func<T> factory)
@@ -43,7 +52,16 @@ public class RuntimeProtoReader<T> : IProtoReader, IProtoReader<T>
 
     public void AddMember<TValue>(int fieldNumber, Action<T, TValue> setter, IProtoReader<TValue> reader)
     {
-        AddMember(typeof(TValue), fieldNumber, (x, v) => setter(x, (TValue)v!), (IProtoReader)reader);
+        var member = new ProtoMember<TValue>(reader, setter);
+        if (reader is ICollectionReader collectionReader)
+        {
+            _tagMembers[WireFormat.MakeTag(fieldNumber, collectionReader.ItemWireType)] = member;
+            _tagMembers[WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited)] = member;
+        }
+        else
+        {
+            _tagMembers[WireFormat.MakeTag(fieldNumber, reader.WireType)] = member;
+        }
     }
 
     public void AddMember(Type type, int fieldNumber, Action<T, object> setter, IProtoReader reader)
@@ -51,7 +69,7 @@ public class RuntimeProtoReader<T> : IProtoReader, IProtoReader<T>
         if (reader is ICollectionReader collectionReader)
         {
             var tag1 = WireFormat.MakeTag(fieldNumber, collectionReader.ItemWireType);
-            var member = new ProtoMember(reader, (x, v) => setter(x, v!));
+            var member = new ObjectProtoMember(reader, (x, v) => setter(x, v!));
             _tagMembers[tag1] = member;
             var tag2 = WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             _tagMembers[tag2] = member;
@@ -59,7 +77,7 @@ public class RuntimeProtoReader<T> : IProtoReader, IProtoReader<T>
         else
         {
             var tag = WireFormat.MakeTag(fieldNumber, reader.WireType);
-            var member = new ProtoMember(reader, (x, v) => setter(x, v!));
+            var member = new ObjectProtoMember(reader, (x, v) => setter(x, v!));
             _tagMembers[tag] = member;
         }
     }
@@ -79,8 +97,7 @@ public class RuntimeProtoReader<T> : IProtoReader, IProtoReader<T>
             }
             if (_tagMembers.TryGetValue(tag, out var member))
             {
-                var value = member.Reader.ParseMessageFrom(ref input);
-                member.Setter(parsed, value);
+                member.ReadFrom(ref input, parsed);
             }
             else
             {
