@@ -136,9 +136,19 @@ namespace LightProto.Parser
                     return;
                 }
 
-                foreach (var item in collection)
+                if (collection is IList<TItem> list)
                 {
-                    ItemWriter.WriteMessageTo(ref output, item);
+                    for (var index = 0; index < list.Count; index++)
+                    {
+                        ItemWriter.WriteMessageTo(ref output, list[index]);
+                    }
+                }
+                else
+                {
+                    foreach (var item in collection)
+                    {
+                        ItemWriter.WriteMessageTo(ref output, item);
+                    }
                 }
             }
             else

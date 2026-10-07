@@ -78,19 +78,31 @@
                         var collection = CreateWithCapacity((int)count);
 #if NET8_0_OR_GREATER
                         if (
-                            collection is List<TItem> list
-                            && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(ref ctx, length, list, (int)count, fixedSize)
+                            collection is List<TItem> optimizedList
+                            && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(
+                                ref ctx,
+                                length,
+                                optimizedList,
+                                (int)count,
+                                fixedSize
+                            )
                         )
                         {
                             return collection;
                         }
 #endif
+                        if (collection is List<TItem> list)
                         {
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                             {
-                                // Only FieldCodecs with a fixed size can reach here, and they are all known
-                                // types that don't allow the user to specify a custom reader action.
-                                // reader action will never return null.
+                                // Only fixed-size built-in field codecs reach this path.
+                                list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                            }
+                        }
+                        else
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
                                 collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
                             }
                         }
@@ -101,9 +113,19 @@
                     {
                         var collection = CreateWithCapacity(4);
                         // Content is variable size so add until we reach the limit.
-                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                        if (collection is List<TItem> list)
                         {
-                            collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                            }
+                        }
+                        else
+                        {
+                            while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                            {
+                                collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                            }
                         }
 
                         return collection;
@@ -118,10 +140,20 @@
             {
                 // Not packed... (possibly not packable)
                 var collection = CreateWithCapacity(4);
-                do
+                if (collection is List<TItem> list)
                 {
-                    collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
-                } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                    do
+                    {
+                        list.Add(ItemReader.ParseMessageFrom(ref ctx));
+                    } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                }
+                else
+                {
+                    do
+                    {
+                        collection = AddItem(collection, ItemReader.ParseMessageFrom(ref ctx));
+                    } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
+                }
 
                 return _completeAction is null ? collection : _completeAction.Invoke(collection);
             }
