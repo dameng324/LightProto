@@ -31,6 +31,7 @@
         object IProtoReader.ParseFrom(ref ReaderContext input) => ParseFrom(ref input);
 
         private readonly Func<TCollection, TCollection>? _completeAction;
+        private readonly bool _useListFastPath;
         public IProtoReader<TItem> ItemReader { get; }
         public Func<int, TCollection> CreateWithCapacity { get; }
         public TCollection Empty => CreateWithCapacity(0);
@@ -48,6 +49,8 @@
         )
         {
             _completeAction = completeAction;
+            // Custom readers may provide AddItem behavior beyond List.Add.
+            _useListFastPath = GetType() == typeof(ListProtoReader<TItem>);
             ItemReader = itemReader;
             CreateWithCapacity = createWithCapacity;
             AddItem = addItem;
@@ -78,7 +81,8 @@
                         var collection = CreateWithCapacity((int)count);
 #if NET8_0_OR_GREATER
                         if (
-                            collection is List<TItem> optimizedList
+                            _useListFastPath
+                            && collection is List<TItem> optimizedList
                             && PackedRepeatedOptimizer.TryReadPackedRepeatedFieldLittleEndian(
                                 ref ctx,
                                 length,
@@ -91,7 +95,7 @@
                             return collection;
                         }
 #endif
-                        if (collection is List<TItem> list)
+                        if (_useListFastPath && collection is List<TItem> list)
                         {
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                             {
@@ -113,7 +117,7 @@
                     {
                         var collection = CreateWithCapacity(4);
                         // Content is variable size so add until we reach the limit.
-                        if (collection is List<TItem> list)
+                        if (_useListFastPath && collection is List<TItem> list)
                         {
                             while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
                             {
@@ -140,7 +144,7 @@
             {
                 // Not packed... (possibly not packable)
                 var collection = CreateWithCapacity(4);
-                if (collection is List<TItem> list)
+                if (_useListFastPath && collection is List<TItem> list)
                 {
                     do
                     {
