@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<BitArray>]
+    [ProtoSurrogateFor(typeof(BitArray))]
     public partial struct BitArrayProtoParser
     {
         [ProtoMember(1, IsPacked = true)]

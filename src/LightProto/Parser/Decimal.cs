@@ -10,7 +10,7 @@ namespace LightProto.Parser
     // }
 
     [ProtoContract]
-    [ProtoSurrogateFor<Decimal>]
+    [ProtoSurrogateFor(typeof(Decimal))]
     public partial struct DecimalProtoParser
     {
         /// <summary>

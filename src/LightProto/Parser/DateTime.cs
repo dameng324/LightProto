@@ -28,7 +28,7 @@
     // }
 
     [ProtoContract]
-    [ProtoSurrogateFor<DateTime>]
+    [ProtoSurrogateFor(typeof(DateTime))]
     public partial struct DateTimeProtoParser
     {
         [ProtoMember(1, DataFormat = DataFormat.ZigZag)]
