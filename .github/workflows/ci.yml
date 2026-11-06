@@ -85,3 +85,37 @@ jobs:
       - name: Test package creation
         run: |
           dotnet pack --configuration Release --output ./test-packages src/LightProto/
+
+  mono-test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Install Mono
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes mono-devel
+          mono --version
+
+      - name: Build .NET Framework tests
+        run: |
+          dotnet build tests/LightProto.Tests/ -c Release -f net48 -p:TestOnMono=true -p:PublishAot=false
+          dotnet build tests/LightProto.Cs9Tests/ -c Release -p:PublishAot=false
+
+      - name: Run tests on Mono
+        run: mono tests/LightProto.Tests/bin/Release/net48/LightProto.Tests.exe
+
+      - name: Run C# 9 tests on Mono
+        run: mono tests/LightProto.Cs9Tests/bin/Release/net48/LightProto.Cs9Tests.exe

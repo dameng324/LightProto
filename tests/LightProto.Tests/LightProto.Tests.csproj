@@ -11,8 +11,11 @@
       >true</PublishAot
     >
   </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration)=='Release' and '$(OS)' == 'Windows_NT'">
+  <PropertyGroup Condition="$(Configuration)=='Release' and ('$(OS)' == 'Windows_NT' or '$(TestOnMono)' == 'true')">
     <TargetFrameworks>$(TargetFrameworks);net48</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TestOnMono)' == 'true'">
+    <DefineConstants>$(DefineConstants);MONO_TESTS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.30.2" />
