@@ -3,7 +3,7 @@
 namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<Complex>]
+    [ProtoSurrogateFor(typeof(Complex))]
     public partial struct ComplexProtoParser
     {
         [ProtoMember(1)]

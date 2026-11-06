@@ -4,7 +4,7 @@ using System.Numerics;
 namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<Quaternion>]
+    [ProtoSurrogateFor(typeof(Quaternion))]
     public partial struct QuaternionProtoParser
     {
         [ProtoMember(1, IsPacked = true)]

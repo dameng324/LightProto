@@ -1,7 +1,7 @@
 ﻿namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<DateTimeOffset>]
+    [ProtoSurrogateFor(typeof(DateTimeOffset))]
     public partial struct DateTimeOffsetProtoParser
     {
         [ProtoMember(1)]

@@ -1,7 +1,7 @@
 ﻿namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<TimeSpan>]
+    [ProtoSurrogateFor(typeof(TimeSpan))]
     public sealed partial class TimeSpan240ProtoParser
     {
         [ProtoMember(1)]

@@ -1,7 +1,7 @@
 ﻿namespace LightProto.Parser
 {
 #if NET7_0_OR_GREATER
-    [ProtoSurrogateFor<Int128>]
+    [ProtoSurrogateFor(typeof(Int128))]
     [ProtoContract]
     public partial struct Int128ProtoParser
     {

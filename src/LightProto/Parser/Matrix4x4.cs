@@ -4,7 +4,7 @@ using System.Numerics;
 namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<Matrix4x4>]
+    [ProtoSurrogateFor(typeof(Matrix4x4))]
     public partial struct Matrix4x4ProtoParser
     {
         [ProtoMember(1, IsPacked = true)]

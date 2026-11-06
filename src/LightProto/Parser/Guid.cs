@@ -8,7 +8,7 @@ namespace LightProto.Parser
     // }
 
     [ProtoContract]
-    [ProtoSurrogateFor<Guid>]
+    [ProtoSurrogateFor(typeof(Guid))]
     public partial struct GuidProtoParser
     {
         [ProtoMember(1, DataFormat = DataFormat.FixedSize)]

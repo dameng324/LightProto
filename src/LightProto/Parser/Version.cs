@@ -1,7 +1,7 @@
 ﻿namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<Version>]
+    [ProtoSurrogateFor(typeof(Version))]
     public partial struct VersionProtoParser
     {
         [ProtoMember(1, DataFormat = DataFormat.ZigZag)]

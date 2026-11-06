@@ -4,7 +4,7 @@ using System.Numerics;
 namespace LightProto.Parser
 {
     [ProtoContract]
-    [ProtoSurrogateFor<Plane>]
+    [ProtoSurrogateFor(typeof(Plane))]
     public partial struct PlaneProtoParser
     {
         [ProtoMember(1, IsPacked = true)]

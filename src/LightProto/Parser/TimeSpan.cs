@@ -15,7 +15,7 @@
     // }
     // }
 
-    [ProtoSurrogateFor<TimeSpan>]
+    [ProtoSurrogateFor(typeof(TimeSpan))]
     [ProtoContract]
     public partial struct TimeSpanProtoParser
     {
