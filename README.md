@@ -238,6 +238,12 @@ For primitive types, LightProto provides predefined parsers in the `LightProto.P
 
 If you don't need AOT support, you can use the dynamic APIs `Serializer.SerializeDynamically<T>` and `Serializer.DeserializeDynamically<T>` without passing ProtoReader/Writer.
 
+### Mono test baseline
+
+LightProto's tested Mono baseline is **Mono 6.12**, currently validated with **6.12.0.200 on Linux**. The [`mono-test` CI job](.github/workflows/ci.yml) builds the main serialization tests and C# 9 compatibility tests as `net48` executables with the .NET SDK, then runs them with `mono` against LightProto's `netstandard2.0` assembly. A test verifies both the Mono runtime and the loaded library's target framework.
+
+Older Mono versions are not covered by CI. This standalone Mono baseline does not validate individual Unity versions or IL2CPP; those require testing in the corresponding Unity environment. Unix system time zones with historical adjustment rules may not round-trip through `TimeZoneInfo`'s own string serialization; the CI fixtures cover UTC and a fixed UTC+8 custom zone.
+
 ### Unity Support 🎮
 
 LightProto's generated code supports C# 9, making it compatible with Unity projects targeting .NET Standard 2.0. You can use LightProto in Unity by following the same installation and usage instructions as for other .NET projects.
