@@ -714,10 +714,12 @@ public class TimeZoneInfoCollectionTest : BaseCollectionTestWithParser<TimeZoneI
     public override IEnumerable<TimeZoneInfo[]> GetCollection()
     {
         List<TimeZoneInfo> timeZones = [TimeZoneInfo.Utc];
-        var timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
-            ? "China Standard Time"
-            : "Asia/Shanghai";
-        timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+        // Unix system zones can contain historical rules that TimeZoneInfo cannot round-trip.
+        timeZones.Add(TimeZoneInfo.CreateCustomTimeZone("FixedUTC8", TimeSpan.FromHours(8), "Fixed UTC+8", "Fixed UTC+8"));
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+        {
+            timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
+        }
         yield return timeZones.ToArray();
     }
 }

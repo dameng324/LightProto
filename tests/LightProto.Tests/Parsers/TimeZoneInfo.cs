@@ -17,10 +17,15 @@ public partial class TimeZoneInfoTests : BaseTests<TimeZoneInfoTests.Message, Ti
     {
         yield return new() { Property = TimeZoneInfo.Utc };
         yield return new() { Property = TimeZoneInfo.Local };
-        var timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
-            ? "China Standard Time"
-            : "Asia/Shanghai";
-        yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId) };
+        // Unix system zones can contain historical rules that TimeZoneInfo cannot round-trip.
+        yield return new()
+        {
+            Property = TimeZoneInfo.CreateCustomTimeZone("FixedUTC8", TimeSpan.FromHours(8), "Fixed UTC+8", "Fixed UTC+8"),
+        };
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+        {
+            yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time") };
+        }
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;
