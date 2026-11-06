@@ -1,4 +1,4 @@
-﻿using LightProto;
+using LightProto;
 using LightProto.Parser;
 
 namespace LightProto.Tests.Parsers;
@@ -17,11 +17,10 @@ public partial class TimeZoneInfoTests : BaseTests<TimeZoneInfoTests.Message, Ti
     {
         yield return new() { Property = TimeZoneInfo.Utc };
         yield return new() { Property = TimeZoneInfo.Local };
-#if NET48
-        yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("China Standard Time") };
-#else
-        yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai") };
-#endif
+        var timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+            ? "China Standard Time"
+            : "Asia/Shanghai";
+        yield return new() { Property = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId) };
     }
 
     protected override bool ProtoBuf_net_Deserialize_Disabled { get; } = true;

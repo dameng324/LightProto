@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
@@ -748,6 +748,11 @@ public partial class NonGenericSerializerTests
                 var arrDeserialized = ((ConcurrentBag<int>)deserialized).OrderBy(x => x).ToArray();
                 var arrOriginal = ((ConcurrentBag<int>)original).OrderBy(x => x).ToArray();
                 await Assert.That(arrDeserialized).IsEquivalentTo(arrOriginal);
+            }
+            else if (type == typeof(CultureInfo))
+            {
+                // Compare culture identity without reflecting into Mono's unimplemented CompareInfo.Version.
+                await Assert.That((CultureInfo)deserialized).IsEqualTo((CultureInfo)original);
             }
             else
             {
