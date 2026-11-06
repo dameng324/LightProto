@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
@@ -448,6 +448,16 @@ public partial class ContractCollectionTest : BaseCollectionTestWithParser<Contr
 [InheritsTests]
 public class UriCollectionTest : BaseCollectionTestWithParser<UriProtoParser, Uri?>
 {
+    // The wire format preserves OriginalString; URI kind inference differs between runtimes.
+    protected override IEqualityComparer<Uri?> Comparer { get; } = new UriOriginalStringComparer();
+
+    sealed class UriOriginalStringComparer : EqualityComparer<Uri?>
+    {
+        public override bool Equals(Uri? x, Uri? y) => StringComparer.Ordinal.Equals(x?.OriginalString, y?.OriginalString);
+
+        public override int GetHashCode(Uri? obj) => obj is null ? 0 : StringComparer.Ordinal.GetHashCode(obj.OriginalString);
+    }
+
     public override IEnumerable<Uri[]> GetCollection()
     {
         yield return
@@ -704,14 +714,12 @@ public class TimeZoneInfoCollectionTest : BaseCollectionTestWithParser<TimeZoneI
     public override IEnumerable<TimeZoneInfo[]> GetCollection()
     {
         List<TimeZoneInfo> timeZones = [TimeZoneInfo.Utc];
-#if NET48
-        timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
-#else
-        if (OperatingSystem.IsWindows())
+        // Unix system zones can contain historical rules that TimeZoneInfo cannot round-trip.
+        timeZones.Add(TimeZoneInfo.CreateCustomTimeZone("FixedUTC8", TimeSpan.FromHours(8), "Fixed UTC+8", "Fixed UTC+8"));
+        if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
         {
-            timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai"));
+            timeZones.Add(TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
         }
-#endif
         yield return timeZones.ToArray();
     }
 }

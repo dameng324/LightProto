@@ -194,6 +194,12 @@ ProtoWriter/Reader 的解析顺序与“动态 API”一致。
 
 如果不需要 AOT 支持，可以使用动态 API `Serializer.SerializeDynamically<T>` 和 `Serializer.DeserializeDynamically<T>`，无需传入 ProtoReader/Writer。
 
+### Mono 测试基线
+
+LightProto 的 Mono 测试基线为 **Mono 6.12**，目前已在 **Linux 上的 6.12.0.200** 验证。[`mono-test` CI job](.github/workflows/ci.yml) 使用 .NET SDK 将主序列化测试和 C# 9 兼容性测试构建为 `net48` 可执行程序，再通过 `mono` 执行，测试 LightProto 的 `netstandard2.0` 程序集。测试会检查实际运行时为 Mono，并确认加载的库的目标框架。
+
+更早的 Mono 版本尚未纳入 CI。此独立 Mono 基线不代表已验证各个 Unity 版本或 IL2CPP，它们需要在对应的 Unity 环境中测试。包含历史调整规则的 Unix 系统时区可能无法通过 `TimeZoneInfo` 自身的字符串序列化往返；CI 的时区数据覆盖 UTC 和固定 UTC+8 自定义时区。
+
 ### Unity 支持 🎮
 
 LightProto 生成的代码支持 C# 9，可用于面向 .NET Standard 2.0 的 Unity 项目。按常规 .NET 项目的安装与使用方式即可。
